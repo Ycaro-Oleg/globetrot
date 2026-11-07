@@ -32,6 +32,10 @@ Only adapters touch the database. `packages/domain` never does, and `packages/ap
 | Geography | `geography(Point, 4326)` for places and pins, with a GiST index ([places spike](spikes/places.md)) |
 | Deletion | Not implemented until specified. Archive with a status instead of deleting |
 
+## Authentication tables
+
+`user`, `session`, `account`, `verification` and `rate_limit` come from Better Auth (migration `0001_auth_tables`) and keep its text ids and its column shapes; the rest of the conventions above still apply (singular snake_case names, `timestamptz`). `user.email` is stored lowercase and a CHECK constraint enforces it. Behaviour, configuration and the trust model: [`authentication.md`](authentication.md).
+
 ## Extensions
 
 The first migration (`0000_extensions.sql`) enables `postgis`, `pg_trgm` and `unaccent`, using `IF NOT EXISTS`. The local Docker init script (`infra/postgres/init/`) enables the same ones as a convenience, and production relies on the migration.

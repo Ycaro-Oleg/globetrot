@@ -44,7 +44,7 @@ All are in the milestone **M3 App Foundation**. "Depends on" lists issue numbers
 | Slice | Issue | Depends on | Priority / readiness |
 |---|---|---|---|
 | 1. Database migrations | #52 | none (M2 done) | p0, **done** |
-| 2. Auth server and sessions | #53 | #52 | p0, agent-ready |
+| 2. Auth server and sessions | #53 | #52 | p0, **done** |
 | 3. Email verification and recovery | #54 | #53 | p1, agent-ready |
 | 4. Google sign-in | #55 | #53 | p1, agent-ready (the real-provider smoke test is the owner's) |
 | 5. Authenticated API, actor, typed client | #56 | #53 | p0, agent-ready |
@@ -62,7 +62,7 @@ Suggested order: #52 → #53 → (#54, #55, #56 in parallel) → #57 → (#58, #
 ## Gaps found while reconciling
 
 - **Auth screens were missing.** No slice covered the sign-up, log-in and recovery pages that the prototype specifies, and the end-to-end gate needs them. Added as slice 6b (#57).
-- **How the browser and the API share the session cookie** was undecided. Decided inside #53: the web app proxies `/api/auth/*` and `/v1/*` to the API (Next.js rewrites), so the cookie is first-party.
+- **How the browser and the API share the session cookie** was undecided. Decided inside #53: the web app proxies `/api/auth/*` to the API from `proxy.ts`, reading the target at request time, so the cookie is first-party and one image serves every environment. `/v1/*` joins the proxy in #56. See [`authentication.md`](../architecture/authentication.md).
 - **Typed API client generation** had no owner. It is part of #56.
 - **Integration tests had no CI job.** A `postgis` service job comes with #52.
 - **Terms and Privacy pages** are linked from the sign-up form. #57 uses pages marked as draft. The real legal text is an owner decision (open).

@@ -1,13 +1,44 @@
+import { connectDatabase } from '@globetrot/db';
 import { serve } from '@hono/node-server';
 import { createApp } from './app';
+import { createAuth } from './auth';
+import { ApiConfigError, loadApiConfig, type ApiConfig } from './config';
 
-// PORT is set by the container platform (Coolify); API_PORT comes from the local .env.
-const port = Number(process.env.PORT ?? process.env.API_PORT ?? 4000);
+// Fails fast (and loudly) on a missing or unsafe setting, before opening any port. The message names
+// the setting and never its value, so it is safe in container logs.
+function loadConfigOrExit(): ApiConfig {
+  try {
+    return loadApiConfig();
+  } catch (error) {
+    if (error instanceof ApiConfigError) {
+      console.error(`Invalid configuration: ${error.message}`);
+      process.exit(1);
+    }
+    throw error;
+  }
+}
 
-const server = serve({ fetch: createApp().fetch, port }, (info) => {
+const config = loadConfigOrExit();
+if (config.usingInsecureSecret) {
+  console.warn(
+    'BETTER_AUTH_SECRET is not set: using the public development secret. Never do this in production.',
+  );
+}
+
+const database = connectDatabase(config.databaseUrl);
+const app = createApp({
+  auth: createAuth(database.db, config.auth),
+  trustedOrigins: config.auth.trustedOrigins,
+});
+
+const server = serve({ fetch: app.fetch, port: config.port }, (info) => {
   console.log(`api listening on :${info.port}`);
 });
 
-const shutdown = () => server.close(() => process.exit(0));
+const shutdown = () => {
+  server.close(() => {
+    void database.close().finally(() => process.exit(0));
+  });
+};
 process.on('SIGTERM', shutdown);
 process.on('SIGINT', shutdown);
