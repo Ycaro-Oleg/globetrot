@@ -9,7 +9,7 @@ Status: **direction approved; initial token foundations implemented, v1.1 pendin
   - A typed TS object for React Native (post-MVP).
 - Three layers: **primitive** (e.g. `color.marigold.500`) → **semantic** (e.g. `color.surface.card`, `color.status.confirmed.text`) → **component** (only when needed).
 - Surfaces that are always light (map labels, the legend, tinted library cards) re-scope their text tokens to dark ink in both themes.
-- **v1.1 changes:** fix the rail title contrast, add the trip-currency-neutral copy, and add focus and hit-area tokens.
+- **v1.1 changes:** fix the rail title contrast, add the trip-currency-neutral copy, and add focus and hit-area tokens. The Day tertiary text is darkened from the reference `#6E6985` to `#69647F` so it meets 4.5:1 on the alternate cream surface.
 
 ### Using and extending tokens
 
