@@ -3,6 +3,7 @@ design/reference/
 **/.next/
 **/dist/
 **/coverage/
+**/storybook-static/
 
 # Prose and templates are formatted by hand (keeps doc diffs small)
 **/*.md

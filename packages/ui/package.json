@@ -5,14 +5,30 @@
   "description": "Web component library (React Aria + Tailwind) documented in Storybook",
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./styles.css": "./src/styles.css"
   },
   "scripts": {
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "storybook": "pnpm --filter @globetrot/tokens build && storybook dev -p 6006 --host 0.0.0.0 --no-open",
+    "build-storybook": "pnpm --filter @globetrot/tokens build && storybook build",
+    "build": "pnpm build-storybook"
   },
   "devDependencies": {
-    "@globetrot/config": "workspace:*"
+    "@globetrot/config": "workspace:*",
+    "@storybook/addon-a11y": "10.6.6",
+    "@storybook/react-vite": "10.6.6",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "storybook": "10.6.6",
+    "vite": "8.3.6"
+  },
+  "dependencies": {
+    "@globetrot/tokens": "workspace:*",
+    "react": "19.3.1",
+    "react-aria-components": "1.22.1",
+    "react-dom": "19.3.1"
   }
 }
