@@ -1,6 +1,6 @@
 # Data model and migrations
 
-Status: **foundation in place (#52), no product tables yet.** Auth tables arrive with the auth server (#53) and trips with trip persistence (#61). This doc owns the database conventions. Entities and relationships are in [`domain-model.md`](domain-model.md). Decisions: [ADR-0002](adr/0002-monorepo-and-stack.md) and [ADR-0006](adr/0006-api-and-application-layer.md).
+Status: **foundation in place (#52), auth tables (#53), trips with idempotency and audit (#61).** This doc owns the database conventions. Entities and relationships are in [`domain-model.md`](domain-model.md). Decisions: [ADR-0002](adr/0002-monorepo-and-stack.md) and [ADR-0006](adr/0006-api-and-application-layer.md).
 
 ## Where things live
 
@@ -35,6 +35,22 @@ Only adapters touch the database. `packages/domain` never does, and `packages/ap
 ## Authentication tables
 
 `user`, `session`, `account`, `verification` and `rate_limit` come from Better Auth (migration `0001_auth_tables`) and keep its text ids and its column shapes; the rest of the conventions above still apply (singular snake_case names, `timestamptz`). `user.email` is stored lowercase and a CHECK constraint enforces it. Behaviour, configuration and the trust model: [`authentication.md`](authentication.md).
+
+## Trips, idempotency and audit
+
+Migration `0002_trips` (and `0003_audit_event_append_only`). Code: `packages/db/src/schema/trip.ts`, the SQL in `src/repositories.ts`.
+
+| Table | What | Notes |
+|---|---|---|
+| `trip` | A user's trip | `id uuid` (UUIDv7 from the application), `owner_id text` → `user.id`, `title`, `start_date date` (nullable), `currency char(3)`, `status`, `visibility`, `created_at`, `updated_at`. Index `(owner_id, created_at)` |
+| `idempotency_key` | A mutation already done | Primary key `(owner_id, key)`, canonical request `fingerprint`, stored `response` (jsonb) |
+| `audit_event` | Append-only history of mutations | `actor_kind`, `actor_id`, `action`, `entity_type`, `entity_id`, `metadata` (jsonb), `occurred_at` |
+
+- **`owner_id` is `text`, not `uuid`,** because it references Better Auth's `user.id` (a text id). The "Ownership" rule above otherwise holds. The foreign key is `ON DELETE RESTRICT`: deleting an account that has trips fails instead of silently destroying them. Account deletion and its retention rules are specified separately.
+- **The database enforces the rules too,** not only the application: title trimmed and 1–120 characters, `currency` matches `^[A-Z]{3}$`, `status` and `visibility` are in their lists (built from the same `as const` arrays as the domain, so they cannot drift). `visibility` only allows `private` until sharing is specified; widening a CHECK is a one-line migration.
+- **`status` is stored, the journey `stage` never is** (it is derived, [`business-rules.md`](../product/business-rules.md#trips)).
+- **`audit_event` cannot be changed:** a trigger rejects `UPDATE`, `DELETE` and `TRUNCATE` (a superuser can still disable triggers; the guard is against the application's own connection). `actor_id` has **no foreign key** on purpose, so the history survives the account. `metadata` carries field names, never values: no personal data.
+- **`idempotency_key` rows are written in the transaction of the work they guard.** A visible key therefore always has its response, and two concurrent requests with the same key serialize on the unique row. Old rows are only useful for a retry window and can be cleaned by a job later.
 
 ## Extensions
 

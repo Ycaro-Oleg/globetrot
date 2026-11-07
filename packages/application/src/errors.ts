@@ -52,3 +52,12 @@ export class ValidationError extends ApplicationError {
     this.issues = issues;
   }
 }
+
+/** An `Idempotency-Key` was reused with a different request. Send a new key for a new request. */
+export class IdempotencyKeyReusedError extends ApplicationError {
+  readonly code = 'IDEMPOTENCY_KEY_REUSED';
+  constructor() {
+    super('This Idempotency-Key was already used with a different request');
+    this.name = 'IdempotencyKeyReusedError';
+  }
+}

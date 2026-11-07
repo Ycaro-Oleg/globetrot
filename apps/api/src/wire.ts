@@ -1,5 +1,6 @@
 import { createApplication, type UserReader } from '@globetrot/application';
-import { schema, type Database } from '@globetrot/db';
+import { createTripRepository, createUnitOfWork, schema, type Database } from '@globetrot/db';
+import { uuidV7 } from '@globetrot/domain';
 import { eq } from 'drizzle-orm';
 import { createApp, type AuthService } from './app';
 import { createAuth, type Auth } from './auth';
@@ -40,7 +41,13 @@ export function createServices(db: Database, config: AuthConfig) {
   const auth = createAuth(db, config);
   const app = createApp({
     auth: toAuthService(auth),
-    application: createApplication({ users: createUserReader(db) }),
+    application: createApplication({
+      users: createUserReader(db),
+      trips: createTripRepository(db),
+      unitOfWork: createUnitOfWork(db),
+      clock: { now: () => new Date() },
+      ids: { newId: () => uuidV7(Date.now(), crypto.getRandomValues(new Uint8Array(10))) },
+    }),
     trustedOrigins: config.trustedOrigins,
   });
   return { auth, app };

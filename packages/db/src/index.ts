@@ -7,6 +7,18 @@ export { connectDatabase, type ConnectOptions, type Database, type DatabaseHandl
 export { MIGRATIONS_FOLDER, runMigrations } from './migrate';
 export * as schema from './schema';
 export {
+  createAuditLog,
+  createIdempotencyStore,
+  createTripRepository,
+  createUnitOfWork,
+  MAX_LISTED_TRIPS,
+  type AuditLog,
+  type IdempotencyStore,
+  type Transaction,
+  type TripRepository,
+  type TripRow,
+} from './repositories';
+export {
   assertLocalDatabase,
   assertSafeDatabaseName,
   createEmptyDatabase,

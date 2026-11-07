@@ -42,6 +42,7 @@ Every error response, including 404 for an unknown route and 500, is RFC 9457 pr
 | `UNAUTHENTICATED` | 401 | No valid session |
 | `FORBIDDEN` | 403 | Known actor lacking a permission |
 | `INVALID_ORIGIN` | 403 | Untrusted `Origin` on a state-changing request |
+| `IDEMPOTENCY_KEY_REUSED` | 409 | An `Idempotency-Key` was already used with a different request |
 | `NOT_FOUND` | 404 | Missing, **or not yours** (the two are indistinguishable on purpose) |
 | `BAD_REQUEST` | 400 | The request body could not be read (malformed JSON) |
 | `VALIDATION_FAILED` | 422 | Input broke the operation's schema. `errors` lists the fields |
@@ -59,13 +60,37 @@ An operation is `defineOperation({ name, kind, input, output, handler })`:
 - **Ownership:** load the record, then `assertOwner(actor, record.ownerId)`. Another user's record is reported as not found.
 - Storage goes through **ports** (`UserReader`, …) declared in `packages/application/src/ports.ts` and implemented in `apps/api/src/wire.ts`. The package has no HTTP, database or UI imports (lint-enforced), so unit tests use fakes.
 
-Today: query `getCurrentUser` → `GET /v1/me` returns `{ id, email, name, emailVerified }` of the caller and nothing else. Mutations will add idempotency keys and audit with the trips issue.
+Today:
+
+| Operation | HTTP | Notes |
+|---|---|---|
+| `getCurrentUser` | `GET /v1/me` | `{ id, email, name, emailVerified }` of the caller and nothing else |
+| `listTrips` | `GET /v1/trips[?includeArchived=true]` | The caller's trips, newest first, at most 200 (no pagination yet). Archived ones only on request |
+| `createTrip` | `POST /v1/trips` | `201`. Private and active, USD unless a currency is given. Honours `Idempotency-Key` |
+| `getTrip` | `GET /v1/trips/{id}` | |
+| `updateTrip` | `PATCH /v1/trips/{id}` | Only the fields sent change; `startDate: null` clears the date; `status: "active"` restores an archived trip. At least one field |
+| `archiveTrip` | `POST /v1/trips/{id}/archive` | Hides the trip from the default list. **There is no delete** (retention is specified separately), so there is deliberately no `DELETE`. Archiving twice is a no-op |
+
+Trip rules: the title is trimmed and has 1 to 120 characters; `startDate` is a real calendar date or null; `currency` is an active ISO 4217 code (`VALIDATION_FAILED`, field `currency`, code `custom` when unknown); `status` is one of `active`, `traveling`, `completed`, `archived`. Status is set by the user and never derived. `visibility` is always `private` for now. The response never includes the owner. Field error codes are Zod's issue codes (`too_small`, `too_big`, `invalid_format`, `invalid_value`, `custom`).
+
+### Idempotency (mutations)
+
+- Send `Idempotency-Key: <8–128 characters of letters, digits and . _ : ->` (a UUID works) on `POST /v1/trips`. The key is scoped to the caller.
+- **Same key, same request:** the original trip comes back (`201`, same body) and nothing new is created or audited. "Same request" compares the title, start date and currency after defaults (an omitted currency equals `USD`), not the raw text.
+- **Same key, different request:** `409` with code `IDEMPOTENCY_KEY_REUSED`. Send a new key for a new request.
+- Several identical requests at once are safe: only one does the work and the others get its result (the key is reserved by a unique row inside the transaction).
+- If the request fails (validation, an error), the key is **not** consumed: nothing was committed, so the retry runs normally. Keys are kept in the `idempotency_key` table; a later cleanup job can drop old ones.
+- Without a header, every call creates a new trip.
+
+### Audit
+
+Every mutation writes one `audit_event` in the same transaction: actor, action (`trip.create`, `trip.update`, `trip.archive`), entity and time. The metadata holds the **names** of the changed fields (and the new status, a fixed word), never titles, dates or any user text. A replayed or no-op request writes nothing. Reads are not audited. The table is append-only ([`data-model.md`](data-model.md#trips-idempotency-and-audit)).
 
 ## Adding an operation
 
-1. **Application:** add the operation under `packages/application/src/queries/` (or `commands/`), with its schemas, authorization and any new port. Register it in `createApplication` (`src/index.ts`). Unit test it with fake ports, including a refusal for another user.
-2. **Adapter:** if there is a new port, implement it in `apps/api/src/wire.ts`.
-3. **Route:** in `apps/api/src/app.ts`, `createRoute({ method, path: '/v1/…', operationId, security: [{ cookieAuth: [] }], request, responses })` and `app.openapi(route, handler)`. The handler only calls `application.<operation>.execute(c.get('actor'), input)`. Declare the problem+json responses.
+1. **Application:** add the operation under `packages/application/src/` (see `trips/` for a full example: schemas, operations, unit tests), with its schemas, authorization and any new port. A mutation runs inside `unitOfWork.run` and writes its audit event there; one that retries safely takes an idempotency key as in `createTrip`. Register it in `createApplication` (`src/index.ts`). Unit test it with the in-memory ports of `@globetrot/application/testing`, including a refusal for another user.
+2. **Adapter:** if there is a new port, implement it in `packages/db/src/repositories.ts` (the SQL) and wire it in `apps/api/src/wire.ts`. Cover it with a `*.int.test.ts` against a real database.
+3. **Route:** in `apps/api/src/routes/` (see `trips.ts`), registered from `app.ts`, `createRoute({ method, path: '/v1/…', operationId, security: [{ cookieAuth: [] }], request, responses })` and `app.openapi(route, handler)`. The handler only calls `application.<operation>.execute(c.get('actor'), input)`. Declare the problem+json responses.
 4. **Contract:** run `pnpm api:generate` and commit `packages/api-client/openapi.json` and `src/generated/schema.ts`. Two tests fail while they are stale (`apps/api/src/openapi.test.ts`, `packages/api-client/src/contract.test.ts`), so CI catches a forgotten run. Never edit the generated files by hand.
 5. **Integration test** (`*.int.test.ts`, real database): anonymous, owner and another user.
 

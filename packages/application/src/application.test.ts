@@ -11,6 +11,7 @@ import {
   type UserReader,
   type UserRecord,
 } from './index';
+import { createFakePorts } from './testing';
 
 const ana: UserRecord = { id: 'u-ana', email: 'ana@example.com', name: 'Ana', emailVerified: true };
 const bruno: UserRecord = {
@@ -20,6 +21,8 @@ const bruno: UserRecord = {
   emailVerified: false,
 };
 const as = (user: UserRecord): Actor => ({ kind: 'user', userId: user.id });
+
+const app = (users: UserReader) => createApplication({ ...createFakePorts().ports, users });
 
 function fakeUsers(...records: UserRecord[]): UserReader & { readonly asked: string[] } {
   const asked: string[] = [];
@@ -35,27 +38,27 @@ function fakeUsers(...records: UserRecord[]): UserReader & { readonly asked: str
 describe('getCurrentUser', () => {
   it("returns the actor's own account and asks the port for nobody else", async () => {
     const users = fakeUsers(ana, bruno);
-    const { getCurrentUser } = createApplication({ users });
+    const { getCurrentUser } = app(users);
     expect(await getCurrentUser.execute(as(ana), {})).toEqual(ana);
     expect(await getCurrentUser.execute(as(bruno), {})).toEqual(bruno);
     expect(users.asked).toEqual(['u-ana', 'u-bruno']);
   });
 
   it('has no way to name another user: extra input is ignored, not honored', async () => {
-    const { getCurrentUser } = createApplication({ users: fakeUsers(ana, bruno) });
+    const { getCurrentUser } = app(fakeUsers(ana, bruno));
     const sneaky = { userId: 'u-bruno' } as unknown as Record<string, never>;
     expect((await getCurrentUser.execute(as(ana), sneaky)).id).toBe('u-ana');
   });
 
   it('exposes only id, email, name and the verification flag, even if the row carries more', async () => {
     const leaky = { ...ana, passwordHash: 'secret', token: 'abc' } as UserRecord;
-    const { getCurrentUser } = createApplication({ users: fakeUsers(leaky) });
+    const { getCurrentUser } = app(fakeUsers(leaky));
     const result = await getCurrentUser.execute(as(ana), {});
     expect(Object.keys(result).sort()).toEqual(['email', 'emailVerified', 'id', 'name']);
   });
 
   it('reports a session whose account no longer exists as not found', async () => {
-    const { getCurrentUser } = createApplication({ users: fakeUsers() });
+    const { getCurrentUser } = app(fakeUsers());
     await expect(getCurrentUser.execute(as(ana), {})).rejects.toBeInstanceOf(NotFoundError);
   });
 });

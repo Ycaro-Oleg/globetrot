@@ -17,6 +17,7 @@
   "dependencies": {
     "@globetrot/application": "workspace:*",
     "@globetrot/db": "workspace:*",
+    "@globetrot/domain": "workspace:*",
     "@hono/node-server": "2.1.6",
     "@hono/zod-openapi": "1.6.3",
     "better-auth": "1.7.18",

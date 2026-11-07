@@ -23,13 +23,14 @@ const TITLES: Readonly<Record<number, string>> = {
   401: 'Authentication required',
   403: 'Forbidden',
   404: 'Not found',
+  409: 'Conflict',
   422: 'Validation failed',
   500: 'Internal server error',
 };
 
 /** Builds a problem+json response. Never pass stack traces, SQL, tokens or other users' data in `detail`. */
 export function problem(
-  status: 400 | 401 | 403 | 404 | 422 | 500,
+  status: 400 | 401 | 403 | 404 | 409 | 422 | 500,
   code: string,
   extra: { detail?: string; errors?: readonly FieldIssue[] } = {},
 ): Response {
@@ -47,10 +48,11 @@ export function problem(
   });
 }
 
-const STATUS_BY_CODE: Readonly<Record<string, 401 | 403 | 404 | 422>> = {
+const STATUS_BY_CODE: Readonly<Record<string, 401 | 403 | 404 | 409 | 422>> = {
   UNAUTHENTICATED: 401,
   FORBIDDEN: 403,
   NOT_FOUND: 404,
+  IDEMPOTENCY_KEY_REUSED: 409,
   VALIDATION_FAILED: 422,
 };
 

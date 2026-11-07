@@ -14,7 +14,8 @@ This is the authoritative list. The prototype's executable spec is `design/refer
 ## Trips
 
 - A user can have many trips.
-- **Status** is set explicitly: `active`, `traveling`, `completed`, `archived`.
+- **Status** is set explicitly: `active`, `traveling`, `completed`, `archived`. Archiving hides a trip from the default list; it does not delete it, and setting the status back to `active` restores it. Deleting trips is not specified yet.
+- **Title:** trimmed, 1 to 120 characters. **Start date:** a real calendar date or none. **Currency:** an active ISO 4217 code, `USD` by default (the UI pre-fills the user's preferred currency). A trip is **private** and only its owner can read or change it; anyone else gets "not found".
 - **Stage** is derived, never stored. Each station is met when its condition holds, and the trip sits at the first unmet station. When everything is met, the trip is at `ready`:
   - `dream`: a destination;
   - `explore`: any place added to a stop;
