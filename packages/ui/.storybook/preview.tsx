@@ -1,4 +1,5 @@
 import { useEffect, type ReactNode } from 'react';
+import { I18nProvider } from 'react-aria-components';
 import type { Preview } from '@storybook/react-vite';
 import '@globetrot/tokens/tokens.css';
 import '../src/styles.css';
@@ -59,7 +60,9 @@ const preview: Preview = {
         theme={context.globals.theme === 'red-eye' ? 'red-eye' : 'day'}
         locale={context.globals.locale === 'pt-BR' ? 'pt-BR' : 'en'}
       >
-        <Story />
+        <I18nProvider locale={context.globals.locale === 'pt-BR' ? 'pt-BR' : 'en'}>
+          <Story />
+        </I18nProvider>
       </StorySurface>
     ),
   ],

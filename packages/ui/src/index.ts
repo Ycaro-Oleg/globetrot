@@ -18,3 +18,6 @@ export type { StatusMarkKind, StatusMarkProps } from './status-mark';
 
 export { SelectField } from './select-field';
 export type { SelectFieldProps, SelectOption } from './select-field';
+
+export { Range } from './range';
+export type { RangeProps } from './range';

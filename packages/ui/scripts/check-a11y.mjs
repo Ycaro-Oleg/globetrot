@@ -83,6 +83,18 @@ try {
       const text = await trigger.innerText();
       if (!text.includes(locale === 'pt-BR' ? 'Real brasileiro' : 'Brazilian real'))
         failures.push(theme + '/' + locale + ': keyboard selection failed');
+      const rangeParams = new URLSearchParams({
+        id: 'primitives-range--default',
+        globals: 'theme:' + theme + ';locale:' + locale,
+      });
+      await page.goto(base + '/iframe.html?' + rangeParams);
+      const slider = page.getByRole('slider');
+      await slider.focus();
+      const before = Number(await slider.inputValue());
+      await page.keyboard.press('ArrowRight');
+      const after = Number(await slider.inputValue());
+      if (!(after > before))
+        failures.push(theme + '/' + locale + ': range keyboard adjustment failed');
       for (const [storyId, role] of [
         ['primitives-choices--unchecked', 'checkbox'],
         ['primitives-choices--toggle', 'switch'],
@@ -104,7 +116,7 @@ try {
   console.log(
     'Passed axe for ' +
       stories.length +
-      ' stories in both themes and locales, plus select, checkbox and switch keyboard checks.',
+      ' stories in both themes and locales, plus select, range, checkbox and switch keyboard checks.',
   );
 } finally {
   await browser.close();
