@@ -35,3 +35,12 @@ export {
   type TripPlan,
   type TripStop,
 } from './types';
+export {
+  DEFAULT_TRIP_STATUS,
+  DEFAULT_TRIP_VISIBILITY,
+  TRIP_STATUSES,
+  TRIP_TITLE_MAX_LENGTH,
+  TRIP_VISIBILITIES,
+  type TripStatus,
+  type TripVisibility,
+} from './status';

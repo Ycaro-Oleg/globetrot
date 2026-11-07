@@ -7,6 +7,7 @@ Read only what your task needs. Always start with [`current-state.md`](current-s
 | **Any task** | `AGENTS.md`, `current-state.md`, the issue | `docs/README.md` |
 | **Any code change** | `engineering/coding-standards.md`, `engineering/testing-strategy.md` (the "What each change must test" table) | `engineering/project-structure.md` |
 | **Map / board** | ADR-0003, `architecture/spikes/maplibre.md` and `architecture/spikes/places.md` (findings), `design/design-system.md` (responsive + a11y), `architecture/domain-model.md` (Trip Planning, Geo) | Handoff README "Board" + "Map pin" + "Route" sections, `atlas/map.js` |
+| **Trips (persistence, lifecycle)** | `product/business-rules.md` (Trips), `architecture/api-contracts.md` (trips, idempotency, audit), `architecture/data-model.md` (Trips, idempotency and audit) | `packages/application/src/trips`, `packages/db/src/{schema/trip,repositories}.ts`, `apps/api/src/routes/trips.ts` |
 | **Itinerary / checklists** | `product/business-rules.md` (Trips, Readiness), `architecture/domain-model.md` | Handoff "Itinerary" / "Checklists" sections |
 | **Budget / savings / currency** | `product/business-rules.md` (Locale & currency, Budget, Savings), `architecture/money.md`, ADR-0004 | `atlas/app-core.js` (totals, plan) |
 | **i18n / copy** | `architecture/i18n.md`, ADR-0008 | — |

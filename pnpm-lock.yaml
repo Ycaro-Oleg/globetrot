@@ -56,6 +56,9 @@ importers:
       '@globetrot/db':
         specifier: workspace:*
         version: link:../../packages/db
+      '@globetrot/domain':
+        specifier: workspace:*
+        version: link:../../packages/domain
       '@hono/node-server':
         specifier: 2.1.6
         version: 2.1.6(hono@4.13.17)
@@ -165,6 +168,9 @@ importers:
 
   packages/db:
     dependencies:
+      '@globetrot/domain':
+        specifier: workspace:*
+        version: link:../domain
       drizzle-orm:
         specifier: 0.45.4
         version: 0.45.4(@types/pg@8.23.1)(kysely@0.29.8)(pg@8.23.1)

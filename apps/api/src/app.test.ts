@@ -1,4 +1,5 @@
 import { createApplication, type UserReader, type UserRecord } from '@globetrot/application';
+import { createFakePorts } from '@globetrot/application/testing';
 import { describe, expect, it, vi } from 'vitest';
 import { createApp, type AuthService } from './app';
 
@@ -32,7 +33,7 @@ const findById = vi.fn(
 const app = (users: UserReader = { findById }) =>
   createApp({
     auth,
-    application: createApplication({ users }),
+    application: createApplication({ ...createFakePorts().ports, users }),
     trustedOrigins: [WEB, 'https://preview.example.test'],
   });
 

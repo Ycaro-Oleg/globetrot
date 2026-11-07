@@ -3,16 +3,12 @@ import {
   ApplicationError,
   UnauthenticatedError,
   currentUserSchema,
-  type Actor,
   type Application,
 } from '@globetrot/application';
 import { HTTPException } from 'hono/http-exception';
-import {
-  problem,
-  problemFromApplicationError,
-  problemSchema,
-  PROBLEM_CONTENT_TYPE,
-} from './problem';
+import { problemResponse, type Env } from './http';
+import { problem, problemFromApplicationError } from './problem';
+import { registerTripRoutes } from './routes/trips';
 
 /**
  * What the HTTP layer needs from the auth library: Better Auth's request handler for `/api/auth/*`, and a way
@@ -31,10 +27,6 @@ export interface AppDependencies {
   readonly trustedOrigins: readonly string[];
 }
 
-interface Env {
-  Variables: { actor: Actor };
-}
-
 const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
 
 /** OpenAPI document metadata. The version is the version of the `/v1` contract, not of the app. */
@@ -48,11 +40,6 @@ export const OPENAPI_CONFIG = {
       'the caller is always the session owner and no request field can name another user.',
   },
 } as const;
-
-const problemResponse = (description: string) => ({
-  description,
-  content: { [PROBLEM_CONTENT_TYPE]: { schema: problemSchema } },
-});
 
 const getCurrentUserRoute = createRoute({
   method: 'get',
@@ -146,6 +133,8 @@ export function createApp({ auth, application, trustedOrigins }: AppDependencies
   app.openapi(getCurrentUserRoute, async (c) =>
     c.json(await application.getCurrentUser.execute(c.get('actor'), {}), 200),
   );
+
+  registerTripRoutes(app, application);
 
   app.notFound(() => problem(404, 'NOT_FOUND', { detail: 'No such route' }));
 

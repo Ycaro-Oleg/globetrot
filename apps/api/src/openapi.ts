@@ -12,7 +12,13 @@ const unreachable = (): never => {
 export function buildOpenApiDocument() {
   const app = createApp({
     auth: { handler: unreachable, getSession: unreachable },
-    application: createApplication({ users: { findById: unreachable } }),
+    application: createApplication({
+      users: { findById: unreachable },
+      trips: { findById: unreachable, listByOwner: unreachable },
+      unitOfWork: { run: unreachable },
+      clock: { now: unreachable },
+      ids: { newId: unreachable },
+    }),
     trustedOrigins: [],
   });
   return app.getOpenAPI31Document(OPENAPI_CONFIG);
