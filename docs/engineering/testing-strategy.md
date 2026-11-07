@@ -8,7 +8,7 @@ Tests are part of every issue's definition of done, and each issue states its te
 |---|---|---|---|---|
 | **Unit** | Vitest | Pure rules and helpers: domain, application, i18n, formatters | Next to the code, `*.test.ts` | Active |
 | **Property-based** | fast-check (in Vitest) | Invariants over many generated inputs: arithmetic, rounding, allocation, date math, savings | Same files | Active |
-| **Integration** | Vitest + local services | Adapters against real Postgres/PostGIS, S3 and SMTP (`pnpm services:up`) | `*.int.test.ts` in the adapter package | From M3 |
+| **Integration** | Vitest + local services | Adapters against real Postgres/PostGIS, S3 and SMTP. Run with `pnpm test:int` after `pnpm services:up`; each test gets a throwaway database ([`data-model.md`](../architecture/data-model.md#testing-against-a-real-database)) | `*.int.test.ts` in the adapter package | **Active** for `@globetrot/db` (CI job `Integration (Postgres)`); other adapters as they arrive |
 | **Contract** | Vitest + OpenAPI/Zod | API responses match the published schema, and the generated client compiles against it | `apps/api` | From M3 |
 | **Component** | Storybook + Testing Library + axe | UI states, interactions and accessibility, in both themes and both locales | `packages/ui`, `apps/web` | From #6 |
 | **End-to-end** | Playwright | Critical journeys in a real browser, at desktop and phone viewports, in en and pt-BR | `apps/web/e2e` | From M3 |

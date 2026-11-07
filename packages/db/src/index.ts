@@ -1,5 +1,19 @@
 /**
- * @globetrot/db: Drizzle schema and migrations for PostgreSQL + PostGIS.
- * Scaffold only (issue #10). Real content arrives in later issues; see docs/architecture/overview.md.
+ * @globetrot/db: Drizzle schema, migrations and connection helpers for PostgreSQL + PostGIS.
+ * Conventions: docs/architecture/data-model.md.
  */
-export const PACKAGE_NAME = '@globetrot/db' as const;
+export { DatabaseConfigError, loadDatabaseConfig, type DatabaseConfig } from './config';
+export { connectDatabase, type ConnectOptions, type Database, type DatabaseHandle } from './client';
+export { MIGRATIONS_FOLDER, runMigrations } from './migrate';
+export {
+  assertLocalDatabase,
+  assertSafeDatabaseName,
+  createEmptyDatabase,
+  databaseExists,
+  databaseNameOf,
+  dropDatabase,
+  isLocalHost,
+  quoteIdentifier,
+  recreateDatabase,
+  withDatabase,
+} from './admin';

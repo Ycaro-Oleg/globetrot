@@ -26,6 +26,7 @@ Agents: don't read everything. Use [`agents/context-map.md`](agents/context-map.
 - [`architecture/overview.md`](architecture/overview.md): stack, layers, deployment shape.
 - [`architecture/domain-model.md`](architecture/domain-model.md): bounded contexts, entities, relationships.
 - [`architecture/money.md`](architecture/money.md): money, currencies, exchange rates.
+- [`architecture/data-model.md`](architecture/data-model.md): database conventions (ids, timestamps, money, enums), migrations, extensions, integration testing.
 - [`architecture/i18n.md`](architecture/i18n.md): languages, locales, formatting, message catalogs.
 - [`architecture/adr/`](architecture/adr/): Architecture Decision Records.
 - [`architecture/spikes/`](architecture/spikes/): spike findings. [`maplibre.md`](architecture/spikes/maplibre.md) covers the map stack (#2), and [`places.md`](architecture/spikes/places.md) covers places search on GeoNames + PostGIS (#3).

@@ -1,6 +1,6 @@
 # Current state
 
-_Last updated: 2026-11-07, after web locale integration (#50) and the M3 issue breakdown (#52–#63)._
+_Last updated: 2026-11-07, after the database foundation (#52)._
 
 ## Phase
 
@@ -21,6 +21,7 @@ _Last updated: 2026-11-07, after web locale integration (#50) and the M3 issue b
 ## Done (M3)
 
 - M3 planned as 12 issues (#52–#63) with acceptance criteria, tests, docs and dependencies. Reconciling the plan found a missing slice (sign-up/log-in/recovery screens, now #57) and settled how the web app and the API share the session cookie (decided in #53).
+- Database foundation (#52): `@globetrot/db` has Drizzle tooling, a first migration that enables `postgis`, `pg_trgm` and `unaccent`, a migration runner with an advisory lock (concurrent runners are safe), `migrate`, `reset` and `generate` scripts, a throwaway-database test helper, and a CI job `Integration (Postgres)`. No product tables yet. See `docs/architecture/data-model.md`.
 - Web locale integration (#50): `apps/web` uses next-intl with the shared en/pt-BR catalogs. The locale comes from an explicit `globetrot_locale` cookie (set by a server action, `en` fallback) and never from `Accept-Language`, and choosing a language writes nothing about currency, country or nationality. Verified in a browser against the production image. See "Web integration" in `docs/architecture/i18n.md`.
 
 ## Done (M0)
@@ -39,7 +40,7 @@ _Last updated: 2026-11-07, after web locale integration (#50) and the M3 issue b
    - MapLibre spike (#2) **done**: go, with conditions. See `docs/architecture/spikes/maplibre.md` (real-device FPS still pending). Places spike (#3) **done**: go. See `docs/architecture/spikes/places.md`. Geocoding evaluation (#4) remains open: initial terms and pricing research is documented; provider quality tests and a final decision remain;
    - tokens v1.1 (#5) complete: DTCG theme exports, CSS and TypeScript, contrast checks, handoff inventory and bilingual demo; Storybook primitives (#6) started with a theme/locale toolbar and initial Button stories; Button, text fields, checkbox, switch, select and status marks have initial stories; CI runs axe across stories and keyboard checks on several controls. Remaining components and full interaction/screen-reader testing are pending;
    - missing-screen specs (#7): interaction draft and initial bilingual/theme frames in `docs/design/missing-screens.md`; expanded state coverage, manual checks and owner review remain; usability test (#8): protocol ready in `docs/product/research/usability-01.md`, five real sessions still needed; Pip brief (#9): draft ready for owner approval in `docs/design/pip-character.md`.
-2. **M3: App Foundation.** The issues exist (#52–#63, plus #50 done), created from `docs/engineering/m3-foundation-breakdown.md`, which holds the dependency table, the suggested order and the gaps found. Start with **#52** (database migrations): it is `agent-ready` and blocks the rest. The next-intl item of the breakdown is already done (#50). #62 needs the owner's review of the trip list screen (#7).
+2. **M3: App Foundation.** The issues exist (#52–#63, plus #50 done), created from `docs/engineering/m3-foundation-breakdown.md`, which holds the dependency table, the suggested order and the gaps found. #52 (database migrations) is done. Start with **#53** (auth server): it is `agent-ready`. The next-intl item of the breakdown is already done (#50). #62 needs the owner's review of the trip list screen (#7).
 
 See the GitHub milestones for open issues.
 

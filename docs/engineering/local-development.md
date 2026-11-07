@@ -18,6 +18,7 @@ cp .env.example .env      # local-only defaults, git-ignored
 pnpm install
 pnpm services:up          # start Postgres, object storage and Mailpit, wait until healthy
 pnpm services:check       # verify everything (DB extensions, S3 round trip, SMTP)
+pnpm --filter @globetrot/db migrate   # create or upgrade the schema (extensions today, tables as features land)
 pnpm dev                  # web :3000, api :4000 (/health), worker
 ```
 
@@ -43,6 +44,17 @@ pnpm dev                  # web :3000, api :4000 (/health), worker
 | `pnpm services:logs` | Follow all service logs |
 | `pnpm services:down` | Stop. Data stays in the named volumes `globetrot_postgres-data` and `globetrot_storage-data` |
 | `pnpm services:reset` | Stop and **delete all local data**. The init scripts run again on the next `up` |
+
+## Database
+
+| Command | Effect |
+|---|---|
+| `pnpm --filter @globetrot/db migrate` | Apply pending migrations to `DATABASE_URL`. Running it again changes nothing |
+| `pnpm --filter @globetrot/db reset` | Drop and recreate the local database, then migrate. Refuses non-local hosts and `NODE_ENV=production` |
+| `pnpm --filter @globetrot/db generate` | Generate a migration from `src/schema` (add `--custom --name=<what>` through `drizzle-kit` for hand-written SQL) |
+| `pnpm test:int` | Integration tests: each one creates and drops its own `globetrot_test_*` database, so your data is safe |
+
+Conventions and the migration rules are in [`data-model.md`](../architecture/data-model.md).
 
 ## How the apps get configuration
 
