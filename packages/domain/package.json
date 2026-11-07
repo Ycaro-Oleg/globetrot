@@ -10,9 +10,10 @@
   "scripts": {
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run --coverage"
   },
   "devDependencies": {
-    "@globetrot/config": "workspace:*"
+    "@globetrot/config": "workspace:*",
+    "fast-check": "4.10.2"
   }
 }

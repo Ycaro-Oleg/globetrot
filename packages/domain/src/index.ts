@@ -1,5 +1,5 @@
 /**
- * @globetrot/domain: Pure domain model and business rules (no I/O, no frameworks).
- * Scaffold only (issue #10). Real content arrives in later issues; see docs/architecture/overview.md.
+ * @globetrot/domain: pure domain model and business rules (no I/O, no frameworks).
+ * Rules are owned by docs/product/business-rules.md; architecture in docs/architecture/.
  */
-export const PACKAGE_NAME = '@globetrot/domain' as const;
+export * from './money';
