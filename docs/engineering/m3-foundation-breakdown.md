@@ -1,6 +1,6 @@
 # M3 app foundation: proposed work breakdown
 
-**Status: planning draft, not a set of created GitHub issues.** M3 depends on M1 and M2; M1 still has open work. This draft makes the next work reviewable without declaring the milestone ready or changing product decisions. The [roadmap](../product/roadmap.md) defines M3 as authentication, i18n, preferences, responsive shell, themes and trip CRUD.
+**Status: issues created on 2026-11-07 with the owner's authorization.** This document keeps the slices and their reasoning. The **GitHub issues are now the contract**: the table in "Issues" maps each slice to its issue. M3 depends on M1 and M2; M1 still has open items that need the owner. The [roadmap](../product/roadmap.md) defines M3 as authentication, i18n, preferences, responsive shell, themes and trip CRUD.
 
 ## Boundaries and dependencies
 
@@ -10,9 +10,9 @@
 - Trips are private by default; status is explicitly set. Derived stage and readiness are not persisted as independent truth. Use existing domain derivations rather than reimplementing them.
 - #5 tokens are available; #6 UI controls are in progress. #7 visual studies and #9 Pip brief still require owner approval. #8 requires five real participants; the MapLibre phone FPS test and #4 geocoder selection remain open. Do not claim those are complete or silently block unrelated work that can be reviewed safely.
 
-## Proposed focused slices
+## Focused slices
 
-These are candidate issues, each intended to become a separate branch and PR once the milestone breakdown is approved and created. Ordering is a dependency graph, not a commitment that all work can be merged simultaneously.
+Each slice became one issue (see "Issues"), worked on its own branch and PR. Ordering is a dependency graph, not a commitment that all work can be merged simultaneously. Slice 6 was finished first (#50), and one slice was added during reconciliation (see "Gaps found").
 
 | # | Slice | Depends on | Reviewable outcome / tests |
 |---|---|---|---|
@@ -37,6 +37,33 @@ These are candidate issues, each intended to become a separate branch and PR onc
 - **M1 experiments:** real-device MapLibre FPS, the managed geocoder quality/terms comparison, and five moderated usability sessions have distinct completion criteria. An M3 skeleton can be prototyped independently, but these remain visible milestone gates.
 - **Trip lifecycle and deletion:** the existing explicit status rules are authoritative; retention and destructive deletion behavior must not be invented in a CRUD PR.
 
-## Ready-to-create checklist
+## Issues
 
-Before creating GitHub issues, reconcile these slices against current M1 status, assign milestones and labels, and give each issue precise acceptance criteria, tests, documentation and dependencies. The repository workflow asks the owner before creating many issues; this draft creates none. Once authorized, split further if a slice is too large for one reviewable PR and keep the issue and PR handoff conventions.
+All are in the milestone **M3 App Foundation**. "Depends on" lists issue numbers. A readiness label of `agent-ready` means the issue is fully specified and safe to pick up once its dependencies are merged.
+
+| Slice | Issue | Depends on | Priority / readiness |
+|---|---|---|---|
+| 1. Database migrations | #52 | none (M2 done) | p0, agent-ready |
+| 2. Auth server and sessions | #53 | #52 | p0, agent-ready |
+| 3. Email verification and recovery | #54 | #53 | p1, agent-ready |
+| 4. Google sign-in | #55 | #53 | p1, agent-ready (the real-provider smoke test is the owner's) |
+| 5. Authenticated API, actor, typed client | #56 | #53 | p0, agent-ready |
+| 6. Locale integration | #50 | M2 i18n | **done** (PR #51) |
+| 6b. Sign-up, log-in and recovery screens (added) | #57 | #53, #54, #55 (optional), #6 | p1, agent-ready |
+| 7. Preferences persistence | #58 | #52, #56, #50 | p1, agent-ready |
+| 8. Responsive authenticated shell | #59 | #53, #57, #6 | p1, agent-ready |
+| 9. Theme and motion preferences | #60 | #58, #59 | p2, agent-ready |
+| 10. Trip persistence and operations | #61 | #52, #56 | p0, agent-ready |
+| 11. Trip list and switcher | #62 | #58, #59, #61, owner review of #7 | p1, **needs:decision** (screen review) |
+| 12. First end-to-end and accessibility gate | #63 | #53, #54, #57–#62 | p1 |
+
+Suggested order: #52 → #53 → (#54, #55, #56 in parallel) → #57 → (#58, #61 in parallel) → #59 → (#60, #62) → #63.
+
+## Gaps found while reconciling
+
+- **Auth screens were missing.** No slice covered the sign-up, log-in and recovery pages that the prototype specifies, and the end-to-end gate needs them. Added as slice 6b (#57).
+- **How the browser and the API share the session cookie** was undecided. Decided inside #53: the web app proxies `/api/auth/*` and `/v1/*` to the API (Next.js rewrites), so the cookie is first-party.
+- **Typed API client generation** had no owner. It is part of #56.
+- **Integration tests had no CI job.** A `postgis` service job comes with #52.
+- **Terms and Privacy pages** are linked from the sign-up form. #57 uses pages marked as draft. The real legal text is an owner decision (open).
+- **Not in M3, to schedule before a public release:** the onboarding flow after the first login, and account data export and deletion (required by [business rules](../product/business-rules.md#privacy-applies-from-day-one) for LGPD/GDPR).
