@@ -31,6 +31,7 @@ Agents: don't read everything. Use [`agents/context-map.md`](agents/context-map.
 
 ### Engineering
 - [`engineering/git-workflow.md`](engineering/git-workflow.md): branches, issues, PRs, commits, releases.
+- [`engineering/project-structure.md`](engineering/project-structure.md): monorepo layout, package conventions, commands, Docker images.
 
 ### Integrations
 - [`integrations/stripe.md`](integrations/stripe.md): commercial architecture (planned, M10).
@@ -38,4 +39,4 @@ Agents: don't read everything. Use [`agents/context-map.md`](agents/context-map.
 
 ## Docs that will be added when they have content
 
-`engineering/coding-standards.md`, `engineering/testing-strategy.md`, `engineering/project-structure.md`, `engineering/local-development.md` (all in M2). `architecture/api-contracts.md` (M3). `integrations/ai-companion.md` (M7). `infrastructure/*` (M11). `product/user-flows.md`, `product/monetization.md` (when those decisions are made). Don't create empty placeholders.
+`engineering/coding-standards.md`, `engineering/testing-strategy.md`, `engineering/local-development.md` (all in M2). `architecture/api-contracts.md` (M3). `integrations/ai-companion.md` (M7). `infrastructure/*` (M11). `product/user-flows.md`, `product/monetization.md` (when those decisions are made). Don't create empty placeholders.

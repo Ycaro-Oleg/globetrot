@@ -29,7 +29,7 @@ Full rules: [`docs/product/business-rules.md`](docs/product/business-rules.md)
 | `docs/agents/` | Current state, context map, handoff convention |
 | `docs/architecture/adr/` | Architecture Decision Records. Read the ones relevant to your task |
 | `design/reference/claude-design-v1/` | High-fidelity HTML prototype + design handoff (tokens, components, behaviour). A **reference**, not production code |
-| `apps/*`, `packages/*` | Monorepo, introduced in M2. See [`docs/architecture/overview.md`](docs/architecture/overview.md) |
+| `apps/*`, `packages/*` | pnpm + Turborepo monorepo (Node 24, pnpm 10). Layout, conventions and commands: [`docs/engineering/project-structure.md`](docs/engineering/project-structure.md) |
 
 ## 4. How to start a session (context rehydration)
 

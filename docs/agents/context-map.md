@@ -17,7 +17,8 @@ Read only what your task needs. Always start with [`current-state.md`](current-s
 | **Passport / stamps / ranks** | `product/business-rules.md` (Readiness, Passport, Progression) | — |
 | **Stripe / billing** | `integrations/stripe.md`, `product/business-rules.md` | — |
 | **MCP** | `integrations/mcp.md`, ADR-0006, ADR-0007, ADR-0005 | — |
-| **Repo / CI / workflow** | `engineering/git-workflow.md`, ADR-0009 | — |
+| **Repo / CI / workflow** | `engineering/git-workflow.md`, `engineering/project-structure.md`, ADR-0009 | `turbo.json`, `eslint.config.mjs` |
+| **Adding a package or app** | `engineering/project-structure.md`, `architecture/overview.md` | ADR-0002, ADR-0006 |
 | **Infra / deployment** | `architecture/overview.md` (Deployment shape) | Future `infrastructure/*` docs |
 
 All paths are relative to `docs/`. "Handoff" means [`design/reference/claude-design-v1/README.md`](../../design/reference/claude-design-v1/README.md), and the `atlas/*` files live in the same folder.

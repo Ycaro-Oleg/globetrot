@@ -1,0 +1,26 @@
+{
+  "name": "@globetrot/web",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Next.js web app: marketing pages and the app under /app",
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "typecheck": "next typegen && tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@globetrot/application": "workspace:*",
+    "next": "16.4.5",
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
+  },
+  "devDependencies": {
+    "@globetrot/config": "workspace:*",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0"
+  }
+}

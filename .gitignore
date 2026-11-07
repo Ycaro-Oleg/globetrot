@@ -33,3 +33,7 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Next.js
+next-env.d.ts
+*.tsbuildinfo

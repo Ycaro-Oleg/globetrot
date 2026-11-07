@@ -1,0 +1,23 @@
+{
+  "name": "@globetrot/worker",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Background job consumers (pg-boss) calling @globetrot/application",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsup",
+    "start": "node dist/index.js",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@globetrot/application": "workspace:*"
+  },
+  "devDependencies": {
+    "@globetrot/config": "workspace:*",
+    "tsup": "9.0.0",
+    "tsx": "4.23.15"
+  }
+}

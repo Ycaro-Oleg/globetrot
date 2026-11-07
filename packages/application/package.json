@@ -1,0 +1,21 @@
+{
+  "name": "@globetrot/application",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Commands and queries with authorization, idempotency and audit; ports for adapters",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@globetrot/domain": "workspace:*"
+  },
+  "devDependencies": {
+    "@globetrot/config": "workspace:*"
+  }
+}

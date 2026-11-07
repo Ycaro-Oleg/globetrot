@@ -29,7 +29,19 @@ AGENTS.md              Canonical entry point for coding agents
 CLAUDE.md              Claude Code entry point (imports AGENTS.md)
 docs/                  Canonical project knowledge (product, design, architecture, engineering, agents)
 design/reference/      Frozen design references (Claude Design handoff v1)
-.github/               Issue and PR templates (CI workflows arrive in M2)
+apps/                  web (Next.js), api (Hono), worker
+packages/              domain, application, db, api-client, tokens, ui, i18n, config
+.github/               Issue and PR templates (CI workflows arrive with issue #11)
 ```
 
-The application monorepo (`apps/*`, `packages/*`) is introduced in milestone M2. See [`docs/architecture/overview.md`](docs/architecture/overview.md).
+## Quick start
+
+Requires Node 24 (`.nvmrc`) and pnpm via Corepack.
+
+```bash
+corepack enable && pnpm install
+pnpm dev        # web on :3000, api on :4000
+pnpm lint && pnpm typecheck && pnpm test && pnpm build
+```
+
+Details: [`docs/engineering/project-structure.md`](docs/engineering/project-structure.md).

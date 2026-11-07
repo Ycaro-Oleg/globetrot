@@ -1,0 +1,18 @@
+{
+  "name": "@globetrot/i18n",
+  "version": "0.0.0",
+  "private": true,
+  "description": "ICU message catalogs (en, pt-BR) and locale formatting helpers",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@globetrot/config": "workspace:*"
+  }
+}
