@@ -29,3 +29,6 @@ export type { ModalProps } from './modal';
 
 export { SegmentedControl } from './segmented-control';
 export type { SegmentedControlProps, SegmentOption } from './segmented-control';
+
+export { Toast } from './toast';
+export type { ToastProps } from './toast';
