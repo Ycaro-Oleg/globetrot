@@ -21,3 +21,8 @@ export type { SelectFieldProps, SelectOption } from './select-field';
 
 export { Range } from './range';
 export type { RangeProps } from './range';
+
+export { Banner } from './banner';
+export type { BannerProps } from './banner';
+export { Modal } from './modal';
+export type { ModalProps } from './modal';

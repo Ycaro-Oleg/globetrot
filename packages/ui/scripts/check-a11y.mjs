@@ -83,6 +83,21 @@ try {
       const text = await trigger.innerText();
       if (!text.includes(locale === 'pt-BR' ? 'Real brasileiro' : 'Brazilian real'))
         failures.push(theme + '/' + locale + ': keyboard selection failed');
+      const modalParams = new URLSearchParams({
+        id: 'primitives-modal--closed',
+        globals: 'theme:' + theme + ';locale:' + locale,
+      });
+      await page.goto(base + '/iframe.html?' + modalParams);
+      const opener = page.getByRole('button', {
+        name: locale === 'pt-BR' ? 'Abrir detalhes' : 'Open details',
+      });
+      await opener.focus();
+      await page.keyboard.press('Enter');
+      await page.getByRole('dialog').waitFor();
+      await page.keyboard.press('Escape');
+      await page.getByRole('dialog').waitFor({ state: 'hidden' });
+      if (!(await opener.evaluate((element) => element === document.activeElement)))
+        failures.push(theme + '/' + locale + ': modal did not restore focus');
       const rangeParams = new URLSearchParams({
         id: 'primitives-range--default',
         globals: 'theme:' + theme + ';locale:' + locale,
@@ -116,7 +131,7 @@ try {
   console.log(
     'Passed axe for ' +
       stories.length +
-      ' stories in both themes and locales, plus select, range, checkbox and switch keyboard checks.',
+      ' stories in both themes and locales, plus select, range, checkbox, switch and modal keyboard checks.',
   );
 } finally {
   await browser.close();
