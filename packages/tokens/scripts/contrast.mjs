@@ -37,6 +37,17 @@ export function contrastReport() {
     const fg = theme === 'day' ? 'white' : 'ink';
     const ratio = contrastRatio(values['primitive.color.' + fg], values['semantic.color.danger']);
     checks.push({ theme, fg: 'thread-button-' + fg, bg: 'danger', ratio, pass: ratio >= 4.5 });
+    const paidRatio = contrastRatio(
+      values['primitive.color.ink'],
+      values['semantic.color.marigold'],
+    );
+    checks.push({
+      theme,
+      fg: 'paid-ink',
+      bg: 'marigold',
+      ratio: paidRatio,
+      pass: paidRatio >= 4.5,
+    });
     return checks;
   });
 }

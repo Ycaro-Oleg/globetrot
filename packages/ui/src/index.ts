@@ -12,3 +12,6 @@ export type { TextFieldProps } from './text-field';
 
 export { Checkbox, Switch } from './choice';
 export type { CheckboxProps, SwitchProps } from './choice';
+
+export { StatusMark, STATUS_MARKS } from './status-mark';
+export type { StatusMarkKind, StatusMarkProps } from './status-mark';
