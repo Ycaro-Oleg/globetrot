@@ -26,3 +26,6 @@ export { Banner } from './banner';
 export type { BannerProps } from './banner';
 export { Modal } from './modal';
 export type { ModalProps } from './modal';
+
+export { SegmentedControl } from './segmented-control';
+export type { SegmentedControlProps, SegmentOption } from './segmented-control';
