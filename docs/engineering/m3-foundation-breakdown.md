@@ -43,7 +43,7 @@ All are in the milestone **M3 App Foundation**. "Depends on" lists issue numbers
 
 | Slice | Issue | Depends on | Priority / readiness |
 |---|---|---|---|
-| 1. Database migrations | #52 | none (M2 done) | p0, agent-ready |
+| 1. Database migrations | #52 | none (M2 done) | p0, **done** |
 | 2. Auth server and sessions | #53 | #52 | p0, agent-ready |
 | 3. Email verification and recovery | #54 | #53 | p1, agent-ready |
 | 4. Google sign-in | #55 | #53 | p1, agent-ready (the real-provider smoke test is the owner's) |

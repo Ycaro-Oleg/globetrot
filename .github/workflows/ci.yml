@@ -52,6 +52,38 @@ jobs:
       - name: Lint, typecheck, test, build
         run: pnpm turbo run lint typecheck test build --output-logs=errors-only
 
+  # Integration tests (*.int.test.ts) run against a real PostgreSQL + PostGIS, never a mock.
+  integration:
+    name: Integration (Postgres)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgis/postgis:17-3.7
+        env:
+          POSTGRES_USER: globetrot
+          POSTGRES_PASSWORD: globetrot
+          POSTGRES_DB: globetrot
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U globetrot -d globetrot"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      # Throwaway credentials for the job's own service container; not a secret.
+      DATABASE_URL: postgres://globetrot:globetrot@localhost:5432/globetrot
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm turbo run test:int --output-logs=errors-only
+
   # End-to-end journeys are enabled when the first app flows land (M3+).
   e2e:
     name: E2E (Playwright)

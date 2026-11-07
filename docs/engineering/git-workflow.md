@@ -70,10 +70,12 @@ Workflow: [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml). It runs 
 |---|---|---|
 | Prettier format, then lint, typecheck, unit tests and build for all workspaces (Turborepo, cached) | `Lint · typecheck · test · build` | Active |
 | i18n catalog consistency (keys, ICU syntax, placeholders) | same job: `@globetrot/i18n` `lint` runs `check-messages`, and its tests and `tsc` also catch missing keys | Active |
+| Integration tests (`*.int.test.ts`) against a real PostgreSQL + PostGIS, each in a throwaway database | `Integration (Postgres)` | Active (service container `postgis/postgis:17-3.7`) |
+| Migration consistency (`drizzle-kit check`) | same job as lint: `@globetrot/db` `lint` | Active |
 | E2E (Playwright) | `E2E (Playwright)` | Placeholder (skipped) until M3 |
 | Accessibility (axe) | `Accessibility (axe)` | Active for Storybook stories in both themes and locales, with select, checkbox and switch keyboard checks. Screen-reader and complete interaction reviews remain manual |
 
-- **Do not merge a PR with a failing or missing `Lint · typecheck · test · build` check.** On GitHub Free nothing blocks the merge button, so this is enforced by convention (ADR-0009).
+- **Do not merge a PR with a failing or missing `Lint · typecheck · test · build` or `Integration (Postgres)` check.** On GitHub Free nothing blocks the merge button, so this is enforced by convention (ADR-0009).
 - A newer push to the same PR cancels the older run.
 - Run the same checks locally before pushing: `pnpm format:check && pnpm turbo run lint typecheck test build`.
 

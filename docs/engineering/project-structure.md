@@ -19,7 +19,7 @@ packages/
   config/       @globetrot/config       Shared tsconfig presets (base, library, nextjs)
   domain/       @globetrot/domain       Pure domain rules. Relative imports only (lint-enforced)
   application/  @globetrot/application  Commands/queries + ports. No UI/HTTP/DB framework imports (lint-enforced)
-  db/           @globetrot/db           Drizzle schema + migrations
+  db/           @globetrot/db           Drizzle schema, SQL migrations, connection and test-database helpers (data-model.md)
   api-client/   @globetrot/api-client   Typed client generated from OpenAPI
   tokens/       @globetrot/tokens       Design tokens
   ui/           @globetrot/ui           Web components + Storybook
@@ -47,6 +47,8 @@ infra/              Local service init scripts and the services check
 | `pnpm dev` | Run all apps in watch mode (web :3000, api :4000) |
 | `pnpm build` | Build the apps |
 | `pnpm lint` / `pnpm typecheck` / `pnpm test` | Checks across all workspaces (Turborepo-cached) |
+| `pnpm test:int` | Integration tests against the local PostgreSQL (run `pnpm services:up` first). Not part of `pnpm test` |
+| `pnpm --filter @globetrot/db migrate \| reset \| generate` | Apply migrations, rebuild the local database, generate a migration from the schema |
 | `pnpm --filter @globetrot/api <script>` | Run a script in one workspace |
 | `pnpm format` / `pnpm format:check` | Prettier |
 

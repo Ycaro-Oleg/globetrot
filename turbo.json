@@ -13,7 +13,11 @@
     },
     "lint": {},
     "typecheck": {},
-    "test": {}
+    "test": {},
+    "test:int": {
+      "cache": false,
+      "passThroughEnv": ["DATABASE_URL"]
+    }
   },
   "globalDependencies": ["eslint.config.mjs", "packages/config/tsconfig/*.json", ".nvmrc"]
 }
