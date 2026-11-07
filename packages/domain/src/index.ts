@@ -3,3 +3,5 @@
  * Rules are owned by docs/product/business-rules.md; architecture in docs/architecture/.
  */
 export * from './money';
+export * from './time';
+export * from './trip';

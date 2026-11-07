@@ -5,11 +5,14 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       include: ['src/**/*.ts'],
-      exclude: ['src/**/*.test.ts', 'src/index.ts', 'src/**/index.ts'],
+      exclude: ['src/**/*.test.ts', 'src/**/__fixtures__/**', 'src/index.ts', 'src/**/index.ts'],
       reporter: ['text-summary'],
-      // Issue #13: the money module must stay at ≥ 95% coverage.
+      // Domain rules must stay at ≥ 95% coverage (issues #13, #14).
       thresholds: {
-        'src/money/**': { statements: 95, branches: 95, functions: 95, lines: 95 },
+        statements: 95,
+        branches: 95,
+        functions: 95,
+        lines: 95,
       },
     },
   },
