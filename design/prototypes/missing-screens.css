@@ -1,0 +1,303 @@
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  color: #1d1a35;
+  background: #e8e6ef;
+  font-family: system-ui, sans-serif;
+}
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 20px;
+  padding: 16px;
+  background: #fff;
+}
+.controls label {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  font-size: 14px;
+}
+.controls select {
+  min-height: 38px;
+}
+.notice {
+  margin: 12px 16px;
+  font-size: 13px;
+}
+#stage {
+  padding: 0 16px 32px;
+  overflow: auto;
+}
+.frame {
+  display: flex;
+  margin: 0 auto;
+  min-height: 720px;
+  background: var(--gt-semantic-color-surface-page);
+  color: var(--gt-semantic-color-text);
+  font-family: var(--gt-primitive-font-body);
+  overflow: hidden;
+  border: 3px solid var(--gt-semantic-color-outline);
+  border-radius: 22px;
+}
+.frame.desktop {
+  width: 1100px;
+}
+.frame.phone {
+  width: 375px;
+  min-height: 812px;
+}
+.rail {
+  flex: 0 0 210px;
+  padding: 28px 20px;
+  background: var(--gt-semantic-color-rail-surface);
+  color: var(--gt-semantic-color-rail-title);
+}
+.rail strong,
+.top strong {
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+.rail p {
+  margin-block: 24px;
+}
+.body {
+  position: relative;
+  min-width: 0;
+  flex: 1;
+}
+.top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  min-height: 66px;
+  padding: 12px 28px;
+  border-bottom: 3px solid var(--gt-semantic-color-outline);
+}
+.top span {
+  color: var(--gt-semantic-color-text-secondary);
+  font-size: 12px;
+}
+.content {
+  padding: 30px;
+}
+.title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+h1 {
+  margin: 0;
+  font-size: clamp(32px, 4vw, 48px);
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: -0.035em;
+}
+h2 {
+  margin: 0 0 12px;
+  font-size: 22px;
+}
+h3 {
+  font-size: 16px;
+}
+p {
+  line-height: 1.5;
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+.card {
+  padding: 24px;
+  background: var(--gt-semantic-color-surface-card);
+  border: 3px solid var(--gt-semantic-color-outline);
+  border-radius: 22px;
+  box-shadow: var(--gt-primitive-shadow-sheet);
+}
+.card p,
+.filters {
+  color: var(--gt-semantic-color-text-secondary);
+}
+.narrow {
+  max-width: 720px;
+}
+.mark {
+  display: inline-block;
+  margin-bottom: 16px;
+  padding: 4px 8px;
+  border: 2px solid var(--gt-semantic-color-confirmed);
+  border-radius: 7px;
+  color: var(--gt-semantic-color-confirmed);
+  font-size: 12px;
+  font-weight: 700;
+}
+.btn {
+  min-height: 44px;
+  padding: 8px 16px;
+  border: 2px solid var(--gt-semantic-color-outline);
+  border-radius: 14px;
+  background: var(--gt-semantic-color-text);
+  color: var(--gt-semantic-color-surface-page);
+  font: inherit;
+  font-weight: 700;
+  box-shadow: var(--gt-primitive-shadow-button);
+}
+.btn.ghost {
+  background: var(--gt-semantic-color-surface-card);
+  color: var(--gt-semantic-color-text);
+}
+button:focus-visible,
+select:focus-visible {
+  outline: 3px solid var(--gt-semantic-color-focus);
+  outline-offset: 3px;
+}
+.formgrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.field {
+  display: grid;
+  gap: 6px;
+  font-weight: 700;
+}
+.input {
+  display: block;
+  min-height: 48px;
+  padding: 12px;
+  border: 2px solid var(--gt-semantic-color-outline);
+  border-radius: 12px;
+  background: var(--gt-semantic-color-surface-card);
+  font-weight: 400;
+  overflow-wrap: anywhere;
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 24px;
+}
+.conversion {
+  margin-top: 24px;
+  padding: 16px;
+  border: 2px solid var(--gt-semantic-color-outline);
+  border-radius: 14px;
+  background: var(--gt-semantic-color-surface-nested);
+}
+.disclaimer {
+  padding: 12px 16px;
+  border: 2px solid var(--gt-semantic-color-outline);
+  border-radius: 12px;
+  background: var(--gt-semantic-color-surface-card);
+}
+.stamp {
+  display: grid;
+  place-items: center;
+  width: 150px;
+  height: 150px;
+  border: 3px solid var(--gt-semantic-color-confirmed);
+  border-radius: 50%;
+  color: var(--gt-semantic-color-confirmed);
+  font-weight: 800;
+  text-align: center;
+  transform: rotate(-7deg);
+}
+.stamp small {
+  display: block;
+  font-size: 10px;
+}
+.map {
+  min-height: 530px;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  border: 3px solid var(--gt-semantic-color-outline);
+  border-radius: 26px;
+  background: var(--gt-semantic-color-sea);
+}
+.mapcard {
+  max-width: 340px;
+  padding: 24px;
+  border: 3px solid var(--gt-primitive-color-ink);
+  border-radius: 20px;
+  background: var(--gt-primitive-color-white);
+  color: var(--gt-primitive-color-ink);
+}
+.mapcard .btn {
+  background: var(--gt-primitive-color-marigold);
+  color: var(--gt-primitive-color-ink);
+  border-color: var(--gt-primitive-color-ink);
+}
+.phone .rail {
+  display: none;
+}
+.phone .top {
+  padding: 12px 16px;
+}
+.phone .top strong {
+  font-size: 22px;
+}
+.phone .content {
+  padding: 20px 16px 150px;
+}
+.phone .title {
+  align-items: start;
+  flex-direction: column;
+}
+.phone h1 {
+  font-size: 34px;
+}
+.phone .grid,
+.phone .formgrid {
+  grid-template-columns: 1fr;
+}
+.phone .card {
+  padding: 18px;
+}
+.phone .map {
+  min-height: 470px;
+  padding: 14px;
+}
+.tabbar {
+  position: absolute;
+  bottom: 16px;
+  left: 10px;
+  right: 10px;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  gap: 4px;
+  min-height: 66px;
+  padding: 8px;
+  border: 2.5px solid var(--gt-semantic-color-outline);
+  border-radius: 22px;
+  background: var(--gt-semantic-color-surface-card);
+  box-shadow: var(--gt-primitive-shadow-sheet);
+  font-size: 11px;
+  font-weight: 700;
+}
+.tabbar span {
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+.pip {
+  position: absolute;
+  right: 16px;
+  bottom: 96px;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 2px solid var(--gt-primitive-color-ink);
+  border-radius: 14px;
+  background: var(--gt-semantic-color-marigold);
+  color: var(--gt-primitive-color-ink);
+  font: inherit;
+  font-weight: 700;
+}
