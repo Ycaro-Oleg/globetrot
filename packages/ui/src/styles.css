@@ -238,3 +238,63 @@ textarea.gt-field__control {
   background: var(--gt-semantic-color-marigold);
   color: var(--gt-primitive-color-ink);
 }
+
+.gt-select__trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  min-height: var(--gt-primitive-size-input);
+  padding: 10px 12px;
+  border: 2.5px solid var(--gt-semantic-color-outline);
+  border-radius: var(--gt-component-input-radius);
+  background: var(--gt-semantic-color-surface-card);
+  color: var(--gt-semantic-color-text);
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+.gt-select__trigger[data-focus-visible] {
+  outline: var(--gt-component-focus-width) solid var(--gt-semantic-color-focus);
+  outline-offset: 3px;
+}
+.gt-select__trigger[data-disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.gt-select__popover {
+  width: var(--trigger-width);
+  max-height: min(300px, var(--available-height));
+  overflow: auto;
+  border: 2.5px solid var(--gt-semantic-color-outline);
+  border-radius: var(--gt-component-input-radius);
+  background: var(--gt-semantic-color-surface-card);
+  color: var(--gt-semantic-color-text);
+  box-shadow: var(--gt-primitive-shadow-small);
+}
+.gt-select__list {
+  outline: none;
+  padding: 4px;
+}
+.gt-select__option {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 8px 12px;
+  border-radius: 7px;
+  cursor: pointer;
+}
+.gt-select__option[data-focused],
+.gt-select__option[data-selected] {
+  background: var(--gt-semantic-color-rule);
+  outline: none;
+}
+
+.gt-field[data-invalid] .gt-select__trigger {
+  border-color: var(--gt-semantic-color-danger);
+}
+.gt-select__option[data-focused] {
+  outline: var(--gt-component-focus-width) solid var(--gt-semantic-color-focus);
+  outline-offset: -3px;
+}
