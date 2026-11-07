@@ -52,7 +52,7 @@ jobs:
       - name: Lint, typecheck, test, build
         run: pnpm turbo run lint typecheck test build --output-logs=errors-only
 
-  # Placeholders so the required-check names exist; enabled when Playwright/axe land (M3+).
+  # End-to-end journeys are enabled when the first app flows land (M3+).
   e2e:
     name: E2E (Playwright)
     if: false
@@ -62,7 +62,16 @@ jobs:
 
   a11y:
     name: Accessibility (axe)
-    if: false
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - run: echo "Enabled with Storybook (#6) and the first app screens."
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @globetrot/ui exec playwright install --with-deps chromium
+      - run: pnpm --filter @globetrot/ui build
+      - run: pnpm --filter @globetrot/ui test:a11y
