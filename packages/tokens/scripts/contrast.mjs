@@ -29,12 +29,16 @@ export function contrastRatio(a, b) {
 }
 export function contrastReport() {
   const tokens = compileTokens();
-  return Object.entries(tokens).flatMap(([theme, values]) =>
-    pairs.map(([fg, bg]) => {
+  return Object.entries(tokens).flatMap(([theme, values]) => {
+    const checks = pairs.map(([fg, bg]) => {
       const ratio = contrastRatio(values['semantic.color.' + fg], values['semantic.color.' + bg]);
       return { theme, fg, bg, ratio, pass: ratio >= 4.5 };
-    }),
-  );
+    });
+    const fg = theme === 'day' ? 'white' : 'ink';
+    const ratio = contrastRatio(values['primitive.color.' + fg], values['semantic.color.danger']);
+    checks.push({ theme, fg: 'thread-button-' + fg, bg: 'danger', ratio, pass: ratio >= 4.5 });
+    return checks;
+  });
 }
 if (process.argv[1] && import.meta.url === new URL('file://' + process.argv[1]).href) {
   const report = contrastReport();

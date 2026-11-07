@@ -10,6 +10,17 @@ describe('Button', () => {
     expect(html).toContain('Create trip');
   });
 
+  it('keeps a 44 px target class for the small visual size and exposes pending state', () => {
+    const html = renderToStaticMarkup(
+      <Button size="sm" isPending>
+        Save
+      </Button>,
+    );
+    expect(html).toContain('gt-button--sm');
+    expect(html).toContain('data-pending');
+    expect(html).toContain('Save');
+  });
+
   it('uses the native disabled state', () => {
     const html = renderToStaticMarkup(<Button isDisabled>Create trip</Button>);
     expect(html).toContain('disabled');
