@@ -65,6 +65,18 @@ try {
         for (const violation of results.violations)
           failures.push(theme + '/' + locale + '/' + story.id + ': ' + violation.id);
       }
+      const tokenParams = new URLSearchParams({
+        id: 'foundations-tailwind-tokens--theme-utilities',
+        globals: 'theme:' + theme + ';locale:' + locale,
+      });
+      await page.goto(base + '/iframe.html?' + tokenParams);
+      const tokenCard = page.getByTestId('token-utility');
+      const background = await tokenCard.evaluate(
+        (element) => globalThis.getComputedStyle(element).backgroundColor,
+      );
+      const expectedBackground = theme === 'day' ? 'rgb(255, 255, 255)' : 'rgb(42, 38, 80)';
+      if (background !== expectedBackground)
+        failures.push(theme + '/' + locale + ': Tailwind token utility did not resolve');
       const params = new URLSearchParams({
         id: 'primitives-selectfield--default',
         globals: 'theme:' + theme + ';locale:' + locale,
