@@ -1,10 +1,10 @@
 # Current state
 
-_Last updated: 2026-11-07, after local services (#12)._
+_Last updated: 2026-11-07, after engineering standards (#16)._
 
 ## Phase
 
-**M1 + M2 in progress.** M0 docs are merged. The monorepo scaffold exists (#10), with no product features yet.
+**M2 complete. M1 (design system & spikes) is open.** The engineering foundation, the core domain rules (money, trip derivations) and i18n are in `develop`. There are no screens or persistence yet. M3 (App Foundation) needs M1's tokens and spikes, plus an issue breakdown.
 
 ## Done (M2)
 
@@ -16,6 +16,7 @@ _Last updated: 2026-11-07, after local services (#12)._
 - Trip derivations (#14) in `@globetrot/domain`: days, totals, savings plan, 9 readiness milestones plus stamp recording, journey stage, next steps, and `LocalDate` helpers. They match the prototype's Japan demo and are 100% covered. See `docs/product/business-rules.md`.
 - i18n package (#15): en/pt-BR ICU catalogs (seeded with status marks, journey, milestones, next steps, savings sentences), typed keys, `formatMessage`, date/month formatting and locale negotiation. The catalog check runs in `pnpm lint`, so CI fails on missing keys or placeholder mismatches. See `docs/architecture/i18n.md`.
 - Local services (#12): `compose.yaml` runs Postgres 17 + PostGIS (with pg_trgm and unaccent), S3-compatible storage (SeaweedFS, because MinIO images are no longer published) with the bucket auto-created, and Mailpit. Also `.env.example`, the `pnpm services:*` scripts and `pnpm services:check`. See `docs/engineering/local-development.md`.
+- Engineering standards (#16): `docs/engineering/coding-standards.md` and `testing-strategy.md`, linked from AGENTS.md's definition of done.
 
 ## Done (M0)
 
@@ -29,8 +30,11 @@ _Last updated: 2026-11-07, after local services (#12)._
 
 ## Next
 
-1. **M1: Design System & Spikes.** Tokens v1.1, Storybook primitives, MapLibre spike, Places spike, usability test plan.
-2. **M2: Engineering Foundation.** Engineering standards (#16) is the last open issue.
+1. **M1: Design System & Spikes** (#2–#9):
+   - MapLibre spike (#2), Places spike (#3), geocoding evaluation (#4);
+   - tokens v1.1 (#5) and Storybook primitives (#6);
+   - missing-screen specs (#7), usability test (#8), Pip brief (#9).
+2. **M3: App Foundation.** Break it into issues once M1's tokens and spikes settle: auth (Better Auth), next-intl in `apps/web`, preferences, responsive shell and themes, `packages/db` schema and trip CRUD.
 
 See the GitHub milestones for open issues.
 
