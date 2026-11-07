@@ -5,14 +5,21 @@
   "description": "ICU message catalogs (en, pt-BR) and locale formatting helpers",
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./messages/*.json": "./messages/*.json"
   },
   "scripts": {
-    "lint": "eslint .",
+    "lint": "eslint . && pnpm run check",
+    "check": "tsx scripts/check-messages.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run"
   },
+  "dependencies": {
+    "@formatjs/icu-messageformat-parser": "3.5.18",
+    "intl-messageformat": "11.2.15"
+  },
   "devDependencies": {
-    "@globetrot/config": "workspace:*"
+    "@globetrot/config": "workspace:*",
+    "tsx": "4.23.15"
   }
 }
