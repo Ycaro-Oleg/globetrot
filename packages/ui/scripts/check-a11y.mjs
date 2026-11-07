@@ -83,6 +83,23 @@ try {
       const text = await trigger.innerText();
       if (!text.includes(locale === 'pt-BR' ? 'Real brasileiro' : 'Brazilian real'))
         failures.push(theme + '/' + locale + ': keyboard selection failed');
+      const segmentedParams = new URLSearchParams({
+        id: 'primitives-segmentedcontrol--default',
+        globals: 'theme:' + theme + ';locale:' + locale,
+      });
+      await page.goto(base + '/iframe.html?' + segmentedParams);
+      const firstRadio = page.getByRole('radio', {
+        name: locale === 'pt-BR' ? 'Dia' : 'Day',
+        exact: true,
+      });
+      const secondRadio = page.getByRole('radio', {
+        name: locale === 'pt-BR' ? 'Noturno' : 'Night',
+        exact: true,
+      });
+      await firstRadio.focus();
+      await page.keyboard.press('ArrowRight');
+      if (!(await secondRadio.isChecked()))
+        failures.push(theme + '/' + locale + ': segmented control keyboard selection failed');
       const modalParams = new URLSearchParams({
         id: 'primitives-modal--closed',
         globals: 'theme:' + theme + ';locale:' + locale,
@@ -131,7 +148,7 @@ try {
   console.log(
     'Passed axe for ' +
       stories.length +
-      ' stories in both themes and locales, plus select, range, checkbox, switch and modal keyboard checks.',
+      ' stories in both themes and locales, plus select, range, segmented control, checkbox, switch and modal keyboard checks.',
   );
 } finally {
   await browser.close();
