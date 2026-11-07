@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { compileTokens, cssFrom } from './build.mjs';
+import { contrastReport } from './contrast.mjs';
 
 describe('token build', () => {
   it('resolves themed aliases for application consumers', () => {
@@ -23,5 +24,15 @@ describe('token build', () => {
     expect(css).toContain('[data-theme="red-eye"]');
     expect(css).toContain('--gt-semantic-color-surface-page: #1D1A35');
     expect(css).toContain('[data-always-light]');
+  });
+});
+
+describe('contrast coverage', () => {
+  it('checks tertiary text on the alternate page surface in both themes', () => {
+    const checks = contrastReport().filter(
+      (item) => item.fg === 'text-tertiary' && item.bg === 'surface-page-alt',
+    );
+    expect(checks).toHaveLength(2);
+    expect(checks.every((item) => item.pass)).toBe(true);
   });
 });
