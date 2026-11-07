@@ -11,3 +11,7 @@ packages/db/migrations/meta/
 # Prose and templates are formatted by hand (keeps doc diffs small)
 **/*.md
 .github/
+
+# Generated API contract and client types (pnpm api:generate): never hand-formatted
+packages/api-client/openapi.json
+packages/api-client/src/generated/

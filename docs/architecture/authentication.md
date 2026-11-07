@@ -1,6 +1,6 @@
 # Authentication (as built)
 
-Decision and rationale: [ADR-0005](adr/0005-authentication.md). This page describes what is implemented (issue #53): email and password with server-side sessions. Email verification and recovery (#54), Google (#55), the authenticated API and actor (#56) and the screens (#57) build on it.
+Decision and rationale: [ADR-0005](adr/0005-authentication.md). This page describes what is implemented (issue #53): email and password with server-side sessions. The authenticated API and the actor built from this session are in [`api-contracts.md`](api-contracts.md) (#56). Email verification and recovery (#54), Google (#55) and the screens (#57) build on it.
 
 ## Shape
 
@@ -10,7 +10,7 @@ Browser ──► apps/web (Next.js, public origin) ──proxy.ts──► apps
 ```
 
 - **Better Auth runs inside `apps/api`**, mounted at `/api/auth/*` (`src/auth.ts`, `src/app.ts`). It uses the Drizzle adapter over the shared `@globetrot/db` client.
-- **The browser only talks to the web origin.** `apps/web/proxy.ts` rewrites `/api/auth/*` to the API, so the session cookie is a first-party cookie of the web app: no CORS and no third-party cookie rules. Nothing else is forwarded (other paths get 404, and `..` / `%2e%2e` cannot walk out of the prefix; see `lib/api-proxy.ts`).
+- **The browser only talks to the web origin.** `apps/web/proxy.ts` rewrites `/api/auth/*` and `/v1/*` ([`api-contracts.md`](api-contracts.md)) to the API, so the session cookie is a first-party cookie of the web app: no CORS and no third-party cookie rules. Nothing else is forwarded (other paths get 404, and `..` / `%2e%2e` cannot walk out of the prefixes; see `lib/api-proxy.ts`).
 - **The proxy target is read per request** from `API_INTERNAL_URL`, not at build time. A `rewrites()` entry in `next.config` is evaluated during `next build` and baked into the image, which would force one image per environment. `proxy.ts` keeps one image for every environment.
 - Sessions are database rows. The cookie holds only the opaque session token (`httpOnly`, `SameSite=Lax`, `Path=/`, no `Domain`, `Secure` in production). Cookie name: `globetrot.session_token` (`__Secure-globetrot.session_token` in production).
 

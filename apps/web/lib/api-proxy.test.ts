@@ -17,6 +17,12 @@ describe('apiProxyTarget', () => {
     expect(target('/api/auth')).toBe('http://api.internal:4000/api/auth');
   });
 
+  it('maps /v1 onto the API too, keeping the query string', () => {
+    expect(target('/v1/me')).toBe('http://api.internal:4000/v1/me');
+    expect(target('/v1/openapi.json')).toBe('http://api.internal:4000/v1/openapi.json');
+    expect(target('/v1/trips', '?page=2')).toBe('http://api.internal:4000/v1/trips?page=2');
+  });
+
   it('works with the default URL, a path-less base and a trailing slash on the base', () => {
     expect(apiProxyTarget('/api/auth/get-session', '', DEFAULT_API_URL)?.toString()).toBe(
       'http://localhost:4000/api/auth/get-session',
@@ -32,8 +38,10 @@ describe('apiProxyTarget', () => {
     '/api',
     '/api/authx',
     '/api/other',
-    '/v1/me',
+    '/v1x/me',
+    '/v2/me',
     '/health',
+    '/V1/me',
     '/api/Auth/get-session',
   ])('does not forward %s', (path) => {
     expect(target(path)).toBeNull();
@@ -45,13 +53,20 @@ describe('apiProxyTarget', () => {
     '/api/auth/%2E%2E/secret',
     '/api/auth/./../../health',
     '/api/auth/..%2fsecret',
-  ])('cannot be walked out of the prefix with %s', (path) => {
+    '/v1/../secret',
+    '/v1/%2e%2e/%2e%2e/health',
+    '/v1/..%2fhealth',
+  ])('cannot be walked out of the prefixes with %s', (path) => {
     const result = target(path);
-    // Either refused, or still strictly under /api/auth on the API host.
+    // Either refused, or still strictly under an allowed prefix on the API host.
     if (result !== null) {
       const url = new URL(result);
       expect(url.origin).toBe(API);
-      expect(url.pathname === '/api/auth' || url.pathname.startsWith('/api/auth/')).toBe(true);
+      expect(
+        ['/api/auth', '/v1'].some(
+          (prefix) => url.pathname === prefix || url.pathname.startsWith(`${prefix}/`),
+        ),
+      ).toBe(true);
     }
   });
 

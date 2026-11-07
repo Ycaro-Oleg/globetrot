@@ -13,7 +13,7 @@ Read only what your task needs. Always start with [`current-state.md`](current-s
 | **Design system / UI component** | `design/design-system.md`, `design/design-audit.md` | Handoff README tokens and components, `atlas/globetrot.css` |
 | **Landing page** | `design/design-audit.md`, `integrations/stripe.md` (mock pricing), `architecture/i18n.md` | `Globetrot - Landing.html` |
 | **Auth / accounts / preferences** | ADR-0005, `product/business-rules.md` (Locale), `architecture/domain-model.md` (Identity, Profile) | — |
-| **API / application layer** | ADR-0006, `architecture/overview.md`, `architecture/domain-model.md` (conventions) | — |
+| **API / application layer** | ADR-0006, `architecture/api-contracts.md`, `architecture/domain-model.md` (conventions) | `packages/application/src`, `apps/api/src/{app,wire,problem}.ts`, `packages/api-client` |
 | **Pip / AI** | ADR-0007, `product/business-rules.md` (AI) | Handoff "Pip" section, `atlas/app-core.js` (change lists), `atlas/pip.js` |
 | **Passport / stamps / ranks** | `product/business-rules.md` (Readiness, Passport, Progression) | — |
 | **Stripe / billing** | `integrations/stripe.md`, `product/business-rules.md` | — |

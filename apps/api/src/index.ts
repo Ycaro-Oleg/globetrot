@@ -1,8 +1,7 @@
 import { connectDatabase } from '@globetrot/db';
 import { serve } from '@hono/node-server';
-import { createApp } from './app';
-import { createAuth } from './auth';
 import { ApiConfigError, loadApiConfig, type ApiConfig } from './config';
+import { createServices } from './wire';
 
 // Fails fast (and loudly) on a missing or unsafe setting, before opening any port. The message names
 // the setting and never its value, so it is safe in container logs.
@@ -26,10 +25,7 @@ if (config.usingInsecureSecret) {
 }
 
 const database = connectDatabase(config.databaseUrl);
-const app = createApp({
-  auth: createAuth(database.db, config.auth),
-  trustedOrigins: config.auth.trustedOrigins,
-});
+const { app } = createServices(database.db, config.auth);
 
 const server = serve({ fetch: app.fetch, port: config.port }, (info) => {
   console.log(`api listening on :${info.port}`);
