@@ -213,3 +213,28 @@ textarea.gt-field__control {
   content: '−';
   font-weight: 800;
 }
+
+.gt-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  border: 2px solid currentColor;
+  border-radius: var(--gt-primitive-radius-7);
+  padding: 4px 7px;
+  background: var(--gt-semantic-color-surface-card);
+  font: 700 11px/1.2 var(--gt-primitive-font-mono);
+}
+.gt-status--estimate {
+  color: var(--gt-semantic-color-estimate);
+}
+.gt-status--confirmed {
+  color: var(--gt-semantic-color-confirmed);
+}
+.gt-status--unknown {
+  color: var(--gt-semantic-color-text-tertiary);
+  border-style: dashed;
+}
+.gt-status--paid {
+  background: var(--gt-semantic-color-marigold);
+  color: var(--gt-primitive-color-ink);
+}
