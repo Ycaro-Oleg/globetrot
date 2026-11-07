@@ -28,6 +28,7 @@ Agents: don't read everything. Use [`agents/context-map.md`](agents/context-map.
 - [`architecture/money.md`](architecture/money.md): money, currencies, exchange rates.
 - [`architecture/i18n.md`](architecture/i18n.md): languages, locales, formatting, message catalogs.
 - [`architecture/adr/`](architecture/adr/): Architecture Decision Records.
+- [`architecture/spikes/`](architecture/spikes/): spike findings. [`maplibre.md`](architecture/spikes/maplibre.md) covers the map stack validation (#2).
 
 ### Engineering
 - [`engineering/git-workflow.md`](engineering/git-workflow.md): branches, issues, PRs, commits, releases.

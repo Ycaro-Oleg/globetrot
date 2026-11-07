@@ -1,6 +1,6 @@
 # Current state
 
-_Last updated: 2026-11-07, after engineering standards (#16)._
+_Last updated: 2026-11-07, after the MapLibre spike (#2)._
 
 ## Phase
 
@@ -31,7 +31,7 @@ _Last updated: 2026-11-07, after engineering standards (#16)._
 ## Next
 
 1. **M1: Design System & Spikes** (#2–#9):
-   - MapLibre spike (#2), Places spike (#3), geocoding evaluation (#4);
+   - MapLibre spike (#2) **done**: go, with conditions. See `docs/architecture/spikes/maplibre.md` (real-device FPS still pending). Next: Places spike (#3) and geocoding evaluation (#4);
    - tokens v1.1 (#5) and Storybook primitives (#6);
    - missing-screen specs (#7), usability test (#8), Pip brief (#9).
 2. **M3: App Foundation.** Break it into issues once M1's tokens and spikes settle: auth (Better Auth), next-intl in `apps/web`, preferences, responsive shell and themes, `packages/db` schema and trip CRUD.
