@@ -1,6 +1,9 @@
 /** Where the API listens by default (its own default port). Override with `API_INTERNAL_URL`. */
 export const DEFAULT_API_URL = 'http://localhost:4000';
 
+/** Where this server reaches the API: `API_INTERNAL_URL`, read when needed so one image serves every environment. */
+export const apiInternalUrl = () => process.env.API_INTERNAL_URL || DEFAULT_API_URL;
+
 /** The only parts of the API the browser may reach through the web origin: sign-in and the `/v1` operations. */
 export const PROXIED_PREFIXES = ['/api/auth', '/v1'] as const;
 

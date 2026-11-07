@@ -52,6 +52,22 @@ Migration `0002_trips` (and `0003_audit_event_append_only`). Code: `packages/db/
 - **`audit_event` cannot be changed:** a trigger rejects `UPDATE`, `DELETE` and `TRUNCATE` (a superuser can still disable triggers; the guard is against the application's own connection). `actor_id` has **no foreign key** on purpose, so the history survives the account. `metadata` carries field names, never values: no personal data.
 - **`idempotency_key` rows are written in the transaction of the work they guard.** A visible key therefore always has its response, and two concurrent requests with the same key serialize on the unique row. Old rows are only useful for a retry window and can be cleaned by a job later.
 
+## User preferences
+
+Migration `0004_user_preferences`. One row per user in `user_preference` (primary key `user_id`, `ON DELETE CASCADE`: it is settings, not history).
+
+| Column | Rule |
+|---|---|
+| `locale` | One of the supported languages (CHECK from `SUPPORTED_LOCALES`). Default `en` |
+| `currency` | ISO 4217 code, `char(3)`, default `USD`. The default for **new** trips; existing trips keep their own |
+| `home_country`, `nationality` | ISO 3166-1 alpha-2, `char(2)`, nullable |
+| `time_zone` | IANA name, nullable. Stored in the platform's spelling (`america/sao_paulo` becomes `America/Sao_Paulo`) |
+| `units` | `metric` or `imperial`, default `metric` |
+
+- **Independent by construction.** Nothing derives one column from another, and the update writes only the columns it is given (`INSERT ... ON CONFLICT DO UPDATE SET <given columns>`). Choosing Portuguese cannot move the currency or the country.
+- **The row is created at sign-up** with the language the person was using, read from the `globetrot_locale` cookie ([`authentication.md`](authentication.md)). If it is missing (the hook failed, or an account predates #58), `getPreferences` answers with the defaults and the first save creates the row.
+- Country and time-zone validity is checked in the application (`isCountryCode`, `canonicalTimeZone` in `@globetrot/domain`); the database checks the shape and the closed lists.
+
 ## Extensions
 
 The first migration (`0000_extensions.sql`) enables `postgis`, `pg_trgm` and `unaccent`, using `IF NOT EXISTS`. The local Docker init script (`infra/postgres/init/`) enables the same ones as a convenience, and production relies on the migration.

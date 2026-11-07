@@ -1,4 +1,5 @@
-import { schema, type Database } from '@globetrot/db';
+import { createPreferencesRepository, schema, type Database } from '@globetrot/db';
+import { DEFAULT_LOCALE, localeFromCookieHeader } from '@globetrot/i18n';
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { createAuthMiddleware } from 'better-auth/api';
@@ -56,6 +57,29 @@ export function createAuth(db: Database, config: AuthConfig) {
       cookiePrefix: 'globetrot',
       useSecureCookies: config.secureCookies,
       defaultCookieAttributes: { httpOnly: true, sameSite: 'lax', path: '/' },
+    },
+    databaseHooks: {
+      user: {
+        create: {
+          // A new account starts with the language the person was using, read from the language cookie the
+          // web app sends along. Everything else takes the defaults (USD, no country, nationality or time
+          // zone). If this fails the account still exists and `getPreferences` falls back to the same
+          // defaults, so sign-up must not fail because of it.
+          after: async (created, context) => {
+            const cookie =
+              context?.headers?.get('cookie') ?? context?.request?.headers.get('cookie');
+            const locale = localeFromCookieHeader(cookie) ?? DEFAULT_LOCALE;
+            try {
+              await createPreferencesRepository(db).createDefaults(created.id, locale, new Date());
+            } catch (error) {
+              const code = (error as { code?: unknown }).code;
+              console.error(
+                `could not record the sign-up language (${typeof code === 'string' ? code : 'unknown error'})`,
+              );
+            }
+          },
+        },
+      },
     },
     hooks: {
       // E-mail addresses are trimmed (Better Auth lower-cases them) so " Ana@Example.com " and

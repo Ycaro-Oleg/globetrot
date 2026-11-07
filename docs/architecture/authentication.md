@@ -67,6 +67,10 @@ Responses use Better Auth's stable `code` values; the UI (#57) maps each to a tr
 | `INVALID_ORIGIN` | Untrusted `Origin` on a state-changing request (ours, from `app.ts`) |
 | HTTP `429` | Rate limit hit |
 
+## The sign-up language
+
+When an account is created, a Better Auth database hook (`databaseHooks.user.create.after` in `apps/api/src/auth.ts`) stores the person's language. It reads the `globetrot_locale` cookie that the browser sent along (the web proxy forwards it), keeps it only if it is a supported language, and falls back to `en`. It records nothing else: the currency, country, nationality and time zone stay at their defaults, because none of them follows from the language. The hook never fails a sign-up: if the write fails, the account exists and `getPreferences` answers with the defaults (a line without personal data is logged). See [`data-model.md`](data-model.md#user-preferences).
+
 ## Tables
 
 `user`, `session`, `account`, `verification` and `rate_limit` (`packages/db/src/schema/auth.ts`, migration `0001_auth_tables`). They follow Better Auth's shape, including its text ids, and the rest of [`data-model.md`](data-model.md) otherwise. `account` holds the password hash (and later OAuth links), never `user`.

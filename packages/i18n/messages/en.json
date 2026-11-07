@@ -51,5 +51,26 @@
     "language": "Language",
     "english": "English",
     "portuguese": "Português (Brasil)"
+  },
+  "settings": {
+    "title": "Language & region",
+    "description": "These settings are independent: changing one never changes another.",
+    "language": "Language",
+    "languageHelp": "The language of the app. It does not change your currency or country.",
+    "currency": "Preferred currency",
+    "currencyHelp": "Pre-fills the currency of new trips. Trips you already have keep their own currency.",
+    "homeCountry": "Home country",
+    "nationality": "Nationality",
+    "optionalHelp": "Optional. Nothing in the app requires it.",
+    "timeZone": "Time zone",
+    "timeZoneHelp": "Optional. Used to show times. Trip dates never depend on it.",
+    "units": "Units",
+    "unitsMetric": "Metric (km, °C)",
+    "unitsImperial": "Imperial (mi, °F)",
+    "notSet": "Not set",
+    "save": "Save",
+    "saved": "Your settings were saved.",
+    "error": "Your settings could not be saved. Check these fields and try again: {fields}.",
+    "signedOut": "Sign in to change your language and region."
   }
 }

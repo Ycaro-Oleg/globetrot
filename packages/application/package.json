@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@globetrot/domain": "workspace:*",
+    "@globetrot/i18n": "workspace:*",
     "zod": "4.6.7"
   },
   "devDependencies": {

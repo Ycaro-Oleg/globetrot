@@ -2,6 +2,8 @@ import type {
   AuditEventInput,
   NewTrip,
   Ports,
+  PreferencesRecord,
+  PreferencesWriter,
   Transaction,
   TripPatch,
   TripRecord,
@@ -12,6 +14,7 @@ import type {
 /** In-memory ports for unit tests (here and in apps/api). Real adapters are tested against PostgreSQL. */
 export interface FakeState {
   trips: Map<string, TripRecord>;
+  preferences: Map<string, PreferencesRecord>;
   audit: AuditEventInput[];
   idempotency: Map<string, { fingerprint: string; response: unknown }>;
 }
@@ -26,7 +29,12 @@ export function createFakePorts(options: FakeOptions = {}) {
   let time = options.now ?? new Date('2026-11-07T12:00:00.000Z');
   let counter = 0;
   const faults = { auditFails: false };
-  const state: FakeState = { trips: new Map(), audit: [], idempotency: new Map() };
+  const state: FakeState = {
+    trips: new Map(),
+    preferences: new Map(),
+    audit: [],
+    idempotency: new Map(),
+  };
 
   const tripWriter: TripWriter = {
     async findById(id) {
@@ -59,8 +67,35 @@ export function createFakePorts(options: FakeOptions = {}) {
     },
   };
 
+  const preferencesWriter: PreferencesWriter = {
+    async find(userId) {
+      return state.preferences.get(userId) ?? null;
+    },
+    async upsert(userId, patch) {
+      const current = state.preferences.get(userId) ?? {
+        locale: 'en',
+        currency: 'USD',
+        homeCountry: null,
+        nationality: null,
+        timeZone: null,
+        units: 'metric' as const,
+      };
+      const next: PreferencesRecord = {
+        locale: patch.locale ?? current.locale,
+        currency: patch.currency ?? current.currency,
+        homeCountry: patch.homeCountry === undefined ? current.homeCountry : patch.homeCountry,
+        nationality: patch.nationality === undefined ? current.nationality : patch.nationality,
+        timeZone: patch.timeZone === undefined ? current.timeZone : patch.timeZone,
+        units: patch.units ?? current.units,
+      };
+      state.preferences.set(userId, next);
+      return next;
+    },
+  };
+
   const transaction: Transaction = {
     trips: tripWriter,
+    preferences: preferencesWriter,
     audit: {
       async record(event) {
         if (faults.auditFails) throw new Error('audit store is down');
@@ -92,11 +127,13 @@ export function createFakePorts(options: FakeOptions = {}) {
       },
     },
     trips: tripWriter,
+    preferences: preferencesWriter,
     unitOfWork: {
       // Commit or roll back as one, like a database transaction.
       async run(work) {
         const before: FakeState = {
           trips: new Map(state.trips),
+          preferences: new Map(state.preferences),
           audit: [...state.audit],
           idempotency: new Map(
             [...state.idempotency].map(([key, value]) => [key, { ...value }] as const),
@@ -106,6 +143,7 @@ export function createFakePorts(options: FakeOptions = {}) {
           return await work(transaction);
         } catch (error) {
           state.trips = before.trips;
+          state.preferences = before.preferences;
           state.audit = before.audit;
           state.idempotency = before.idempotency;
           throw error;

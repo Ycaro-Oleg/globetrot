@@ -52,3 +52,21 @@ export function parseAcceptLanguage(header: string | null | undefined): string[]
     .sort((a, b) => b.quality - a.quality || a.index - b.index)
     .map((entry) => entry.tag);
 }
+
+/**
+ * The cookie in which the web app remembers a visitor's explicit language choice. The API reads it once, at
+ * sign-up, to record the language the person was using (the "sign-up locale").
+ */
+export const LOCALE_COOKIE = 'globetrot_locale';
+
+/** The supported locale named by `LOCALE_COOKIE` in a `Cookie` header, or `null`. Unknown values are ignored. */
+export function localeFromCookieHeader(header: string | null | undefined): SupportedLocale | null {
+  if (!header) return null;
+  for (const part of header.split(';')) {
+    const separator = part.indexOf('=');
+    if (separator === -1 || part.slice(0, separator).trim() !== LOCALE_COOKIE) continue;
+    const value = part.slice(separator + 1).trim();
+    return isSupportedLocale(value) ? value : null;
+  }
+  return null;
+}

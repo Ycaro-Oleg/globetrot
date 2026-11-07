@@ -2,3 +2,4 @@
 // Further tables are added by the issues that need them. Conventions: docs/architecture/data-model.md.
 export * from './auth';
 export * from './trip';
+export * from './preference';

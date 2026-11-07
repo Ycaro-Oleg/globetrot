@@ -2,6 +2,7 @@
  * @globetrot/application: commands and queries with authorization, idempotency and audit; ports for adapters
  * (ADR-0006). No HTTP, database or UI imports: adapters pass their implementations in through `Ports`.
  */
+import { createGetPreferences, createUpdatePreferences } from './preferences/operations';
 import type { Ports } from './ports';
 import { createGetCurrentUser } from './queries/get-current-user';
 import {
@@ -37,6 +38,10 @@ export type {
   IdGenerator,
   NewTrip,
   Ports,
+  PreferencesPatch,
+  PreferencesReader,
+  PreferencesRecord,
+  PreferencesWriter,
   Transaction,
   TripPatch,
   TripReader,
@@ -64,6 +69,18 @@ export {
 } from './trips/schemas';
 export { idempotencyKeySchema } from './trips/operations';
 
+export {
+  countrySchema,
+  DEFAULT_PREFERENCES,
+  localeSchema,
+  preferencesSchema,
+  preferredCurrencySchema,
+  timeZoneSchema,
+  unitsSchema,
+  updatePreferencesBodySchema,
+  type PreferencesView,
+} from './preferences/schemas';
+
 /** Composition root: every operation, wired to the given ports. */
 export function createApplication(ports: Ports) {
   return {
@@ -73,6 +90,8 @@ export function createApplication(ports: Ports) {
     createTrip: createCreateTrip(ports),
     updateTrip: createUpdateTrip(ports),
     archiveTrip: createArchiveTrip(ports),
+    getPreferences: createGetPreferences(ports),
+    updatePreferences: createUpdatePreferences(ports),
   };
 }
 export type Application = ReturnType<typeof createApplication>;

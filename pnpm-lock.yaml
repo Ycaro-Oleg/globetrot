@@ -59,6 +59,9 @@ importers:
       '@globetrot/domain':
         specifier: workspace:*
         version: link:../../packages/domain
+      '@globetrot/i18n':
+        specifier: workspace:*
+        version: link:../../packages/i18n
       '@hono/node-server':
         specifier: 2.1.6
         version: 2.1.6(hono@4.13.17)
@@ -93,12 +96,24 @@ importers:
 
   apps/web:
     dependencies:
+      '@globetrot/api-client':
+        specifier: workspace:*
+        version: link:../../packages/api-client
       '@globetrot/application':
         specifier: workspace:*
         version: link:../../packages/application
+      '@globetrot/domain':
+        specifier: workspace:*
+        version: link:../../packages/domain
       '@globetrot/i18n':
         specifier: workspace:*
         version: link:../../packages/i18n
+      '@globetrot/tokens':
+        specifier: workspace:*
+        version: link:../../packages/tokens
+      '@globetrot/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
       next:
         specifier: 16.4.5
         version: 16.4.5(@babel/core@7.29.13)(@types/node@24.19.2)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
@@ -156,6 +171,9 @@ importers:
       '@globetrot/domain':
         specifier: workspace:*
         version: link:../domain
+      '@globetrot/i18n':
+        specifier: workspace:*
+        version: link:../i18n
       zod:
         specifier: 4.6.7
         version: 4.6.7
@@ -171,6 +189,9 @@ importers:
       '@globetrot/domain':
         specifier: workspace:*
         version: link:../domain
+      '@globetrot/i18n':
+        specifier: workspace:*
+        version: link:../i18n
       drizzle-orm:
         specifier: 0.45.4
         version: 0.45.4(@types/pg@8.23.1)(kysely@0.29.8)(pg@8.23.1)

@@ -59,7 +59,7 @@ Conventions and the migration rules are in [`data-model.md`](../architecture/dat
 ## How the apps get configuration
 
 - `apps/api` and `apps/worker` start with `tsx --env-file-if-exists=../../.env` in `pnpm dev`, so the root `.env` is loaded when present. Deployed containers receive environment variables from Coolify instead.
-- `apps/web` (Next.js) reads `apps/web/.env*` files, not the root `.env`. Its one server-side variable is `API_INTERNAL_URL` (where `/api/auth/*` is proxied; default `http://localhost:4000`, so `pnpm dev` needs nothing).
+- `apps/web` (Next.js) reads `apps/web/.env*` files, not the root `.env`. Its one server-side variable is `API_INTERNAL_URL` (where `/api/auth/*` and `/v1/*` are proxied, and where the web server itself reads a signed-in user's settings; default `http://localhost:4000`, so `pnpm dev` needs nothing). Open `/settings` to change the language and region once you have an account (the sign-up screens arrive with #57; until then create one with `POST /api/auth/sign-up/email`).
 - The API reads its auth settings (secret, public URL, trusted origins, session and rate-limit knobs) from the environment. Without `BETTER_AUTH_SECRET` it uses the public development secret and warns; with `NODE_ENV=production` it refuses to start. Full table: [`authentication.md`](../architecture/authentication.md).
 - Open http://localhost:3000 and call `/api/auth/*` there, not on :4000: the browser always goes through the web origin so the session cookie is first-party.
 - Storage and email adapters arrive with their features.
