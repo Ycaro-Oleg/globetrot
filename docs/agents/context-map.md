@@ -5,6 +5,7 @@ Read only what your task needs. Always start with [`current-state.md`](current-s
 | Task type | Read | Skim if needed |
 |---|---|---|
 | **Any task** | `AGENTS.md`, `current-state.md`, the issue | `docs/README.md` |
+| **Any code change** | `engineering/coding-standards.md`, `engineering/testing-strategy.md` (the "What each change must test" table) | `engineering/project-structure.md` |
 | **Map / board** | ADR-0003, `design/design-system.md` (responsive + a11y), `architecture/domain-model.md` (Trip Planning, Geo) | Handoff README "Board" + "Map pin" + "Route" sections, `atlas/map.js` |
 | **Itinerary / checklists** | `product/business-rules.md` (Trips, Readiness), `architecture/domain-model.md` | Handoff "Itinerary" / "Checklists" sections |
 | **Budget / savings / currency** | `product/business-rules.md` (Locale & currency, Budget, Savings), `architecture/money.md`, ADR-0004 | `atlas/app-core.js` (totals, plan) |

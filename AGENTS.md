@@ -53,7 +53,8 @@ Full details: [`docs/engineering/git-workflow.md`](docs/engineering/git-workflow
 ## 6. Definition of done
 
 - The issue's acceptance criteria are met.
-- Tests are added or updated (see the issue's testing section). Lint, typecheck and tests pass locally and in CI.
+- Code follows [`docs/engineering/coding-standards.md`](docs/engineering/coding-standards.md).
+- Tests are added or updated per the issue and [`docs/engineering/testing-strategy.md`](docs/engineering/testing-strategy.md). Lint, typecheck and tests pass locally and in CI.
 - User-facing strings exist in **both** `en` and `pt-BR`.
 - **Canonical docs are updated** whenever a business rule, contract, architecture decision or convention changes. If the decision is significant, write a new ADR.
 - The PR description includes the handoff section.
