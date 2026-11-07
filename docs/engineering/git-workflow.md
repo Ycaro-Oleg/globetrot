@@ -44,7 +44,7 @@ Avoid epics disguised as issues ("Build the travel planner"). Split them.
 ### Labels
 
 - `type:feature`, `type:bug`, `type:spike`, `type:docs`, `type:chore`
-- `area:map`, `area:budget`, `area:itinerary`, `area:ai`, `area:auth`, `area:i18n`, `area:design-system`, `area:infra`, `area:docs`
+- `area:map`, `area:budget`, `area:itinerary`, `area:ai`, `area:auth`, `area:i18n`, `area:design-system`, `area:infra`, `area:docs`, `area:db`, `area:trips`, `area:app-shell`, `area:preferences`
 - `priority:p0` to `priority:p2`
 - `status:blocked`, `needs:decision`
 - `agent-ready` (fully specified, safe for an agent to pick up)
