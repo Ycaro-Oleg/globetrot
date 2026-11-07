@@ -28,9 +28,39 @@ export function compileTokens() {
       if (!(name in raw)) throw new Error('Unknown token: ' + name);
       if (stack.includes(name)) throw new Error('Circular token: ' + [...stack, name].join(' -> '));
       const value = raw[name];
-      return typeof value === 'string'
-        ? value.replace(/\{([^{}]+)\}/g, (_, ref) => resolve(ref, [...stack, name]))
-        : value;
+      if (typeof value === 'string')
+        return value.replace(/\{([^{}]+)\}/g, (_, ref) => resolve(ref, [...stack, name]));
+      if (Array.isArray(value))
+        return value
+          .map((family) => (family.includes(' ') ? JSON.stringify(family) : family))
+          .join(', ');
+      if (value && typeof value === 'object' && value.colorSpace === 'srgb') {
+        if (typeof value.hex !== 'string') throw new Error('Missing sRGB hex fallback: ' + name);
+        const alpha =
+          value.alpha === undefined
+            ? ''
+            : Math.round(value.alpha * 255)
+                .toString(16)
+                .padStart(2, '0')
+                .toUpperCase();
+        return value.hex + alpha;
+      }
+      if (value && typeof value === 'object' && 'unit' in value && 'value' in value)
+        return String(value.value) + value.unit;
+      if (value && typeof value === 'object' && 'offsetX' in value) {
+        const dim = (part) => String(part.value) + part.unit;
+        const color = value.color.replace(/\{([^{}]+)\}/g, (_, ref) =>
+          resolve(ref, [...stack, name]),
+        );
+        return [
+          dim(value.offsetX),
+          dim(value.offsetY),
+          dim(value.blur),
+          dim(value.spread),
+          color,
+        ].join(' ');
+      }
+      return value;
     };
     result[theme] = Object.fromEntries(Object.keys(raw).map((key) => [key, resolve(key)]));
   }

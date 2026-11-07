@@ -7,6 +7,9 @@ describe('token build', () => {
     expect(tokens.day['semantic.color.surface-page']).toBe('#FFF5E1');
     expect(tokens['red-eye']['semantic.color.surface-page']).toBe('#1D1A35');
     expect(tokens.day['component.hit-target']).toBe('44px');
+    expect(tokens.day['primitive.shadow.button']).toBe('0px 4px 0px 0px #1D1A35');
+    expect(tokens['red-eye']['primitive.shadow.button']).toBe('0px 4px 0px 0px #0C0A1A');
+    expect(tokens.day['primitive.color.rule-day']).toBe('#1D1A3524');
     expect(tokens['red-eye']['semantic.color.rail-title']).toBe('#FFF5E1');
   });
 

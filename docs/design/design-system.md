@@ -13,7 +13,7 @@ Status: **direction approved; initial token foundations implemented, v1.1 pendin
 
 ### Using and extending tokens
 
-- DTCG-style source files live in `packages/tokens/source`: primitive values, and semantic/component references for each theme. Values use the compact string representation supported by this repository's generator; this is not a general-purpose DTCG parser.
+- DTCG-style source files live in `packages/tokens/source`: primitive values, and semantic/component references for each theme. Colors, font families, px dimensions and shadows use structured DTCG 2025.10 values; remaining CSS-specific dimensions still use the initial string representation. This is a partial migration, not a general-purpose DTCG parser or a claim of full format compatibility.
 - Run `pnpm --filter @globetrot/tokens build` to resolve aliases into `src/generated.ts` and `dist/tokens.css`. Import CSS from `@globetrot/tokens/tokens.css`; use `data-theme="day"` or `data-theme="red-eye"`. CSS names are `--gt-` plus the dot-separated path with hyphens.
 - Add a primitive to the source, then add a semantic or component alias in **both** themes as appropriate. Rebuild and commit the generated TypeScript; generated CSS is a build artifact. An unknown or circular alias fails the build.
 - Use `data-always-light` on light surfaces nested inside either theme to re-scope text and secondary text. The rail title uses cream on blue rather than red.
