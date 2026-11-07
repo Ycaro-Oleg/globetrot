@@ -5,8 +5,8 @@ Status: **approved** ([ADR-0004](adr/0004-money-and-currency.md)). Business rule
 ## Value object
 
 ```ts
-type CurrencyCode = string;            // ISO 4217, e.g. "USD", "BRL", "JPY"
-interface Money { amountMinor: bigint; currency: CurrencyCode }
+type CurrencyCode = string & { readonly __brand: 'CurrencyCode' }; // validated ISO 4217, e.g. "USD"
+interface Money { readonly amountMinor: bigint; readonly currency: CurrencyCode }
 ```
 
 - Store amounts as **integer minor units**. The minor-unit exponent comes from ISO 4217 (USD 2, JPY 0, KWD 3), never hardcoded to 2.
@@ -37,4 +37,23 @@ interface Expense { original: Money; converted: Money /* trip currency */; fxRat
 
 ## Formatting
 
-Use `Intl.NumberFormat(locale, { style: 'currency', currency })`. The **locale** comes from the user's language and region, and the **currency** comes from the data. They are independent: a pt-BR user can see `US$ 1.250,00`, and an en user can see `R$1,250.00`.
+Use `formatMoney(money, locale)`, a wrapper over `Intl.NumberFormat`. The **locale** comes from the user's language and region, and the **currency** comes from the data. They are independent: a pt-BR user can see `US$ 1.250,00`, and an en user can see `R$1,250.00`.
+
+## Implementation: `@globetrot/domain` (`packages/domain/src/money/`)
+
+| Function | Behaviour |
+|---|---|
+| `toCurrencyCode(s)`, `isCurrencyCode(s)`, `minorUnitExponent(c)`, `listCurrencyCodes()`, `DEFAULT_CURRENCY` | Registry of **active ISO 4217 codes** with minor-unit exponents (0, 2 or 3). Fund, metal, testing and withdrawn codes are excluded. Codes are case-sensitive uppercase. Localized currency names come from `Intl.DisplayNames` at the UI edge |
+| `money(minor, code)`, `zero(code)` | Construct a frozen `Money` and validate the code |
+| `fromDecimal('12.5', 'USD', { rounding? })` | Parse a plain decimal string (no exponents or separators). Extra precision is **rejected** by default, or rounded half-even with `{ rounding: 'half-even' }` |
+| `toDecimalString(m)` | Exact major-unit string at full precision (`"12.50"`, `"1250"`, `"1.234"`) |
+| `add`, `subtract`, `negate`, `sum(list, code)`, `compare`, `equals`, `isZero`, `isNegative` | Same-currency arithmetic. Mixing currencies throws `CurrencyMismatchError` |
+| `multiply(m, 4n \| '1.1')` | Exact factor (bigint or decimal string), rounded half-even |
+| `allocate(m, ratios)`, `split(m, n)` | Distribute without losing a minor unit. Parts always sum exactly to the input. Leftover units go to the largest remainders, earliest first |
+| `exchangeRate(input)` | Validate and freeze a rate record: known codes, base ≠ quote, positive decimal rate, source, valid `asOf` |
+| `convert(m, rate)` → `{ original, converted, rateId, inverted }` | Base → quote multiplies, quote → base divides. **One** half-even rounding to the target minor unit |
+| `formatMoney(m, locale, { display?, precision? })` | Passes the exact decimal string to `Intl` (no float). `precision: 'whole'` rounds half-even for coarse estimates |
+
+- **Errors** extend `MoneyError`: `UnknownCurrencyError`, `CurrencyMismatchError`, `InvalidAmountError`, `InvalidRateError`.
+- **Registry maintenance:** when ISO 4217 adds or withdraws a code, update the table in `currency.ts` and its tests. Withdrawn codes on historical data need a migration decision first, so don't remove a code that stored rows still use without one.
+- **Tests:** unit plus property-based tests (fast-check), with coverage gated at ≥ 95% for `src/money/**` (`packages/domain/vitest.config.ts`).
