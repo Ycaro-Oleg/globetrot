@@ -1,0 +1,156 @@
+{
+  "semantic": {
+    "color": {
+      "surface-page": {
+        "$type": "color",
+        "$value": "{primitive.color.cream}"
+      },
+      "surface-page-alt": {
+        "$type": "color",
+        "$value": "{primitive.color.cream-deep}"
+      },
+      "surface-card": {
+        "$type": "color",
+        "$value": "{primitive.color.white}"
+      },
+      "surface-nested": {
+        "$type": "color",
+        "$value": "{primitive.color.cream-soft}"
+      },
+      "text": {
+        "$type": "color",
+        "$value": "{primitive.color.ink}"
+      },
+      "text-secondary": {
+        "$type": "color",
+        "$value": "{primitive.color.ink-secondary}"
+      },
+      "text-tertiary": {
+        "$type": "color",
+        "$value": "{primitive.color.ink-tertiary}"
+      },
+      "outline": {
+        "$type": "color",
+        "$value": "{primitive.color.ink}"
+      },
+      "shadow": {
+        "$type": "color",
+        "$value": "{primitive.color.ink}"
+      },
+      "sea": {
+        "$type": "color",
+        "$value": "{primitive.color.blue}"
+      },
+      "sea-deep": {
+        "$type": "color",
+        "$value": "{primitive.color.blue-deep}"
+      },
+      "land": {
+        "$type": "color",
+        "$value": "{primitive.color.land}"
+      },
+      "land-highlight": {
+        "$type": "color",
+        "$value": "{primitive.color.cream}"
+      },
+      "thread": {
+        "$type": "color",
+        "$value": "{primitive.color.red}"
+      },
+      "marigold": {
+        "$type": "color",
+        "$value": "{primitive.color.marigold}"
+      },
+      "mint": {
+        "$type": "color",
+        "$value": "{primitive.color.mint}"
+      },
+      "confirmed": {
+        "$type": "color",
+        "$value": "{primitive.color.green}"
+      },
+      "estimate": {
+        "$type": "color",
+        "$value": "{primitive.color.ochre}"
+      },
+      "note": {
+        "$type": "color",
+        "$value": "{primitive.color.note}"
+      },
+      "danger": {
+        "$type": "color",
+        "$value": "{primitive.color.danger}"
+      },
+      "focus": {
+        "$type": "color",
+        "$value": "{primitive.color.blue}"
+      },
+      "rule": {
+        "$type": "color",
+        "$value": "{primitive.color.rule-day}"
+      },
+      "rule-strong": {
+        "$type": "color",
+        "$value": "{primitive.color.rule-strong-day}"
+      },
+      "rail-surface": {
+        "$type": "color",
+        "$value": "{primitive.color.blue-deep}"
+      },
+      "rail-title": {
+        "$type": "color",
+        "$value": "{primitive.color.cream}"
+      },
+      "always-light-surface": {
+        "$type": "color",
+        "$value": "{primitive.color.white}"
+      },
+      "always-light-text": {
+        "$type": "color",
+        "$value": "{primitive.color.ink}"
+      },
+      "always-light-text-secondary": {
+        "$type": "color",
+        "$value": "{primitive.color.ink-secondary}"
+      },
+      "airmail": {
+        "$type": "color",
+        "$value": "{primitive.color.blue}"
+      },
+      "airmail-deep": {
+        "$type": "color",
+        "$value": "{primitive.color.blue-deep}"
+      },
+      "sky": {
+        "$type": "color",
+        "$value": "{primitive.color.land}"
+      }
+    }
+  },
+  "component": {
+    "button-radius": {
+      "$type": "dimension",
+      "$value": "{primitive.radius.14}"
+    },
+    "input-radius": {
+      "$type": "dimension",
+      "$value": "{primitive.radius.12}"
+    },
+    "sheet-radius": {
+      "$type": "dimension",
+      "$value": "{primitive.radius.22}"
+    },
+    "modal-radius": {
+      "$type": "dimension",
+      "$value": "{primitive.radius.26}"
+    },
+    "hit-target": {
+      "$type": "dimension",
+      "$value": "{primitive.size.hit}"
+    },
+    "focus-width": {
+      "$type": "dimension",
+      "$value": "{primitive.size.focus-width}"
+    }
+  }
+}

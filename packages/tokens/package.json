@@ -5,10 +5,12 @@
   "description": "Design tokens (DTCG source) compiled to CSS variables and TypeScript",
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./tokens.css": "./dist/tokens.css"
   },
   "scripts": {
-    "lint": "eslint .",
+    "build": "node scripts/build.mjs",
+    "lint": "eslint . && node scripts/contrast.mjs",
     "typecheck": "tsc --noEmit",
     "test": "vitest run"
   },
