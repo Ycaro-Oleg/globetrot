@@ -24,6 +24,30 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/me/preferences": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The caller’s settings
+         * @description Language, preferred currency, home country, nationality, time zone and units. They are independent: none is derived from another. A user who saved nothing gets USD, the default language and no country, nationality or time zone.
+         */
+        get: operations["getPreferences"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Change the caller’s settings
+         * @description Only the fields sent change; every other setting keeps its value. `null` clears the home country, nationality or time zone. The language and the currency cannot be cleared.
+         */
+        patch: operations["updatePreferences"];
+        trace?: never;
+    };
     "/v1/trips": {
         parameters: {
             query?: never;
@@ -149,6 +173,163 @@ export interface operations {
             };
             /** @description The session’s account no longer exists. */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    getPreferences: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The settings. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        locale: string;
+                        currency: string;
+                        homeCountry: string | null;
+                        nationality: string | null;
+                        timeZone: string | null;
+                        /** @enum {string} */
+                        units: "metric" | "imperial";
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    updatePreferences: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /**
+                     * @description Interface language.
+                     * @example pt-BR
+                     */
+                    locale?: string;
+                    /**
+                     * @description Default currency for new trips (ISO 4217).
+                     * @example USD
+                     */
+                    currency?: string;
+                    /**
+                     * @description ISO 3166-1 alpha-2 country code.
+                     * @example BR
+                     */
+                    homeCountry?: string | null;
+                    /**
+                     * @description ISO 3166-1 alpha-2 country code.
+                     * @example BR
+                     */
+                    nationality?: string | null;
+                    /**
+                     * @description IANA time zone name.
+                     * @example America/Sao_Paulo
+                     */
+                    timeZone?: string | null;
+                    /** @enum {string} */
+                    units?: "metric" | "imperial";
+                };
+            };
+        };
+        responses: {
+            /** @description The settings after the change. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        locale: string;
+                        currency: string;
+                        homeCountry: string | null;
+                        nationality: string | null;
+                        timeZone: string | null;
+                        /** @enum {string} */
+                        units: "metric" | "imperial";
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description A value is not valid, or nothing was sent. */
+            422: {
                 headers: {
                     [name: string]: unknown;
                 };

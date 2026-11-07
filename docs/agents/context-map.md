@@ -11,6 +11,7 @@ Read only what your task needs. Always start with [`current-state.md`](current-s
 | **Itinerary / checklists** | `product/business-rules.md` (Trips, Readiness), `architecture/domain-model.md` | Handoff "Itinerary" / "Checklists" sections |
 | **Budget / savings / currency** | `product/business-rules.md` (Locale & currency, Budget, Savings), `architecture/money.md`, ADR-0004 | `atlas/app-core.js` (totals, plan) |
 | **i18n / copy** | `architecture/i18n.md`, ADR-0008 | — |
+| **Preferences (language, currency, country, time zone)** | `product/business-rules.md` (Locale and currency), `architecture/data-model.md` (User preferences), `architecture/i18n.md` (Web integration), `design/missing-screens.md` (Language and region) | `packages/application/src/preferences`, `apps/api/src/routes/preferences.ts`, `apps/web/app/settings`, `apps/web/i18n/request.ts` |
 | **Design system / UI component** | `design/design-system.md`, `design/design-audit.md` | Handoff README tokens and components, `atlas/globetrot.css` |
 | **Landing page** | `design/design-audit.md`, `integrations/stripe.md` (mock pricing), `architecture/i18n.md` | `Globetrot - Landing.html` |
 | **Auth / accounts / preferences** | ADR-0005, `product/business-rules.md` (Locale), `architecture/domain-model.md` (Identity, Profile) | — |

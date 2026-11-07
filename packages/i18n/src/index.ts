@@ -20,6 +20,8 @@ export {
 export {
   DEFAULT_LOCALE,
   isSupportedLocale,
+  LOCALE_COOKIE,
+  localeFromCookieHeader,
   negotiateLocale,
   parseAcceptLanguage,
   SUPPORTED_LOCALES,

@@ -1,7 +1,7 @@
-import type { TripStatus, TripVisibility } from '@globetrot/domain';
+import type { TripStatus, TripVisibility, UnitSystem } from '@globetrot/domain';
 import { and, desc, eq, ne, type SQL } from 'drizzle-orm';
 import type { Database } from './client';
-import { auditEvent, idempotencyKey, trip } from './schema';
+import { auditEvent, idempotencyKey, trip, userPreference } from './schema';
 
 /**
  * PostgreSQL adapters for the application ports (packages/application/src/ports.ts). The shapes below match
@@ -92,6 +92,82 @@ export function createTripRepository(executor: Executor) {
   };
 }
 
+export interface PreferencesRow {
+  readonly locale: string;
+  readonly currency: string;
+  readonly homeCountry: string | null;
+  readonly nationality: string | null;
+  readonly timeZone: string | null;
+  readonly units: UnitSystem;
+}
+
+const asPreferencesRow = (row: typeof userPreference.$inferSelect): PreferencesRow => ({
+  locale: row.locale,
+  currency: row.currency,
+  homeCountry: row.homeCountry,
+  nationality: row.nationality,
+  timeZone: row.timeZone,
+  units: row.units as UnitSystem,
+});
+
+export function createPreferencesRepository(executor: Executor) {
+  return {
+    async find(userId: string): Promise<PreferencesRow | null> {
+      const [row] = await executor
+        .select()
+        .from(userPreference)
+        .where(eq(userPreference.userId, userId))
+        .limit(1);
+      return row ? asPreferencesRow(row) : null;
+    },
+
+    /**
+     * Writes only the fields in `patch`. The first call creates the row, and the columns the patch leaves
+     * out take the table defaults; later calls update just the named columns. Nothing is derived from
+     * anything else, so changing the language can never move the currency or the country.
+     */
+    async upsert(
+      userId: string,
+      patch: {
+        readonly locale?: string | undefined;
+        readonly currency?: string | undefined;
+        readonly homeCountry?: string | null | undefined;
+        readonly nationality?: string | null | undefined;
+        readonly timeZone?: string | null | undefined;
+        readonly units?: UnitSystem | undefined;
+      },
+      now: Date,
+    ): Promise<PreferencesRow> {
+      const changes = {
+        ...(patch.locale === undefined ? {} : { locale: patch.locale }),
+        ...(patch.currency === undefined ? {} : { currency: patch.currency }),
+        ...(patch.homeCountry === undefined ? {} : { homeCountry: patch.homeCountry }),
+        ...(patch.nationality === undefined ? {} : { nationality: patch.nationality }),
+        ...(patch.timeZone === undefined ? {} : { timeZone: patch.timeZone }),
+        ...(patch.units === undefined ? {} : { units: patch.units }),
+      };
+      const [row] = await executor
+        .insert(userPreference)
+        .values({ userId, ...changes, createdAt: now, updatedAt: now })
+        .onConflictDoUpdate({ target: userPreference.userId, set: { ...changes, updatedAt: now } })
+        .returning();
+      if (!row) throw new Error('preferences upsert returned no row');
+      return asPreferencesRow(row);
+    },
+
+    /**
+     * Creates the row for a new account with the language it signed up in, and the defaults for the rest.
+     * Does nothing when a row already exists. Used by the sign-up hook, not by an application operation.
+     */
+    async createDefaults(userId: string, locale: string, now: Date): Promise<void> {
+      await executor
+        .insert(userPreference)
+        .values({ userId, locale, createdAt: now, updatedAt: now })
+        .onConflictDoNothing();
+    },
+  };
+}
+
 export function createAuditLog(executor: Executor) {
   return {
     async record(event: {
@@ -164,11 +240,13 @@ export function createIdempotencyStore(executor: Executor) {
 }
 
 export type TripRepository = ReturnType<typeof createTripRepository>;
+export type PreferencesRepository = ReturnType<typeof createPreferencesRepository>;
 export type AuditLog = ReturnType<typeof createAuditLog>;
 export type IdempotencyStore = ReturnType<typeof createIdempotencyStore>;
 
 export interface Transaction {
   readonly trips: TripRepository;
+  readonly preferences: PreferencesRepository;
   readonly audit: AuditLog;
   readonly idempotency: IdempotencyStore;
 }
@@ -180,6 +258,7 @@ export function createUnitOfWork(db: Database) {
       return db.transaction((tx) =>
         work({
           trips: createTripRepository(tx),
+          preferences: createPreferencesRepository(tx),
           audit: createAuditLog(tx),
           idempotency: createIdempotencyStore(tx),
         }),

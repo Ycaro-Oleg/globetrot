@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { apiProxyTarget, DEFAULT_API_URL } from './lib/api-proxy';
+import { apiInternalUrl, apiProxyTarget } from './lib/api-proxy';
 
 /**
  * The browser only ever talks to the web origin. Auth and `/v1` requests are forwarded to the API, so the
@@ -8,8 +8,7 @@ import { apiProxyTarget, DEFAULT_API_URL } from './lib/api-proxy';
  * environment. Details and the trust assumptions: docs/architecture/authentication.md.
  */
 export function proxy(request: NextRequest) {
-  const apiUrl = process.env.API_INTERNAL_URL || DEFAULT_API_URL;
-  const target = apiProxyTarget(request.nextUrl.pathname, request.nextUrl.search, apiUrl);
+  const target = apiProxyTarget(request.nextUrl.pathname, request.nextUrl.search, apiInternalUrl());
   if (target === null) return new NextResponse(null, { status: 404 });
   return NextResponse.rewrite(target);
 }

@@ -8,7 +8,13 @@ const config: NextConfig = {
   // Trace files from the monorepo root so workspace packages are included in the standalone output.
   outputFileTracingRoot: path.join(process.cwd(), '../..'),
   // Workspace packages ship TypeScript sources.
-  transpilePackages: ['@globetrot/application', '@globetrot/domain', '@globetrot/i18n'],
+  transpilePackages: [
+    '@globetrot/api-client',
+    '@globetrot/application',
+    '@globetrot/domain',
+    '@globetrot/i18n',
+    '@globetrot/ui',
+  ],
 };
 
 export default createNextIntlPlugin('./i18n/request.ts')(config);

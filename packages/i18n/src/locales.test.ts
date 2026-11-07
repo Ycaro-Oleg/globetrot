@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import {
   DEFAULT_LOCALE,
   isSupportedLocale,
+  LOCALE_COOKIE,
+  localeFromCookieHeader,
   negotiateLocale,
   parseAcceptLanguage,
   SUPPORTED_LOCALES,
@@ -57,5 +59,27 @@ describe('parseAcceptLanguage', () => {
 
   it('feeds negotiation', () => {
     expect(negotiateLocale(parseAcceptLanguage('fr-CA,fr;q=0.9,pt;q=0.5'))).toBe('pt-BR');
+  });
+});
+
+describe('localeFromCookieHeader', () => {
+  it('reads the language cookie among others', () => {
+    expect(localeFromCookieHeader(`a=1; ${LOCALE_COOKIE}=pt-BR; b=2`)).toBe('pt-BR');
+    expect(localeFromCookieHeader(`${LOCALE_COOKIE}=en`)).toBe('en');
+  });
+
+  it.each([
+    undefined,
+    null,
+    '',
+    'a=1; b=2',
+    `${LOCALE_COOKIE}=fr`,
+    `${LOCALE_COOKIE}=pt-br`,
+    `${LOCALE_COOKIE}=`,
+    `x${LOCALE_COOKIE}=en`,
+    `${LOCALE_COOKIE}x=en`,
+    LOCALE_COOKIE,
+  ])('finds nothing usable in %j', (header) => {
+    expect(localeFromCookieHeader(header)).toBeNull();
   });
 });

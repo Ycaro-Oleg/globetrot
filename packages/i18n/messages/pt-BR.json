@@ -51,5 +51,26 @@
     "language": "Idioma",
     "english": "English",
     "portuguese": "Português (Brasil)"
+  },
+  "settings": {
+    "title": "Idioma e região",
+    "description": "Estas opções são independentes: mudar uma nunca muda outra.",
+    "language": "Idioma",
+    "languageHelp": "O idioma do app. Não muda sua moeda nem seu país.",
+    "currency": "Moeda preferida",
+    "currencyHelp": "Preenche a moeda das novas viagens. As viagens que você já tem mantêm a própria moeda.",
+    "homeCountry": "País de residência",
+    "nationality": "Nacionalidade",
+    "optionalHelp": "Opcional. Nada no app exige isso.",
+    "timeZone": "Fuso horário",
+    "timeZoneHelp": "Opcional. Usado para mostrar horários. As datas da viagem nunca dependem dele.",
+    "units": "Unidades",
+    "unitsMetric": "Métrico (km, °C)",
+    "unitsImperial": "Imperial (mi, °F)",
+    "notSet": "Não definido",
+    "save": "Salvar",
+    "saved": "Suas configurações foram salvas.",
+    "error": "Não foi possível salvar suas configurações. Confira estes campos e tente de novo: {fields}.",
+    "signedOut": "Entre na sua conta para mudar o idioma e a região."
   }
 }

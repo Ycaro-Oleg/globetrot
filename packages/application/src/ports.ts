@@ -1,4 +1,4 @@
-import type { TripStatus, TripVisibility } from '@globetrot/domain';
+import type { TripStatus, TripVisibility, UnitSystem } from '@globetrot/domain';
 import type { Actor } from './actor';
 
 /**
@@ -66,6 +66,37 @@ export interface TripWriter extends TripReader {
   update(id: string, patch: TripPatch, updatedAt: Date): Promise<TripRecord>;
 }
 
+// --- Preferences ---------------------------------------------------------------------------------------
+
+export interface PreferencesRecord {
+  readonly locale: string;
+  readonly currency: string;
+  readonly homeCountry: string | null;
+  readonly nationality: string | null;
+  readonly timeZone: string | null;
+  readonly units: UnitSystem;
+}
+
+/** Only the fields present are written. `null` clears country, nationality or time zone. */
+export interface PreferencesPatch {
+  readonly locale?: string | undefined;
+  readonly currency?: string | undefined;
+  readonly homeCountry?: string | null | undefined;
+  readonly nationality?: string | null | undefined;
+  readonly timeZone?: string | null | undefined;
+  readonly units?: UnitSystem | undefined;
+}
+
+export interface PreferencesReader {
+  /** `null` until the user saved something (or signed up through the API hook). */
+  find(userId: string): Promise<PreferencesRecord | null>;
+}
+
+export interface PreferencesWriter extends PreferencesReader {
+  /** Creates the row with defaults for what the patch leaves out, or changes only the fields in the patch. */
+  upsert(userId: string, patch: PreferencesPatch, now: Date): Promise<PreferencesRecord>;
+}
+
 // --- Audit ---------------------------------------------------------------------------------------------
 
 export type AuditMetadata = Readonly<Record<string, string | number | boolean | readonly string[]>>;
@@ -113,6 +144,7 @@ export interface IdempotencyStore {
 /** What a mutation may touch. Everything in one `UnitOfWork.run` commits or rolls back together. */
 export interface Transaction {
   readonly trips: TripWriter;
+  readonly preferences: PreferencesWriter;
   readonly audit: AuditLog;
   readonly idempotency: IdempotencyStore;
 }
@@ -134,6 +166,7 @@ export interface Ports {
   readonly users: UserReader;
   /** Reads outside a transaction (queries). */
   readonly trips: TripReader;
+  readonly preferences: PreferencesReader;
   readonly unitOfWork: UnitOfWork;
   readonly clock: Clock;
   readonly ids: IdGenerator;
