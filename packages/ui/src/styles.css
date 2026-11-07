@@ -452,3 +452,39 @@ textarea.gt-field__control {
   cursor: not-allowed;
   opacity: 0.5;
 }
+
+.gt-toast {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  width: fit-content;
+  max-width: 100%;
+  padding: 8px 12px 8px 16px;
+  border: 2.5px solid var(--gt-semantic-color-outline);
+  border-radius: var(--gt-primitive-radius-14);
+  background: var(--gt-primitive-color-ink);
+  color: var(--gt-primitive-color-cream);
+  box-shadow: var(--gt-primitive-shadow-button);
+}
+.gt-toast__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.gt-toast__action {
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 0;
+  border-radius: var(--gt-primitive-radius-9);
+  background: transparent;
+  color: var(--gt-primitive-color-cream);
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.gt-toast__action[data-focus-visible] {
+  outline: 3px solid var(--gt-primitive-color-marigold);
+  outline-offset: 2px;
+}

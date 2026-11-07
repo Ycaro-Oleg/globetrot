@@ -83,6 +83,16 @@ try {
       const text = await trigger.innerText();
       if (!text.includes(locale === 'pt-BR' ? 'Real brasileiro' : 'Brazilian real'))
         failures.push(theme + '/' + locale + ': keyboard selection failed');
+      const toastParams = new URLSearchParams({
+        id: 'primitives-toast--with-undo',
+        globals: 'theme:' + theme + ';locale:' + locale,
+      });
+      await page.goto(base + '/iframe.html?' + toastParams);
+      const undo = page.getByRole('button', { name: locale === 'pt-BR' ? 'Desfazer' : 'Undo' });
+      await undo.focus();
+      await page.keyboard.press('Enter');
+      if (await undo.isVisible())
+        failures.push(theme + '/' + locale + ': toast undo did not dismiss');
       const segmentedParams = new URLSearchParams({
         id: 'primitives-segmentedcontrol--default',
         globals: 'theme:' + theme + ';locale:' + locale,
@@ -148,7 +158,7 @@ try {
   console.log(
     'Passed axe for ' +
       stories.length +
-      ' stories in both themes and locales, plus select, range, segmented control, checkbox, switch and modal keyboard checks.',
+      ' stories in both themes and locales, plus select, range, segmented control, checkbox, switch, modal and toast keyboard checks.',
   );
 } finally {
   await browser.close();
