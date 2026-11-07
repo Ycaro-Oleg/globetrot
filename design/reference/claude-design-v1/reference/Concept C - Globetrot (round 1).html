@@ -1,0 +1,550 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Concept C — Globetrot</title>
+<meta name="design_doc_mode" content="canvas">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,300..800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/d3@7.9.0/dist/d3.min.js" integrity="sha384-CjloA8y00+1SDAUkjs099PVfnY2KmDC2BZnws9kh8D/lX1s46w6EPhpXdqMfjK6i" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/topojson-client@3.1.0/dist/topojson-client.min.js" integrity="sha384-Ukv1p/xTma6P4/2bY5KzWBw+ydSpXmhCMtyciIQVDJ1RmOxtCYNMF1uXT9T63H67" crossorigin="anonymous"></script>
+<script src="geo.js"></script>
+<style>
+:root{
+  --cream:#FFF5E1;--cream2:#F8E9C9;--ink:#1D1A35;--ink2:#58536F;--ink3:#8B86A0;
+  --blue:#2B45C4;--blue2:#1E3196;--red:#E8462A;--gold:#F5B31C;--mint:#9AD8BF;--sky:#C9D3F4;
+  --f:'Bricolage Grotesque',system-ui,sans-serif;--m:'Space Mono',ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+body{margin:0;background:#E3D6BD;font-family:var(--f);color:var(--ink);-webkit-font-smoothing:antialiased}
+a{color:var(--blue);text-underline-offset:3px}
+a:hover{color:var(--red)}
+button{font:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--blue);outline-offset:3px}
+.num{font-variant-numeric:tabular-nums}
+.pres{padding:80px 80px 120px;width:3120px}
+.chead{display:grid;grid-template-columns:560px 1fr;gap:72px;width:2960px;margin-bottom:72px}
+.tag{font:700 12px var(--m);letter-spacing:.06em;text-transform:uppercase;color:var(--ink2)}
+.chead h1{font:800 104px/.9 var(--f);font-stretch:80%;letter-spacing:-.03em;margin:18px 0 22px}
+.chead h1 em{font-style:normal;color:var(--red)}
+.phil{font:400 20px/1.45 var(--f);max-width:540px;margin:0;text-wrap:pretty}
+.specs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:36px 40px;padding-top:12px}
+.spec h4{font:700 11px var(--m);letter-spacing:.06em;text-transform:uppercase;margin:0 0 10px;color:var(--red);border-top:2px dashed var(--ink);padding-top:12px}
+.spec p,.spec li{font:400 15.5px/1.5 var(--f);margin:0;text-wrap:pretty}
+.spec ul{margin:0;padding-left:16px}.spec li+li{margin-top:4px}
+.boards{display:flex;gap:80px;align-items:flex-start}
+.col{display:flex;flex-direction:column;gap:80px}
+.ab-label{display:flex;align-items:baseline;gap:12px;font:700 12px var(--m);margin:0 0 14px}
+.ab-label b{background:var(--red);color:#fff;padding:3px 8px;border-radius:4px}
+.ab{position:relative;overflow:hidden;background:var(--cream);border-radius:20px;box-shadow:0 40px 80px -40px rgba(60,40,10,.45)}
+
+.map{position:absolute;overflow:hidden}
+.map svg.ov{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
+.air0{fill:none;stroke:#fff;stroke-width:7;stroke-linecap:round}
+.air1{fill:none;stroke:var(--red);stroke-width:4;stroke-dasharray:12 12;stroke-linecap:butt;animation:march 1.6s linear infinite}
+.air2{fill:none;stroke:var(--blue);stroke-width:4;stroke-dasharray:12 12;stroke-dashoffset:12;animation:march2 1.6s linear infinite}
+.air1.sm,.air2.sm{stroke-width:3;stroke-dasharray:8 8}.air0.sm{stroke-width:5}
+.air2.sm{stroke-dashoffset:8}
+.air0.ghost{stroke:rgba(255,255,255,.7);stroke-dasharray:2 8;stroke-width:3}
+@keyframes march{to{stroke-dashoffset:-48}}
+@keyframes march2{from{stroke-dashoffset:12}to{stroke-dashoffset:-36}}
+.pc{position:absolute;width:32px;height:32px;margin:-16px;border-radius:50%;background:var(--gold);border:3px solid var(--ink);box-shadow:0 3px 0 var(--ink);display:grid;place-items:center;font:800 15px/1 var(--f);z-index:3;animation:pinIn .5s cubic-bezier(.3,1.8,.5,1) both}
+.pc.sm{width:24px;height:24px;margin:-12px;font-size:12px;border-width:2.5px}
+.pc.on{width:44px;height:44px;margin:-22px;background:var(--red);color:#fff;font-size:19px;box-shadow:0 4px 0 var(--ink),0 0 0 6px rgba(255,245,225,.5)}
+.pc.ghost{background:transparent;border:2.5px dashed #fff;box-shadow:none;color:#fff}
+.pc.home{background:#fff;width:18px;height:18px;margin:-9px;border-width:2.5px}
+@keyframes pinIn{from{transform:scale(0) translateY(-20px)}}
+.tagl{position:absolute;z-index:4;white-space:nowrap;background:#fff;border:2.5px solid var(--ink);border-radius:10px;padding:5px 10px;font:700 15px/1.1 var(--f);box-shadow:0 3px 0 var(--ink)}
+.tagl small{display:block;font:400 11px var(--m);color:var(--ink2);margin-top:2px}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;height:54px;padding:0 26px;border-radius:14px;background:var(--red);color:#fff;border:3px solid var(--ink);box-shadow:0 4px 0 var(--ink);font:700 17px var(--f);text-decoration:none;transition:transform .12s,box-shadow .12s}
+.btn:hover{color:#fff;transform:translateY(-2px);box-shadow:0 6px 0 var(--ink)}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
+.btn.b{background:var(--blue)}
+.btn.w{background:#fff;color:var(--ink)}.btn.w:hover{color:var(--ink)}
+.btn.g{background:var(--gold);color:var(--ink)}.btn.g:hover{color:var(--ink)}
+.btn.sm{height:40px;padding:0 16px;font-size:14.5px;border-width:2.5px;border-radius:11px;box-shadow:0 3px 0 var(--ink)}
+.mono{font:400 12px var(--m);letter-spacing:.02em}
+.stamp{display:inline-grid;place-items:center;text-align:center;border:3px solid currentColor;border-radius:50%;box-shadow:inset 0 0 0 3px var(--cream),inset 0 0 0 5px currentColor;font:800 13px/1.05 var(--f);font-stretch:80%;text-transform:uppercase;letter-spacing:.02em}
+.stamp small{display:block;font:400 9px var(--m);letter-spacing:.04em}
+.perf{padding:6px;background:radial-gradient(circle at center,transparent 3px,var(--c) 3.6px) -5px -5px/10px 10px}
+.perf>div{background:var(--c);height:100%}
+.ph{background:repeating-linear-gradient(135deg,#EAD9B6 0 7px,#F3E5C6 7px 14px);display:flex;align-items:flex-end;padding:10px;font:400 10.5px/1.35 var(--m);color:#7D6C4A}
+.st-g{display:inline-flex;align-items:center;gap:6px;font:700 11px var(--m);letter-spacing:.02em;padding:3px 8px;border-radius:6px;border:2px solid currentColor}
+.st-g.est{color:#8A5A00}.st-g.conf{color:#1D7A55}.st-g.paid{color:var(--ink);background:var(--gold)}.st-g.unk{color:var(--ink3);border-style:dashed}
+
+.pip .body{animation:hop 2.8s cubic-bezier(.4,0,.3,1) infinite;transform-origin:70px 150px}
+.pip .eyes{animation:look 6s ease-in-out infinite}
+.pip .eye{animation:blink 4.2s infinite;transform-box:fill-box;transform-origin:center}
+.pip .hat{animation:tip 6s ease-in-out infinite;transform-box:fill-box;transform-origin:50% 100%}
+.pip .arm{animation:wave 2.8s ease-in-out infinite;transform-box:fill-box;transform-origin:100% 100%}
+@keyframes hop{0%,60%,100%{transform:translateY(0) scaleY(1)}70%{transform:translateY(0) scaleY(.96)}80%{transform:translateY(-8px) scaleY(1.02)}90%{transform:translateY(0)}}
+@keyframes look{0%,30%{transform:translateX(0)}40%,55%{transform:translateX(-3px)}65%,85%{transform:translateX(3px)}}
+@keyframes blink{0%,46%,50%,100%{transform:scaleY(1)}48%{transform:scaleY(.1)}}
+@keyframes tip{0%,75%,100%{transform:rotate(0)}82%{transform:rotate(-9deg) translateY(-3px)}90%{transform:rotate(3deg)}}
+@keyframes wave{0%,100%{transform:rotate(0)}25%{transform:rotate(18deg)}50%{transform:rotate(-6deg)}75%{transform:rotate(14deg)}}
+@keyframes slam{0%{transform:scale(1.8) rotate(var(--r,0deg));opacity:0}60%{transform:scale(.94) rotate(var(--r,0deg));opacity:1}100%{transform:scale(1) rotate(var(--r,0deg))}}
+.slam{animation:slam .45s cubic-bezier(.2,.9,.3,1.2) both}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+
+/* landing */
+.L{width:1440px}
+.L nav{display:flex;align-items:center;justify-content:space-between;padding:26px 48px}
+.wm{font:800 32px/1 var(--f);font-stretch:85%;letter-spacing:-.03em;display:flex;align-items:center;gap:2px}
+.wm .o{width:.78em;height:.78em;border-radius:50%;background:var(--blue);display:inline-grid;place-items:center;margin:0 1px;position:relative;top:.06em}
+.wm .o::after{content:"";width:.28em;height:.28em;border-radius:50%;background:var(--gold)}
+.L nav .links{display:flex;gap:30px;font:600 16px var(--f)}
+.L nav .links a{color:var(--ink);text-decoration:none}
+.L nav .links a:hover{color:var(--red)}
+.sec{position:relative;padding:110px 48px}
+.h2{font:800 92px/.92 var(--f);font-stretch:82%;letter-spacing:-.035em;margin:0;text-wrap:balance}
+.h2 em{font-style:normal;color:var(--red)}
+.lede{font:400 21px/1.45 var(--f);max-width:540px;margin:0;text-wrap:pretty;color:var(--ink)}
+.stepbtn{display:flex;align-items:center;gap:14px;width:100%;text-align:left;padding:16px 18px;border-radius:16px;border:3px solid transparent;background:transparent;color:var(--ink)}
+.stepbtn b{width:38px;height:38px;border-radius:50%;border:3px solid var(--ink);display:grid;place-items:center;font:800 17px var(--f);flex:none}
+.stepbtn span{font:700 22px var(--f)}
+.stepbtn small{display:block;font:400 15px var(--f);color:var(--ink2);margin-top:2px}
+.stepbtn[aria-pressed="true"]{background:#fff;border-color:var(--ink);box-shadow:0 4px 0 var(--ink)}
+.stepbtn[aria-pressed="true"] b{background:var(--gold)}
+.stp{transition:opacity .35s,transform .45s cubic-bezier(.3,1.6,.5,1)}
+.stp.off{opacity:0;transform:scale(.6)}
+.stp.pc.off,.stp.tagl.off{transform:scale(.4)}
+
+/* workspace */
+.W{width:1440px;height:900px;display:grid;grid-template-columns:268px 1fr 400px;grid-template-rows:76px 1fr;background:var(--cream)}
+.seg{display:flex;background:#fff;border:2.5px solid var(--ink);border-radius:14px;padding:4px;gap:2px;box-shadow:0 3px 0 var(--ink)}
+.seg span{padding:0 16px;height:38px;display:flex;align-items:center;border-radius:9px;font:700 15px var(--f)}
+.seg span.on{background:var(--ink);color:#fff}
+.li{display:grid;grid-template-columns:28px 1fr auto;gap:12px;align-items:center;padding:11px 0;border-bottom:2px dashed rgba(29,26,53,.15)}
+.cb{width:24px;height:24px;border-radius:7px;border:2.5px solid var(--ink);display:grid;place-items:center;font:800 14px var(--f)}
+.cb.on{background:var(--mint)}
+.li h6{margin:0;font:700 16px/1.25 var(--f)}
+.li p{margin:2px 0 0;font:400 13px var(--f);color:var(--ink2)}
+
+/* mobile */
+.phone{width:390px;height:844px;border-radius:52px;background:var(--ink);padding:12px;box-shadow:0 40px 80px -30px rgba(60,40,10,.55)}
+.scr{position:relative;width:100%;height:100%;border-radius:42px;overflow:hidden;background:var(--cream)}
+.sb{position:absolute;top:0;left:0;right:0;height:50px;display:flex;justify-content:space-between;align-items:center;padding:4px 30px 0;font:700 15px var(--f);z-index:20}
+.sb .isl{position:absolute;left:50%;top:11px;width:118px;height:34px;margin-left:-59px;background:#000;border-radius:20px}
+.hb{position:absolute;bottom:8px;left:50%;width:130px;height:5px;margin-left:-65px;border-radius:3px;background:var(--ink);z-index:20}
+.tabbar{position:absolute;left:12px;right:12px;bottom:24px;height:68px;display:grid;grid-template-columns:repeat(5,1fr);background:#fff;border:2.5px solid var(--ink);border-radius:22px;box-shadow:0 4px 0 var(--ink);z-index:15;padding:6px}
+.tabbar div{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font:700 11px var(--f);color:var(--ink2);border-radius:15px}
+.tabbar div.on{background:var(--ink);color:#fff}
+.tabbar i{width:20px;height:20px;display:block;border-radius:6px;border:2.5px solid currentColor}
+</style>
+</head>
+<body>
+<div class="pres">
+
+<header class="chead">
+  <div>
+    <div class="tag">Concept C · Direction 1c</div>
+    <h1>The Passport <em>Club</em></h1>
+    <p class="phil">Brand proposal: <b>Globetrot</b>. Travel planning as a collection you’re proud of. Every real step — a route drawn, a budget set, a first R$1,000 saved — earns a stamp in your trip’s passport. Bold airline-poster colour, chunky tactile controls, and Pip front and centre as the friend who’s cheering you on.</p>
+  </div>
+  <div class="specs">
+    <div class="spec"><h4>Typography</h4><p><b>Bricolage Grotesque</b> — one expressive family across optical size and width: tight 80% width at 800 for posters and stamps, 100% at 400 for reading. <b>Space Mono</b> for ticket codes, dates and money — the airline-ticket voice.</p></div>
+    <div class="spec"><h4>Colour</h4><p>Airmail blue, stamp red, marigold, on warm cream; mint marks “done”. The map is a travel poster: blue sea, cream land, sky-tinted neighbours. Dark mode = “red-eye flight”: deep indigo, cream type, the same stamp colours slightly lifted.</p></div>
+    <div class="spec"><h4>Layout</h4><p>Generous radii (14–28px), thick 2.5–3px ink outlines and solid offset shadows: every control looks pressable. Asymmetric poster compositions; tickets and stamps break the grid on purpose, but only one per view.</p></div>
+    <div class="spec"><h4>Personality</h4><p>Warm, encouraging, a bit cheeky — never childish. Celebrates real progress loudly and stays out of the way when you’re working.</p></div>
+    <div class="spec"><h4>Motion</h4><ul><li>Stamps slam (scale 1.8→1, 450ms) with a soft thud + haptic.</li><li>Pins hop in with overshoot.</li><li>Routes are airmail stripes that slowly march.</li><li>Buttons physically press down 3px.</li></ul></div>
+    <div class="spec"><h4>The companion</h4><p>Pip at full volume: a cobalt globe in a red bucket hat with a sticker-covered marigold case. Has a small set of poses (wave, research, pack, fly, stamp) and appears at moments that matter.</p></div>
+    <div class="spec"><h4>Strengths</h4><ul><li>Most memorable and shareable; stamps make progress tangible.</li><li>Best onboarding energy for first-timers.</li><li>Mascot-ready brand; strong social assets.</li></ul></div>
+    <div class="spec"><h4>Risks &amp; tradeoffs</h4><ul><li>Hardest to keep “premium”; can tip into childish.</li><li>Loud colour competes with dense planning data.</li><li>Mascot animation budget (Rive) is a real cost.</li></ul></div>
+  </div>
+</header>
+
+<div class="boards">
+<div>
+  <div class="ab-label"><b>1c·L</b> Landing page — desktop 1440</div>
+  <div class="ab L" data-screen-label="C Landing">
+    <nav>
+      <div class="wm">gl<span class="o"></span>betrot</div>
+      <div class="links"><a href="#">How it works</a><a href="#">Meet Pip</a><a href="#">Money</a><a href="#">Trip ideas</a></div>
+      <div style="display:flex;gap:14px;align-items:center"><a href="#" style="font:600 16px var(--f);color:var(--ink);text-decoration:none">Log in</a><a class="btn sm" href="#">Start free</a></div>
+    </nav>
+    <div style="position:relative;display:grid;grid-template-columns:620px 1fr;gap:40px;padding:30px 48px 90px;align-items:center">
+      <div>
+        <div class="mono" style="color:var(--ink2);margin-bottom:18px">FOR FIRST-TIMERS AND FOREVER-DREAMERS</div>
+        <h2 style="font:800 112px/.9 var(--f);font-stretch:80%;letter-spacing:-.045em;margin:0">Your first <span style="color:var(--red)">stamp</span> is closer than you think.</h2>
+        <p class="lede" style="margin-top:28px">Pick a dream destination. Globetrot turns it into a route, a realistic budget and a savings plan — and stamps your passport every time you get one step closer.</p>
+        <div style="display:flex;gap:14px;margin-top:34px"><a class="btn" href="#">Plan my dream trip</a><a class="btn w" href="#">Browse trip ideas</a></div>
+      </div>
+      <div style="position:relative;height:640px">
+        <div style="position:absolute;left:20px;right:0;top:40px;bottom:30px;background:var(--blue);border-radius:28px;border:3px solid var(--ink);box-shadow:0 8px 0 var(--ink);overflow:hidden">
+          <div class="map" data-map="heroPoster" style="inset:24px 24px 90px">
+            <svg class="ov"><path class="air0" data-route="saopaulo|tokyo" data-curve="arc" data-bend=".28"></path><path class="air1" data-route="saopaulo|tokyo" data-curve="arc" data-bend=".28"></path><path class="air2" data-route="saopaulo|tokyo" data-curve="arc" data-bend=".28"></path></svg>
+            <div class="pc home" data-ll="saopaulo"></div>
+            <div class="pc on" data-ll="tokyo" style="width:36px;height:36px;margin:-18px;font-size:15px">★</div>
+            <div class="tagl" data-ll="saopaulo" style="margin:14px 0 0 -40px">São Paulo<small>you are here</small></div>
+            <div class="tagl" data-ll="tokyo" style="margin:-80px 0 0 -110px">Japan<small>10 days · April</small></div>
+          </div>
+          <div style="position:absolute;left:28px;right:28px;bottom:22px;display:flex;justify-content:space-between;align-items:flex-end;color:#fff">
+            <div style="font:800 46px/.9 var(--f);font-stretch:80%;letter-spacing:-.03em">GRU <span style="color:var(--gold)">✈</span> KIX</div>
+            <div class="mono" style="text-align:right;color:var(--sky)">DREAM → PLAN<br>IN ABOUT 10 MINUTES</div>
+          </div>
+        </div>
+        <div style="position:absolute;right:-14px;top:0;transform:rotate(8deg)" class="stamp" ><span class="stamp" style="width:118px;height:118px;color:var(--red);background:var(--cream);border-radius:50%">Route<br>drawn<small>✓ 06 NOV</small></span></div>
+        <div style="position:absolute;right:120px;top:-8px;--c:var(--gold);width:90px;height:110px;transform:rotate(-6deg)" class="perf"><div style="display:grid;place-items:center;text-align:center;font:800 15px/1 var(--f);font-stretch:80%;padding:6px">JAPAN<br><span style="font:800 26px/1 var(--f)">★</span><span class="mono" style="font-size:9px">DREAM</span></div></div>
+        <svg class="pip" viewBox="0 0 150 160" width="220" style="position:absolute;left:-90px;bottom:-6px;z-index:5">
+          <ellipse cx="70" cy="154" rx="40" ry="5" fill="rgba(29,26,53,.2)"></ellipse>
+          <g class="body" stroke="#1D1A35" stroke-width="3" stroke-linejoin="round" stroke-linecap="round">
+            <path d="M56 122 L54 146 M84 122 L86 146" fill="none"></path><path d="M44 148 h14 M82 148 h14" stroke-width="5"></path>
+            <g><rect x="102" y="104" width="38" height="30" rx="7" fill="#F5B31C"></rect><path d="M112 104 v-7 h18 v7" fill="none"></path><circle cx="113" cy="116" r="4" fill="#E8462A" stroke-width="2"></circle><rect x="122" y="118" width="12" height="8" rx="2" fill="#9AD8BF" stroke-width="2"></rect></g>
+            <path d="M104 96 Q112 104 114 104" fill="none"></path>
+            <g class="arm"><path d="M30 90 Q16 78 14 62" fill="none"></path><circle cx="14" cy="58" r="5" fill="#fff"></circle></g>
+            <circle cx="70" cy="84" r="42" fill="#2B45C4"></circle>
+            <path d="M36 70 Q50 60 62 68 Q70 74 64 82 Q54 88 44 84 Q34 80 36 70 Z" fill="#9AD8BF" stroke-width="2.4"></path><path d="M86 96 Q98 90 104 98 Q106 108 96 110 Q86 108 86 96 Z" fill="#9AD8BF" stroke-width="2.4"></path>
+            <g class="eyes" stroke="none"><ellipse cx="57" cy="82" rx="8" ry="9" fill="#fff"></ellipse><ellipse cx="83" cy="82" rx="8" ry="9" fill="#fff"></ellipse><ellipse class="eye" cx="59" cy="84" rx="3.8" ry="4.6" fill="#1D1A35"></ellipse><ellipse class="eye" cx="85" cy="84" rx="3.8" ry="4.6" fill="#1D1A35"></ellipse></g>
+            <path d="M62 100 Q70 107 78 100" fill="none"></path>
+            <g class="hat"><ellipse cx="70" cy="48" rx="44" ry="9" fill="#E8462A"></ellipse><path d="M47 47 Q47 20 70 20 Q93 20 93 47 Z" fill="#E8462A"></path><path d="M48 40 Q70 46 92 40" fill="none" stroke="#FFF5E1" stroke-width="4"></path></g>
+          </g>
+        </svg>
+        <div style="position:absolute;left:96px;bottom:150px;z-index:6;background:#fff;border:3px solid var(--ink);border-radius:18px 18px 18px 4px;padding:12px 16px;font:600 17px/1.3 var(--f);box-shadow:0 4px 0 var(--ink);max-width:230px">Olá! Where have you always wanted to go?</div>
+      </div>
+    </div>
+
+    <section class="sec" style="background:var(--cream2);border-top:3px solid var(--ink);border-bottom:3px solid var(--ink)">
+      <div style="display:grid;grid-template-columns:1fr 540px;gap:60px;align-items:end">
+        <h2 class="h2">Four stamps from<br>“someday” to <em>“booked”.</em></h2>
+        <p class="lede">Try it. Each step adds to the same map — and the passport fills up as the trip becomes real.</p>
+      </div>
+      <div id="demo" style="display:grid;grid-template-columns:330px 1fr 300px;gap:28px;margin-top:56px;align-items:stretch">
+        <div style="display:flex;flex-direction:column;gap:8px" role="group" aria-label="Demo steps">
+          <button class="stepbtn" data-step="1" aria-pressed="false"><b>1</b><div><span>Dream</span><small>Pin Japan</small></div></button>
+          <button class="stepbtn" data-step="2" aria-pressed="false"><b>2</b><div><span>Route</span><small>Tokyo → Kyoto → Osaka</small></div></button>
+          <button class="stepbtn" data-step="3" aria-pressed="false"><b>3</b><div><span>Budget</span><small>≈ R$ 14.280, honest estimate</small></div></button>
+          <button class="stepbtn" data-step="4" aria-pressed="true"><b>4</b><div><span>Save</span><small>R$ 1.500 a month → April</small></div></button>
+        </div>
+        <div style="position:relative;height:500px;background:var(--blue);border:3px solid var(--ink);border-radius:24px;box-shadow:0 6px 0 var(--ink);overflow:hidden">
+          <div class="map" id="demoMap" data-map="demoJapan" style="inset:0">
+            <svg class="ov"><g class="stp" data-s="2"><path class="air0" data-route="tokyo|hakone|kyoto|osaka" data-curve="arc" data-bend=".2"></path><path class="air1" data-route="tokyo|hakone|kyoto|osaka" data-curve="arc" data-bend=".2"></path><path class="air2" data-route="tokyo|hakone|kyoto|osaka" data-curve="arc" data-bend=".2"></path></g></svg>
+            <div class="pc on stp" data-s="1" data-ll="137.6,36.2" style="opacity:1">★</div>
+            <div class="pc stp" data-s="2" data-ll="tokyo">1</div><div class="pc stp" data-s="2" data-ll="hakone">2</div><div class="pc stp" data-s="2" data-ll="kyoto">3</div><div class="pc stp" data-s="2" data-ll="osaka">4</div>
+            <div class="tagl stp" data-s="2" data-ll="tokyo" style="margin:-64px 0 0 -30px">Tokyo<small>4 nights</small></div>
+            <div class="tagl stp" data-s="2" data-ll="kyoto" style="margin:-70px 0 0 -60px">Kyoto<small>3 nights</small></div>
+            <div class="tagl stp" data-s="3" data-ll="osaka" style="margin:24px 0 0 -70px">≈ R$ 1.400<small>Osaka · 2 nights</small></div>
+            <div class="tagl stp" data-s="3" data-ll="tokyo" style="margin:24px 0 0 -40px">≈ R$ 3.900<small>Tokyo · food-heavy</small></div>
+          </div>
+          <div class="stp" data-s="4" style="position:absolute;left:18px;right:18px;bottom:18px;background:#fff;border:3px solid var(--ink);border-radius:16px;padding:14px 18px;display:grid;grid-template-columns:auto 1fr auto;gap:18px;align-items:center">
+            <span class="mono" style="font-weight:700">R$ 6.400</span>
+            <div style="height:16px;border-radius:8px;border:2.5px solid var(--ink);overflow:hidden;background:var(--cream)"><div style="width:45%;height:100%;background:repeating-linear-gradient(90deg,var(--red) 0 10px,var(--blue) 10px 20px)"></div></div>
+            <span class="mono" style="font-weight:700">APR ✈</span>
+          </div>
+        </div>
+        <div style="background:var(--blue2);border:3px solid var(--ink);border-radius:20px;padding:20px;color:#fff;box-shadow:0 6px 0 var(--ink);display:flex;flex-direction:column">
+          <div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font:800 20px var(--f);font-stretch:80%;letter-spacing:.04em">PASSPORT</span><span class="mono" style="color:var(--sky)">JAPAN · 2027</span></div>
+          <div id="pp" style="flex:1;margin-top:16px;background:var(--cream);border-radius:12px;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:10px;padding:14px;place-items:center">
+            <span class="stamp stp" data-s="1" style="width:100px;height:100px;color:var(--red);--r:-8deg;transform:rotate(-8deg)">Dream<br>Japan<small>06 NOV</small></span>
+            <span class="stp perf" data-s="2" style="--c:var(--gold);width:90px;height:100px;transform:rotate(5deg)"><div style="display:grid;place-items:center;text-align:center;font:800 14px/1.05 var(--f);font-stretch:80%;color:var(--ink)">ROUTE<br>4 STOPS</div></span>
+            <span class="stamp stp" data-s="3" style="width:100px;height:100px;color:var(--blue);border-radius:16px;box-shadow:inset 0 0 0 3px var(--cream),inset 0 0 0 5px var(--blue);transform:rotate(4deg)">Budget<br>set<small>≈ 14.280</small></span>
+            <span class="stamp stp" data-s="4" style="width:100px;height:100px;color:#1D7A55;transform:rotate(-5deg)">First<br>R$ 1k<small>SAVED</small></span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div style="display:grid;grid-template-columns:1fr 540px;gap:60px;align-items:end">
+        <h2 class="h2">Your trip, as a<br><em>boarding pass.</em></h2>
+        <p class="lede">Five stubs. Tear one off when it’s done. Skip ahead whenever you like — nothing is locked.</p>
+      </div>
+      <div style="display:grid;grid-template-columns:1.25fr 1fr 1fr 1fr 1fr;margin-top:56px;background:#fff;border:3px solid var(--ink);border-radius:26px;box-shadow:0 8px 0 var(--ink);overflow:hidden">
+        <div style="padding:30px 28px;background:var(--red);color:#fff"><div class="mono" style="opacity:.85">STUB 01</div><div style="font:800 54px/.9 var(--f);font-stretch:80%;margin:14px 0 12px;letter-spacing:-.03em">Dream it</div><p style="font:400 16.5px/1.45 var(--f);margin:0">Tap a country. That’s already a plan — the smallest one.</p></div>
+        <div style="padding:30px 24px;border-left:3px dashed var(--ink)"><div class="mono" style="color:var(--ink2)">STUB 02</div><div style="font:800 44px/.9 var(--f);font-stretch:80%;margin:14px 0 12px;letter-spacing:-.03em">Connect</div><p style="font:400 16px/1.45 var(--f);margin:0;color:var(--ink2)">Add cities and drag them into an order. Airmail stripes show the way.</p></div>
+        <div style="padding:30px 24px;border-left:3px dashed var(--ink)"><div class="mono" style="color:var(--ink2)">STUB 03</div><div style="font:800 44px/.9 var(--f);font-stretch:80%;margin:14px 0 12px;letter-spacing:-.03em">Count</div><p style="font:400 16px/1.45 var(--f);margin:0;color:var(--ink2)">Costs per city, clearly marked: estimate, confirmed, paid.</p></div>
+        <div style="padding:30px 24px;border-left:3px dashed var(--ink)"><div class="mono" style="color:var(--ink2)">STUB 04</div><div style="font:800 44px/.9 var(--f);font-stretch:80%;margin:14px 0 12px;letter-spacing:-.03em">Pack</div><p style="font:400 16px/1.45 var(--f);margin:0;color:var(--ink2)">Passport, insurance, adapters. Each done item is a stamp.</p></div>
+        <div style="padding:30px 24px;border-left:3px dashed var(--ink);background:var(--gold)"><div class="mono">STUB 05</div><div style="font:800 44px/.9 var(--f);font-stretch:80%;margin:14px 0 12px;letter-spacing:-.03em">Go!</div><p style="font:400 16px/1.45 var(--f);margin:0">Your trip on your phone, offline, one day at a time.</p></div>
+      </div>
+    </section>
+
+    <section class="sec" style="background:var(--ink);color:var(--cream)">
+      <div style="display:grid;grid-template-columns:1fr 560px;gap:60px;align-items:end">
+        <h2 class="h2" style="color:var(--cream)">Meet Pip. Pip has<br><em style="color:var(--gold)">opinions</em> about ramen.</h2>
+        <p class="lede" style="color:#CFCADF">Tell Pip your budget and what you love. It researches, drafts a trip onto your map, and hands it over for you to keep, tweak or toss.</p>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-top:56px">
+        <div style="background:#2A2650;border-radius:22px;padding:22px;height:300px;display:flex;flex-direction:column">
+          <div style="flex:1;display:grid;place-items:center"><svg viewBox="0 0 150 160" width="130"><g stroke="#1D1A35" stroke-width="3"><circle cx="70" cy="84" r="42" fill="#2B45C4"></circle><ellipse cx="57" cy="82" rx="8" ry="9" fill="#fff" stroke="none"></ellipse><ellipse cx="83" cy="82" rx="8" ry="9" fill="#fff" stroke="none"></ellipse><circle cx="55" cy="84" r="4" fill="#1D1A35" stroke="none"></circle><circle cx="81" cy="84" r="4" fill="#1D1A35" stroke="none"></circle><ellipse cx="70" cy="48" rx="44" ry="9" fill="#E8462A"></ellipse><path d="M47 47 Q47 20 70 20 Q93 20 93 47 Z" fill="#E8462A"></path><rect x="96" y="100" width="44" height="34" rx="4" fill="#FFF5E1" transform="rotate(-12 118 117)"></rect><path d="M104 104 l10 26 M118 100 l8 28" stroke-width="2"></path></g></svg></div>
+          <div class="mono" style="color:var(--gold)">01 · RESEARCHING</div><div style="font:600 18px var(--f);margin-top:4px">Unfolds a map, checks April weather.</div></div>
+        <div style="background:#2A2650;border-radius:22px;padding:22px;height:300px;display:flex;flex-direction:column">
+          <div style="flex:1;display:grid;place-items:center"><svg viewBox="0 0 150 160" width="130"><g stroke="#1D1A35" stroke-width="3"><rect x="4" y="96" width="34" height="24" rx="3" fill="#F5B31C" transform="rotate(-14 21 108)"></rect><rect x="108" y="96" width="34" height="24" rx="3" fill="#9AD8BF" transform="rotate(12 125 108)"></rect><rect x="56" y="124" width="34" height="24" rx="3" fill="#FFF5E1"></rect><circle cx="70" cy="84" r="42" fill="#2B45C4"></circle><ellipse cx="57" cy="80" rx="8" ry="9" fill="#fff" stroke="none"></ellipse><ellipse cx="83" cy="80" rx="8" ry="9" fill="#fff" stroke="none"></ellipse><circle cx="57" cy="84" r="4" fill="#1D1A35" stroke="none"></circle><circle cx="83" cy="84" r="4" fill="#1D1A35" stroke="none"></circle><ellipse cx="70" cy="48" rx="44" ry="9" fill="#E8462A"></ellipse><path d="M47 47 Q47 20 70 20 Q93 20 93 47 Z" fill="#E8462A"></path></g></svg></div>
+          <div class="mono" style="color:var(--gold)">02 · DRAFTING</div><div style="font:600 18px var(--f);margin-top:4px">Lays out postcards — one per city.</div></div>
+        <div style="background:#2A2650;border-radius:22px;padding:22px;height:300px;display:flex;flex-direction:column">
+          <div style="flex:1;display:grid;place-items:center"><svg viewBox="0 0 170 160" width="140"><g stroke="#1D1A35" stroke-width="3" stroke-linejoin="round"><path d="M10 112 L160 92 L150 104 L20 124 Z" fill="#FFF5E1"></path><path d="M70 104 L110 70 L120 72 L96 102 Z" fill="#F5B31C"></path><circle cx="78" cy="78" r="34" fill="#2B45C4"></circle><ellipse cx="68" cy="76" rx="6.5" ry="7.5" fill="#fff" stroke="none"></ellipse><ellipse cx="88" cy="76" rx="6.5" ry="7.5" fill="#fff" stroke="none"></ellipse><circle cx="70" cy="77" r="3.4" fill="#1D1A35" stroke="none"></circle><circle cx="90" cy="77" r="3.4" fill="#1D1A35" stroke="none"></circle><ellipse cx="78" cy="48" rx="36" ry="7.5" fill="#E8462A"></ellipse><path d="M60 47 Q60 24 78 24 Q96 24 96 47 Z" fill="#E8462A"></path></g></svg></div>
+          <div class="mono" style="color:var(--gold)">03 · DELIVERING</div><div style="font:600 18px var(--f);margin-top:4px">Flies the draft onto your board.</div></div>
+        <div style="background:var(--cream);color:var(--ink);border-radius:22px;padding:22px;height:300px;display:flex;flex-direction:column">
+          <div class="mono" style="color:var(--ink2)">YOUR CALL</div>
+          <div style="font:600 17px/1.35 var(--f);margin-top:10px">“Here’s a first go: Tokyo 4 nights, Hakone 1, Kyoto 3, Osaka 2. About R$ 14.280 — that’s an estimate, not a quote.”</div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:auto"><a class="btn sm" href="#">Add to my map</a><a class="btn sm w" href="#">Change it</a></div></div>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div style="display:grid;grid-template-columns:560px 1fr;gap:70px;align-items:center">
+        <div>
+          <div class="mono" style="color:var(--red)">MONEY, MINUS THE STRESS</div>
+          <h2 class="h2" style="margin-top:16px">Can I actually <em>afford</em> this?</h2>
+          <p class="lede" style="margin-top:24px">Probably sooner than you think. Tell us what you’ve saved and what you can put aside — we’ll tell you the month you can fly, and keep the estimate honest.</p>
+          <div style="display:flex;gap:10px;margin-top:26px;flex-wrap:wrap"><span class="st-g est">≈ ESTIMATE</span><span class="st-g conf">✓ CONFIRMED</span><span class="st-g paid">● PAID</span><span class="st-g unk">? UNKNOWN</span></div>
+        </div>
+        <div style="position:relative;display:grid;grid-template-columns:1fr 200px;background:#fff;border:3px solid var(--ink);border-radius:26px;box-shadow:0 8px 0 var(--ink);overflow:hidden">
+          <div style="padding:28px 30px">
+            <div style="display:flex;justify-content:space-between" class="mono"><span>GLOBETROT · TRIP PASS</span><span>JPN-01</span></div>
+            <div style="display:flex;align-items:center;gap:20px;margin:18px 0 22px"><div><div style="font:800 76px/.85 var(--f);font-stretch:80%;letter-spacing:-.03em">GRU</div><div class="mono" style="color:var(--ink2)">SÃO PAULO</div></div><div style="flex:1;height:3px;background:repeating-linear-gradient(90deg,var(--red) 0 10px,var(--blue) 10px 20px);position:relative"><span style="position:absolute;left:45%;top:-15px;font:400 26px/1 var(--f);color:var(--ink)">✈</span></div><div style="text-align:right"><div style="font:800 76px/.85 var(--f);font-stretch:80%;letter-spacing:-.03em">KIX</div><div class="mono" style="color:var(--ink2)">OSAKA</div></div></div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;border-top:2.5px dashed rgba(29,26,53,.2);padding-top:18px">
+              <div><div class="mono" style="color:var(--ink2)">SAVED</div><div class="num" style="font:800 32px var(--f)">R$ 6.400</div></div>
+              <div><div class="mono" style="color:var(--ink2)">TRIP COST</div><div class="num" style="font:800 32px var(--f)">≈ 14.280</div></div>
+              <div><div class="mono" style="color:var(--ink2)">MONTHLY</div><div class="num" style="font:800 32px var(--f)">R$ 1.500</div></div>
+            </div>
+          </div>
+          <div style="border-left:3px dashed var(--ink);background:var(--gold);padding:28px 20px;display:flex;flex-direction:column;justify-content:space-between">
+            <div class="mono">BOARDING</div>
+            <div><div style="font:800 64px/.85 var(--f);font-stretch:80%;letter-spacing:-.03em">APR</div><div style="font:800 28px var(--f);font-stretch:80%">2027</div></div>
+            <div class="mono">45% SAVED</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="sec" style="background:var(--cream2);border-top:3px solid var(--ink)">
+      <div style="display:flex;justify-content:space-between;align-items:end"><h2 class="h2">Steal a trip.<br><em>Make it yours.</em></h2><a href="#" style="font:700 17px var(--f)">See all trip ideas →</a></div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:28px;margin-top:56px">
+        <div style="background:var(--gold);border:3px solid var(--ink);border-radius:26px;box-shadow:0 6px 0 var(--ink);overflow:hidden;transform:rotate(-1.2deg)">
+          <div class="map" data-map="posPT" style="position:relative;height:340px"></div>
+          <div style="padding:0 26px 26px"><div class="mono">7 DAYS · TRAINS · ≈ R$ 9K</div><div style="font:800 58px/.88 var(--f);font-stretch:80%;letter-spacing:-.04em;margin-top:8px">Portugal,<br>pastel by pastel</div></div></div>
+        <div style="background:var(--red);color:#fff;border:3px solid var(--ink);border-radius:26px;box-shadow:0 6px 0 var(--ink);overflow:hidden;transform:rotate(.8deg)">
+          <div class="map" data-map="posJP" style="position:relative;height:340px"></div>
+          <div style="padding:0 26px 26px"><div class="mono">10 DAYS · FIRST TIME ABROAD · ≈ R$ 14K</div><div style="font:800 58px/.88 var(--f);font-stretch:80%;letter-spacing:-.04em;margin-top:8px">Japan, temples<br>&amp; ramen</div></div></div>
+        <div style="background:var(--mint);border:3px solid var(--ink);border-radius:26px;box-shadow:0 6px 0 var(--ink);overflow:hidden;transform:rotate(-.6deg)">
+          <div class="map" data-map="posRJ" style="position:relative;height:340px"><svg class="ov"><path class="air0 sm" data-route="saopaulo|paraty" data-curve="arc" data-bend=".3"></path><path class="air1 sm" data-route="saopaulo|paraty" data-curve="arc" data-bend=".3"></path><path class="air2 sm" data-route="saopaulo|paraty" data-curve="arc" data-bend=".3"></path></svg><div class="pc sm home" data-ll="saopaulo"></div><div class="pc sm" data-ll="paraty">★</div></div>
+          <div style="padding:0 26px 26px"><div class="mono">WEEKEND · BY BUS · ≈ R$ 900</div><div style="font:800 58px/.88 var(--f);font-stretch:80%;letter-spacing:-.04em;margin-top:8px">Paraty, a<br>cheap escape</div></div></div>
+      </div>
+    </section>
+
+    <section style="background:var(--red);color:#fff;padding:110px 48px;display:grid;grid-template-columns:1fr 520px;gap:60px;align-items:center;border-top:3px solid var(--ink)">
+      <div>
+        <h2 class="h2" style="font-size:128px;color:#fff">Ready for your<br>first stamp?</h2>
+        <p class="lede" style="color:#fff;margin-top:24px">Free to start. Your trip syncs between phone and laptop.</p>
+      </div>
+      <div style="background:var(--cream);color:var(--ink);border:3px solid var(--ink);border-radius:26px;box-shadow:0 8px 0 var(--ink);padding:28px">
+        <div style="font:800 30px var(--f);font-stretch:85%">Start your passport</div>
+        <a class="btn w" href="#" style="width:100%;margin-top:18px;gap:12px"><span style="width:22px;height:22px;border-radius:50%;border:2.5px solid var(--ink);display:grid;place-items:center;font:800 12px var(--f)">G</span>Continue with Google</a>
+        <div style="display:flex;align-items:center;gap:12px;margin:16px 0" class="mono"><span style="flex:1;height:2px;background:rgba(29,26,53,.15)"></span>OR<span style="flex:1;height:2px;background:rgba(29,26,53,.15)"></span></div>
+        <div style="height:54px;border:2.5px solid var(--ink);border-radius:14px;background:#fff;display:flex;align-items:center;padding:0 16px;font:400 17px var(--f);color:var(--ink3)">you@email.com</div>
+        <a class="btn" href="#" style="width:100%;margin-top:12px">Get my first stamp</a>
+      </div>
+    </section>
+    <footer style="display:flex;justify-content:space-between;padding:22px 48px;background:var(--ink);color:var(--sky)" class="mono"><span style="color:#fff">GLOBETROT</span><span>MAP DATA · NATURAL EARTH</span></footer>
+  </div>
+</div>
+
+<div class="col">
+<div>
+  <div class="ab-label"><b>1c·W</b> Travel board workspace — desktop 1440 × 900</div>
+  <div class="ab W" data-screen-label="C Workspace">
+    <div style="grid-column:1/4;display:grid;grid-template-columns:268px 1fr auto;align-items:center;padding:0 22px 0 26px;border-bottom:3px solid var(--ink)">
+      <div class="wm" style="font-size:27px">gl<span class="o"></span>betrot</div>
+      <div style="display:flex;align-items:center;gap:20px"><div class="seg"><span class="on">Map</span><span>Days</span><span>Money</span><span>Packing</span><span>Ideas</span></div><div style="font:700 18px var(--f)">Japan, temples &amp; ramen <span class="mono" style="color:var(--ink2);font-weight:400">· 3–12 APR</span></div></div>
+      <div style="display:flex;gap:10px;align-items:center"><a class="btn sm g" href="#">Ask Pip</a><span style="width:42px;height:42px;border-radius:50%;background:var(--mint);border:2.5px solid var(--ink);display:grid;place-items:center;font:800 15px var(--f)">MC</span></div>
+    </div>
+    <aside style="background:var(--blue2);color:#fff;padding:22px 20px;display:flex;flex-direction:column;gap:16px;border-right:3px solid var(--ink)">
+      <div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font:800 20px var(--f);font-stretch:80%;letter-spacing:.06em">PASSPORT</span><span class="mono" style="color:var(--sky)">4 / 9</span></div>
+      <div style="background:var(--cream);border-radius:14px;padding:12px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;color:var(--ink)">
+        <span class="stamp" style="width:64px;height:64px;color:var(--red);font-size:10px;transform:rotate(-8deg)">Dream<small>✓</small></span>
+        <span class="perf" style="--c:var(--gold);width:60px;height:64px;transform:rotate(4deg)"><div style="display:grid;place-items:center;text-align:center;font:800 10px/1 var(--f)">ROUTE</div></span>
+        <span class="stamp" style="width:64px;height:64px;color:var(--blue);border-radius:12px;box-shadow:inset 0 0 0 3px var(--cream),inset 0 0 0 5px var(--blue);font-size:10px;transform:rotate(3deg)">Budget<small>✓</small></span>
+        <span class="stamp" style="width:64px;height:64px;color:#1D7A55;font-size:10px;transform:rotate(-4deg)">R$ 1k<small>SAVED</small></span>
+        <span style="width:64px;height:64px;border-radius:50%;border:2.5px dashed rgba(29,26,53,.3);display:grid;place-items:center;font:600 10px/1.1 var(--f);color:var(--ink3);text-align:center">Docs</span>
+        <span style="width:64px;height:64px;border-radius:50%;border:2.5px dashed rgba(29,26,53,.3);display:grid;place-items:center;font:600 10px/1.1 var(--f);color:var(--ink3);text-align:center">Stays</span>
+        <span style="width:64px;height:64px;border-radius:50%;border:2.5px dashed rgba(29,26,53,.3);display:grid;place-items:center;font:600 10px/1.1 var(--f);color:var(--ink3);text-align:center">Days</span>
+        <span style="width:64px;height:64px;border-radius:50%;border:2.5px dashed rgba(29,26,53,.3);display:grid;place-items:center;font:600 10px/1.1 var(--f);color:var(--ink3);text-align:center">Packed</span>
+        <span style="width:64px;height:64px;border-radius:50%;border:2.5px dashed rgba(29,26,53,.3);display:grid;place-items:center;font:600 10px/1.1 var(--f);color:var(--ink3);text-align:center">Ready!</span>
+      </div>
+      <div style="background:rgba(255,255,255,.08);border-radius:14px;padding:14px"><div class="mono" style="color:var(--gold)">NEXT STAMP</div><div style="font:700 17px/1.3 var(--f);margin-top:4px">Check your passport expires after Oct 2027</div><a class="btn sm g" href="#" style="margin-top:12px;height:36px">Do it now</a></div>
+      <div style="margin-top:auto"><div class="mono" style="color:var(--sky)">MORE DREAMS</div><div style="display:flex;flex-direction:column;gap:8px;margin-top:10px;font:600 16px var(--f)"><span style="display:flex;align-items:center;gap:10px"><i style="width:12px;height:12px;border-radius:50%;background:var(--gold)"></i>Portugal</span><span style="display:flex;align-items:center;gap:10px"><i style="width:12px;height:12px;border-radius:50%;background:var(--mint)"></i>Peru</span><span style="color:var(--gold)">+ New dream</span></div></div>
+    </aside>
+    <div style="position:relative;padding:20px">
+      <div style="position:relative;height:100%;background:var(--blue);border:3px solid var(--ink);border-radius:26px;box-shadow:0 6px 0 var(--ink);overflow:hidden">
+        <div class="map" data-map="wsJP" style="inset:0">
+          <svg class="ov">
+            <path class="air0" data-route="tokyo|hakone|kyoto|osaka" data-curve="arc" data-bend=".18"></path><path class="air1" data-route="tokyo|hakone|kyoto|osaka" data-curve="arc" data-bend=".18"></path><path class="air2" data-route="tokyo|hakone|kyoto|osaka" data-curve="arc" data-bend=".18"></path>
+            <path class="air0 ghost" data-route="kyoto|nara" data-curve="arc" data-bend=".3"></path>
+          </svg>
+          <div class="pc" data-ll="tokyo">1</div><div class="pc" data-ll="hakone">2</div><div class="pc on" data-ll="kyoto">3</div><div class="pc sm" data-ll="nara" style="background:#fff">+</div><div class="pc" data-ll="osaka">4</div>
+          <div class="tagl" data-ll="tokyo" style="margin:-70px 0 0 -40px">Tokyo<small>4 nights · 3–6 Apr</small></div>
+          <div class="tagl" data-ll="hakone" style="margin:26px 0 0 -40px">Hakone<small>1 night · onsen!</small></div>
+          <div class="tagl" data-ll="kyoto" style="margin:-84px 0 0 -50px;background:var(--red);color:#fff">Kyoto<small style="color:#FFE1D9">3 nights · 7–9 Apr</small></div>
+          <div class="tagl" data-ll="nara" style="margin:18px 0 0 6px;font-size:13px">Nara<small>day trip</small></div>
+          <div class="tagl" data-ll="osaka" style="margin:20px 0 0 -120px">Osaka<small>2 nights</small></div>
+        </div>
+        <div style="position:absolute;right:18px;top:18px;display:flex;flex-direction:column;gap:8px"><span class="btn sm w" style="width:44px;padding:0;font-size:20px">+</span><span class="btn sm w" style="width:44px;padding:0;font-size:20px">−</span><span class="btn sm w" style="width:44px;padding:0;font-size:11px">WORLD</span></div>
+        <div style="position:absolute;left:18px;top:18px;display:flex;gap:8px"><span class="btn sm" style="height:40px">+ Drop a pin</span><span class="btn sm w" style="height:40px">Connect</span></div>
+        <div style="position:absolute;left:16px;bottom:16px;display:flex;align-items:flex-end;gap:8px">
+          <svg class="pip" viewBox="0 0 150 160" width="96">
+            <g class="body" stroke="#1D1A35" stroke-width="3" stroke-linejoin="round" stroke-linecap="round">
+              <path d="M56 122 L54 146 M84 122 L86 146" fill="none"></path><path d="M44 148 h14 M82 148 h14" stroke-width="5"></path>
+              <rect x="102" y="104" width="38" height="30" rx="7" fill="#F5B31C"></rect><path d="M112 104 v-7 h18 v7" fill="none"></path>
+              <circle cx="70" cy="84" r="42" fill="#2B45C4"></circle><path d="M36 70 Q50 60 62 68 Q70 74 64 82 Q54 88 44 84 Q34 80 36 70 Z" fill="#9AD8BF" stroke-width="2.4"></path>
+              <g class="eyes" stroke="none"><ellipse cx="57" cy="82" rx="8" ry="9" fill="#fff"></ellipse><ellipse cx="83" cy="82" rx="8" ry="9" fill="#fff"></ellipse><ellipse class="eye" cx="59" cy="84" rx="3.8" ry="4.6" fill="#1D1A35"></ellipse><ellipse class="eye" cx="85" cy="84" rx="3.8" ry="4.6" fill="#1D1A35"></ellipse></g>
+              <path d="M62 100 Q70 107 78 100" fill="none"></path>
+              <g class="hat"><ellipse cx="70" cy="48" rx="44" ry="9" fill="#E8462A"></ellipse><path d="M47 47 Q47 20 70 20 Q93 20 93 47 Z" fill="#E8462A"></path></g>
+            </g>
+          </svg>
+          <div style="background:#fff;border:3px solid var(--ink);border-radius:18px 18px 18px 4px;padding:12px 14px;box-shadow:0 4px 0 var(--ink);width:280px;margin-bottom:60px"><div style="font:600 15px/1.35 var(--f)">Nara is 45 min from Kyoto — deer, giant Buddha, easy day trip. Add it?</div><div style="display:flex;gap:8px;margin-top:10px"><a class="btn sm" href="#" style="height:36px">Add day trip</a><a class="btn sm w" href="#" style="height:36px">Nah</a></div></div>
+        </div>
+        <div style="position:absolute;right:16px;bottom:16px;width:330px;background:#fff;border:3px solid var(--ink);border-radius:18px;box-shadow:0 4px 0 var(--ink);display:grid;grid-template-columns:1fr 92px;overflow:hidden">
+          <div style="padding:12px 14px"><div class="mono" style="font-size:10.5px;color:var(--ink2)">TRIP PASS · SAVED</div><div style="display:flex;align-items:baseline;gap:6px"><span class="num" style="font:800 26px var(--f)">R$ 6.400</span><span class="mono" style="color:var(--ink2)">/ ≈14.280</span></div><div style="height:10px;border-radius:5px;border:2px solid var(--ink);overflow:hidden;margin-top:6px;background:var(--cream)"><div style="width:45%;height:100%;background:repeating-linear-gradient(90deg,var(--red) 0 8px,var(--blue) 8px 16px)"></div></div></div>
+          <div style="border-left:3px dashed var(--ink);background:var(--gold);display:grid;place-items:center;text-align:center"><div><div style="font:800 26px/.9 var(--f);font-stretch:80%">APR</div><div class="mono" style="font-size:10px">ON TRACK</div></div></div>
+        </div>
+      </div>
+    </div>
+    <aside style="padding:20px 22px 20px 0;display:flex;flex-direction:column">
+      <div style="flex:1;background:#fff;border:3px solid var(--ink);border-radius:24px;box-shadow:0 6px 0 var(--ink);display:flex;flex-direction:column;overflow:hidden">
+        <div class="ph" style="height:170px;border-bottom:3px solid var(--ink);position:relative">postcard front: Fushimi Inari gates
+          <span class="stamp" style="position:absolute;right:14px;top:14px;width:76px;height:76px;color:var(--red);background:rgba(255,245,225,.9);font-size:11px;transform:rotate(10deg)">Kyoto<small>STOP 3</small></span></div>
+        <div style="padding:16px 20px 0">
+          <div style="display:flex;justify-content:space-between;align-items:baseline"><h2 style="font:800 46px/1 var(--f);font-stretch:80%;letter-spacing:-.03em;margin:0">Kyoto</h2><span class="mono" style="color:var(--ink2)">7–9 APR</span></div>
+          <div style="font:400 16px var(--f);color:var(--ink2);margin-top:4px">3 nights · Ryokan Hanami · temples &amp; markets</div>
+          <div style="display:flex;gap:6px;margin-top:14px;background:var(--cream);border-radius:12px;padding:4px"><span style="flex:1;text-align:center;padding:8px 0;border-radius:9px;background:var(--ink);color:#fff;font:700 14px var(--f)">To see · 6</span><span style="flex:1;text-align:center;padding:8px 0;font:700 14px var(--f)">Costs</span><span style="flex:1;text-align:center;padding:8px 0;font:700 14px var(--f)">Notes</span></div>
+        </div>
+        <div style="padding:4px 20px;flex:1">
+          <div class="li"><span class="cb on">✓</span><div><h6>Fushimi Inari, at sunrise</h6><p>History · 2–3 h</p></div><span class="st-g conf">FREE</span></div>
+          <div class="li"><span class="cb on">✓</span><div><h6>Nishiki Market lunch</h6><p>Food · bring cash</p></div><span class="st-g est">≈ R$ 90</span></div>
+          <div class="li"><span class="cb"></span><div><h6>Kiyomizu-dera</h6><p>History · sunset views</p></div><span class="st-g est">≈ R$ 20</span></div>
+          <div class="li" style="border:0"><span class="cb"></span><div><h6>Ramen crawl, Ichijōji</h6><p>Food · Pip’s pick</p></div><span class="st-g unk">?</span></div>
+        </div>
+        <div style="margin:0 20px 18px;background:var(--cream);border-radius:16px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center"><div><div class="mono" style="color:var(--ink2)">THIS STOP</div><div class="num" style="font:800 26px var(--f)">R$ 1.780</div></div><span class="st-g conf" style="background:#fff">✓ RYOKAN BOOKED</span></div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<div>
+  <div class="ab-label"><b>1c·M</b> Mobile — iOS / Android, 390 × 844</div>
+  <div style="display:flex;gap:44px" data-screen-label="C Mobile">
+    <div class="phone"><div class="scr" style="background:var(--blue)">
+      <div class="sb" style="color:#fff"><span>9:41</span><span class="isl"></span><span>●●● ▮</span></div>
+      <div class="map" data-map="mJP" style="inset:0">
+        <svg class="ov"><path class="air0 sm" data-route="tokyo|hakone|kyoto|osaka" data-curve="arc" data-bend=".18"></path><path class="air1 sm" data-route="tokyo|hakone|kyoto|osaka" data-curve="arc" data-bend=".18"></path><path class="air2 sm" data-route="tokyo|hakone|kyoto|osaka" data-curve="arc" data-bend=".18"></path></svg>
+        <div class="pc sm" data-ll="tokyo">1</div><div class="pc sm" data-ll="hakone">2</div><div class="pc on" data-ll="kyoto" style="width:36px;height:36px;margin:-18px;font-size:15px">3</div><div class="pc sm" data-ll="osaka">4</div>
+      </div>
+      <div style="position:absolute;left:14px;right:14px;top:56px;display:flex;gap:8px;z-index:10">
+        <div style="flex:1;height:50px;background:#fff;border:2.5px solid var(--ink);border-radius:16px;box-shadow:0 3px 0 var(--ink);display:flex;align-items:center;padding:0 14px;gap:10px;font:700 16px var(--f)">Japan, temples &amp; ramen<span class="mono" style="margin-left:auto;color:var(--ink2);font-size:11px">4/9 ★</span></div>
+      </div>
+      <div style="position:absolute;right:14px;top:122px;z-index:10;display:flex;flex-direction:column;gap:8px"><span class="btn sm w" style="width:46px;height:46px;padding:0;font-size:20px">+</span><span class="btn sm" style="width:46px;height:46px;padding:0;font-size:12px;background:var(--gold);color:var(--ink)">PIN</span></div>
+      <div style="position:absolute;left:10px;right:10px;bottom:104px;z-index:12;background:#fff;border:3px solid var(--ink);border-radius:26px;box-shadow:0 4px 0 var(--ink);padding:10px 16px 16px">
+        <div style="width:44px;height:5px;border-radius:3px;background:rgba(29,26,53,.2);margin:0 auto 10px"></div>
+        <div style="display:flex;gap:14px;align-items:center">
+          <div class="ph" style="width:84px;height:84px;border-radius:16px;border:2.5px solid var(--ink);flex:none;font-size:9px">postcard</div>
+          <div style="flex:1"><div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font:800 30px/1 var(--f);font-stretch:80%">Kyoto</span><span class="mono" style="font-size:11px;color:var(--ink2)">STOP 3</span></div><div style="font:400 14px var(--f);color:var(--ink2);margin-top:3px">3 nights · 6 things to see</div><div style="display:flex;gap:6px;margin-top:8px"><span class="st-g conf" style="font-size:10px">✓ BOOKED</span><span class="st-g est" style="font-size:10px">≈ R$ 660 LEFT</span></div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px"><a class="btn sm" href="#" style="height:46px">Open stop</a><a class="btn sm w" href="#" style="height:46px">Directions</a></div>
+      </div>
+      <div class="tabbar"><div class="on"><i style="border-radius:50%"></i>Map</div><div><i></i>Days</div><div><i style="border-radius:50% 50% 6px 6px"></i>Money</div><div><i style="border-radius:4px 4px 8px 8px"></i>Packing</div><div><i style="background:var(--gold);border-radius:50%"></i>Pip</div></div>
+      <div class="hb" style="bottom:6px"></div>
+    </div></div>
+
+    <div class="phone"><div class="scr" style="background:var(--ink);color:var(--cream)">
+      <div class="sb" style="color:#fff"><span>9:41</span><span class="isl"></span><span>●●● ▮</span></div>
+      <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;padding:90px 24px 0;text-align:center">
+        <div class="mono" style="color:var(--gold)">NEW STAMP · 4 OF 9</div>
+        <div style="position:relative;width:250px;height:250px;margin-top:26px;display:grid;place-items:center">
+          <div style="position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle,rgba(245,179,28,.25),transparent 70%)"></div>
+          <span class="stamp slam" style="width:210px;height:210px;color:var(--gold);background:var(--ink);box-shadow:inset 0 0 0 5px var(--ink),inset 0 0 0 8px var(--gold);border-width:5px;font-size:30px;--r:-8deg;animation-delay:.6s">First<br>R$ 1.000<small style="font-size:12px;margin-top:6px">SAVED · 06 NOV 2026</small></span>
+        </div>
+        <h2 style="font:800 44px/.95 var(--f);font-stretch:80%;letter-spacing:-.03em;margin:30px 0 0;color:#fff">You’re 45% of the way to Japan.</h2>
+        <p style="font:400 17px/1.45 var(--f);color:#CFCADF;margin:14px 0 0">At R$ 1.500 a month you fly in April. Next stamp: check your passport dates.</p>
+        <div style="display:flex;gap:10px;margin-top:28px;width:100%"><a class="btn g" href="#" style="flex:1">Next step</a><a class="btn w" href="#" style="width:64px;padding:0">↗</a></div>
+        <a href="#" style="margin-top:18px;color:var(--sky);font:600 15px var(--f)">See my passport</a>
+      </div>
+      <div class="hb" style="background:#fff"></div>
+    </div></div>
+
+    <div class="phone"><div class="scr">
+      <div class="sb"><span>9:41</span><span class="isl"></span><span>●●● ▮</span></div>
+      <div style="padding:70px 22px 0">
+        <div style="display:flex;align-items:flex-end;gap:10px">
+          <svg class="pip" viewBox="0 0 150 160" width="100"><g class="body" stroke="#1D1A35" stroke-width="3.2" stroke-linejoin="round" stroke-linecap="round"><path d="M56 122 L54 146 M84 122 L86 146" fill="none"></path><path d="M44 148 h14 M82 148 h14" stroke-width="5"></path><g class="arm"><path d="M30 90 Q16 78 14 62" fill="none"></path><circle cx="14" cy="58" r="5" fill="#fff"></circle></g><rect x="102" y="104" width="38" height="30" rx="7" fill="#F5B31C"></rect><circle cx="70" cy="84" r="42" fill="#2B45C4"></circle><path d="M36 70 Q50 60 62 68 Q70 74 64 82 Q54 88 44 84 Q34 80 36 70 Z" fill="#9AD8BF" stroke-width="2.4"></path><g class="eyes" stroke="none"><ellipse cx="57" cy="82" rx="8" ry="9" fill="#fff"></ellipse><ellipse cx="83" cy="82" rx="8" ry="9" fill="#fff"></ellipse><ellipse class="eye" cx="59" cy="84" rx="3.8" ry="4.6" fill="#1D1A35"></ellipse><ellipse class="eye" cx="85" cy="84" rx="3.8" ry="4.6" fill="#1D1A35"></ellipse></g><path d="M62 100 Q70 107 78 100" fill="none"></path><g class="hat"><ellipse cx="70" cy="48" rx="44" ry="9" fill="#E8462A"></ellipse><path d="M47 47 Q47 20 70 20 Q93 20 93 47 Z" fill="#E8462A"></path></g></g></svg>
+          <div style="background:#fff;border:2.5px solid var(--ink);border-radius:16px 16px 16px 4px;padding:10px 12px;font:600 15px/1.3 var(--f);box-shadow:0 3px 0 var(--ink);margin-bottom:40px">Hi, I’m Pip! How do you want to start?</div>
+        </div>
+        <h2 style="font:800 40px/.95 var(--f);font-stretch:80%;letter-spacing:-.03em;margin:18px 0 18px">Let’s plan your first trip.</h2>
+        <a href="#" style="display:block;text-decoration:none;color:var(--ink);background:var(--gold);border:3px solid var(--ink);border-radius:22px;box-shadow:0 4px 0 var(--ink);padding:18px">
+          <div class="mono">OPTION A</div><div style="font:800 26px/1.05 var(--f);font-stretch:85%;margin-top:4px">I have a dream place</div><div style="font:400 15px/1.4 var(--f);margin-top:6px">Pick where, a rough budget and when. We’ll build the map.</div></a>
+        <a href="#" style="display:block;text-decoration:none;color:var(--ink);background:#fff;border:3px solid var(--ink);border-radius:22px;box-shadow:0 4px 0 var(--ink);padding:18px;margin-top:14px">
+          <div class="mono">OPTION B</div><div style="font:800 26px/1.05 var(--f);font-stretch:85%;margin-top:4px">Inspire me</div><div style="font:400 15px/1.4 var(--f);margin-top:6px">Start from a ready-made trip and change anything.</div>
+          <div style="display:flex;gap:8px;margin-top:12px;overflow:hidden"><span style="flex:none;padding:8px 10px;border-radius:10px;background:var(--red);color:#fff;font:700 13px var(--f)">Japan · 10d</span><span style="flex:none;padding:8px 10px;border-radius:10px;background:var(--mint);font:700 13px var(--f)">Paraty · 2d</span><span style="flex:none;padding:8px 10px;border-radius:10px;background:var(--sky);font:700 13px var(--f)">Portugal · 7d</span></div></a>
+        <div style="text-align:center;margin-top:20px;font:500 14px var(--f);color:var(--ink2)">Already have an account? <a href="#" style="font-weight:700">Log in</a></div>
+      </div>
+      <div class="hb"></div>
+    </div></div>
+  </div>
+  <p style="font:400 15px/1.5 var(--f);max-width:1250px;margin:22px 0 0">On mobile the map is a full-bleed poster with a floating, thumb-reachable tab bar. “PIN” enters drop mode: the map shows a centred target and a big “Drop here” button; search is always one tap away for people who’d rather type. Stamps get a full-screen moment — but only for real milestones, and it’s skippable. Onboarding is two big choices, not a questionnaire.</p>
+</div>
+
+<div>
+  <div class="ab-label"><b>1c·S</b> Foundations sheet</div>
+  <div class="ab" style="width:1440px;padding:44px 48px;display:grid;grid-template-columns:1.1fr 1fr 1fr;gap:56px">
+    <div>
+      <div class="mono" style="color:var(--red)">TYPE</div>
+      <div style="font:800 88px/.88 var(--f);font-stretch:80%;letter-spacing:-.045em;margin-top:12px">Ramen &amp; temples</div>
+      <div class="mono" style="color:var(--ink2);margin-top:8px">BRICOLAGE 800 · WDTH 80 · 88/0.88 · −4.5%</div>
+      <div style="font:700 24px var(--f);margin-top:22px">Kyoto · 3 nights · temples &amp; markets</div>
+      <div class="mono" style="color:var(--ink2);margin-top:6px">BRICOLAGE 700 · 24</div>
+      <div style="font:400 17px/1.45 var(--f);margin-top:16px">Nara is 45 min from Kyoto — deer, giant Buddha, easy day trip.</div>
+      <div class="mono" style="color:var(--ink2);margin-top:6px">BRICOLAGE 400 · 17/1.45 — READING</div>
+      <div style="font:700 16px var(--m);margin-top:16px">GRU ✈ KIX · R$ 6.400</div>
+      <div class="mono" style="color:var(--ink2);margin-top:6px">SPACE MONO 700 — TICKETS, MONEY</div>
+    </div>
+    <div>
+      <div class="mono" style="color:var(--red)">COLOUR — DAY · RED-EYE</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px">
+        <div><div style="height:64px;border-radius:12px;background:#2B45C4;border:2.5px solid var(--ink)"></div><div class="mono" style="margin-top:6px;font-size:10.5px">AIRMAIL</div></div>
+        <div><div style="height:64px;border-radius:12px;background:#E8462A;border:2.5px solid var(--ink)"></div><div class="mono" style="margin-top:6px;font-size:10.5px">STAMP</div></div>
+        <div><div style="height:64px;border-radius:12px;background:#F5B31C;border:2.5px solid var(--ink)"></div><div class="mono" style="margin-top:6px;font-size:10.5px">MARIGOLD</div></div>
+        <div><div style="height:64px;border-radius:12px;background:#9AD8BF;border:2.5px solid var(--ink)"></div><div class="mono" style="margin-top:6px;font-size:10.5px">DONE MINT</div></div>
+        <div><div style="height:64px;border-radius:12px;background:#FFF5E1;border:2.5px solid var(--ink)"></div><div class="mono" style="margin-top:6px;font-size:10.5px">CREAM</div></div>
+        <div><div style="height:64px;border-radius:12px;background:#1D1A35;border:2.5px solid var(--ink)"></div><div class="mono" style="margin-top:6px;font-size:10.5px">INK / NIGHT</div></div>
+        <div><div style="height:64px;border-radius:12px;background:#2A2650;border:2.5px solid var(--ink)"></div><div class="mono" style="margin-top:6px;font-size:10.5px">NIGHT 2</div></div>
+        <div><div style="height:64px;border-radius:12px;background:#C9D3F4;border:2.5px solid var(--ink)"></div><div class="mono" style="margin-top:6px;font-size:10.5px">SKY</div></div>
+      </div>
+      <p style="font:400 14.5px/1.5 var(--f);color:var(--ink2);margin:16px 0 0">White on airmail 7.6:1; ink on marigold 9.8:1; white on stamp red 3.7:1 — red is reserved for large type and buttons with 17px+ bold labels. Mint is a fill, never text.</p>
+    </div>
+    <div>
+      <div class="mono" style="color:var(--red)">PINS · CONTROLS · STATUS</div>
+      <div style="display:flex;gap:30px;align-items:center;height:70px;margin-top:10px;padding-left:20px;background:var(--blue);border-radius:16px;border:2.5px solid var(--ink)">
+        <span class="pc" style="position:relative;margin:0">1</span><span class="pc on" style="position:relative;margin:0">3</span><span class="pc ghost" style="position:relative;margin:0">+</span><span class="pc home" style="position:relative;margin:0"></span>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:22px;flex-wrap:wrap"><a class="btn sm" href="#">Primary</a><a class="btn sm w" href="#">Secondary</a><a class="btn sm g" href="#">Pip</a><a class="btn sm" href="#" style="outline:3px solid var(--blue);outline-offset:3px">Focus</a><a class="btn sm" href="#" style="background:#E9DFCB;color:var(--ink3);border-color:var(--ink3);box-shadow:none">Disabled</a></div>
+      <div style="display:flex;gap:10px;margin-top:20px;flex-wrap:wrap"><span class="st-g est">≈ ESTIMATE</span><span class="st-g conf">✓ CONFIRMED</span><span class="st-g paid">● PAID</span><span class="st-g unk">? UNKNOWN</span></div>
+    </div>
+  </div>
+</div>
+</div>
+</div>
+</div>
+
+<script>
+const sea='#2B45C4';
+Geo.mountAll({
+  heroPoster:{land:'#C9D3F4',highlight:{'392':'#FFF5E1','076':'#FFF5E1'},border:'#2B45C4',borderWidth:.6,graticule:'rgba(255,255,255,.14)',gstep:[20,20]},
+  demoJapan:{res:'50m',projection:'mercator',bbox:[[133.4,32.6],[141.6,38.2]],land:'#C9D3F4',highlight:{'392':'#FFF5E1'},border:sea,borderWidth:1,coast:'#1D1A35',coastWidth:1.6,graticule:'rgba(255,255,255,.14)',gstep:[2,2]},
+  wsJP:{res:'50m',projection:'mercator',bbox:[[133.8,32.4],[141.4,37.8]],pad:30,land:'#C9D3F4',highlight:{'392':'#FFF5E1'},border:sea,borderWidth:1,coast:'#1D1A35',coastWidth:2,shadow:'#1E3196',shadowOff:'5,6',graticule:'rgba(255,255,255,.12)',gstep:[1,1]},
+  mJP:{res:'50m',projection:'mercator',bbox:[[134.9,33.4],[140.4,37.4]],land:'#C9D3F4',highlight:{'392':'#FFF5E1'},border:sea,coast:'#1D1A35',coastWidth:1.8,shadow:'#1E3196',shadowOff:'4,5',graticule:'rgba(255,255,255,.12)',gstep:[1,1],focus:{ll:[137.4,35.3],at:[.5,.36],zoom:1}},
+  posPT:{res:'50m',projection:'mercator',bbox:[[-10.2,36.8],[-5.8,42.3]],pad:24,land:'transparent',highlight:{'620':'#FFF5E1'},coast:null,border:'#1D1A35',borderWidth:3,shadow:null},
+  posJP:{res:'50m',projection:'mercator',bbox:[[128.5,30.5],[146,45.6]],pad:24,land:'transparent',highlight:{'392':'#FFF5E1'},border:'#1D1A35',borderWidth:3},
+  posRJ:{res:'50m',projection:'mercator',bbox:[[-47.4,-24.4],[-43.6,-22.2]],pad:10,land:'#FFF5E1',border:'#1D1A35',borderWidth:3}
+});
+// interactive demo
+(function(){
+  const demo=document.getElementById('demo'),btns=demo.querySelectorAll('.stepbtn');
+  function set(n,anim){btns.forEach(b=>b.setAttribute('aria-pressed',+b.dataset.step===n));
+    demo.querySelectorAll('.stp').forEach(el=>{const on=+el.dataset.s<=n;el.classList.toggle('off',!on);
+      if(anim&&+el.dataset.s===n&&el.closest('#pp')){el.classList.remove('slam');void el.offsetWidth;el.style.setProperty('--r',(el.style.transform.match(/-?\d+deg/)||['0deg'])[0]);el.classList.add('slam')}});}
+  btns.forEach(b=>b.addEventListener('click',()=>set(+b.dataset.step,true)));
+  set(4,false);
+})();
+</script>
+</body>
+</html>

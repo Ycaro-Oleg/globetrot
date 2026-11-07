@@ -1,0 +1,56 @@
+name: Feature
+description: A focused, implementable piece of user value
+labels: ["type:feature"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem / user value
+      description: Who benefits and why?
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope
+      description: In scope, plus an explicit "Out of scope" list.
+    validations:
+      required: true
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies
+      description: Issues, decisions or ADRs this depends on.
+  - type: textarea
+    id: technical
+    attributes:
+      label: Technical considerations
+      description: Packages touched, contracts, data, risks. Link the relevant docs (see docs/agents/context-map.md).
+  - type: textarea
+    id: design
+    attributes:
+      label: Design references
+      description: Handoff sections, prototype screens, design-audit items.
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      value: |
+        - [ ]
+        - [ ] Works on desktop and mobile
+        - [ ] Copy available in en and pt-BR
+        - [ ] Keyboard / non-map path available
+    validations:
+      required: true
+  - type: textarea
+    id: testing
+    attributes:
+      label: Testing requirements
+      description: Unit, integration, e2e, accessibility checks expected.
+    validations:
+      required: true
+  - type: textarea
+    id: docs
+    attributes:
+      label: Documentation requirements
+      description: Which canonical docs or ADRs must be updated.
