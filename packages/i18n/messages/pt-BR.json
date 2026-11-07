@@ -1,0 +1,48 @@
+{
+  "status": {
+    "estimate": "≈ estimativa",
+    "confirmed": "✓ confirmado",
+    "paid": "● pago",
+    "unknown": "? desconhecido"
+  },
+  "journey": {
+    "dream": "Sonhar",
+    "explore": "Explorar",
+    "connect": "Conectar",
+    "plan": "Planejar",
+    "save": "Guardar",
+    "prepare": "Preparar",
+    "ready": "Pronto",
+    "youAreHere": "você está aqui"
+  },
+  "milestones": {
+    "dest": "Destino escolhido",
+    "route": "Primeira rota traçada",
+    "budget": "Orçamento estimado",
+    "saved": "Primeiros 10% guardados",
+    "docs": "Documentos conferidos",
+    "stays": "Toda noite tem cama",
+    "itin": "Todo dia tem um plano",
+    "check": "Checklist completo",
+    "ready": "Viagem pronta",
+    "progress": "{earned, number} de {total, number} carimbos nesta viagem."
+  },
+  "nextSteps": {
+    "placeFirstPin": "Coloque seu primeiro pin",
+    "findStay": "Encontre onde dormir em {city}",
+    "planEmptyDays": "{count, plural, =0 {Todo dia tem um plano} one {# dia ainda sem nada planejado} other {# dias ainda sem nada planejado}}",
+    "completeDocument": "Confira um documento de viagem: {label}",
+    "saveMonthly": "Guarde {amount}/mês para estar pronto até {date}"
+  },
+  "savings": {
+    "answerYes": "<strong>Sim</strong> — até {month}, se você guardar {amount} por mês.",
+    "answerAlmost": "<strong>Quase.</strong> Guardando {monthly} por mês, você chega lá em {month} — depois da partida, em {departure}.",
+    "noCosts": "Adicione um custo para ver quando você consegue pagar esta viagem.",
+    "fullySaved": "Você já guardou tudo para esta viagem.",
+    "disclaimer": "As estimativas vêm de faixas típicas — não são cotações ao vivo."
+  },
+  "trip": {
+    "nights": "{count, plural, =0 {bate-volta} one {# noite} other {# noites}}",
+    "visibility": "{visibility, select, private {Só você vê esta viagem} public {Qualquer pessoa com o link vê esta viagem} other {Visibilidade desconhecida}}"
+  }
+}

@@ -1,6 +1,6 @@
 # Current state
 
-_Last updated: 2026-11-07, after trip derivations (#14)._
+_Last updated: 2026-11-07, after the i18n package (#15)._
 
 ## Phase
 
@@ -14,6 +14,7 @@ _Last updated: 2026-11-07, after trip derivations (#14)._
 - GitHub Actions CI (#11): format, lint, typecheck, test and build on every PR and on pushes to `develop`/`main`. The E2E and axe jobs are skipped placeholders for now.
 - Money value object (#13) in `@globetrot/domain`: ISO 4217 registry, exact arithmetic, allocation, FX conversion with provenance, locale formatting. 100% covered. See `docs/architecture/money.md`.
 - Trip derivations (#14) in `@globetrot/domain`: days, totals, savings plan, 9 readiness milestones plus stamp recording, journey stage, next steps, and `LocalDate` helpers. They match the prototype's Japan demo and are 100% covered. See `docs/product/business-rules.md`.
+- i18n package (#15): en/pt-BR ICU catalogs (seeded with status marks, journey, milestones, next steps, savings sentences), typed keys, `formatMessage`, date/month formatting and locale negotiation. The catalog check runs in `pnpm lint`, so CI fails on missing keys or placeholder mismatches. See `docs/architecture/i18n.md`.
 
 ## Done (M0)
 
@@ -28,7 +29,7 @@ _Last updated: 2026-11-07, after trip derivations (#14)._
 ## Next
 
 1. **M1: Design System & Spikes.** Tokens v1.1, Storybook primitives, MapLibre spike, Places spike, usability test plan.
-2. **M2: Engineering Foundation.** Local Docker Compose (#12), i18n skeleton (#15), engineering standards (#16).
+2. **M2: Engineering Foundation.** Local Docker Compose (#12), engineering standards (#16).
 
 See the GitHub milestones for open issues.
 

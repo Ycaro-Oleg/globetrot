@@ -69,7 +69,7 @@ Workflow: [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml). It runs 
 | Check | Job | Status |
 |---|---|---|
 | Prettier format, then lint, typecheck, unit tests and build for all workspaces (Turborepo, cached) | `Lint · typecheck · test · build` | Active |
-| i18n key completeness | same job, via `pnpm lint`/`test` once #15 lands | Pending (#15) |
+| i18n catalog consistency (keys, ICU syntax, placeholders) | same job: `@globetrot/i18n` `lint` runs `check-messages`, and its tests and `tsc` also catch missing keys | Active |
 | E2E (Playwright) | `E2E (Playwright)` | Placeholder (skipped) until M3 |
 | Accessibility (axe) | `Accessibility (axe)` | Placeholder (skipped) until Storybook (#6) |
 
