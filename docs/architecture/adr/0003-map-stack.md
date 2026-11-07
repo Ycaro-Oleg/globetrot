@@ -1,6 +1,6 @@
 # 0003. Map stack: MapLibre + OSM (Protomaps) + own places DB
 
-- Status: Accepted. Spike #2 validated it visually and functionally (2026-11-07); a real-device frame-rate check is still pending. See [`../spikes/maplibre.md`](../spikes/maplibre.md).
+- Status: Accepted. Spike #2 validated the map visually and functionally, and spike #3 validated places search (2026-11-07). A real-device frame-rate check is still pending. See [`../spikes/maplibre.md`](../spikes/maplibre.md) and [`../spikes/places.md`](../spikes/places.md).
 - Date: 2026-11-07
 
 ## Context
@@ -13,7 +13,10 @@ The map is the flagship feature. It needs a custom "poster" style in light and d
 - **Overlays:** trip pins and labels (up to about 100) go in a DOM/SVG overlay projected with `map.project` (crisp, `<button>` semantics). Label collision is arithmetic and runs on `moveend`. Dense layers (library POIs, community pins) are MapLibre symbol or circle layers with clustering. The spike measured them faster than DOM, with no per-frame JS.
 - **Trip-country highlight:** needs a country-polygon source (Natural Earth 10m or OSM admin level 2) in our tile service, because the basemap's land layer has no country attribute. Decide the source in M4.
 - **Routes:** airmail connections are conceptual arcs. Real routing (OSRM or Valhalla) comes later.
-- **Places:** our own `Place` table in PostGIS, seeded from **GeoNames** (cities, CC-BY, with alternate names for en/pt), searched with `pg_trgm`. Fine-grained address and POI search goes through a `GeocodingPort` backed by a managed OSM-based provider chosen by its caching and storage terms. Self-hosted Photon is a later option.
+- **Places:** our own `Place` table in PostGIS, seeded from **GeoNames**: `cities15000` plus admin1 regions and countries (CC-BY 4.0, credit "GeoNames"), refreshed monthly by a worker job.
+  - **Search:** every language's names are indexed (`lower(unaccent())`, prefix btree + trigram GIN); spike #3 measured p95 7 ms.
+  - **Display:** names show in the user's locale from GeoNames, with a curated **pt-BR override** table taking precedence; **country names come from CLDR** (`Intl.DisplayNames`).
+  - **Addresses and fine-grained POIs:** these go through a `GeocodingPort` backed by a managed OSM-based provider chosen by its caching and storage terms. Self-hosted Photon is a later option.
 - **Static art** (mini-maps, stamps, landing) can keep d3-geo + Natural Earth.
 
 ## Spike exit criteria (M1), results from #2
@@ -22,7 +25,7 @@ The map is the flagship feature. It needs a custom "poster" style in light and d
 - ❌ Time to first render under 2.5 s on 4G. Measured 3.4 s. Fixes: the z/x/y tile endpoint, a lazy-loaded board route, no bundled geodata.
 - ✅ Touch targets ≥ 44 px.
 - ✅ The crosshair "Pin here" flow works.
-- ⏳ City search under 100 ms with en/pt names: spike #3.
+- ✅ City search under 100 ms with en/pt names. Spike #3 measured p95 7 ms, 30/30 top-1 hits in both languages and 28/30 pt-BR display names.
 
 ## Consequences
 We own the tile hosting: object storage, a small tile server and a CDN. We must maintain the style, refresh the planet build periodically, and keep a country-polygon layer for highlights. The map bundle must be code-split, so pages without the map don't pay for it.

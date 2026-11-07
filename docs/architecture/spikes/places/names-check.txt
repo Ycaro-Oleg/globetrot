@@ -1,0 +1,74 @@
+   expected_en    |    got_en     |  expected_pt_br  |      got_pt      |  verdict   
+------------------+---------------+------------------+------------------+------------
+ Copenhagen       | Copenhagen    | Copenhague       | Copenhaga        | pt differs
+ New York City    | New York      | Nova York        | Nova Iorque      | pt differs
+ Athens           | Athens        | Atenas           | Atenas           | ok
+ Beijing          | Beijing       | Pequim           | Pequim           | ok
+ Brussels         | Brussels      | Bruxelas         | Bruxelas         | ok
+ Buenos Aires     | Buenos Aires  | Buenos Aires     | Buenos Aires     | ok
+ Cape Town        | Cape Town     | Cidade do Cabo   | Cidade do Cabo   | ok
+ Cologne          | Cologne       | Colônia          | Colônia          | ok
+ Edinburgh        | Edinburgh     | Edimburgo        | Edimburgo        | ok
+ Florence         | Florence      | Florença         | Florença         | ok
+ Geneva           | Geneva        | Genebra          | Genebra          | ok
+ Istanbul         | Istanbul      | Istambul         | Istambul         | ok
+ Jerusalem        | Jerusalem     | Jerusalém        | Jerusalém        | ok
+ Kyoto            | Kyoto         | Quioto           | Quioto           | ok
+ Lisbon           | Lisbon        | Lisboa           | Lisboa           | ok
+ London           | London        | Londres          | Londres          | ok
+ Mexico City      | Mexico City   | Cidade do México | Cidade do México | ok
+ Moscow           | Moscow        | Moscou           | Moscou           | ok
+ Munich           | Munich        | Munique          | Munique          | ok
+ Prague           | Prague        | Praga            | Praga            | ok
+ Rome             | Rome          | Roma             | Roma             | ok
+ São Paulo        | São Paulo     | São Paulo        | São Paulo        | ok
+ Seoul            | Seoul         | Seul             | Seul             | ok
+ Seville          | Seville       | Sevilha          | Sevilha          | ok
+ Stockholm        | Stockholm     | Estocolmo        | Estocolmo        | ok
+ Tokyo            | Tokyo         | Tóquio           | Tóquio           | ok
+ Venice           | Venice        | Veneza           | Veneza           | ok
+ Vienna           | Vienna        | Viena            | Viena            | ok
+ Warsaw           | Warsaw        | Varsóvia         | Varsóvia         | ok
+ Saint Petersburg | St Petersburg | São Petersburgo  | São Petersburgo  | en differs
+(30 rows)
+
+ pt_ok | en_ok | total 
+-------+-------+-------
+    28 |    28 |    30
+(1 row)
+
+--- do searches in either language find them? (top-1 city for the full pt-BR and en names) ---
+      pt_br       | pt_top1 |        en        | en_top1 
+------------------+---------+------------------+---------
+ Atenas           | t       | Athens           | t
+ Pequim           | t       | Beijing          | t
+ Bruxelas         | t       | Brussels         | t
+ Buenos Aires     | t       | Buenos Aires     | t
+ Cidade do Cabo   | t       | Cape Town        | t
+ Colônia          | t       | Cologne          | t
+ Copenhague       | t       | Copenhagen       | t
+ Edimburgo        | t       | Edinburgh        | t
+ Florença         | t       | Florence         | t
+ Genebra          | t       | Geneva           | t
+ Istambul         | t       | Istanbul         | t
+ Jerusalém        | t       | Jerusalem        | t
+ Quioto           | t       | Kyoto            | t
+ Lisboa           | t       | Lisbon           | t
+ Londres          | t       | London           | t
+ Cidade do México | t       | Mexico City      | t
+ Moscou           | t       | Moscow           | t
+ Munique          | t       | Munich           | t
+ Nova York        | t       | New York City    | t
+ Praga            | t       | Prague           | t
+ Roma             | t       | Rome             | t
+ São Petersburgo  | t       | Saint Petersburg | t
+ São Paulo        | t       | São Paulo        | t
+ Seul             | t       | Seoul            | t
+ Sevilha          | t       | Seville          | t
+ Estocolmo        | t       | Stockholm        | t
+ Tóquio           | t       | Tokyo            | t
+ Veneza           | t       | Venice           | t
+ Viena            | t       | Vienna           | t
+ Varsóvia         | t       | Warsaw           | t
+(30 rows)
+

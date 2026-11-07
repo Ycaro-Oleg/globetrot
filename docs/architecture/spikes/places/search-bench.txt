@@ -1,0 +1,89 @@
+--- samples (pt) ---
+      q      |        label        |      region      |    country    | score | sim  
+-------------+---------------------+------------------+---------------+-------+------
+ tok         | Tóquio              | Tóquio           | Japão         |     2 | 1.00
+ tok         | Tokorozawa          | Saitama          | Japão         |     2 | 1.00
+ tok         | Tokushima           | Tokushima        | Japão         |     2 | 1.00
+ são p       | São Paulo           | São Paulo        | Brasil        |     2 | 1.00
+ são p       | São Petersburgo     | São Petersburgo  | Rússia        |     2 | 1.00
+ são p       | São Pedro da Aldeia | Rio de Janeiro   | Brasil        |     2 | 1.00
+ lisb        | Lisboa              | Lisboa           | Portugal      |     2 | 1.00
+ lisb        | Lisburn             | Irlanda do Norte | Reino Unido   |     2 | 1.00
+ lisb        | Lisboa              |                  | Portugal      |     2 | 1.00
+ londres     | Londres             | Inglaterra       | Reino Unido   |     3 | 1.00
+ londres     | New London          | Coneticute       | United States |     1 | 0.62
+ londres     | Londrina            | Paraná           | Brasil        |     1 | 0.42
+ cidade do m | Cidade do México    | Cidade do México | México        |     2 | 1.00
+ cidade do m | Cidade do México    |                  | México        |     2 | 1.00
+ cidade do m | Cidade do Cabo      | Cabo Ocidental   | África do Sul |     1 | 0.63
+ kioto       | Quioto              | Quioto           | Japão         |     3 | 1.00
+ kioto       | Quioto              |                  | Japão         |     2 | 1.00
+ kioto       | Quito               | Pichincha        | Equador       |     1 | 0.38
+ nova y      | Nova Iorque         | Nova Iorque      | United States |     2 | 1.00
+ nova y      | Nova Iorque         |                  | United States |     2 | 1.00
+ nova y      | Nova Era            | Minas Gerais     | Brasil        |     1 | 0.45
+ munique     | Munique             | Baviera          | Alemanha      |     3 | 1.00
+ munique     | Muñiz               | Buenos Aires     | Argentina     |     1 | 0.40
+ munique     | Martinica           |                  | Martinica     |     1 | 0.36
+ japão       | Japão               |                  | Japão         |     3 | 1.00
+ japão       | Estado de Yap       |                  | Micronésia    |     1 | 0.57
+ japão       | Lapão               | Bahia            | Brasil        |     1 | 0.33
+ rio de j    | Rio de Janeiro      | Rio de Janeiro   | Brasil        |     2 | 1.00
+ rio de j    | Rio de Janeiro      |                  | Brasil        |     2 | 1.00
+ rio de j    | Del Rio             | Texas            | United States |     1 | 0.55
+(30 rows)
+
+--- samples (en) ---
+    q     |         label         |      region      |    country     | score | sim  
+----------+-----------------------+------------------+----------------+-------+------
+ tok      | Tokyo                 | Tokyo            | Japan          |     2 | 1.00
+ tok      | Tokorozawa            | Saitama          | Japan          |     2 | 1.00
+ tok      | Tokushima             | Tokushima        | Japan          |     2 | 1.00
+ sao p    | São Paulo             | São Paulo        | Brazil         |     2 | 1.00
+ sao p    | St Petersburg         | St. Petersburg   | Russia         |     2 | 1.00
+ sao p    | São Pedro da Aldeia   | Rio de Janeiro   | Brazil         |     2 | 1.00
+ lisb     | Lisbon                | Lisbon District  | Portugal       |     2 | 1.00
+ lisb     | Lisburn               | Northern Ireland | United Kingdom |     2 | 1.00
+ lisb     | Lisbon District       |                  | Portugal       |     2 | 1.00
+ mexico c | Mexico City           | Mexico City      | Mexico         |     2 | 1.00
+ mexico c | México                |                  | Mexico         |     2 | 1.00
+ mexico c | Mexico City           |                  | Mexico         |     2 | 1.00
+ kyoto    | Kyoto                 | Kyoto            | Japan          |     3 | 1.00
+ kyoto    | Kyoto                 |                  | Japan          |     3 | 1.00
+ kyoto    | Kōtō City             | Kumamoto         | Japan          |     1 | 0.38
+ new y    | New York              | New York         | United States  |     2 | 1.00
+ new y    | Yekepa                | Nimba            | Liberia        |     2 | 1.00
+ new y    | New York              |                  | United States  |     2 | 1.00
+ munich   | Munich                | Bavaria          | Germany        |     3 | 1.00
+ munich   | Muñiz                 | Buenos Aires     | Argentina      |     1 | 0.44
+ munich   | Bad Münder am Deister | Lower Saxony     | Germany        |     1 | 0.33
+ japan    | Japan                 |                  | Japan          |     3 | 1.00
+ japan    | Yap State             |                  | Micronesia     |     1 | 0.57
+ japan    | Apan                  | Hidalgo          | Mexico         |     1 | 0.38
+ floren   | Florence              | Tuscany          | Italy          |     2 | 1.00
+ floren   | Florencia             | Caquetá          | Colombia       |     2 | 1.00
+ floren   | Florence-Graham       | California       | United States  |     2 | 1.00
+ istanbul | Istanbul              | Istanbul         | Turkey         |     3 | 1.00
+ istanbul | Istanbul              |                  | Turkey         |     3 | 1.00
+ istanbul | Istalif               | Kabul            | Afghanistan    |     1 | 0.31
+(30 rows)
+
+--- latency: 44 queries x 2 locales x 25 runs ---
+ runs | p50_ms | p95_ms | max_ms 
+------+--------+--------+--------
+ 2200 |   2.41 |   7.01 |  21.46
+(1 row)
+
+--- slowest queries (p95) ---
+     q     | loc | p95_ms 
+-----------+-----+--------
+ rio de j  | pt  |  19.17
+ rio de j  | en  |  17.98
+ sa        | en  |  16.30
+ sa        | pt  |  14.24
+ san       | en  |   8.77
+ seoul     | pt  |   8.59
+ sao paulo | pt  |   6.84
+ seul      | en  |   6.59
+(8 rows)
+
