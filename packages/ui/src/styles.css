@@ -413,3 +413,42 @@ textarea.gt-field__control {
   outline: var(--gt-component-focus-width) solid var(--gt-semantic-color-focus);
   outline-offset: 3px;
 }
+
+.gt-segmented {
+  display: grid;
+  gap: 8px;
+  color: var(--gt-semantic-color-text);
+}
+.gt-segmented__items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  width: fit-content;
+  max-width: 100%;
+  padding: 4px;
+  border: 2.5px solid var(--gt-semantic-color-outline);
+  border-radius: var(--gt-primitive-radius-14);
+  background: var(--gt-semantic-color-surface-card);
+  box-shadow: var(--gt-primitive-shadow-small);
+}
+.gt-segmented__item {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 8px 12px;
+  border-radius: var(--gt-primitive-radius-9);
+  cursor: pointer;
+}
+.gt-segmented__item[data-selected] {
+  background: var(--gt-semantic-color-text);
+  color: var(--gt-semantic-color-surface-page);
+}
+.gt-segmented__item[data-focus-visible] {
+  outline: var(--gt-component-focus-width) solid var(--gt-semantic-color-focus);
+  outline-offset: 2px;
+}
+.gt-segmented__item[data-disabled] {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
