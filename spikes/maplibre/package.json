@@ -1,0 +1,23 @@
+{
+  "name": "@globetrot/spike-maplibre",
+  "private": true,
+  "description": "Throwaway spike for issue #2: MapLibre + Protomaps poster style, overlay pins, performance. Not part of the workspace.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0 --port 5173",
+    "build": "vite build",
+    "preview": "vite preview --host 0.0.0.0 --port 4173"
+  },
+  "dependencies": {
+    "@protomaps/basemaps": "5.7.2",
+    "maplibre-gl": "6.16.0",
+    "pmtiles": "4.5.0",
+    "topojson-client": "3.1.0",
+    "world-atlas": "2.0.2"
+  },
+  "devDependencies": {
+    "@types/topojson-client": "3.1.5",
+    "typescript": "6.0.3",
+    "vite": "8.3.6"
+  }
+}

@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Spike: MapLibre poster map</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,300..800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <div id="map"></div>
+    <div id="overlay" aria-label="Trip pins"></div>
+    <div id="crosshair" hidden aria-hidden="true"><span></span></div>
+
+    <aside id="panel" aria-label="Spike controls">
+      <div class="eyebrow">Spike #2 · MapLibre + Protomaps</div>
+      <h1>Ten days in Japan</h1>
+      <p>Selected: <strong class="sel-name">Kyoto</strong></p>
+      <div class="row">
+        <button data-act="region">Region</button>
+        <button data-act="world">World</button>
+        <button data-act="theme">Day / Red-eye</button>
+      </div>
+      <div class="row">
+        <button data-act="mode:stops">4 stops</button>
+        <button data-act="mode:pins50">50 pins</button>
+        <button data-act="mode:poi-symbol">500 POIs · symbol</button>
+        <button data-act="mode:poi-dom">500 POIs · DOM</button>
+      </div>
+      <div class="row">
+        <button data-act="pin-tool">Pin tool</button>
+        <button data-act="bench">Benchmark 5s</button>
+      </div>
+      <p id="stats" class="mono"></p>
+      <p id="bench" class="mono"></p>
+    </aside>
+
+    <div id="mobilebar">
+      <button data-act="region">Region</button>
+      <button data-act="pin-tool">Pin</button>
+      <button data-act="pin-here" class="primary">Pin here</button>
+      <button data-act="mode:pins50">50</button>
+    </div>
+    <p id="toast" role="status" aria-live="polite"></p>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
