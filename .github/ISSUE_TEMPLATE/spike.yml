@@ -1,0 +1,35 @@
+name: Spike
+description: Time-boxed experiment to answer a question or validate a decision
+labels: ["type:spike"]
+body:
+  - type: textarea
+    id: question
+    attributes:
+      label: Question to answer
+    validations:
+      required: true
+  - type: input
+    id: timebox
+    attributes:
+      label: Time box
+      placeholder: e.g. 2 days
+    validations:
+      required: true
+  - type: textarea
+    id: approach
+    attributes:
+      label: Approach
+  - type: textarea
+    id: exit
+    attributes:
+      label: Exit criteria / metrics
+      description: Measurable thresholds that decide go / no-go.
+    validations:
+      required: true
+  - type: textarea
+    id: output
+    attributes:
+      label: Expected output
+      value: |
+        - [ ] Findings doc merged (code on the spike branch is throwaway)
+        - [ ] ADR updated or new ADR if the decision changes

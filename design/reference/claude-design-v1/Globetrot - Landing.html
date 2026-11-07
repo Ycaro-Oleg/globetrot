@@ -1,0 +1,388 @@
+<!doctype html>
+<html lang="en" data-brand="globetrot">
+<head>
+<meta charset="utf-8">
+<title>Globetrot — Your first stamp is closer than you think</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Pin the places you dream about, string them into a route, and watch the cost, the savings and the plan take shape.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,300..800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/d3@7.9.0/dist/d3.min.js" integrity="sha384-CjloA8y00+1SDAUkjs099PVfnY2KmDC2BZnws9kh8D/lX1s46w6EPhpXdqMfjK6i" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/topojson-client@3.1.0/dist/topojson-client.min.js" integrity="sha384-Ukv1p/xTma6P4/2bY5KzWBw+ydSpXmhCMtyciIQVDJ1RmOxtCYNMF1uXT9T63H67" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="atlas/app.css">
+<link rel="stylesheet" href="atlas/globetrot.css">
+<style>
+html{scroll-behavior:smooth}
+[data-brand=globetrot] header.nav{background:color-mix(in oklab,var(--paper) 94%,transparent)}
+[data-brand=globetrot] header.nav.scrolled{border-bottom:3px solid var(--line)}
+[data-brand=globetrot] .nav-links a{font-weight:700}
+[data-brand=globetrot] h1.hero-h{font-size:clamp(56px,8.6vw,128px);line-height:.88;font-weight:800;font-stretch:80%;letter-spacing:-.05em}
+[data-brand=globetrot] .hero-t p{font:400 clamp(18px,1.6vw,21px)/1.45 var(--sans)}
+[data-brand=globetrot] .hero-map{margin:clamp(24px,4vw,48px) clamp(20px,4vw,56px) 0;border:3px solid var(--line);border-radius:30px;box-shadow:0 8px 0 var(--hard);overflow:hidden;background:var(--sea)}
+[data-brand=globetrot] .cart{border:3px solid var(--line);outline:0;border-radius:20px;box-shadow:0 5px 0 var(--hard)}
+[data-brand=globetrot] .cart #heroMsg{font:700 19px/1.3 var(--sans)!important}
+[data-brand=globetrot] .sec.alt{background:var(--paper2);border-top:3px solid var(--line);border-bottom:3px solid var(--line)}
+[data-brand=globetrot] .h2{font-weight:800;font-stretch:80%;letter-spacing:-.04em;line-height:.92}
+[data-brand=globetrot] .lede{font-family:var(--sans)}
+[data-brand=globetrot] .rv-map{border:3px solid var(--line);border-radius:26px;box-shadow:0 6px 0 var(--hard);overflow:hidden}
+[data-brand=globetrot] .rv-step b{width:64px;height:64px;border-radius:50%;background:var(--brass);border:3px solid var(--line);box-shadow:0 3px 0 var(--hard);display:grid;place-items:center;font:800 26px var(--sans);color:#1D1A35}
+[data-brand=globetrot] .rv-step h3{font:800 46px/1 var(--sans);font-stretch:80%;letter-spacing:-.03em}
+[data-brand=globetrot] .stages{border:3px solid var(--line);border-radius:26px;overflow:hidden;box-shadow:0 8px 0 var(--hard);background:var(--card)}
+[data-brand=globetrot] .stage{padding:26px 28px;border-bottom:3px dashed var(--line)}
+[data-brand=globetrot] .stage:last-child{border-bottom:0;background:var(--brass)}
+[data-brand=globetrot] .stage:last-child p{color:#1D1A35}
+[data-brand=globetrot] .stage:first-child{background:var(--thread);color:#fff}
+[data-brand=globetrot] .stage:first-child p,[data-brand=globetrot] .stage:first-child .rn{color:#fff}
+[data-brand=globetrot] .stage .rn{font:700 14px var(--mono);color:var(--ink2)}
+[data-brand=globetrot] .stage .rn::before{content:"STUB "}
+[data-brand=globetrot] .stage h3{font:800 46px/1 var(--sans);font-stretch:80%;letter-spacing:-.035em}
+[data-brand=globetrot] .night{background:var(--paper)}
+[data-brand=globetrot] .prompt{font:600 clamp(20px,2.2vw,26px)/1.35 var(--sans);border-bottom:3px dashed var(--rule2)}
+[data-brand=globetrot] .chg{border:2.5px solid var(--line);border-radius:16px;padding:14px;margin-top:10px;background:var(--card);box-shadow:0 3px 0 var(--hard)}
+[data-brand=globetrot] .chg[aria-checked=false]{border-style:dashed;box-shadow:none;opacity:.75}
+[data-brand=globetrot] .chg .t{font:700 18px/1.25 var(--sans)}
+[data-brand=globetrot] .poses figure{background:var(--card);border:2.5px solid var(--line);border-radius:18px;padding:10px 8px 8px}
+[data-brand=globetrot] .mans{font-weight:800;font-stretch:85%;letter-spacing:-.03em}
+[data-brand=globetrot] .mcard{background:#fff}
+[data-brand=globetrot] .ex{border-radius:26px}
+[data-brand=globetrot] .exs .ex:nth-child(1){background:var(--brass)}
+[data-brand=globetrot] .exs .ex:nth-child(2){background:var(--thread);color:#fff}
+[data-brand=globetrot] .exs .ex:nth-child(2) p{color:#fff}
+[data-brand=globetrot] .exs .ex:nth-child(3){background:var(--mint)}
+[data-brand=globetrot] .exs .ex:is(:nth-child(1),:nth-child(3)) p{color:#1D1A35}
+[data-brand=globetrot] .ex h3{font:800 38px/.95 var(--sans);font-stretch:80%;letter-spacing:-.035em}
+[data-brand=globetrot] .ex:nth-child(2) h3 em{color:#FFE08A}
+[data-brand=globetrot] .ex .mm{border-radius:16px;overflow:hidden;border:2.5px solid var(--line)}
+[data-brand=globetrot] .plat .big{overflow:hidden}
+[data-brand=globetrot] .plat .ph-card{border:3px solid var(--line);box-shadow:0 6px 0 var(--hard)}
+[data-brand=globetrot] .plat .cap{font:600 16px/1.4 var(--sans)}
+[data-brand=globetrot] .sec.alt.cta-final{background:var(--thread);color:#fff;--ink:#fff;--ink2:#FFE1D9;border-color:#1D1A35}
+[data-brand=globetrot] .cta-final .h2 em{color:#FFE08A}
+[data-brand=globetrot] .cta-box{border:3px solid #1D1A35;border-radius:18px;overflow:hidden;box-shadow:0 6px 0 #1D1A35;background:#fff}
+[data-brand=globetrot] .cta-box input{font:600 19px var(--sans);color:#1D1A35}
+[data-brand=globetrot] .cta-box .btn{border:0;border-left:3px solid #1D1A35;box-shadow:none;border-radius:0;background:var(--brass);color:#1D1A35}
+[data-brand=globetrot] footer{background:#1D1A35;border-top:0}
+[data-brand=globetrot] .foot{color:var(--sky)}[data-brand=globetrot] .foot a{color:var(--sky)}
+
+.wrap{max-width:1360px;margin:0 auto;padding:0 clamp(20px,4vw,56px)}
+.wm{font:400 24px var(--serif);letter-spacing:-.01em;color:var(--ink);text-decoration:none;white-space:nowrap}.wm em{color:var(--thread)}
+header.nav{position:sticky;top:0;z-index:40;background:color-mix(in oklab,var(--paper) 92%,transparent);backdrop-filter:blur(6px);border-bottom:1px solid transparent;transition:border-color .3s}
+header.nav.scrolled{border-bottom-color:var(--rule)}
+.nav-in{display:flex;align-items:center;justify-content:space-between;gap:20px;min-height:72px}
+.nav-links{display:flex;gap:30px;font:500 15px var(--sans)}
+.nav-links a{color:var(--ink);text-decoration:none}.nav-links a:hover{color:var(--thread)}
+.nav-r{display:flex;gap:10px;align-items:center}
+.menu-btn{display:none}
+h1.hero-h{font:300 clamp(64px,11.5vw,168px)/.86 var(--serif);letter-spacing:-.04em;margin:0}
+h1.hero-h em{font-style:italic;font-weight:400;color:var(--thread)}
+.hero-t{display:grid;grid-template-columns:minmax(0,1fr) minmax(280px,420px);gap:40px;align-items:end;padding-top:clamp(24px,4vw,48px)}
+.hero-t p{font:400 clamp(18px,1.6vw,21px)/1.5 var(--serif);margin:0 0 24px;text-wrap:pretty}
+.cta{display:flex;gap:12px;flex-wrap:wrap}
+.hero-map{position:relative;height:clamp(380px,48vw,660px);margin-top:clamp(24px,4vw,48px)}
+.hero-map .amap{position:absolute;inset:0}
+.cart{position:absolute;z-index:6;background:var(--card);border:1px solid var(--ink);outline:1px solid var(--ink);outline-offset:3px;padding:14px 18px;right:clamp(16px,4vw,56px);bottom:clamp(16px,3vw,48px);width:min(340px,calc(100% - 32px))}
+.sec{padding:clamp(72px,10vw,130px) 0}
+.sec.alt{background:var(--paper2) var(--grain);border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)}
+.h2{font:300 clamp(44px,6.4vw,84px)/.98 var(--serif);letter-spacing:-.03em;margin:0;text-wrap:balance}
+.h2 em{font-style:italic;font-weight:400;color:var(--thread)}
+.lede{font:400 clamp(18px,1.5vw,20px)/1.55 var(--serif);max-width:560px;margin:0;text-wrap:pretty}
+.head2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,520px);gap:40px 80px;align-items:end}
+/* reveal */
+.reveal{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:56px;margin-top:64px}
+.rv-map{position:sticky;top:96px;height:min(72vh,620px);border:1px solid var(--rule);background:var(--sea)}
+.rv-map .amap{position:absolute;inset:0}
+.rv-steps{display:flex;flex-direction:column}
+.rv-step{min-height:62vh;display:flex;flex-direction:column;justify-content:center;padding:20px 0;opacity:.35;transition:opacity .4s}
+.rv-step.on{opacity:1}
+.rv-step b{font:italic 400 54px/1 var(--serif);color:var(--thread)}
+.rv-step h3{font:400 40px/1.05 var(--serif);margin:10px 0 12px;letter-spacing:-.02em}
+.rv-step p{font:400 17px/1.55 var(--sans);color:var(--ink2);margin:0;max-width:440px}
+.rv-over{position:absolute;inset:0;pointer-events:none;z-index:6}
+.rv-over>*{position:absolute;transition:opacity .5s,transform .6s var(--spring)}
+.rv-over .off{opacity:0;transform:translateY(10px) rotate(var(--r,0deg))}
+/* stages */
+.stages{margin-top:56px;border-top:1px solid var(--ink)}
+.stage{display:grid;grid-template-columns:80px minmax(0,340px) minmax(0,1fr) 260px;gap:28px;align-items:center;padding:28px 0;border-bottom:1px solid var(--rule)}
+.stage .rn{font:italic 300 44px/1 var(--serif);color:var(--thread)}
+.stage h3{font:400 clamp(32px,3.4vw,44px)/1 var(--serif);margin:0;letter-spacing:-.015em}
+.stage p{font:400 16px/1.55 var(--sans);color:var(--ink2);margin:0;max-width:460px}
+.stage .art{display:flex;justify-content:flex-end;align-items:center;gap:10px;min-height:56px}
+/* companion */
+.night{background:var(--paper) var(--grain);color:var(--ink)}
+.comp{display:grid;grid-template-columns:minmax(0,440px) minmax(0,1fr);gap:72px;align-items:start}
+.poses{display:flex;gap:18px;margin-top:28px;flex-wrap:wrap}
+.poses figure{margin:0;display:flex;flex-direction:column;align-items:center;gap:6px}
+.poses figcaption{font:500 10.5px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink2)}
+.prompt{font:italic 300 clamp(22px,2.4vw,30px)/1.3 var(--serif);margin:0;padding-bottom:24px;border-bottom:1px solid var(--rule)}
+.chg{display:grid;grid-template-columns:24px minmax(0,1fr) auto;gap:14px;align-items:start;padding:14px 0;border-bottom:1px dashed var(--rule2);cursor:pointer}
+.chg .t{font:400 19px/1.25 var(--serif)}.chg .help{display:block;margin-top:2px}
+/* money */
+.money{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:72px;align-items:center}
+.mcard{padding:clamp(24px,3vw,44px)}
+.mans{font:300 clamp(28px,3vw,40px)/1.15 var(--serif);margin:0;letter-spacing:-.01em;min-height:3.5em}
+.mans em{color:var(--thread)}
+/* examples */
+.exs{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:36px;margin-top:56px}
+.ex{text-decoration:none;color:var(--ink);display:block;transition:transform .3s var(--spring)}
+.ex:hover{transform:translateY(-6px) rotate(0deg)!important;color:var(--ink)}
+.ex .mm{height:280px;background:var(--sea)}
+.ex h3{font:400 30px/1.05 var(--serif);margin:16px 6px 6px}
+.ex p{font:400 15px/1.5 var(--sans);color:var(--ink2);margin:0 6px}
+/* platforms */
+.plat{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:40px;align-items:end;margin-top:56px}
+.plat .big{height:420px;position:relative}
+.plat .small{position:relative;max-width:300px;justify-self:center}
+.plat .ph-card{height:560px;border-radius:34px;border:1px solid var(--rule2);overflow:hidden;position:relative;background:var(--sea)}
+.plat .cap{font:italic 400 18px/1.4 var(--serif);margin-top:16px}
+.cta-final{text-align:center}
+.cta-final .h2{font-size:clamp(52px,8vw,112px)}
+.cta-box{display:flex;max-width:640px;margin:44px auto 0;border:1.5px solid var(--ink);background:var(--card)}
+.cta-box input{flex:1;border:0;background:transparent;padding:0 20px;font:italic 400 20px var(--serif);min-width:0;color:var(--ink)}
+.cta-box input:focus{outline:0}
+.cta-box .btn{min-height:60px;border-radius:0}
+footer{border-top:1px solid var(--rule);padding:28px 0 40px}
+.foot{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;font:500 12px var(--mono);letter-spacing:.04em;color:var(--ink2)}
+.foot a{color:var(--ink2)}
+@media (max-width:980px){
+  .hero-t,.head2,.comp,.money,.plat{grid-template-columns:1fr}
+  .reveal{grid-template-columns:1fr;gap:0}
+  .rv-map{top:72px;height:46vh;z-index:5}
+  .rv-step{min-height:56vh;background:linear-gradient(transparent,var(--paper2) 20%)}
+  .stage{grid-template-columns:60px minmax(0,1fr);gap:8px 20px}
+  .stage p{grid-column:2}.stage .art{grid-column:2;justify-content:flex-start}
+  .plat .big{height:300px}
+}
+@media (max-width:760px){
+  .nav-links,.nav-r .hide-s{display:none}
+  .menu-btn{display:inline-grid}
+  .nav.open .nav-links{display:flex;flex-direction:column;position:absolute;left:0;right:0;top:72px;background:var(--paper);padding:16px 20px 24px;border-bottom:1px solid var(--rule);gap:16px;font-size:18px}
+  .cta .btn{flex:1}
+  .cta-box{flex-direction:column}.cta-box input{min-height:56px}
+}
+</style>
+</head>
+<body>
+<header class="nav" id="nav"><div class="wrap nav-in">
+  <a class="wm gwm" href="#top" style="text-decoration:none">gl<span class="o"></span>betrot</a>
+  <nav class="nav-links" aria-label="Sections"><a href="#board">The board</a><a href="#pip">Meet Pip</a><a href="#money">Budget</a><a href="#trips">Example trips</a></nav>
+  <div class="nav-r"><button class="iconbtn" id="themeBtn" aria-label="Switch to Night Atlas" title="Day / Night">☾</button><a class="btn quiet hide-s" href="Globetrot - App.html#/login">Log in</a><a class="btn sm" href="Globetrot - App.html#/signup">Start a board</a><button class="iconbtn menu-btn" id="menuBtn" aria-label="Menu" aria-expanded="false">≡</button></div>
+</div></header>
+
+<main id="top">
+  <section class="wrap">
+    <div class="hero-t">
+      <h1 class="hero-h">Your first <em>stamp</em> is closer than you think.</h1>
+      <div><p>Pick a dream destination. Globetrot turns it into a route, a realistic budget and a savings plan — and stamps your passport every time you get one step closer.</p>
+        <div class="cta"><a class="btn thread lg" href="Globetrot - App.html#/signup">Plan my dream trip</a><a class="btn ghost lg" href="#trips">See example trips</a></div></div>
+    </div>
+  </section>
+  <div class="hero-map" id="board">
+    <div id="heroMap" class="amap" role="application" aria-label="Interactive world map: tap two pins to connect them"></div>
+    <div class="cart" aria-live="polite"><div class="eyebrow" style="margin-bottom:6px">Try it</div><div id="heroMsg" style="font:italic 400 21px/1.3 var(--serif)">Tap a pin, then another, to string them together.</div></div>
+  </div>
+
+  <section class="sec alt">
+    <div class="wrap">
+      <div class="head2"><h2 class="h2">From “someday” to <em>ten days in Japan.</em></h2><p class="lede">Scroll through how one dream becomes a plan. It’s the same board the whole way — nothing thrown away, nothing retyped.</p></div>
+      <div class="reveal">
+        <div class="rv-map"><div id="rvMap" class="amap"></div>
+          <div class="rv-over" id="rvOver">
+            <div class="post off" data-s="4" style="left:6%;top:8%;width:150px;--r:-4deg;transform:rotate(-4deg)"><i class="tack"></i><div class="ph" style="height:80px">photo: Tsukiji, 7am</div><div class="cap" style="font-size:14px">Breakfast is tamagoyaki on a stick.</div></div>
+            <div class="note off" data-s="4" style="right:6%;top:10%;width:170px;--r:3deg;transform:rotate(3deg);font-size:15px">Onsen night in Hakone — book early.</div>
+            <div class="sheet off" data-s="4" style="left:5%;right:5%;bottom:5%;padding:12px 16px;display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap"><span class="mk est">≈ R$ 14.280 estimate</span><span class="help">45% saved · ready by early April</span></div>
+          </div></div>
+        <div class="rv-steps">
+          <div class="rv-step" data-step="1"><b>i.</b><h3>Dream</h3><p>Drop a pin on a country. That’s a dream — it can live on your shelf for years, no dates required.</p></div>
+          <div class="rv-step" data-step="2"><b>ii.</b><h3>Explore</h3><p>Zoom in. Pin the cities, the market you saw in a film, the onsen a friend wouldn’t stop talking about.</p></div>
+          <div class="rv-step" data-step="3"><b>iii.</b><h3>Connect</h3><p>Pull a thread from pin to pin. The order becomes a route; nights become an itinerary with real dates.</p></div>
+          <div class="rv-step" data-step="4"><b>iv.</b><h3>Plan &amp; save</h3><p>Attach places, costs and notes to each pin. Now the board knows what the trip costs — and when you can afford it.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="wrap">
+      <div class="head2"><h2 class="h2">Five stamps from<br>“someday” to <em>“booked”.</em></h2><p class="lede">Every real step earns a stamp in your trip’s passport. Skip around as you like — nothing is ever locked.</p></div>
+      <div class="stages">
+        <div class="stage"><span class="rn">i</span><h3>Dream</h3><p>Keep a shelf of places you’d love to see. A pin is enough to start.</p><div class="art"><span class="pin" style="position:relative;left:0;top:26px"><i class="s"></i><i class="n"></i><i class="h"></i></span><span class="pin" style="position:relative;left:22px;top:20px"><i class="s"></i><i class="n"></i><i class="h"></i></span><span class="pin dream" style="position:relative;left:44px;top:30px"><i class="n"></i><i class="h"></i></span></div></div>
+        <div class="stage"><span class="rn">ii</span><h3>Connect</h3><p>Draw the route by threading pins. Reorder by pulling the thread, not by editing a table.</p><div class="art"><svg width="240" height="56"><path d="M8 18 Q64 50 120 24 Q176 2 232 32" class="thread"/><circle cx="8" cy="18" r="5" style="fill:var(--brass)"/><circle cx="120" cy="24" r="5" style="fill:var(--brass)"/><circle cx="232" cy="32" r="5" style="fill:var(--brass)"/></svg></div></div>
+        <div class="stage"><span class="rn">iii</span><h3>Count</h3><p>Every pin carries its own costs. Estimates stay marked as estimates until you confirm or pay.</p><div class="art"><div class="ledger" style="width:240px;font:400 15px var(--serif)"><span>Kyoto ryokan</span><span class="dl"></span><span class="mk conf">✓ R$ 1.120</span><span>Trains</span><span class="dl"></span><span class="mk est">≈ R$ 1.250</span></div></div></div>
+        <div class="stage"><span class="rn">iv</span><h3>Prepare</h3><p>Passport, insurance, a first night booked. Each real step earns an ink stamp in the trip’s passport.</p><div class="art"><span class="stamp" style="width:84px;height:84px;font-size:9px">N° 5<b style="font-size:16px">Papers</b>05 NOV</span></div></div>
+        <div class="stage"><span class="rn">v</span><h3>Go</h3><p>The board becomes your travel notebook: today’s pin, tomorrow’s train, the address in Japanese.</p><div class="art"><span class="stamp" style="width:84px;height:84px;font-size:9px;transform:rotate(6deg)">Trip<b style="font-size:16px">Ready</b>03 APR</span></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec night" data-theme="dark" id="pip">
+    <div class="wrap comp">
+      <div>
+        <div class="eyebrow">The companion</div>
+        <h2 class="h2" style="margin-top:16px">Meet Pip. Pip has <em>opinions</em> about ramen.</h2>
+        <p class="lede" style="margin-top:22px;color:var(--ink2)">Describe the trip the way you’d tell a friend. Pip pencils a first draft straight onto your board — a list of changes you can keep, tweak or rub out. Nothing changes until you say so.</p>
+        <div id="pipBig" style="margin-top:22px"></div>
+        <div class="poses" id="poses"></div>
+      </div>
+      <div>
+        <div class="eyebrow" style="margin-bottom:10px">You wrote</div>
+        <p class="prompt">“I have R$15,000, want to visit Japan for 10 days, love food and historical places, and have never traveled internationally.”</p>
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin:22px 0 4px;gap:10px;flex-wrap:wrap"><span class="eyebrow">Pip pencilled in · tap to keep or drop</span><span class="help">Estimates · not live prices</span></div>
+        <div id="chgs"></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:14px;margin-top:20px;flex-wrap:wrap"><span class="serif" style="font-size:22px" id="chgTot"></span><a class="btn thread" href="Globetrot - App.html#/signup" id="chgBtn">Stamp these onto my trip</a></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="money">
+    <div class="wrap money">
+      <div><div class="eyebrow">Budget &amp; savings</div><h2 class="h2" style="margin-top:16px">Can I actually<br><em>afford this?</em></h2><p class="lede" style="margin-top:24px">The board answers in a sentence first, and in a ledger only if you ask. Move the slider — that’s what you’d put aside each month.</p></div>
+      <div class="sheet mcard">
+        <p class="mans" id="mAns" aria-live="polite"></p>
+        <label class="field" style="margin-top:22px"><span class="lbl" style="display:flex;justify-content:space-between">Each month <b class="num" id="mOut"></b></span><input type="range" min="500" max="3000" step="50" value="1500" id="mRange"></label>
+        <div id="mProg" style="margin-top:18px"></div>
+        <div class="rule" style="margin:22px 0 16px"></div>
+        <div style="display:flex;gap:22px;flex-wrap:wrap"><span class="mk est">≈ estimate</span><span class="mk conf">✓ confirmed</span><span class="mk paid">● paid</span><span class="mk unk">? not known yet</span></div>
+        <p class="help" style="margin:12px 0 0">Example: R$ 14.280 trip, R$ 6.400 already saved, leaving 3 April 2027.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec alt" id="trips">
+    <div class="wrap">
+      <div style="display:flex;justify-content:space-between;align-items:end;gap:20px;flex-wrap:wrap"><h2 class="h2">Steal a trip.<br><em>Make it yours.</em></h2><a href="Globetrot - App.html#/signup" style="font:500 16px var(--sans)">All example trips →</a></div>
+      <div class="exs">
+        <a class="post ex" href="Globetrot - App.html#/signup" style="transform:rotate(-1.2deg)"><div class="mm" data-mini="porto,lisbon,lagos"></div><h3>Seven days in <em>Portugal</em></h3><p>Trains only. Port cellars, tiled stairways, a beach day at the end.</p></a>
+        <a class="post ex" href="Globetrot - App.html#/signup" style="transform:rotate(.8deg)"><div class="mm" data-mini="tokyo,hakone,kyoto,osaka"></div><h3>Ten days in <em>Japan</em></h3><p>A first time abroad, planned around food and very old wood.</p></a>
+        <a class="post ex" href="Globetrot - App.html#/signup" style="transform:rotate(-.5deg)"><div class="mm" data-mini="buenosaires,colonia,montevideo"></div><h3>A first trip <em>across the river</em></h3><p>Buenos Aires, a ferry, Colonia and Montevideo. Six days, one border.</p></a>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="wrap">
+      <div class="head2"><h2 class="h2">The same board,<br><em>in your pocket.</em></h2><p class="lede">On a laptop it’s a wide desk to spread out on. On your phone you pan the map under a crosshair and tap “Pin here” — no fiddly dragging. Everything you do on one is already on the other.</p></div>
+      <div class="plat">
+        <div><div class="sheet big"><div class="mm" data-mini="tokyo,hakone,kyoto,osaka" style="position:absolute;inset:0"></div><div class="sheet" style="position:absolute;right:16px;top:16px;bottom:16px;width:min(38%,260px);padding:16px"><div class="eyebrow">Stop 3 of 4</div><div class="serif" style="font-size:36px;line-height:1;margin:8px 0 4px">Kyoto</div><div class="help">3 nights · Ryokan Hanami</div><div class="ph" style="height:80px;margin-top:12px">photo</div></div></div><p class="cap">Desktop: map, route and the open stop side by side.</p></div>
+        <div class="small"><div class="ph-card"><div class="mm" data-mini="tokyo,hakone,kyoto,osaka" style="position:absolute;inset:0"></div><div style="position:absolute;left:50%;top:40%;width:52px;height:52px;margin:-26px;border:1.5px solid var(--thread);border-radius:50%"></div><span class="btn thread sm" style="position:absolute;left:50%;top:calc(40% + 40px);transform:translateX(-50%)">Pin here</span><div class="sheet" style="position:absolute;left:0;right:0;bottom:0;padding:16px 18px 22px;border-radius:0"><div style="width:36px;height:4px;border-radius:2px;background:var(--rule2);margin:0 auto 10px"></div><div class="serif" style="font-size:26px">Kyoto</div><div class="help">3 nights · 5 places</div></div></div><p class="cap" style="text-align:center">Phone: crosshair pinning, bottom sheet.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec alt cta-final">
+    <div class="wrap">
+      <div class="eyebrow">Your passport is waiting</div>
+      <h2 class="h2" style="margin-top:20px">Ready for your <em>first stamp?</em></h2>
+      <form class="cta-box" action="Globetrot - App.html#/signup" onsubmit="location.href='Globetrot - App.html#/signup';return false"><input aria-label="A place you’ve always wanted to see" placeholder="A place you’ve always wanted to see…"><button class="btn thread" type="submit">Pin it</button></form>
+      <p class="help" style="margin-top:16px">Free to start. Works the same on your phone.</p>
+    </div>
+  </section>
+</main>
+<footer><div class="wrap foot"><span>GLOBETROT</span><span><a href="Globetrot - App.html#/login">Log in</a> · Map data: Natural Earth</span></div></footer>
+
+<script src="atlas/brand.js"></script>
+<script src="atlas/data.js"></script>
+<script src="atlas/pip.js"></script>
+<script src="atlas/map.js"></script>
+<script>
+const AT = window.AT, P = id => AT.places[id];
+const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+// nav
+const nav = document.getElementById('nav');
+addEventListener('scroll', () => nav.classList.toggle('scrolled', scrollY > 8), { passive: true });
+document.getElementById('menuBtn').onclick = e => { const o = nav.classList.toggle('open'); e.currentTarget.setAttribute('aria-expanded', o); };
+nav.querySelectorAll('.nav-links a').forEach(a => a.onclick = () => nav.classList.remove('open'));
+const tb = document.getElementById('themeBtn');
+tb.onclick = () => { const d = document.documentElement.dataset.theme === 'dark'; document.documentElement.dataset.theme = d ? 'light' : 'dark'; tb.textContent = d ? '☾' : '☀'; tb.setAttribute('aria-label', d ? 'Switch to Night Atlas' : 'Switch to Day Atlas'); };
+
+// hero: tap two pins to thread them
+(function () {
+  const names = ['lisbon', 'marrakech', 'reykjavik', 'cusco', 'hanoi', 'kyoto', 'rome'];
+  let sel = 'kyoto', threads = [['saopaulo', 'kyoto']], n = 1;
+  const msg = document.getElementById('heroMsg');
+  const model = () => ({
+    pins: [{ id: 'saopaulo', ll: P('saopaulo').ll, kind: 'home', label: 'home', sub: 'São Paulo', sm: true },
+      ...names.map(k => ({ id: k, ll: P(k).ll, label: P(k).name, sub: k === 'kyoto' ? 'dream · 10 days' : '', sel: sel === k, drop: true, left: ['cusco', 'hanoi', 'kyoto'].includes(k) }))],
+    routes: threads.map((t, i) => ({ kind: 'route', pts: t.map(k => P(k).ll), sig: t.join('>') + i, bend: .1 }))
+  });
+  const m = AT.Map(document.getElementById('heroMap'), {
+    ready: () => m.set(model(), true),
+    pin: k => {
+      if (k === 'saopaulo') return;
+      if (!sel || sel === k) { sel = sel === k ? null : k; msg.textContent = sel ? `${P(k).name} lifted. Now tap where you’d go next.` : 'Tap a pin, then another, to string them together.'; m.set(model(), false); return; }
+      threads.push([sel, k]); n++; msg.textContent = `${P(sel).name} → ${P(k).name}. ${n} threads — that’s the start of a route.`; sel = k;
+      // draw only the new thread
+      const mm = model(); mm.routes = mm.routes.map((r, i) => i === mm.routes.length - 1 ? r : { ...r, sig: '' }); m.set(mm, true);
+    }
+  });
+  m.init(['392']);
+})();
+
+// reveal: sticky map that fills in as you scroll
+(function () {
+  const stops = ['tokyo', 'hakone', 'kyoto', 'osaka'];
+  const host = document.getElementById('rvMap'); let step = 0, ready = false;
+  const m = AT.Map(host, { ready: () => { ready = true; m.show('region', [[134.2, 33.6], [141.2, 36.6]]).then(() => apply()); } });
+  m.init(['392']);
+  function apply() {
+    if (!ready) return;
+    const pins = step === 1 ? [{ id: 'jp', ll: [137.4, 35.6], label: 'Japan', sub: 'dream' }] : step >= 2 ? stops.map(k => ({ id: k, ll: P(k).ll, label: P(k).name, sub: step >= 3 ? { tokyo: '4 nights', hakone: '1 night', kyoto: '3 nights', osaka: '2 nights' }[k] : '', drop: true, left: k === 'osaka' })) : [];
+    const routes = step >= 3 ? [{ kind: 'route', pts: stops.map(k => P(k).ll), sig: 'r' + (step >= 3 ? 1 : 0) }] : [];
+    m.set({ pins, routes }, true);
+    document.querySelectorAll('#rvOver [data-s]').forEach(e => e.classList.toggle('off', +e.dataset.s > step));
+  }
+  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { step = +e.target.dataset.step; document.querySelectorAll('.rv-step').forEach(s => s.classList.toggle('on', s === e.target)); apply(); } }), { rootMargin: '-45% 0px -45% 0px' });
+  document.querySelectorAll('.rv-step').forEach(s => io.observe(s));
+})();
+
+// companion
+(function () {
+  document.getElementById('pipBig').innerHTML = AT.pip('idle', 210);
+  document.getElementById('poses').innerHTML = [['research', 'Researching'], ['draft', 'Drafting'], ['deliver', 'Delivering'], ['celebrate', 'Stamping'], ['unsure', 'Unsure']].map(([p, l]) => `<figure>${AT.pip(p, 76)}<figcaption>${l}</figcaption></figure>`).join('');
+  const items = [['Tokyo — 4 nights', 'Tsukiji outer market, Senso-ji, Yanaka', 4900], ['Hakone — 1 night', 'A gentle first ryokan with an onsen', 680], ['Kyoto — 3 nights, Nara by day', 'Fushimi Inari early, Nishiki Market', 2700], ['Osaka — 2 nights', 'Street food, fly home from KIX', 1400], ['Flights GRU ⇄ Japan', 'Via a Gulf hub, April', 6200], ['Visa rules for your passport', 'Pip can’t verify this — check the official site', null]];
+  const on = items.map((x, i) => i < 5);
+  const box = document.getElementById('chgs');
+  function draw() {
+    box.innerHTML = items.map(([t, d, a], i) => `<div class="chg" role="checkbox" tabindex="0" aria-checked="${on[i]}" data-i="${i}"><span class="box" aria-checked="${on[i]}"></span><span><span class="t">${t}</span><span class="help">${d}</span></span>${a == null ? '<span class="mk unk">? verify</span>' : `<span class="mk est">≈ ${AT.money(a)}</span>`}</div>`).join('');
+    const tot = items.reduce((s, x, i) => s + (on[i] && x[2] ? x[2] : 0), 0), c = on.filter(Boolean).length;
+    document.getElementById('chgTot').textContent = `Likely total ≈ ${AT.money(tot)}`;
+    document.getElementById('chgBtn').textContent = c ? `Add ${c} to my trip` : 'Pick at least one';
+  }
+  box.addEventListener('click', e => { const r = e.target.closest('.chg'); if (!r) return; on[r.dataset.i] = !on[r.dataset.i]; draw(); box.querySelector(`[data-i="${r.dataset.i}"]`).focus(); });
+  box.addEventListener('keydown', e => { if ((e.key === ' ' || e.key === 'Enter') && e.target.classList.contains('chg')) { e.preventDefault(); e.target.click(); } });
+  draw();
+})();
+
+// money
+(function () {
+  const total = 14280, saved = 6400, dep = new Date('2027-04-03T12:00'), today = new Date();
+  const r = document.getElementById('mRange');
+  function upd() {
+    const mo = +r.value, left = total - saved, n = Math.ceil(left / mo), ready = new Date(today.getFullYear(), today.getMonth() + n, 5);
+    const mn = d => d.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
+    document.getElementById('mOut').textContent = AT.money(mo);
+    document.getElementById('mAns').innerHTML = ready <= dep ? `<em>Yes</em> — by ${mn(ready)}, if you put aside ${AT.money(mo)} a month.` : `<em>Almost.</em> At ${AT.money(mo)} a month you’ll have it by ${mn(ready)} — a little after you leave. Try a bit more, or a later date.`;
+    const months = Math.max(n, 1), W = 600, pct = saved / total;
+    document.getElementById('mProg').innerHTML = `<svg viewBox="0 0 ${W} 50" width="100%" height="50" preserveAspectRatio="none" aria-hidden="true"><path d="M6 25 Q ${W / 4} 40 ${W / 2} 27 T ${W - 6} 25" fill="none" style="stroke:var(--rule2)" stroke-width="1.5" stroke-dasharray="2 5"/><path d="M6 25 Q ${W / 4} 40 ${W / 2} 27 T ${W - 6} 25" fill="none" pathLength="100" style="stroke:var(--thread)" stroke-width="2.4" stroke-dasharray="${pct * 100} 100"/></svg><div class="months" style="display:flex;justify-content:space-between;font:500 10.5px var(--mono);color:var(--ink3)">${Array.from({ length: months + 1 }, (_, i) => `<span style="${i === 0 || i === months ? 'color:var(--thread)' : ''}">${i === 0 ? 'NOW' : new Date(today.getFullYear(), today.getMonth() + i, 1).toLocaleDateString('en-GB', { month: 'short' }).toUpperCase()}</span>`).join('')}</div>`;
+  }
+  r.addEventListener('input', upd); upd();
+})();
+
+// mini maps
+(async function () {
+  const els = document.querySelectorAll('[data-mini]');
+  let geo; try { geo = await AT.loadGeo('50m'); } catch (e) { els.forEach(el => el.innerHTML = '<div class="ph" style="height:100%">map</div>'); return; }
+  const draw = el => {
+    const w = el.clientWidth, h = el.clientHeight; if (!w) return;
+    const lls = el.dataset.mini.split(',').map(k => P(k).ll);
+    let [x0, y0, x1, y1] = [180, 90, -180, -90]; lls.forEach(([x, y]) => { x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); });
+    const cx = (x0 + x1) / 2, cy = (y0 + y1) / 2, sx = Math.max(3, (x1 - x0) * 1.7), sy = Math.max(2.4, (y1 - y0) * 1.7);
+    const p = d3.geoMercator().fitExtent([[12, 12], [w - 12, h - 12]], { type: 'Feature', geometry: { type: 'MultiPoint', coordinates: [[cx - sx / 2, cy - sy / 2], [cx + sx / 2, cy + sy / 2]] } }); p.clipExtent([[-20, -20], [w + 20, h + 20]]);
+    const g2 = AT.near(geo, [p.invert([0, h]), p.invert([w, 0])]); const path = d3.geoPath(p), pts = lls.map(ll => p(ll)), landD = path(g2.land);
+    el.innerHTML = `<svg width="${w}" height="${h}" style="display:block"><rect width="${w}" height="${h}" style="fill:var(--sea)"/>${[[12, 'var(--ripple)'], [6, 'var(--sea)']].map(([s, c]) => `<path d="${landD}" fill="none" style="stroke:${c}" stroke-width="${s}" stroke-linejoin="round"/>`).join('')}<path d="${landD}" style="fill:var(--land);stroke:var(--ink)" stroke-width=".9"/><path class="thread" d="${AT.routeD(pts.map(q => [q[0], q[1] - 2]), 'sag', .12)}"/>${pts.map(q => `<circle cx="${q[0]}" cy="${q[1]}" r="5" style="fill:var(--brass);stroke:var(--ink)" stroke-width="1.2"/>`).join('')}</svg>`;
+  };
+  els.forEach(draw);
+  let t; addEventListener('resize', () => { clearTimeout(t); t = setTimeout(() => els.forEach(draw), 200); });
+})();
+</script>
+</body>
+</html>
