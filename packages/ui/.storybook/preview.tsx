@@ -1,6 +1,45 @@
+import { useEffect, type ReactNode } from 'react';
 import type { Preview } from '@storybook/react-vite';
 import '@globetrot/tokens/tokens.css';
 import '../src/styles.css';
+
+function StorySurface({
+  theme,
+  locale,
+  children,
+}: {
+  theme: string;
+  locale: string;
+  children: ReactNode;
+}) {
+  useEffect(() => {
+    const root = document.documentElement;
+    const oldTheme = root.getAttribute('data-theme');
+    const oldLang = root.lang;
+    root.setAttribute('data-theme', theme);
+    root.lang = locale;
+    return () => {
+      if (oldTheme === null) root.removeAttribute('data-theme');
+      else root.setAttribute('data-theme', oldTheme);
+      root.lang = oldLang;
+    };
+  }, [theme, locale]);
+
+  return (
+    <div
+      data-theme={theme}
+      lang={locale}
+      style={{
+        minHeight: '100vh',
+        padding: '2rem',
+        background: 'var(--gt-semantic-color-surface-page)',
+        color: 'var(--gt-semantic-color-text)',
+      }}
+    >
+      {children}
+    </div>
+  );
+}
 
 const preview: Preview = {
   globalTypes: {
@@ -16,18 +55,12 @@ const preview: Preview = {
   initialGlobals: { theme: 'day', locale: 'en' },
   decorators: [
     (Story, context) => (
-      <div
-        data-theme={context.globals.theme}
-        lang={context.globals.locale}
-        style={{
-          minHeight: '100vh',
-          padding: '2rem',
-          background: 'var(--gt-semantic-color-surface-page)',
-          color: 'var(--gt-semantic-color-text)',
-        }}
+      <StorySurface
+        theme={context.globals.theme === 'red-eye' ? 'red-eye' : 'day'}
+        locale={context.globals.locale === 'pt-BR' ? 'pt-BR' : 'en'}
       >
         <Story />
-      </div>
+      </StorySurface>
     ),
   ],
   parameters: { a11y: { test: 'error' } },
