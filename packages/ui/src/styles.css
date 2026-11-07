@@ -109,3 +109,43 @@
 [data-motion='reduced'] .gt-button[data-pending]::before {
   animation: none;
 }
+
+.gt-field {
+  display: grid;
+  gap: 8px;
+  max-width: 32rem;
+  color: var(--gt-semantic-color-text);
+}
+.gt-field__label {
+  font-weight: 700;
+}
+.gt-field__control {
+  width: 100%;
+  min-height: var(--gt-primitive-size-input);
+  border: 2.5px solid var(--gt-semantic-color-outline);
+  border-radius: var(--gt-component-input-radius);
+  background: var(--gt-semantic-color-surface-card);
+  color: var(--gt-semantic-color-text);
+  padding: 10px 12px;
+  font: inherit;
+}
+textarea.gt-field__control {
+  min-height: 120px;
+  resize: vertical;
+}
+.gt-field__control[data-focus-visible] {
+  outline: var(--gt-component-focus-width) solid var(--gt-semantic-color-focus);
+  outline-offset: 3px;
+}
+.gt-field__control[data-invalid] {
+  border-color: var(--gt-semantic-color-danger);
+}
+.gt-field__control[data-disabled] {
+  opacity: 0.5;
+}
+.gt-field__description {
+  color: var(--gt-semantic-color-text-secondary);
+}
+.gt-field__error {
+  color: var(--gt-semantic-color-danger);
+}
