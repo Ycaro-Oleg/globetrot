@@ -28,6 +28,7 @@ export default tseslint.config(
       '**/coverage/**',
       '**/storybook-static/**',
       'design/reference/**',
+      'packages/api-client/src/generated/**',
       '**/next-env.d.ts',
     ],
   },

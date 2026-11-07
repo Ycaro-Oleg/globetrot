@@ -49,6 +49,7 @@ infra/              Local service init scripts and the services check
 | `pnpm lint` / `pnpm typecheck` / `pnpm test` | Checks across all workspaces (Turborepo-cached) |
 | `pnpm test:int` | Integration tests against the local PostgreSQL (run `pnpm services:up` first). Not part of `pnpm test` |
 | `pnpm --filter @globetrot/db migrate \| reset \| generate` | Apply migrations, rebuild the local database, generate a migration from the schema |
+| `pnpm api:generate` | After changing an API route or schema: rewrite `packages/api-client/openapi.json` and the generated client types (two tests fail while they are stale) |
 | `pnpm --filter @globetrot/api <script>` | Run a script in one workspace |
 | `pnpm format` / `pnpm format:check` | Prettier |
 

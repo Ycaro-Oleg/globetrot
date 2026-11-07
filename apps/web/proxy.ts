@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { apiProxyTarget, DEFAULT_API_URL } from './lib/api-proxy';
 
 /**
- * The browser only ever talks to the web origin. Auth requests are forwarded to the API, so the
+ * The browser only ever talks to the web origin. Auth and `/v1` requests are forwarded to the API, so the
  * session cookie the API sets is a first-party cookie of the web app (no CORS, no third-party cookie
  * rules). The destination is read **per request**, not at build time, so one image works in every
  * environment. Details and the trust assumptions: docs/architecture/authentication.md.
@@ -15,4 +15,4 @@ export function proxy(request: NextRequest) {
 }
 
 // Constants only: Next analyses the matcher at build time.
-export const config = { matcher: ['/api/auth/:path*'] };
+export const config = { matcher: ['/api/auth/:path*', '/v1/:path*'] };

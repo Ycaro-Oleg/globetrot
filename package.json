@@ -12,6 +12,7 @@
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
     "test:int": "turbo run test:int",
+    "api:generate": "pnpm --filter @globetrot/api generate:openapi && pnpm --filter @globetrot/api-client generate",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "services:up": "docker compose up -d --wait && docker compose wait storage-init",

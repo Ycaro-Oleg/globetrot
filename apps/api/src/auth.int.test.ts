@@ -4,9 +4,9 @@ import { createTestDatabase, type TestDatabase } from '@globetrot/db/testing';
 import { getAuthTables } from 'better-auth/db';
 import { getTableColumns } from 'drizzle-orm';
 import { afterEach, describe, expect, it } from 'vitest';
-import { createApp } from './app';
-import { createAuth, MAX_PASSWORD_LENGTH, MIN_PASSWORD_LENGTH } from './auth';
+import { MAX_PASSWORD_LENGTH, MIN_PASSWORD_LENGTH } from './auth';
 import { loadApiConfig } from './config';
+import { createServices } from './wire';
 
 const PASSWORD = 'correct horse battery staple';
 
@@ -44,8 +44,7 @@ async function harness(env: Record<string, string> = {}) {
     BETTER_AUTH_SECRET: randomBytes(32).toString('hex'),
     ...env,
   });
-  const auth = createAuth(database.db, config.auth);
-  const app = createApp({ auth, trustedOrigins: config.auth.trustedOrigins });
+  const { auth, app } = createServices(database.db, config.auth);
   const origin = config.auth.baseURL;
 
   const call = (path: string, init: CallOptions = {}) => {
