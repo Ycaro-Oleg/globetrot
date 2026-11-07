@@ -32,7 +32,7 @@ infra/              Local service init scripts and the services check
 
 ## Conventions
 
-- **Internal packages ship TypeScript sources.** They have no build step: `exports` points to `src/index.ts`. Next.js compiles them via `transpilePackages`, and the api/worker bundles inline them with tsup. Add a package to `transpilePackages` in `apps/web/next.config.ts` when the web app starts importing it.
+- **Internal packages generally ship TypeScript sources:** `exports` points to `src/index.ts`. The tokens package additionally builds its CSS and DTCG theme artifacts; run its build before using those artifacts. Next.js compiles them via `transpilePackages`, and the api/worker bundles inline them with tsup. Add a package to `transpilePackages` in `apps/web/next.config.ts` when the web app starts importing it.
 - **Dependency direction:** `apps/*` → `application` → `domain`. `domain` imports nothing. Adapters (db, HTTP, AI, Stripe, …) depend on `application` ports, never the reverse.
 - Every package exposes the same scripts: `lint`, `typecheck`, `test`. Apps add `dev`, `build`, `start`.
 - **Tests:** Vitest, colocated as `*.test.ts(x)` next to the code.
