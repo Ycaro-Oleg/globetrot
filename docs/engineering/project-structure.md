@@ -6,7 +6,7 @@ The monorepo uses pnpm workspaces and Turborepo. Architecture and rationale: [`.
 
 - **Node 24 LTS** (`.nvmrc`; `engines` in the root `package.json`).
 - **pnpm 10** through Corepack (`packageManager` field): `corepack enable`.
-- Docker, for images and (from issue #12) local services.
+- Docker, for images and local services (see [`local-development.md`](local-development.md)).
 
 ## Layout
 
@@ -26,6 +26,8 @@ packages/
   i18n/         @globetrot/i18n         ICU message catalogs
 eslint.config.mjs   One flat ESLint config for the repo, including the architecture boundary rules
 turbo.json          Task graph: build, dev, lint, typecheck, test
+compose.yaml        Local services (Postgres + PostGIS, S3 storage, Mailpit). See local-development.md
+infra/              Local service init scripts and the services check
 ```
 
 ## Conventions
