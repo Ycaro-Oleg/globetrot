@@ -422,8 +422,8 @@
         }
       },
       "circle": {
-        "$type": "dimension",
-        "$value": "50%"
+        "$type": "number",
+        "$value": 0.5
       }
     },
     "font": {
@@ -446,7 +446,10 @@
       },
       "2-5": {
         "$type": "dimension",
-        "$value": "2.5px"
+        "$value": {
+          "value": 2.5,
+          "unit": "px"
+        }
       },
       "3": {
         "$type": "dimension",
@@ -599,20 +602,84 @@
     },
     "type": {
       "hero": {
-        "$type": "dimension",
-        "$value": "clamp(56px, 8.6vw, 128px)"
+        "min": {
+          "$type": "dimension",
+          "$value": {
+            "value": 56,
+            "unit": "px"
+          }
+        },
+        "viewport-percent": {
+          "$type": "number",
+          "$value": 8.6
+        },
+        "max": {
+          "$type": "dimension",
+          "$value": {
+            "value": 128,
+            "unit": "px"
+          }
+        }
       },
       "section": {
-        "$type": "dimension",
-        "$value": "clamp(44px, 6.4vw, 84px)"
+        "min": {
+          "$type": "dimension",
+          "$value": {
+            "value": 44,
+            "unit": "px"
+          }
+        },
+        "viewport-percent": {
+          "$type": "number",
+          "$value": 6.4
+        },
+        "max": {
+          "$type": "dimension",
+          "$value": {
+            "value": 84,
+            "unit": "px"
+          }
+        }
       },
       "page": {
-        "$type": "dimension",
-        "$value": "clamp(36px, 5vw, 56px)"
+        "min": {
+          "$type": "dimension",
+          "$value": {
+            "value": 36,
+            "unit": "px"
+          }
+        },
+        "viewport-percent": {
+          "$type": "number",
+          "$value": 5.0
+        },
+        "max": {
+          "$type": "dimension",
+          "$value": {
+            "value": 56,
+            "unit": "px"
+          }
+        }
       },
       "answer": {
-        "$type": "dimension",
-        "$value": "clamp(26px, 3vw, 36px)"
+        "min": {
+          "$type": "dimension",
+          "$value": {
+            "value": 26,
+            "unit": "px"
+          }
+        },
+        "viewport-percent": {
+          "$type": "number",
+          "$value": 3.0
+        },
+        "max": {
+          "$type": "dimension",
+          "$value": {
+            "value": 36,
+            "unit": "px"
+          }
+        }
       },
       "body": {
         "$type": "dimension",
@@ -623,7 +690,10 @@
       },
       "eyebrow": {
         "$type": "dimension",
-        "$value": "11.5px"
+        "$value": {
+          "value": 11.5,
+          "unit": "px"
+        }
       },
       "stop-title": {
         "$type": "dimension",
@@ -698,36 +768,36 @@
         "$value": 1.18
       },
       "hero-tracking": {
-        "$type": "dimension",
-        "$value": "-0.05em"
+        "$type": "number",
+        "$value": -0.05
       },
       "section-tracking": {
-        "$type": "dimension",
-        "$value": "-0.04em"
+        "$type": "number",
+        "$value": -0.04
       },
       "page-tracking": {
-        "$type": "dimension",
-        "$value": "-0.035em"
+        "$type": "number",
+        "$value": -0.035
       },
       "card-tracking": {
-        "$type": "dimension",
-        "$value": "-0.015em"
+        "$type": "number",
+        "$value": -0.015
       },
       "eyebrow-tracking": {
-        "$type": "dimension",
-        "$value": "0.04em"
+        "$type": "number",
+        "$value": 0.04
       },
       "display-stretch": {
-        "$type": "dimension",
-        "$value": "80%"
+        "$type": "number",
+        "$value": 0.8
       },
       "card-stretch": {
-        "$type": "dimension",
-        "$value": "88%"
+        "$type": "number",
+        "$value": 0.88
       },
       "wordmark-stretch": {
-        "$type": "dimension",
-        "$value": "85%"
+        "$type": "number",
+        "$value": 0.85
       },
       "weight-regular": {
         "$type": "fontWeight",

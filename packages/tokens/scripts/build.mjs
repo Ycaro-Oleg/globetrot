@@ -62,7 +62,24 @@ export function compileTokens() {
       }
       return value;
     };
-    result[theme] = Object.fromEntries(Object.keys(raw).map((key) => [key, resolve(key)]));
+    const values = Object.fromEntries(Object.keys(raw).map((key) => [key, resolve(key)]));
+    for (const size of ['hero', 'section', 'page', 'answer']) {
+      const base = 'primitive.type.' + size;
+      values[base] =
+        'clamp(' +
+        values[base + '.min'] +
+        ', ' +
+        values[base + '.viewport-percent'] +
+        'vw, ' +
+        values[base + '.max'] +
+        ')';
+    }
+    for (const key of Object.keys(values)) {
+      if (key.endsWith('-tracking')) values[key] = values[key] + 'em';
+      if (key.endsWith('-stretch') || key === 'primitive.radius.circle')
+        values[key] = values[key] * 100 + '%';
+    }
+    result[theme] = values;
   }
   return result;
 }
@@ -97,4 +114,10 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     ),
   );
   writeFileSync(join(root, 'dist', 'tokens.css'), cssFrom(tokens));
+  for (const [theme, source] of Object.entries(themes)) {
+    writeFileSync(
+      join(root, 'dist', theme + '.tokens.json'),
+      JSON.stringify({ ...primitive, ...source }, null, 2) + '\n',
+    );
+  }
 }
