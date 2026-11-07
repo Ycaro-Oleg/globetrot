@@ -342,7 +342,7 @@ textarea.gt-field__control {
   outline: var(--gt-component-focus-width) solid var(--gt-semantic-color-focus);
   outline-offset: 3px;
 }
-.gt-range[data-disabled] {
+.gt-range[data-disabled] .gt-range__track {
   opacity: 0.5;
 }
 .gt-range[data-disabled] .gt-range__thumb {
