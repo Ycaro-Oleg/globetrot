@@ -3,6 +3,7 @@ import { I18nProvider } from 'react-aria-components';
 import type { Preview } from '@storybook/react-vite';
 import '@globetrot/tokens/tokens.css';
 import '../src/styles.css';
+import '../src/tailwind.css';
 
 function StorySurface({
   theme,
