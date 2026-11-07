@@ -1,6 +1,6 @@
 # Current state
 
-_Last updated: 2026-11-07, after the monorepo scaffold (#10)._
+_Last updated: 2026-11-07, after CI (#11)._
 
 ## Phase
 
@@ -11,6 +11,7 @@ _Last updated: 2026-11-07, after the monorepo scaffold (#10)._
 - pnpm + Turborepo monorepo: `apps/{web,api,worker}`, `packages/{config,domain,application,db,api-client,tokens,ui,i18n}`, with smoke tests. See `docs/engineering/project-structure.md`.
 - Shared tsconfig presets and one flat ESLint config, with boundary rules (`domain` pure, `application` framework-free).
 - Dockerfiles for web, api and worker (turbo prune, Node 24 alpine, non-root). Built and smoke-tested locally.
+- GitHub Actions CI (#11): format, lint, typecheck, test and build on every PR and on pushes to `develop`/`main`. The E2E and axe jobs are skipped placeholders for now.
 
 ## Done (M0)
 
@@ -25,7 +26,7 @@ _Last updated: 2026-11-07, after the monorepo scaffold (#10)._
 ## Next
 
 1. **M1: Design System & Spikes.** Tokens v1.1, Storybook primitives, MapLibre spike, Places spike, usability test plan.
-2. **M2: Engineering Foundation.** CI (#11), local Docker Compose (#12), Money/FX (#13), trip derivations (#14), i18n skeleton (#15), engineering standards (#16).
+2. **M2: Engineering Foundation.** Local Docker Compose (#12), Money/FX (#13), trip derivations (#14), i18n skeleton (#15), engineering standards (#16).
 
 See the GitHub milestones for open issues.
 

@@ -1,0 +1,68 @@
+# Required checks for every PR into develop/main (protection is by convention + CI, ADR-0009).
+name: CI
+
+on:
+  pull_request:
+    branches: [develop, main]
+  push:
+    branches: [develop, main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  TURBO_TELEMETRY_DISABLED: 1
+  NEXT_TELEMETRY_DISABLED: 1
+
+jobs:
+  checks:
+    name: Lint · typecheck · test · build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+
+      # Reads the pnpm version from package.json "packageManager".
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Restore Turborepo cache
+        uses: actions/cache@v6
+        with:
+          path: .turbo/cache
+          key: turbo-${{ runner.os }}-${{ github.sha }}
+          restore-keys: |
+            turbo-${{ runner.os }}-
+
+      - name: Format
+        run: pnpm format:check
+
+      - name: Lint, typecheck, test, build
+        run: pnpm turbo run lint typecheck test build --output-logs=errors-only
+
+  # Placeholders so the required-check names exist; enabled when Playwright/axe land (M3+).
+  e2e:
+    name: E2E (Playwright)
+    if: false
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Enabled in M3 with the first user flow."
+
+  a11y:
+    name: Accessibility (axe)
+    if: false
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Enabled with Storybook (#6) and the first app screens."

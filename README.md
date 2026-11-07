@@ -31,7 +31,7 @@ docs/                  Canonical project knowledge (product, design, architectur
 design/reference/      Frozen design references (Claude Design handoff v1)
 apps/                  web (Next.js), api (Hono), worker
 packages/              domain, application, db, api-client, tokens, ui, i18n, config
-.github/               Issue and PR templates (CI workflows arrive with issue #11)
+.github/               Issue and PR templates, CI workflow
 ```
 
 ## Quick start
