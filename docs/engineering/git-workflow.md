@@ -26,7 +26,7 @@ Examples: `feature/issue-12-trip-creation`, `fix/issue-42-mobile-pin-selection`.
 3. Implement one focused change, with tests and doc updates.
 4. Open a PR into `develop` using the template, and include the handoff section.
 5. CI passes, review happens, the acceptance criteria are checked off.
-6. Squash-merge, with a PR title in Conventional Commit form. Delete the branch.
+6. Squash-merge, with a PR title in Conventional Commit form. Delete the branch. **Close the issue manually** with a comment linking the PR. GitHub only honours `Closes #n` on merges into the default branch (`main`), so issues stay open after a merge into `develop`.
 7. For a release, open a PR `develop → main`, tag `vX.Y.Z` and record the changes in the release notes.
 
 ## Issues
@@ -62,9 +62,20 @@ Use [Conventional Commits](https://www.conventionalcommits.org/): `type(scope): 
 - The body follows the template: summary, linked issue (`Closes #n`), screenshots for UI (desktop + mobile, light + dark when relevant), tests, docs updated, and the **handoff** section.
 - Keep PRs reviewable. Split them when they grow.
 
-## Required checks (from M2)
+## Required checks
 
-Lint, typecheck, unit tests, i18n key completeness, build. E2E and axe checks run on PRs that touch UI. Until then, PRs that only change docs are reviewed manually.
+Workflow: [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml). It runs on every PR into `develop`/`main`, on pushes to those branches, and on demand.
+
+| Check | Job | Status |
+|---|---|---|
+| Prettier format, then lint, typecheck, unit tests and build for all workspaces (Turborepo, cached) | `Lint · typecheck · test · build` | Active |
+| i18n key completeness | same job, via `pnpm lint`/`test` once #15 lands | Pending (#15) |
+| E2E (Playwright) | `E2E (Playwright)` | Placeholder (skipped) until M3 |
+| Accessibility (axe) | `Accessibility (axe)` | Placeholder (skipped) until Storybook (#6) |
+
+- **Do not merge a PR with a failing or missing `Lint · typecheck · test · build` check.** On GitHub Free nothing blocks the merge button, so this is enforced by convention (ADR-0009).
+- A newer push to the same PR cancels the older run.
+- Run the same checks locally before pushing: `pnpm format:check && pnpm turbo run lint typecheck test build`.
 
 ## Hotfixes
 
