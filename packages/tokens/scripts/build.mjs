@@ -96,7 +96,7 @@ export function cssFrom(tokens) {
     '/* Generated from source/*.tokens.json. Do not edit. */\n' +
     block(':root, [data-theme="day"]', tokens.day) +
     block('[data-theme="red-eye"]', tokens['red-eye']) +
-    '[data-always-light] {\n  --gt-semantic-color-text: var(--gt-semantic-color-always-light-text);\n  --gt-semantic-color-text-secondary: var(--gt-semantic-color-always-light-text-secondary);\n}\n'
+    '[data-always-light] {\n  --gt-semantic-color-text: var(--gt-semantic-color-always-light-text);\n  --gt-semantic-color-text-secondary: var(--gt-semantic-color-always-light-text-secondary);\n  --gt-semantic-color-text-tertiary: var(--gt-semantic-color-always-light-text-tertiary);\n}\n'
   );
 }
 

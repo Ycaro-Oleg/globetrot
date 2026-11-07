@@ -124,6 +124,34 @@
       "sky": {
         "$type": "color",
         "$value": "{primitive.color.land}"
+      },
+      "ripple": {
+        "$type": "color",
+        "$value": "{primitive.color.ripple-day}"
+      },
+      "thread-ink": {
+        "$type": "color",
+        "$value": "{primitive.color.white}"
+      },
+      "note-ink": {
+        "$type": "color",
+        "$value": "{primitive.color.ink}"
+      },
+      "pin-highlight": {
+        "$type": "color",
+        "$value": "{primitive.color.marigold}"
+      },
+      "pin-middle": {
+        "$type": "color",
+        "$value": "{primitive.color.marigold}"
+      },
+      "pin-low": {
+        "$type": "color",
+        "$value": "{primitive.color.marigold}"
+      },
+      "always-light-text-tertiary": {
+        "$type": "color",
+        "$value": "{primitive.color.ink-tertiary}"
       }
     }
   },

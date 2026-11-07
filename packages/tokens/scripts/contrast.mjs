@@ -19,6 +19,7 @@ const pairs = [
   ['rail-title', 'rail-surface'],
   ['always-light-text', 'always-light-surface'],
   ['always-light-text-secondary', 'always-light-surface'],
+  ['always-light-text-tertiary', 'always-light-surface'],
 ];
 function luminance(hex) {
   if (!/^#[0-9a-f]{6}$/i.test(hex)) throw new Error('Expected opaque hex color: ' + hex);
@@ -41,6 +42,17 @@ export function contrastReport() {
     const fg = theme === 'day' ? 'white' : 'ink';
     const ratio = contrastRatio(values['primitive.color.' + fg], values['semantic.color.danger']);
     checks.push({ theme, fg: 'thread-button-' + fg, bg: 'danger', ratio, pass: ratio >= 4.5 });
+    const largeThread = contrastRatio(
+      values['semantic.color.thread-ink'],
+      values['semantic.color.thread'],
+    );
+    checks.push({
+      theme,
+      fg: 'large-thread-ink',
+      bg: 'thread',
+      ratio: largeThread,
+      pass: largeThread >= 3,
+    });
     const paidRatio = contrastRatio(
       values['primitive.color.ink'],
       values['semantic.color.marigold'],

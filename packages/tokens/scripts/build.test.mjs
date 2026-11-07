@@ -8,6 +8,10 @@ describe('token build', () => {
     expect(tokens.day['semantic.color.surface-page']).toBe('#FFF5E1');
     expect(tokens['red-eye']['semantic.color.surface-page']).toBe('#1D1A35');
     expect(tokens.day['component.hit-target']).toBe('44px');
+    expect(tokens.day['semantic.color.ripple']).toBe('#FFFFFF29');
+    expect(tokens['red-eye']['semantic.color.ripple']).toBe('#FFFFFF1A');
+    expect(tokens.day['semantic.color.thread-ink']).toBe('#FFFFFF');
+    expect(tokens['red-eye']['semantic.color.thread-ink']).toBe('#1D1A35');
     expect(tokens.day['primitive.duration.pin-enter']).toBe('700ms');
     expect(tokens.day['primitive.shadow.button-hover']).toBe('0px 6px 0px 0px #1D1A35');
     expect(tokens.day['primitive.type.page']).toBe('clamp(36px, 5vw, 56px)');
@@ -24,6 +28,9 @@ describe('token build', () => {
     expect(css).toContain('[data-theme="red-eye"]');
     expect(css).toContain('--gt-semantic-color-surface-page: #1D1A35');
     expect(css).toContain('[data-always-light]');
+    expect(css).toContain(
+      '--gt-semantic-color-text-tertiary: var(--gt-semantic-color-always-light-text-tertiary)',
+    );
   });
 });
 
