@@ -1,6 +1,6 @@
 # Current state
 
-_Last updated: 2026-11-07, after initial token foundations (#5), usability protocol (#8) and draft Pip brief (#9)._
+_Last updated: 2026-11-07, after initial token foundations (#5), usability protocol (#8), draft Pip brief (#9) and web locale integration (#50)._
 
 ## Phase
 
@@ -11,12 +11,16 @@ _Last updated: 2026-11-07, after initial token foundations (#5), usability proto
 - pnpm + Turborepo monorepo: `apps/{web,api,worker}`, `packages/{config,domain,application,db,api-client,tokens,ui,i18n}`, with smoke tests. See `docs/engineering/project-structure.md`.
 - Shared tsconfig presets and one flat ESLint config, with boundary rules (`domain` pure, `application` framework-free).
 - Dockerfiles for web, api and worker (turbo prune, Node 24 alpine, non-root). Built and smoke-tested locally.
-- GitHub Actions CI (#11): format, lint, typecheck, test and build on every PR and on pushes to `develop`/`main`. The E2E and axe jobs are skipped placeholders for now.
+- GitHub Actions CI (#11): format, lint, typecheck, test and build on every PR and on pushes to `develop`/`main`. A separate job runs axe over the Storybook stories (`@globetrot/ui` `test:a11y`). The E2E job is still a skipped placeholder.
 - Money value object (#13) in `@globetrot/domain`: ISO 4217 registry, exact arithmetic, allocation, FX conversion with provenance, locale formatting. 100% covered. See `docs/architecture/money.md`.
 - Trip derivations (#14) in `@globetrot/domain`: days, totals, savings plan, 9 readiness milestones plus stamp recording, journey stage, next steps, and `LocalDate` helpers. They match the prototype's Japan demo and are 100% covered. See `docs/product/business-rules.md`.
 - i18n package (#15): en/pt-BR ICU catalogs (seeded with status marks, journey, milestones, next steps, savings sentences), typed keys, `formatMessage`, date/month formatting and locale negotiation. The catalog check runs in `pnpm lint`, so CI fails on missing keys or placeholder mismatches. See `docs/architecture/i18n.md`.
 - Local services (#12): `compose.yaml` runs Postgres 17 + PostGIS (with pg_trgm and unaccent), S3-compatible storage (SeaweedFS, because MinIO images are no longer published) with the bucket auto-created, and Mailpit. Also `.env.example`, the `pnpm services:*` scripts and `pnpm services:check`. See `docs/engineering/local-development.md`.
 - Engineering standards (#16): `docs/engineering/coding-standards.md` and `testing-strategy.md`, linked from AGENTS.md's definition of done.
+
+## Done (M3)
+
+- Web locale integration (#50): `apps/web` uses next-intl with the shared en/pt-BR catalogs. The locale comes from an explicit `globetrot_locale` cookie (set by a server action, `en` fallback) and never from `Accept-Language`, and choosing a language writes nothing about currency, country or nationality. Verified in a browser against the production image. See "Web integration" in `docs/architecture/i18n.md`.
 
 ## Done (M0)
 

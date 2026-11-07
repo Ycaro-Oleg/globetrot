@@ -1,16 +1,18 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
+import { NextIntlClientProvider } from 'next-intl';
+import { getLocale } from 'next-intl/server';
 import { SITE_NAME } from './site';
 
-export const metadata: Metadata = {
-  title: SITE_NAME,
-};
+export const metadata: Metadata = { title: SITE_NAME };
 
-// The locale becomes dynamic with @globetrot/i18n (M3).
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default async function RootLayout({ children }: { children: ReactNode }) {
+  const locale = await getLocale();
   return (
-    <html lang="en">
-      <body>{children}</body>
+    <html lang={locale}>
+      <body>
+        <NextIntlClientProvider>{children}</NextIntlClientProvider>
+      </body>
     </html>
   );
 }
