@@ -348,3 +348,68 @@ textarea.gt-field__control {
 .gt-range[data-disabled] .gt-range__thumb {
   cursor: not-allowed;
 }
+
+.gt-banner {
+  display: flex;
+  gap: 12px;
+  padding: 16px;
+  border: 2px solid var(--gt-semantic-color-outline);
+  border-radius: var(--gt-primitive-radius-14);
+  background: var(--gt-semantic-color-surface-card);
+  color: var(--gt-semantic-color-text);
+}
+.gt-banner--success {
+  border-color: var(--gt-semantic-color-confirmed);
+}
+.gt-banner--error {
+  border-color: var(--gt-semantic-color-danger);
+}
+.gt-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  overflow: auto;
+  background: color-mix(in srgb, var(--gt-primitive-color-ink) 65%, transparent);
+}
+.gt-modal {
+  width: min(100%, 32rem);
+  max-height: calc(100dvh - 32px);
+  overflow: auto;
+  border: 3px solid var(--gt-semantic-color-outline);
+  border-radius: var(--gt-component-modal-radius);
+  padding: 24px;
+  background: var(--gt-semantic-color-surface-card);
+  color: var(--gt-semantic-color-text);
+  box-shadow: var(--gt-primitive-shadow-modal);
+}
+.gt-modal__dialog {
+  outline: none;
+}
+.gt-modal__header {
+  display: flex;
+  gap: 12px;
+  align-items: start;
+  justify-content: space-between;
+}
+.gt-modal__header h2 {
+  margin: 0;
+}
+.gt-modal__close {
+  flex: none;
+  min-width: 44px;
+  min-height: 44px;
+  border: 2px solid var(--gt-semantic-color-outline);
+  border-radius: var(--gt-primitive-radius-12);
+  background: var(--gt-semantic-color-surface-card);
+  color: var(--gt-semantic-color-text);
+  font: inherit;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+.gt-modal__close[data-focus-visible] {
+  outline: var(--gt-component-focus-width) solid var(--gt-semantic-color-focus);
+  outline-offset: 3px;
+}

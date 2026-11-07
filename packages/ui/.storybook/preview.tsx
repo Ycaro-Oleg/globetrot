@@ -53,7 +53,7 @@ const preview: Preview = {
       toolbar: { title: 'Locale', items: ['en', 'pt-BR'], dynamicTitle: true },
     },
   },
-  initialGlobals: { theme: 'day', locale: 'en' },
+  initialGlobals: { theme: 'day', locale: 'en', a11y: { manual: true } },
   decorators: [
     (Story, context) => (
       <StorySurface
