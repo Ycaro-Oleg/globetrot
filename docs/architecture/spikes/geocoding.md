@@ -24,6 +24,17 @@ Geoapify is the leading candidate for an MVP adapter because its published FAQ p
 - [LocationIQ autocomplete](https://docs.locationiq.com/docs/autocomplete) lists supported languages and does not list pt. Native names may still be available; this does not establish Portuguese localization. Search and reverse are distinct endpoints, so their language support must not be assumed for autocomplete.
 - A language parameter alone does not establish the quality, coverage or correctness of localized results.
 
+## Exploratory Geoapify playground observations
+
+On 2026-11-07, two manual, public-place queries were entered in the provider's [autocomplete playground](https://apidocs.geoapify.com/playground/geocoding/), without an account, explicit location bias or filter. The widget reported a limit of five. These are exploratory examples, not a benchmark, latency measurement or comparison with other providers.
+
+| Query | Language setting | Observed suggestions |
+|---|---|---|
+| `Avenida Paulista 1578 São Paulo` | Not specified | The street address appeared first and the São Paulo Museum of Art second. The returned data attributed both to OpenStreetMap. |
+| `MASP São Paulo` | `pt` | The museum appeared fifth, after a station and three subway entrances with similar names. Its displayed name was “Museu de Arte de São Paulo”. |
+
+The second example demonstrates a potentially material ranking problem for an acronym with nearby similarly named POIs. It does not establish the overall quality or coverage of this provider. Test a larger fixed corpus and compare equivalent provider configurations before choosing; preserve the manual selection path and do not assume the first suggestion is always the intended place.
+
 ## Illustrative monthly cost
 
 USD, monthly billing, before tax and other APIs, assuming a uniform 30-day distribution, no bursts, one ordinary request per query and no other shared usage. Monthly volume does not guarantee compliance with daily or per-second limits. Autocomplete can send multiple requests per search. These are estimates, not quotes.
