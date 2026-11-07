@@ -276,6 +276,24 @@
           "hex": "#FFF5E1",
           "alpha": 0.30196078431372547
         }
+      },
+      "ripple-day": {
+        "$type": "color",
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [1.0, 1.0, 1.0],
+          "hex": "#FFFFFF",
+          "alpha": 0.16
+        }
+      },
+      "ripple-night": {
+        "$type": "color",
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [1.0, 1.0, 1.0],
+          "hex": "#FFFFFF",
+          "alpha": 0.1
+        }
       }
     },
     "space": {
@@ -580,6 +598,28 @@
           },
           "offsetY": {
             "value": 1,
+            "unit": "px"
+          },
+          "blur": {
+            "value": 0,
+            "unit": "px"
+          },
+          "spread": {
+            "value": 0,
+            "unit": "px"
+          }
+        }
+      },
+      "postcard": {
+        "$type": "shadow",
+        "$value": {
+          "color": "{semantic.color.shadow}",
+          "offsetX": {
+            "value": 0,
+            "unit": "px"
+          },
+          "offsetY": {
+            "value": 5,
             "unit": "px"
           },
           "blur": {
@@ -931,6 +971,18 @@
       "wordmark-tracking": {
         "$type": "number",
         "$value": -0.03
+      },
+      "weight-300": {
+        "$type": "fontWeight",
+        "$value": 300
+      },
+      "weight-500": {
+        "$type": "fontWeight",
+        "$value": 500
+      },
+      "weight-600": {
+        "$type": "fontWeight",
+        "$value": 600
       }
     },
     "duration": {
