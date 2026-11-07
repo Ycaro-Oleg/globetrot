@@ -1,12 +1,18 @@
 # Current state
 
-_Last updated: 2026-11-07, after the repository foundation (M0)._
+_Last updated: 2026-11-07, after the monorepo scaffold (#10)._
 
 ## Phase
 
-**Phase 0: Product Foundation (M0).** The planning deliverables are approved. There is no application code yet.
+**M1 + M2 in progress.** M0 docs are merged. The monorepo scaffold exists (#10), with no product features yet.
 
-## Done
+## Done (M2)
+
+- pnpm + Turborepo monorepo: `apps/{web,api,worker}`, `packages/{config,domain,application,db,api-client,tokens,ui,i18n}`, with smoke tests. See `docs/engineering/project-structure.md`.
+- Shared tsconfig presets and one flat ESLint config, with boundary rules (`domain` pure, `application` framework-free).
+- Dockerfiles for web, api and worker (turbo prune, Node 24 alpine, non-root). Built and smoke-tested locally.
+
+## Done (M0)
 
 - Product vision, MVP PRD, business rules, roadmap.
 - Design audit of Claude Design v1, plus the design-system direction.
@@ -19,7 +25,7 @@ _Last updated: 2026-11-07, after the repository foundation (M0)._
 ## Next
 
 1. **M1: Design System & Spikes.** Tokens v1.1, Storybook primitives, MapLibre spike, Places spike, usability test plan.
-2. **M2: Engineering Foundation.** Monorepo, CI, local Docker Compose, Money/FX and savings rules in `packages/domain`.
+2. **M2: Engineering Foundation.** CI (#11), local Docker Compose (#12), Money/FX (#13), trip derivations (#14), i18n skeleton (#15), engineering standards (#16).
 
 See the GitHub milestones for open issues.
 

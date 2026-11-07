@@ -1,0 +1,9 @@
+pnpm-lock.yaml
+design/reference/
+**/.next/
+**/dist/
+**/coverage/
+
+# Prose and templates are formatted by hand (keeps doc diffs small)
+**/*.md
+.github/
