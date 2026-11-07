@@ -5,6 +5,7 @@
 export { DatabaseConfigError, loadDatabaseConfig, type DatabaseConfig } from './config';
 export { connectDatabase, type ConnectOptions, type Database, type DatabaseHandle } from './client';
 export { MIGRATIONS_FOLDER, runMigrations } from './migrate';
+export * as schema from './schema';
 export {
   assertLocalDatabase,
   assertSafeDatabaseName,

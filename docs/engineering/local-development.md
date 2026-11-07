@@ -18,8 +18,8 @@ cp .env.example .env      # local-only defaults, git-ignored
 pnpm install
 pnpm services:up          # start Postgres, object storage and Mailpit, wait until healthy
 pnpm services:check       # verify everything (DB extensions, S3 round trip, SMTP)
-pnpm --filter @globetrot/db migrate   # create or upgrade the schema (extensions today, tables as features land)
-pnpm dev                  # web :3000, api :4000 (/health), worker
+pnpm --filter @globetrot/db migrate   # create or upgrade the schema (extensions and the auth tables today, more as features land)
+pnpm dev                  # web :3000, api :4000 (/health, /api/auth/*), worker
 ```
 
 ## Services (`compose.yaml`)
@@ -59,8 +59,10 @@ Conventions and the migration rules are in [`data-model.md`](../architecture/dat
 ## How the apps get configuration
 
 - `apps/api` and `apps/worker` start with `tsx --env-file-if-exists=../../.env` in `pnpm dev`, so the root `.env` is loaded when present. Deployed containers receive environment variables from Coolify instead.
-- `apps/web` (Next.js) reads `apps/web/.env*` files. It needs no service variables yet.
-- At the time of #12 the apps only read configuration. The database, storage and email adapters arrive with their features (M3+).
+- `apps/web` (Next.js) reads `apps/web/.env*` files, not the root `.env`. Its one server-side variable is `API_INTERNAL_URL` (where `/api/auth/*` is proxied; default `http://localhost:4000`, so `pnpm dev` needs nothing).
+- The API reads its auth settings (secret, public URL, trusted origins, session and rate-limit knobs) from the environment. Without `BETTER_AUTH_SECRET` it uses the public development secret and warns; with `NODE_ENV=production` it refuses to start. Full table: [`authentication.md`](../architecture/authentication.md).
+- Open http://localhost:3000 and call `/api/auth/*` there, not on :4000: the browser always goes through the web origin so the session cookie is first-party.
+- Storage and email adapters arrive with their features.
 
 ## Troubleshooting
 

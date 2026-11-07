@@ -1,0 +1,150 @@
+import { loadDatabaseConfig } from '@globetrot/db';
+import { z } from 'zod';
+
+/**
+ * Public on purpose: it is the value `.env.example` ships so local development works with no setup.
+ * Production refuses it, so a copied example file can never reach a real deployment.
+ */
+export const INSECURE_DEV_SECRET = 'insecure-local-development-secret-never-use-in-production';
+export const MIN_SECRET_LENGTH = 32;
+
+const DAY = 60 * 60 * 24;
+
+/** Thrown for any invalid or unsafe setting. Messages name the setting, never its value. */
+export class ApiConfigError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'ApiConfigError';
+  }
+}
+
+const number = (fallback: number, min: number, max = Number.MAX_SAFE_INTEGER) =>
+  z.coerce.number().int().min(min).max(max).default(fallback);
+
+const envSchema = z.object({
+  NODE_ENV: z.string().optional(),
+  BETTER_AUTH_URL: z.url().default('http://localhost:3000'),
+  TRUSTED_ORIGINS: z.string().optional(),
+  SESSION_EXPIRES_IN_SECONDS: number(30 * DAY, 60),
+  SESSION_UPDATE_AGE_SECONDS: number(DAY, 60),
+  AUTH_SIGN_IN_ATTEMPTS_PER_MINUTE: number(5, 1, 1000),
+  AUTH_SIGN_UP_ATTEMPTS_PER_MINUTE: number(5, 1, 1000),
+  PORT: number(4000, 1, 65535),
+});
+
+export interface AuthConfig {
+  readonly secret: string;
+  /** The public origin of the *web* app. The browser only ever talks to it; it proxies `/api/auth/*` to this API. */
+  readonly baseURL: string;
+  readonly trustedOrigins: readonly string[];
+  /** Seconds a session lives. */
+  readonly sessionExpiresIn: number;
+  /** A session older than this many seconds is renewed on use. */
+  readonly sessionUpdateAge: number;
+  readonly signInAttemptsPerMinute: number;
+  readonly signUpAttemptsPerMinute: number;
+  readonly secureCookies: boolean;
+}
+
+export interface ApiConfig {
+  readonly nodeEnv: 'production' | 'test' | 'development';
+  readonly isProduction: boolean;
+  readonly port: number;
+  readonly databaseUrl: string;
+  readonly auth: AuthConfig;
+  /** True when no secret was provided and the public development one is in use (never in production). */
+  readonly usingInsecureSecret: boolean;
+}
+
+function parseOrigins(raw: string | undefined): string[] {
+  if (!raw) return [];
+  return raw
+    .split(',')
+    .map((part) => part.trim())
+    .filter((part) => part !== '')
+    .map((part) => {
+      try {
+        return new URL(part).origin;
+      } catch {
+        throw new ApiConfigError(`TRUSTED_ORIGINS has an entry that is not a URL: "${part}"`);
+      }
+    });
+}
+
+/**
+ * Reads and validates the API settings. The only place in the API that touches `process.env`.
+ * In production it refuses to start with a missing, short or default `BETTER_AUTH_SECRET`, or with a
+ * `BETTER_AUTH_URL` that is not https (session cookies are `Secure` there).
+ */
+export function loadApiConfig(
+  env: Readonly<Record<string, string | undefined>> = process.env,
+): ApiConfig {
+  // `KEY=` in a .env file means "unset", not an empty string.
+  const present = Object.fromEntries(
+    Object.entries(env).filter(([, value]) => value !== undefined && value !== ''),
+  );
+  // PORT is set by the container platform (Coolify); API_PORT comes from the local .env.
+  const parsed = envSchema.safeParse({ ...present, PORT: present.PORT ?? present.API_PORT });
+  if (!parsed.success) {
+    throw new ApiConfigError(
+      parsed.error.issues
+        .map((issue) => `${issue.path.join('.') || 'environment'}: ${issue.message}`)
+        .join('; '),
+    );
+  }
+  const values = parsed.data;
+
+  const nodeEnv =
+    values.NODE_ENV === 'production'
+      ? 'production'
+      : values.NODE_ENV === 'test'
+        ? 'test'
+        : 'development';
+  const isProduction = nodeEnv === 'production';
+  const databaseUrl = loadDatabaseConfig(present).url;
+
+  const provided = present.BETTER_AUTH_SECRET;
+  let secret: string;
+  if (provided === undefined) {
+    if (isProduction) throw new ApiConfigError('BETTER_AUTH_SECRET is required in production');
+    secret = INSECURE_DEV_SECRET;
+  } else {
+    secret = provided;
+  }
+  if (isProduction) {
+    if (secret === INSECURE_DEV_SECRET) {
+      throw new ApiConfigError(
+        'BETTER_AUTH_SECRET must not be the public development secret in production',
+      );
+    }
+    if (secret.length < MIN_SECRET_LENGTH) {
+      throw new ApiConfigError(
+        `BETTER_AUTH_SECRET must be at least ${MIN_SECRET_LENGTH} characters in production`,
+      );
+    }
+    if (new URL(values.BETTER_AUTH_URL).protocol !== 'https:') {
+      throw new ApiConfigError('BETTER_AUTH_URL must use https in production');
+    }
+  }
+
+  const baseOrigin = new URL(values.BETTER_AUTH_URL).origin;
+  const trustedOrigins = [...new Set([baseOrigin, ...parseOrigins(values.TRUSTED_ORIGINS)])];
+
+  return {
+    nodeEnv,
+    isProduction,
+    port: values.PORT,
+    databaseUrl,
+    usingInsecureSecret: secret === INSECURE_DEV_SECRET,
+    auth: {
+      secret,
+      baseURL: baseOrigin,
+      trustedOrigins,
+      sessionExpiresIn: values.SESSION_EXPIRES_IN_SECONDS,
+      sessionUpdateAge: values.SESSION_UPDATE_AGE_SECONDS,
+      signInAttemptsPerMinute: values.AUTH_SIGN_IN_ATTEMPTS_PER_MINUTE,
+      signUpAttemptsPerMinute: values.AUTH_SIGN_UP_ATTEMPTS_PER_MINUTE,
+      secureCookies: isProduction,
+    },
+  };
+}
