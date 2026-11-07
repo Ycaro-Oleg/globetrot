@@ -109,3 +109,107 @@
 [data-motion='reduced'] .gt-button[data-pending]::before {
   animation: none;
 }
+
+.gt-field {
+  display: grid;
+  gap: 8px;
+  max-width: 32rem;
+  color: var(--gt-semantic-color-text);
+}
+.gt-field__label {
+  font-weight: 700;
+}
+.gt-field__control {
+  width: 100%;
+  min-height: var(--gt-primitive-size-input);
+  border: 2.5px solid var(--gt-semantic-color-outline);
+  border-radius: var(--gt-component-input-radius);
+  background: var(--gt-semantic-color-surface-card);
+  color: var(--gt-semantic-color-text);
+  padding: 10px 12px;
+  font: inherit;
+}
+textarea.gt-field__control {
+  min-height: 120px;
+  resize: vertical;
+}
+.gt-field__control[data-focus-visible] {
+  outline: var(--gt-component-focus-width) solid var(--gt-semantic-color-focus);
+  outline-offset: 3px;
+}
+.gt-field__control[data-invalid] {
+  border-color: var(--gt-semantic-color-danger);
+}
+.gt-field__control[data-disabled] {
+  opacity: 0.5;
+}
+.gt-field__description {
+  color: var(--gt-semantic-color-text-secondary);
+}
+.gt-field__error {
+  color: var(--gt-semantic-color-danger);
+}
+
+.gt-choice {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: var(--gt-component-hit-target);
+  color: var(--gt-semantic-color-text);
+  cursor: pointer;
+}
+.gt-choice__mark {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  border: 2px solid var(--gt-semantic-color-outline);
+  background: var(--gt-semantic-color-surface-card);
+}
+.gt-checkbox .gt-choice__mark {
+  width: 24px;
+  height: 24px;
+  border-radius: var(--gt-primitive-radius-7);
+}
+.gt-checkbox[data-selected] .gt-choice__mark {
+  background: var(--gt-semantic-color-mint);
+  color: var(--gt-primitive-color-ink);
+}
+.gt-checkbox[data-selected] .gt-choice__mark::after {
+  content: '✓';
+  font-weight: 800;
+}
+.gt-switch .gt-choice__mark {
+  width: 50px;
+  height: 30px;
+  border-radius: 999px;
+  justify-items: start;
+  padding: 2px;
+}
+.gt-switch .gt-choice__mark::after {
+  content: '';
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--gt-semantic-color-outline);
+}
+.gt-switch[data-selected] .gt-choice__mark {
+  background: var(--gt-semantic-color-mint);
+  justify-items: end;
+}
+.gt-choice[data-focus-visible] .gt-choice__mark {
+  outline: var(--gt-component-focus-width) solid var(--gt-semantic-color-focus);
+  outline-offset: 3px;
+}
+.gt-choice[data-disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.gt-checkbox[data-indeterminate] .gt-choice__mark {
+  background: var(--gt-semantic-color-mint);
+  color: var(--gt-primitive-color-ink);
+}
+.gt-checkbox[data-indeterminate] .gt-choice__mark::after {
+  content: '−';
+  font-weight: 800;
+}
