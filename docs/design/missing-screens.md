@@ -1,6 +1,6 @@
 # Missing MVP screens: interaction specification
 
-**Status: draft, not owner-approved.** This specifies behavior and layout for #7. Desktop/mobile visual frames in both themes and a pt-BR expansion check are still required; this document does not claim that those checks or product review happened. Existing visual language comes from [the design system](design-system.md) and [prototype](../../design/reference/claude-design-v1/README.md). Business rules take precedence over the prototype.
+**Status: draft, not owner-approved.** This specifies behavior and layout for #7. Initial desktop/mobile frames in both themes and languages are in [the screen studies](../../design/prototypes/missing-screens.html). They are visual-only examples, not a functional application. The owner has not approved them. Existing visual language comes from [the design system](design-system.md) and [prototype](../../design/reference/claude-design-v1/README.md). Business rules take precedence over the prototype.
 
 ## Shared layout and states
 
@@ -61,6 +61,11 @@
 
 ## Open work before #7 is done
 
-1. Create concrete desktop and mobile frames for every section above in both themes, using the approved visual tokens. Include a pt-BR version and exercise long names, validation, empty and error states.
-2. Check actual rendered Portuguese length, focus order, 44 px targets, contrast and navigation at the specified widths; document observed issues and fixes.
+1. Extend the initial frames with long names, validation, empty and error states. The current examples are not a complete interaction prototype.
+2. Automated geometry checks covered the initial pt-BR examples in both themes at 375 px and 1100 px without horizontal frame overflow. Review text wrapping, focus order, 44 px targets, contrast and navigation manually; the current static-frame controls are illustrative.
 3. Present the frames to the product owner for approval. Only after approval update the design-audit items as resolved and close #7.
+
+
+## Viewing the studies
+
+Build the tokens (`pnpm --filter @globetrot/tokens build`), serve the repository root over HTTP, and open `design/prototypes/missing-screens.html`. The selectors switch screen, language, theme and desktop/phone frame. The controls inside the frames do not save or modify data. Money and rates are illustrative. The study uses system font fallbacks until the production fonts are installed.
