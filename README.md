@@ -36,10 +36,11 @@ packages/              domain, application, db, api-client, tokens, ui, i18n, co
 
 ## Quick start
 
-Requires Node 24 (`.nvmrc`) and pnpm via Corepack.
+Requires Node 24 (`.nvmrc`), pnpm via Corepack and Docker.
 
 ```bash
-corepack enable && pnpm install
+cp .env.example .env && corepack enable && pnpm install
+pnpm services:up && pnpm services:check   # Postgres + PostGIS, S3 storage, Mailpit
 pnpm dev        # web on :3000, api on :4000
 pnpm lint && pnpm typecheck && pnpm test && pnpm build
 ```

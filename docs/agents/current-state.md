@@ -1,6 +1,6 @@
 # Current state
 
-_Last updated: 2026-11-07, after the i18n package (#15)._
+_Last updated: 2026-11-07, after local services (#12)._
 
 ## Phase
 
@@ -15,6 +15,7 @@ _Last updated: 2026-11-07, after the i18n package (#15)._
 - Money value object (#13) in `@globetrot/domain`: ISO 4217 registry, exact arithmetic, allocation, FX conversion with provenance, locale formatting. 100% covered. See `docs/architecture/money.md`.
 - Trip derivations (#14) in `@globetrot/domain`: days, totals, savings plan, 9 readiness milestones plus stamp recording, journey stage, next steps, and `LocalDate` helpers. They match the prototype's Japan demo and are 100% covered. See `docs/product/business-rules.md`.
 - i18n package (#15): en/pt-BR ICU catalogs (seeded with status marks, journey, milestones, next steps, savings sentences), typed keys, `formatMessage`, date/month formatting and locale negotiation. The catalog check runs in `pnpm lint`, so CI fails on missing keys or placeholder mismatches. See `docs/architecture/i18n.md`.
+- Local services (#12): `compose.yaml` runs Postgres 17 + PostGIS (with pg_trgm and unaccent), S3-compatible storage (SeaweedFS, because MinIO images are no longer published) with the bucket auto-created, and Mailpit. Also `.env.example`, the `pnpm services:*` scripts and `pnpm services:check`. See `docs/engineering/local-development.md`.
 
 ## Done (M0)
 
@@ -29,7 +30,7 @@ _Last updated: 2026-11-07, after the i18n package (#15)._
 ## Next
 
 1. **M1: Design System & Spikes.** Tokens v1.1, Storybook primitives, MapLibre spike, Places spike, usability test plan.
-2. **M2: Engineering Foundation.** Local Docker Compose (#12), engineering standards (#16).
+2. **M2: Engineering Foundation.** Engineering standards (#16) is the last open issue.
 
 See the GitHub milestones for open issues.
 
