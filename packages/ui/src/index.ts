@@ -9,3 +9,6 @@ export type { ButtonProps } from './button';
 
 export { TextField } from './text-field';
 export type { TextFieldProps } from './text-field';
+
+export { Checkbox, Switch } from './choice';
+export type { CheckboxProps, SwitchProps } from './choice';
