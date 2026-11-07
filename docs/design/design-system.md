@@ -27,6 +27,7 @@ Status: **direction approved; initial token foundations implemented, v1.1 pendin
 - **Styling:** Tailwind CSS v4, with `@theme` reading the token CSS variables. No third-party kit visuals may show through.
 - **Custom components** that carry the identity: `MapPin`, `AirmailRoute`, `StatusMark`, `Stamp`, `Postcard`, `StickyNote`, `JourneyLine`, `AnswerSentence`, `ChangeList`, `BottomSheet`.
 - **Living documentation:** Storybook with the a11y addon. Every component is shown in both themes and both languages.
+  - Initial setup: `pnpm --filter @globetrot/ui storybook`, with theme and locale toolbar controls. The first Button stories are present; the remaining variants, components and interaction/axe automation are still pending #6. Use the locale toolbar to switch the example label. The a11y panel does not replace keyboard and screen-reader checks.
 - **Icons:** Lucide, 20×20, stroke 1.6.
 - **Charts:** hand-rolled SVG (savings curve, status bar). No chart library in the MVP.
 

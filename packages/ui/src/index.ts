@@ -3,3 +3,6 @@
  * Scaffold only (issue #10). Real content arrives in later issues; see docs/architecture/overview.md.
  */
 export const PACKAGE_NAME = '@globetrot/ui' as const;
+
+export { Button } from './button';
+export type { ButtonProps } from './button';

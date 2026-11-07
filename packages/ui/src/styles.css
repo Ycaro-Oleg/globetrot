@@ -1,0 +1,46 @@
+.gt-button {
+  min-width: var(--gt-component-hit-target);
+  min-height: var(--gt-component-hit-target);
+  border: 2.5px solid var(--gt-semantic-color-outline);
+  border-radius: var(--gt-component-button-radius);
+  padding: 8px 20px;
+  font: 700 1rem/1.2 var(--gt-primitive-font-body);
+  box-shadow: var(--gt-primitive-shadow-button);
+  cursor: pointer;
+  transition:
+    transform 120ms,
+    box-shadow 120ms;
+}
+.gt-button--primary {
+  color: var(--gt-semantic-color-surface-page);
+  background: var(--gt-semantic-color-text);
+}
+.gt-button--ghost {
+  color: var(--gt-semantic-color-text);
+  background: var(--gt-semantic-color-surface-card);
+}
+.gt-button[data-hovered] {
+  transform: translateY(-2px);
+  box-shadow: var(--gt-primitive-shadow-button-hover);
+}
+.gt-button[data-pressed] {
+  transform: translateY(3px);
+  box-shadow: var(--gt-primitive-shadow-button-active);
+}
+.gt-button[data-disabled] {
+  opacity: 0.38;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+.gt-button[data-focus-visible] {
+  outline: var(--gt-component-focus-width) solid var(--gt-semantic-color-focus);
+  outline-offset: 3px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .gt-button {
+    transition: none;
+  }
+}
+[data-motion='reduced'] .gt-button {
+  transition: none;
+}
