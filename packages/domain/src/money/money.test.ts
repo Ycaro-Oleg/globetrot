@@ -136,9 +136,16 @@ describe('arithmetic', () => {
       fc.property(sameCurrencyPair, ([a, b]) => {
         expect(add(a, b)).toEqual(add(b, a));
         expect(subtract(add(a, b), b)).toEqual(a);
-        expect(compare(a, b)).toBe(-compare(b, a));
+        // Antisymmetry. Sum instead of negation: -0 !== 0 under Object.is when a equals b.
+        expect(compare(a, b) + compare(b, a)).toBe(0);
       }),
     );
+  });
+
+  it('compare is antisymmetric for equal values too (regression)', () => {
+    const a = fromDecimal('7.00', 'USD');
+    expect(compare(a, a)).toBe(0);
+    expect(compare(a, a) + compare(a, a)).toBe(0);
   });
 
   it('addition is associative', () => {
