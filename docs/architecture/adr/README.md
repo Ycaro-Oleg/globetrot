@@ -10,7 +10,7 @@ An ADR records one significant decision: its context, the decision itself and it
 |---|---|---|
 | [0001](0001-documentation-and-language-policy.md) | Documentation and language policy | Accepted |
 | [0002](0002-monorepo-and-stack.md) | TypeScript monorepo and core stack | Accepted |
-| [0003](0003-map-stack.md) | Map stack: MapLibre + OSM (Protomaps) + own places DB | Accepted (spike pending) |
+| [0003](0003-map-stack.md) | Map stack: MapLibre + OSM (Protomaps) + own places DB | Accepted (spike #2 done, device FPS pending) |
 | [0004](0004-money-and-currency.md) | Money as integer minor units with FX provenance | Accepted |
 | [0005](0005-authentication.md) | Authentication with Better Auth | Accepted |
 | [0006](0006-api-and-application-layer.md) | REST/OpenAPI API over a shared application layer | Accepted |
