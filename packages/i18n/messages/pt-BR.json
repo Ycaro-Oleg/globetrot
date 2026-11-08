@@ -190,8 +190,52 @@
   },
   "app": {
     "welcome": "Olá, {name}!",
-    "description": "Suas viagens ficarão aqui. O app ainda está sendo construído.",
-    "settings": "Idioma e região",
-    "signOut": "Sair"
+    "description": "Suas viagens ficarão aqui. O app ainda está sendo construído."
+  },
+  "shell": {
+    "skipLink": "Pular para o conteúdo",
+    "nav": {
+      "label": "Navegação principal",
+      "home": "Início",
+      "board": "Mapa",
+      "days": "Dias",
+      "budget": "Orçamento",
+      "lists": "Listas",
+      "more": "Mais",
+      "trips": "Viagens",
+      "passport": "Passaporte",
+      "settings": "Configurações"
+    },
+    "account": {
+      "menu": "Menu da conta de {name}",
+      "settings": "Configurações",
+      "signOut": "Sair",
+      "signingOut": "Saindo…"
+    },
+    "pip": {
+      "ask": "Perguntar ao Pip",
+      "title": "Pip",
+      "notBuilt": "O Pip, o companheiro de viagem, ainda não está disponível. Este atalho só aparece enquanto a flag do Pip estiver ligada."
+    },
+    "more": {
+      "title": "Mais",
+      "description": "O resto do Globetrot."
+    },
+    "comingSoon": {
+      "label": "Ainda não disponível",
+      "backHome": "Voltar para o início",
+      "board": "O mapa, onde você marca paradas e desenha sua rota, ainda não foi construído.",
+      "days": "O planejamento dia a dia ainda não foi construído.",
+      "budget": "O orçamento, as moedas e o plano de economia ainda não foram construídos.",
+      "lists": "As listas de documentos, dinheiro, reservas e bagagem ainda não foram construídas.",
+      "trips": "A lista das suas viagens e o seletor de viagens ainda não foram construídos.",
+      "passport": "O seu passaporte e os carimbos ainda não foram construídos."
+    },
+    "loading": "Carregando…",
+    "error": {
+      "title": "Algo deu errado",
+      "description": "Não foi possível carregar esta página. Tente de novo ou volte para o início.",
+      "retry": "Tentar de novo"
+    }
   }
 }

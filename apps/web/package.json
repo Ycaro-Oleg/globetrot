@@ -20,6 +20,7 @@
     "@globetrot/i18n": "workspace:*",
     "@globetrot/tokens": "workspace:*",
     "@globetrot/ui": "workspace:*",
+    "lucide-react": "1.67.0",
     "next": "16.4.5",
     "next-intl": "4.14.9",
     "react": "19.3.1",

@@ -14,7 +14,7 @@ One row per feature of the [PRD](prd.md), with where it stands, the issues, and 
 | Preferences: language, currency (USD default), country, nationality, time zone, units | M3 | **Done** | Table, API, `/settings` page, sign-up language | — | #58 | [data-model](../architecture/data-model.md#user-preferences), [business rules](business-rules.md#locale-and-currency) |
 | Preferences: theme and motion | M3 | Not started | Both themes exist in the tokens | The switch, persistence, reduced motion | #60 | [design-system](../design/design-system.md) |
 | Multiple trips: list, create, switch, archive | M3 | Partial | Table, operations and API (create, list, get, update, archive) with idempotency and audit | The list and switcher screens (needs the owner's review of #7) | #61 done, #62 | [api-contracts](../architecture/api-contracts.md), [business rules](business-rules.md#trips) |
-| Responsive authenticated shell | M3 | Not started | A placeholder `/app` | Rail, phone tab bar, route guards | #59 | [design-system](../design/design-system.md#responsive-interaction-models) |
+| Responsive authenticated shell | M3 | **Done** | Desktop rail, tablet icon rail, phone top bar and five-tab bar, account menu with log out, skip link and focus rings, honest placeholder pages, loading and error states, Pip entry points behind `FEATURE_PIP`, route guard on every `/app` page, axe in both themes and languages at five widths | The screens behind the placeholders (M4 onwards); layout stays provisional until the owner reviews #7 | #59 | [design-system](../design/design-system.md#the-shell-as-built-59) |
 | Map board: world to region, stops, airmail route, stop panel, city search | M4 | Not started | Spikes done (MapLibre, places), tokens, domain days and derivations | Everything on screen; geocoder decision | #2, #3 done; #4 open | [ADR-0003](../architecture/adr/0003-map-stack.md), [spikes](../architecture/spikes/maplibre.md) |
 | Mobile board: bottom sheet, crosshair "Pin here" | M4 | Not started | Interaction spec in the handoff | Everything; real-device frame-rate test (owner) | — | [design-audit](../design/design-audit.md) |
 | Itinerary by days, accessible drag and drop | M5 | Not started | `tripDays` and `emptyDays` in the domain | Persistence, screens, keyboard drag and drop | — | [business rules](business-rules.md#trips) |
@@ -25,7 +25,7 @@ One row per feature of the [PRD](prd.md), with where it stands, the issues, and 
 | Example trips (duplicable) | M8 | Not started | — | Content and duplication | — | — |
 | Light and dark themes | M3 | Partial | Tokens for both, contrast checks, stories in both | The switch (#60) and every screen in both themes | #5 done | [design-system](../design/design-system.md) |
 | Landing with **mock** pricing | M8 | Not started | — | Everything | — | [stripe](../integrations/stripe.md) |
-| Pip v1 behind a feature flag | M7 | Not started | Brief drafted (needs approval) | `AIProposal`, change list, apply and undo, cost limits | #9 open | [ADR-0007](../architecture/adr/0007-ai-provider-abstraction.md), [pip-character](../design/pip-character.md) |
+| Pip v1 behind a feature flag | M7 | Not started | The `FEATURE_PIP` flag and its entry points (#59); brief drafted (needs approval) | `AIProposal`, change list, apply and undo, cost limits | #9 open | [ADR-0007](../architecture/adr/0007-ai-provider-abstraction.md), [pip-character](../design/pip-character.md) |
 
 ## Initial public release
 

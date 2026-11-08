@@ -190,8 +190,52 @@
   },
   "app": {
     "welcome": "Hi, {name}!",
-    "description": "Your trips will live here. The app is still being built.",
-    "settings": "Language and region",
-    "signOut": "Log out"
+    "description": "Your trips will live here. The app is still being built."
+  },
+  "shell": {
+    "skipLink": "Skip to content",
+    "nav": {
+      "label": "Main navigation",
+      "home": "Home",
+      "board": "Board",
+      "days": "Days",
+      "budget": "Budget",
+      "lists": "Lists",
+      "more": "More",
+      "trips": "Trips",
+      "passport": "Passport",
+      "settings": "Settings"
+    },
+    "account": {
+      "menu": "Account menu for {name}",
+      "settings": "Settings",
+      "signOut": "Log out",
+      "signingOut": "Logging out…"
+    },
+    "pip": {
+      "ask": "Ask Pip",
+      "title": "Pip",
+      "notBuilt": "Pip, the travel companion, is not available yet. This entry point is only shown while the Pip flag is on."
+    },
+    "more": {
+      "title": "More",
+      "description": "The rest of Globetrot."
+    },
+    "comingSoon": {
+      "label": "Not available yet",
+      "backHome": "Back to home",
+      "board": "The map board, where you pin stops and draw your route, is not built yet.",
+      "days": "Day-by-day planning is not built yet.",
+      "budget": "The budget, currencies and savings plan are not built yet.",
+      "lists": "Checklists for documents, money, bookings and packing are not built yet.",
+      "trips": "The list of your trips and the trip switcher are not built yet.",
+      "passport": "Your passport and stamps are not built yet."
+    },
+    "loading": "Loading…",
+    "error": {
+      "title": "Something went wrong",
+      "description": "This page could not be loaded. Try again, or go back to the home page.",
+      "retry": "Try again"
+    }
   }
 }

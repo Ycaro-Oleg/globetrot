@@ -42,6 +42,7 @@ Semantics, error codes and the trust model for the client address: [`authenticat
 | Variable | Default | Production | What it does |
 |---|---|---|---|
 | `API_INTERNAL_URL` | `http://localhost:4000` | **required** (the API's internal address) | Where the web server proxies `/api/auth/*` and `/v1/*`, and where it reads a signed-in user's data. Read per request, so one image serves every environment ([ADR-0010](../architecture/adr/0010-web-proxies-the-api.md)) |
+| `FEATURE_PIP` | `false` | `false` until Pip exists | Shows Pip's entry points and the `/app/pip` placeholder when exactly `true`; with anything else the entry points are hidden and `/app/pip` is a 404. Read per request, so one image behaves differently in each environment (`lib/flags.ts`) |
 | `NODE_ENV` | — | `production` | Sets the `Secure` flag on the language cookie. `next dev` and `next start` set it themselves |
 | `PORT` | `3000` | set by the platform | HTTP port of the standalone server (images default to 3000). For `next dev`, `PORT=3001 pnpm --filter @globetrot/web dev` |
 | `HOSTNAME` | `0.0.0.0` in the image | — | Bind address of the standalone server |

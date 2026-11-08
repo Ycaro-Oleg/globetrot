@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isAppPath, loginRedirect } from './app-gate';
+import { isAppPath, isFlagGatedOff, loginRedirect } from './app-gate';
 
 describe('app gate', () => {
   it('knows which paths are the app', () => {
@@ -8,6 +8,16 @@ describe('app gate', () => {
     expect(isAppPath('/apple')).toBe(false);
     expect(isAppPath('/login')).toBe(false);
     expect(isAppPath('/')).toBe(false);
+  });
+
+  it('hides Pip pages while the flag is off, and only those', () => {
+    const off = { pip: false };
+    expect(isFlagGatedOff('/app/pip', off)).toBe(true);
+    expect(isFlagGatedOff('/app/pip/history', off)).toBe(true);
+    expect(isFlagGatedOff('/app/pipeline', off)).toBe(false);
+    expect(isFlagGatedOff('/app', off)).toBe(false);
+    expect(isFlagGatedOff('/app/budget', off)).toBe(false);
+    expect(isFlagGatedOff('/app/pip', { pip: true })).toBe(false);
   });
 
   it('sends an anonymous visitor to log in, remembering where they were going', () => {
