@@ -8,6 +8,8 @@ const production = (extra: Record<string, string> = {}) => ({
   DATABASE_URL,
   BETTER_AUTH_URL: 'https://app.example.test',
   BETTER_AUTH_SECRET: STRONG_SECRET,
+  SMTP_HOST: 'smtp.example.test',
+  EMAIL_FROM: 'Globetrot <hello@example.test>',
   ...extra,
 });
 
@@ -163,5 +165,83 @@ describe('production refuses to start with an unsafe setup', () => {
     } catch (error) {
       expect((error as Error).message).not.toContain(leaked);
     }
+  });
+});
+
+describe('email and verification settings', () => {
+  const dev = (extra: Record<string, string> = {}) => loadApiConfig({ DATABASE_URL, ...extra });
+
+  it('defaults to Mailpit, a verified-email requirement and the documented lifetimes', () => {
+    const config = dev();
+    expect(config.email).toEqual({
+      host: 'localhost',
+      port: 1025,
+      from: 'Globetrot <hello@globetrot.local>',
+      user: undefined,
+      password: undefined,
+    });
+    expect(config.auth).toMatchObject({
+      requireVerifiedEmail: true,
+      verificationExpiresIn: 24 * 60 * 60,
+      resetPasswordExpiresIn: 60 * 60,
+      emailCooldownSeconds: 30,
+      emailRequestsPerMinute: 5,
+    });
+  });
+
+  it('reads every setting, and the verified-email requirement can be turned off', () => {
+    const config = dev({
+      REQUIRE_VERIFIED_EMAIL: 'false',
+      VERIFICATION_EXPIRES_IN_SECONDS: '600',
+      RESET_PASSWORD_EXPIRES_IN_SECONDS: '300',
+      EMAIL_COOLDOWN_SECONDS: '45',
+      AUTH_EMAIL_REQUESTS_PER_MINUTE: '3',
+      SMTP_HOST: 'smtp.example.test',
+      SMTP_PORT: '587',
+      SMTP_USER: 'mailer',
+      SMTP_PASSWORD: 'not-a-real-password',
+      EMAIL_FROM: 'Globetrot <no-reply@example.test>',
+    });
+    expect(config.auth).toMatchObject({
+      requireVerifiedEmail: false,
+      verificationExpiresIn: 600,
+      resetPasswordExpiresIn: 300,
+      emailCooldownSeconds: 45,
+      emailRequestsPerMinute: 3,
+    });
+    expect(config.email).toEqual({
+      host: 'smtp.example.test',
+      port: 587,
+      from: 'Globetrot <no-reply@example.test>',
+      user: 'mailer',
+      password: 'not-a-real-password',
+    });
+  });
+
+  it.each([
+    ['REQUIRE_VERIFIED_EMAIL', 'maybe'],
+    ['VERIFICATION_EXPIRES_IN_SECONDS', '0'],
+    ['RESET_PASSWORD_EXPIRES_IN_SECONDS', '-5'],
+    ['EMAIL_COOLDOWN_SECONDS', '0'],
+    ['AUTH_EMAIL_REQUESTS_PER_MINUTE', '0'],
+    ['SMTP_PORT', '70000'],
+  ])('refuses %s=%s, naming the setting', (name, value) => {
+    expect(() => dev({ [name]: value })).toThrow(new RegExp(name));
+  });
+
+  it('requires a real mail server and sender in production, because the defaults never reach an inbox', () => {
+    const without = (name: string) => {
+      const env: Record<string, string | undefined> = production();
+      delete env[name];
+      return env;
+    };
+    expect(() => loadApiConfig(without('SMTP_HOST'))).toThrow(
+      /SMTP_HOST is required in production/,
+    );
+    expect(() => loadApiConfig(without('EMAIL_FROM'))).toThrow(
+      /EMAIL_FROM is required in production/,
+    );
+    expect(() => loadApiConfig({ ...production(), SMTP_HOST: '' })).toThrow(/SMTP_HOST/);
+    expect(loadApiConfig(production()).email.host).toBe('smtp.example.test');
   });
 });

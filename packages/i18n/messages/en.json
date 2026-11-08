@@ -72,5 +72,24 @@
     "saved": "Your settings were saved.",
     "error": "Your settings could not be saved. Check these fields and try again: {fields}.",
     "signedOut": "Sign in to change your language and region."
+  },
+  "email": {
+    "greeting": "Hi {name},",
+    "linkHint": "If the button does not work, paste this link into your browser:",
+    "footer": "You are receiving this email because this address was used on Globetrot.",
+    "verifyEmail": {
+      "subject": "Confirm your email address",
+      "body": "Confirm your email address to finish setting up your Globetrot account.",
+      "action": "Confirm email address",
+      "expiry": "This link can be used once and expires in {hours, plural, one {# hour} other {# hours}}.",
+      "ignore": "If you did not create a Globetrot account, you can ignore this email."
+    },
+    "resetPassword": {
+      "subject": "Reset your Globetrot password",
+      "body": "We received a request to reset the password of your Globetrot account.",
+      "action": "Choose a new password",
+      "expiry": "This link can be used once and expires in {hours, plural, one {# hour} other {# hours}}.",
+      "ignore": "If you did not ask for this, ignore this email: your password stays as it is. Resetting it signs you out of your other devices."
+    }
   }
 }

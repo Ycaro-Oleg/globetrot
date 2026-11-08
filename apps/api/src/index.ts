@@ -25,7 +25,7 @@ if (config.usingInsecureSecret) {
 }
 
 const database = connectDatabase(config.databaseUrl);
-const { app } = createServices(database.db, config.auth);
+const { app } = createServices(database.db, config);
 
 const server = serve({ fetch: app.fetch, port: config.port }, (info) => {
   console.log(`api listening on :${info.port}`);

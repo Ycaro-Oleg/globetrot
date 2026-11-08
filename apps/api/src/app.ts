@@ -108,7 +108,17 @@ export function createApp({ auth, application, trustedOrigins }: AppDependencies
     await next();
   });
 
-  app.on(['GET', 'POST'], '/api/auth/*', (c) => auth.handler(c.req.raw));
+  app.on(['GET', 'POST'], '/api/auth/*', async (c) => {
+    const response = await auth.handler(c.req.raw);
+    // Better Auth's own limiter says how long to wait in `X-Retry-After`; HTTP clients look for `Retry-After`.
+    const wait = response.headers.get('x-retry-after');
+    if (response.status === 429 && wait !== null && !response.headers.has('retry-after')) {
+      const headers = new Headers(response.headers);
+      headers.set('retry-after', wait);
+      return new Response(response.body, { status: response.status, headers });
+    }
+    return response;
+  });
 
   app.openAPIRegistry.registerComponent('securitySchemes', 'cookieAuth', {
     type: 'apiKey',

@@ -1,8 +1,15 @@
-import { createPreferencesRepository, schema, type Database } from '@globetrot/db';
-import { DEFAULT_LOCALE, localeFromCookieHeader } from '@globetrot/i18n';
+import { createHash } from 'node:crypto';
+import type { EmailPort, EmailTemplate } from '@globetrot/application';
+import { createCooldown, createPreferencesRepository, schema, type Database } from '@globetrot/db';
+import {
+  DEFAULT_LOCALE,
+  isSupportedLocale,
+  localeFromCookieHeader,
+  type SupportedLocale,
+} from '@globetrot/i18n';
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
-import { createAuthMiddleware } from 'better-auth/api';
+import { APIError, createAuthMiddleware } from 'better-auth/api';
 import type { AuthConfig } from './config';
 
 export const MIN_PASSWORD_LENGTH = 8;
@@ -11,12 +18,64 @@ export const MAX_PASSWORD_LENGTH = 128;
 /** Window of the rate limiter, in seconds. Limits are expressed per minute in the config. */
 const RATE_LIMIT_WINDOW = 60;
 
+/** The endpoints that make us send an email. Each has a per-address cooldown and a per-client limit. */
+const EMAIL_REQUEST_PATHS = new Set(['/send-verification-email', '/request-password-reset']);
+
+export interface AuthDependencies {
+  readonly email: EmailPort;
+}
+
+const errorCode = (error: unknown) => {
+  const code = (error as { code?: unknown }).code;
+  return typeof code === 'string' ? code : 'unknown error';
+};
+
 /**
  * Better Auth for Globetrot (ADR-0005): e-mail + password, cookie sessions, rate limits stored in
- * PostgreSQL. Passwords are hashed by Better Auth; nothing here touches them. Never log tokens,
- * passwords or full e-mail addresses.
+ * PostgreSQL, e-mail verification and password reset. Passwords are hashed by Better Auth; nothing here
+ * touches them. Never log tokens, passwords or e-mail addresses.
  */
-export function createAuth(db: Database, config: AuthConfig) {
+export function createAuth(db: Database, config: AuthConfig, { email }: AuthDependencies) {
+  const preferences = createPreferencesRepository(db);
+  const cooldown = createCooldown(db);
+
+  /**
+   * The language of an email: the stored preference when there is one, otherwise the language cookie sent with
+   * the request (at sign-up the row may not exist yet), otherwise the default. Never `Accept-Language`.
+   */
+  async function localeFor(userId: string, request: Request | undefined): Promise<SupportedLocale> {
+    const stored = await preferences.find(userId);
+    if (stored && isSupportedLocale(stored.locale)) return stored.locale;
+    return localeFromCookieHeader(request?.headers.get('cookie')) ?? DEFAULT_LOCALE;
+  }
+
+  /**
+   * Sends in the background and returns at once. If the request waited for the mail server, an address that
+   * has an account (a mail is sent) would answer more slowly than one that does not (nothing is sent), and
+   * anyone could tell them apart by timing. Failures are logged with a code only: no address, no link.
+   */
+  function deliver(
+    template: EmailTemplate,
+    user: { id: string; email: string; name: string },
+    url: string,
+    request: Request | undefined,
+    expiresInSeconds: number,
+  ): void {
+    void (async () => {
+      try {
+        const locale = await localeFor(user.id, request);
+        await email.send({
+          to: user.email,
+          template,
+          locale,
+          data: { url, name: user.name, expiresInHours: expiresInSeconds / 3600 },
+        });
+      } catch (error) {
+        console.error(`could not send the ${template} email (${errorCode(error)})`);
+      }
+    })();
+  }
+
   return betterAuth({
     appName: 'Globetrot',
     baseURL: config.baseURL,
@@ -37,6 +96,24 @@ export function createAuth(db: Database, config: AuthConfig) {
       minPasswordLength: MIN_PASSWORD_LENGTH,
       maxPasswordLength: MAX_PASSWORD_LENGTH,
       autoSignIn: true,
+      // A password sign-in needs a verified address (refused with EMAIL_NOT_VERIFIED). Google counts as verified.
+      requireEmailVerification: config.requireVerifiedEmail,
+      // The reset token lives in the `verification` table and is deleted when used: it works once.
+      resetPasswordTokenExpiresIn: config.resetPasswordExpiresIn,
+      // A reset ends every session of the account, so whoever had the old password is signed out.
+      revokeSessionsOnPasswordReset: true,
+      sendResetPassword: async ({ user, url }, request) => {
+        deliver('resetPassword', user, url, request, config.resetPasswordExpiresIn);
+      },
+    },
+    emailVerification: {
+      sendOnSignUp: true,
+      // Following the link signs the person in. Opening it again changes nothing and signs nobody in.
+      autoSignInAfterVerification: true,
+      expiresIn: config.verificationExpiresIn,
+      sendVerificationEmail: async ({ user, url }, request) => {
+        deliver('verifyEmail', user, url, request, config.verificationExpiresIn);
+      },
     },
     session: {
       expiresIn: config.sessionExpiresIn,
@@ -51,6 +128,14 @@ export function createAuth(db: Database, config: AuthConfig) {
       customRules: {
         '/sign-in/email': { window: RATE_LIMIT_WINDOW, max: config.signInAttemptsPerMinute },
         '/sign-up/email': { window: RATE_LIMIT_WINDOW, max: config.signUpAttemptsPerMinute },
+        '/send-verification-email': {
+          window: RATE_LIMIT_WINDOW,
+          max: config.emailRequestsPerMinute,
+        },
+        '/request-password-reset': {
+          window: RATE_LIMIT_WINDOW,
+          max: config.emailRequestsPerMinute,
+        },
       },
     },
     advanced: {
@@ -70,24 +155,44 @@ export function createAuth(db: Database, config: AuthConfig) {
               context?.headers?.get('cookie') ?? context?.request?.headers.get('cookie');
             const locale = localeFromCookieHeader(cookie) ?? DEFAULT_LOCALE;
             try {
-              await createPreferencesRepository(db).createDefaults(created.id, locale, new Date());
+              await preferences.createDefaults(created.id, locale, new Date());
             } catch (error) {
-              const code = (error as { code?: unknown }).code;
-              console.error(
-                `could not record the sign-up language (${typeof code === 'string' ? code : 'unknown error'})`,
-              );
+              console.error(`could not record the sign-up language (${errorCode(error)})`);
             }
           },
         },
       },
     },
     hooks: {
-      // E-mail addresses are trimmed (Better Auth lower-cases them) so " Ana@Example.com " and
-      // "ana@example.com" are the same account instead of a validation error.
       before: createAuthMiddleware(async (ctx) => {
         const body = ctx.body as { email?: unknown } | undefined;
-        if (body && typeof body.email === 'string' && body.email !== body.email.trim()) {
-          return { context: { ...ctx, body: { ...body, email: body.email.trim() } } };
+        if (!body || typeof body.email !== 'string') return;
+
+        // E-mail addresses are trimmed (Better Auth lower-cases them) so " Ana@Example.com " and
+        // "ana@example.com" are the same account instead of a validation error.
+        const address = body.email.trim();
+
+        // One email per address every `emailCooldownSeconds`, whoever asks and from wherever. It applies to the
+        // address as typed, **whether or not an account exists**, so the answer (200, or 429 with the same
+        // wait) never tells an unknown address from a known one.
+        if (EMAIL_REQUEST_PATHS.has(ctx.path)) {
+          const digest = createHash('sha256').update(address.toLowerCase()).digest('hex');
+          const wait = await cooldown.acquire(
+            `email-cooldown:${ctx.path}:${digest}`,
+            config.emailCooldownSeconds,
+            Date.now(),
+          );
+          if (wait > 0) {
+            throw new APIError(
+              'TOO_MANY_REQUESTS',
+              { code: 'EMAIL_COOLDOWN', message: 'Please wait before asking for another email' },
+              { 'Retry-After': String(wait) },
+            );
+          }
+        }
+
+        if (body.email !== address) {
+          return { context: { ...ctx, body: { ...body, email: address } } };
         }
       }),
     },

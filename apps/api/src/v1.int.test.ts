@@ -1,5 +1,6 @@
 import { randomBytes } from 'node:crypto';
 import { createApiClient } from '@globetrot/api-client';
+import { createFakeEmail } from '@globetrot/application/testing';
 import { createTestDatabase, type TestDatabase } from '@globetrot/db/testing';
 import { afterEach, describe, expect, it } from 'vitest';
 import { loadApiConfig } from './config';
@@ -22,8 +23,9 @@ async function harness() {
     NODE_ENV: 'test',
     DATABASE_URL: database.url,
     BETTER_AUTH_SECRET: randomBytes(32).toString('hex'),
+    REQUIRE_VERIFIED_EMAIL: 'false',
   });
-  const { app } = createServices(database.db, config.auth);
+  const { app } = createServices(database.db, config, { email: createFakeEmail().port });
   const origin = config.auth.baseURL;
 
   /** Signs a user up through the real auth route and returns its id and session cookie. */

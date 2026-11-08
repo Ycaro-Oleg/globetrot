@@ -1,6 +1,6 @@
 # Current state
 
-_Last updated: 2026-11-07, after preferences persistence (#58)._
+_Last updated: 2026-11-07, after email verification and recovery (#54)._
 
 ## Phase
 
@@ -28,6 +28,7 @@ _Last updated: 2026-11-07, after preferences persistence (#58)._
 - Authenticated API (#56): `packages/application` has the `Actor`, the operation convention (`defineOperation`: Zod in and out, output parsed so nothing extra leaks), typed errors, `assertOwner` and the first query `getCurrentUser`, behind ports. `apps/api` builds the actor from the session cookie only, serves `GET /v1/me` and `GET /v1/openapi.json`, and answers every error as problem+json. `packages/api-client` has the generated typed client (committed; two tests fail when stale, `pnpm api:generate` refreshes). The web proxy forwards `/v1/*` too. See `docs/architecture/api-contracts.md`.
 - Trip persistence (#61): `trip`, `idempotency_key` and append-only `audit_event` tables (migrations 0002 and 0003, with CHECK constraints from the domain lists). Operations `createTrip`, `listTrips`, `getTrip`, `updateTrip` and `archiveTrip` (no delete) behind `/v1/trips`, as the session's actor only; another user's trip is a 404 identical to a missing one. `createTrip` honours `Idempotency-Key` (same key and request returns the original, a different request is a 409, concurrent duplicates create one). Mutations run in one transaction (`UnitOfWork`) with their audit event, which carries field names and no personal data. Ports and in-memory fakes in `@globetrot/application` (`/testing`), SQL in `packages/db/src/repositories.ts`, UUIDv7 in the domain. See `docs/architecture/api-contracts.md` and `data-model.md`.
 - Preferences (#58): `user_preference` table (migration 0004) with `locale`, `currency` (default USD), `homeCountry`, `nationality`, `timeZone` and `units`, all independent. `getPreferences` and `updatePreferences` (partial, audited by field name) behind `GET` and `PATCH /v1/me/preferences`. A sign-up hook stores the language from the `globetrot_locale` cookie and nothing else. The web app uses the stored language and time zone for signed-in users (cookie stays the anonymous fallback) and has a provisional `/settings` page built with `@globetrot/ui` (en and pt-BR). New domain helpers: ISO 3166 country codes, IANA time zones, unit systems. See `docs/architecture/i18n.md` and `data-model.md`.
+- Email verification and recovery (#54): `EmailPort` with plain-text and HTML templates in en and pt-BR (the `email` catalog namespace), an SMTP adapter (nodemailer) that targets Mailpit locally, and Better Auth wiring. A password sign-in now requires a verified email (`403 EMAIL_NOT_VERIFIED`; `REQUIRE_VERIFIED_EMAIL=false` turns it off), and sign-up no longer returns a session. Reset links work once, last an hour and revoke every session. Resend and reset answer the same for known and unknown addresses, with a 30 s per-address cooldown (`429` with `Retry-After`) and a per-client limit. Integration tests read the mail from Mailpit, which CI now runs as a service. See `docs/architecture/authentication.md`.
 
 ## Done (M0)
 
@@ -45,7 +46,7 @@ _Last updated: 2026-11-07, after preferences persistence (#58)._
    - MapLibre spike (#2) **done**: go, with conditions. See `docs/architecture/spikes/maplibre.md` (real-device FPS still pending). Places spike (#3) **done**: go. See `docs/architecture/spikes/places.md`. Geocoding evaluation (#4) remains open: initial terms and pricing research is documented; provider quality tests and a final decision remain;
    - tokens v1.1 (#5) complete: DTCG theme exports, CSS and TypeScript, contrast checks, handoff inventory and bilingual demo; Storybook primitives (#6) started with a theme/locale toolbar and initial Button stories; Button, text fields, checkbox, switch, select and status marks have initial stories; CI runs axe across stories and keyboard checks on several controls. Remaining components and full interaction/screen-reader testing are pending;
    - missing-screen specs (#7): interaction draft and initial bilingual/theme frames in `docs/design/missing-screens.md`; expanded state coverage, manual checks and owner review remain; usability test (#8): protocol ready in `docs/product/research/usability-01.md`, five real sessions still needed; Pip brief (#9): draft ready for owner approval in `docs/design/pip-character.md`.
-2. **M3: App Foundation.** The issues exist (#52–#63, plus #50 done), created from `docs/engineering/m3-foundation-breakdown.md`, which holds the dependency table, the suggested order and the gaps found. #52 (database migrations) is done. #53 (auth server) is done; next are **#54** (email verification and recovery) and **#55** (Google); The trip list and switcher (#62) wait for the owner's screen review (#7). The next-intl item of the breakdown is already done (#50). #62 needs the owner's review of the trip list screen (#7).
+2. **M3: App Foundation.** The issues exist (#52–#63, plus #50 done), created from `docs/engineering/m3-foundation-breakdown.md`, which holds the dependency table, the suggested order and the gaps found. #52 (database migrations) is done. #53 (auth server) is done; next are **#55** (Google) and the screens (**#57**: sign-up, log-in, recovery and the pages the emails link to); The trip list and switcher (#62) wait for the owner's screen review (#7). The next-intl item of the breakdown is already done (#50). #62 needs the owner's review of the trip list screen (#7).
 
 See the GitHub milestones for open issues.
 
@@ -61,7 +62,8 @@ See the GitHub milestones for open issues.
 ## Open decisions
 
 - Pricing and plan limits (before M10).
-- Email provider (Resend vs Postmark, in M3).
+- Production email provider (Resend vs Postmark). The SMTP adapter works with either; only `SMTP_*` settings change.
+- Owner to confirm the #54 default: a verified email is required for password sign-in (Google counts as verified).
 - Managed geocoding provider (in the M1 spike).
 - Pip Rive illustrator / asset timeline.
 - Imagery licensing source.

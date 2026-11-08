@@ -72,5 +72,24 @@
     "saved": "Suas configurações foram salvas.",
     "error": "Não foi possível salvar suas configurações. Confira estes campos e tente de novo: {fields}.",
     "signedOut": "Entre na sua conta para mudar o idioma e a região."
+  },
+  "email": {
+    "greeting": "Olá, {name},",
+    "linkHint": "Se o botão não funcionar, cole este link no seu navegador:",
+    "footer": "Você recebeu este e-mail porque este endereço foi usado no Globetrot.",
+    "verifyEmail": {
+      "subject": "Confirme seu endereço de e-mail",
+      "body": "Confirme seu endereço de e-mail para concluir a criação da sua conta no Globetrot.",
+      "action": "Confirmar e-mail",
+      "expiry": "Este link só pode ser usado uma vez e expira em {hours, plural, one {# hora} other {# horas}}.",
+      "ignore": "Se você não criou uma conta no Globetrot, pode ignorar este e-mail."
+    },
+    "resetPassword": {
+      "subject": "Redefina sua senha do Globetrot",
+      "body": "Recebemos um pedido para redefinir a senha da sua conta no Globetrot.",
+      "action": "Escolher uma nova senha",
+      "expiry": "Este link só pode ser usado uma vez e expira em {hours, plural, one {# hora} other {# horas}}.",
+      "ignore": "Se você não pediu isso, ignore este e-mail: sua senha continua a mesma. Redefinir a senha encerra a sessão nos seus outros dispositivos."
+    }
   }
 }

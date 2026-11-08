@@ -23,11 +23,13 @@
     "@hono/zod-openapi": "1.6.3",
     "better-auth": "1.7.18",
     "hono": "4.13.17",
+    "nodemailer": "10.3.1",
     "zod": "4.6.7"
   },
   "devDependencies": {
     "@globetrot/api-client": "workspace:*",
     "@globetrot/config": "workspace:*",
+    "@types/nodemailer": "8.0.2",
     "drizzle-orm": "0.45.4",
     "tsup": "9.0.0",
     "tsx": "4.23.15"

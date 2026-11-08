@@ -16,7 +16,7 @@
     "test": {},
     "test:int": {
       "cache": false,
-      "passThroughEnv": ["DATABASE_URL"]
+      "passThroughEnv": ["DATABASE_URL", "SMTP_PORT", "MAILPIT_URL", "MAILPIT_UI_PORT"]
     }
   },
   "globalDependencies": ["eslint.config.mjs", "packages/config/tsconfig/*.json", ".nvmrc"]

@@ -27,6 +27,14 @@ export {
   ValidationError,
   type FieldIssue,
 } from './errors';
+export {
+  renderEmail,
+  type EmailData,
+  type EmailMessage,
+  type EmailPort,
+  type EmailTemplate,
+  type RenderedEmail,
+} from './email/templates';
 export { defineOperation, type Operation } from './operation';
 export type {
   AuditEventInput,
