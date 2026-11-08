@@ -68,6 +68,32 @@ Policy (decided in #54, to be confirmed by the owner): **a password sign-in requ
 - **Sending.** `EmailPort` (application layer) with an SMTP adapter in `apps/api/src/email.ts` (nodemailer). Locally it is Mailpit (<http://localhost:8025>). The production provider (Resend or Postmark) is an open decision; either works through SMTP settings. Plain text plus simple HTML, no remote images and no tracking. A delivery failure never fails the request: it is logged as `could not send the <template> email (<code>)`, never with an address or a link.
 - **Logs** hold no tokens, passwords or addresses (checked in `email.int.test.ts`).
 
+## Screens (`apps/web`)
+
+| Route | What | Notes |
+|---|---|---|
+| `/login` | Email and password, the Google button, "Forgot it?" | `?next=` is where to go afterwards (default `/app`) |
+| `/signup` | First name, email, password with a strength meter, required terms | After success: "Check your inbox" with a resend button |
+| `/recover` | Email, then the same "Check your inbox" for any address | Resend with a countdown |
+| `/reset-password` | The page the reset email leads to (`?token=…` or `?error=INVALID_TOKEN`) | A bad, used or expired token shows the problem and "Ask for a new link" |
+| `/email-verified` | The page the verification email leads to | Success only when the visitor really is signed in with a verified address. An expired, tampered or already used link shows the problem and a form to ask for a new one |
+| `/terms`, `/privacy` | Placeholder pages marked **draft** | The real legal text is the owner's |
+| `/app` | Placeholder for the signed-in app (greeting, settings link, log out) | The shell arrives with #59 |
+
+- **How the screens talk to the server.** Client components call `/api/auth/*` with `fetch` from the browser (`lib/auth-client.ts`), so the session cookie the API sets is a first-party cookie. The result is a value, never a thrown error. Passwords only travel in the JSON body.
+- **Errors.** `lib/auth-errors.ts` maps the stable `code` and HTTP status to catalog messages (`auth.errors.*`); the server's English `message` is never shown. Bad credentials are one generic banner, the same for an unknown address and a wrong password. A duplicate email appears under the email field with a link to log in. A `429` becomes "try again in N seconds" from `Retry-After`. Empty or malformed fields are caught before sending, with an error under each field, a summary announced as an alert (`role="alert"`) and focus moved to the first field with a problem.
+- **Loading.** Every submit shows the button's pending state and an `aria-live` status; the button cannot be pressed twice.
+- **Password strength.** `lib/password-strength.ts` computes four segments and a word (too short, weak, okay, good, strong) in the browser. It rewards length and variety, treats a long passphrase as strong, and caps common passwords and keyboard runs at weak. It is guidance only: the one rule is the server's length (`PASSWORD_MIN_LENGTH` 8 to `PASSWORD_MAX_LENGTH` 128, from `@globetrot/domain`). The word is announced politely when the level changes.
+- **Resend countdown.** 30 s on the button after an email was sent; the server's own cooldown is authoritative (a `429` restarts the countdown with the wait it asks for).
+- **Google.** The button appears only when `GET /v1/auth/providers` lists `google`. It lists nothing until Google is configured (#55), and any failure to ask means no button.
+- **Terms.** The checkbox is required by the screen. Acceptance is **not stored** yet: that needs the final legal text and a version to record.
+
+### Redirect rules
+
+- **`next` is a path on this site or nothing.** `lib/safe-next.ts` accepts only a value that starts with exactly one `/`: absolute URLs (`https://…`, `javascript:`), protocol-relative ones (`//host`), backslash tricks (`/\host`) and control characters (a tab or newline inside `//` is dropped by browsers) all fall back to `/app`. It is property-tested against arbitrary strings. Without it a log-in link could send a signed-in person to a look-alike site.
+- **An anonymous visit to `/app`** goes to `/login?next=<page>`: first in `proxy.ts` (no session cookie at all, no rendering), then in the app's layout for a cookie that is stale or revoked, which only the API can tell (for example after a password reset ended the session).
+- **After log-in or sign-up** (when the server opens a session) the browser goes to the safe `next`. **After sign-out** it goes to `/login`.
+
 ## Request protection
 
 - **Origin check on every state-changing call.** Better Auth only verifies `Origin` when the request carries cookies, so a login-CSRF (signing a victim into the attacker's account) would pass. `app.ts` therefore rejects any non-safe request (`POST`, …) to `/api/auth/*` whose `Origin` is present and not trusted, with `403 INVALID_ORIGIN`. Requests without `Origin` (curl, server to server) are not browser CSRF vectors.
@@ -107,6 +133,7 @@ When an account is created, a Better Auth database hook (`databaseHooks.user.cre
 
 ## Tests
 
+- The screens (`apps/web/scripts/check-auth-pages.mjs`, CI job `Accessibility (axe)`): the built web app in a real browser against a stand-in API. Every screen and state reachable, keyboard-only log-in, a failed submit announced and focused, redirects (`next` with hostile values, anonymous `/app`, sign-out), the language switcher, and **axe (WCAG 2.1 A/AA) on every state in both themes and both languages**. Unit tests cover the error mapper, `safeNext`, the strength scorer and the auth client; render tests cover each form in both languages.
 - Integration with Mailpit (`email.int.test.ts`, reads the mail the API really sent): verification and reset flows, languages, expiry, single use, session revocation, cooldown and `Retry-After`, identical answers for unknown addresses, clean logs, and the mail server being down. Needs `pnpm services:up` (CI runs Mailpit as a service).
 - Unit: configuration rules, the email templates (`packages/application/src/email`), the Origin check and the proxy path guard (`config.test.ts`, `app.test.ts`, `apps/web/lib/api-proxy.test.ts`).
 - Integration against a real PostgreSQL (`auth.int.test.ts`, `pnpm test:int`): sign-up, case-insensitive email, duplicate and weak password, sign-in/out, sessions and expiry, rate limits per address, hostile origin, no password or token in responses.

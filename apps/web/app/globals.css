@@ -1,0 +1,33 @@
+/* Page-level basics. Component styles live in @globetrot/ui; everything here reads design tokens. */
+body {
+  margin: 0;
+  background: var(--gt-semantic-color-surface-page);
+  color: var(--gt-semantic-color-text);
+  font-family: var(--gt-primitive-font-body);
+  line-height: 1.5;
+}
+
+a {
+  color: inherit;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+
+a:focus-visible {
+  outline: var(--gt-component-focus-width) solid var(--gt-semantic-color-focus);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* Text for screen readers only: live regions that announce progress without adding visual noise. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

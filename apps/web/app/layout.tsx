@@ -5,6 +5,7 @@ import { getLocale } from 'next-intl/server';
 import { SITE_NAME } from './site';
 import '@globetrot/tokens/tokens.css';
 import '@globetrot/ui/styles.css';
+import './globals.css';
 
 export const metadata: Metadata = { title: SITE_NAME };
 

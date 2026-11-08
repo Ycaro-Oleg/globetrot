@@ -9,6 +9,7 @@ import { HTTPException } from 'hono/http-exception';
 import { problemResponse, type Env } from './http';
 import { problem, problemFromApplicationError } from './problem';
 import { registerPreferencesRoutes } from './routes/preferences';
+import { registerProviderRoutes } from './routes/providers';
 import { registerTripRoutes } from './routes/trips';
 
 /**
@@ -26,6 +27,8 @@ export interface AppDependencies {
   readonly application: Application;
   /** Origins (scheme + host + port) allowed to send state-changing browser requests. */
   readonly trustedOrigins: readonly string[];
+  /** Social sign-in providers that are configured. None until Google is set up (#55). */
+  readonly enabledProviders?: readonly 'google'[];
 }
 
 const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
@@ -66,7 +69,12 @@ const getCurrentUserRoute = createRoute({
  * `/api/auth/*` and `/v1/*` to it so the session cookie stays first-party
  * (docs/architecture/authentication.md, docs/architecture/api-contracts.md).
  */
-export function createApp({ auth, application, trustedOrigins }: AppDependencies) {
+export function createApp({
+  auth,
+  application,
+  trustedOrigins,
+  enabledProviders = [],
+}: AppDependencies) {
   const app = new OpenAPIHono<Env>({
     // Input that fails an operation's schema before the handler runs.
     defaultHook: (result) => {
@@ -131,6 +139,7 @@ export function createApp({ auth, application, trustedOrigins }: AppDependencies
   // The contract is public. Registered BEFORE the authentication middleware below: Hono runs middleware in
   // registration order, so everything registered after `app.use('/v1/*', ...)` requires a session.
   app.doc31('/v1/openapi.json', OPENAPI_CONFIG);
+  registerProviderRoutes(app, enabledProviders);
 
   // The only place an `Actor` is created. It comes from the verified session cookie and from nothing else:
   // not a header, a query parameter or a body field. Do not read any of those here.

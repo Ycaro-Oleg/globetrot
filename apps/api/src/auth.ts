@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import type { EmailPort, EmailTemplate } from '@globetrot/application';
 import { createCooldown, createPreferencesRepository, schema, type Database } from '@globetrot/db';
+import { PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from '@globetrot/domain';
 import {
   DEFAULT_LOCALE,
   isSupportedLocale,
@@ -12,8 +13,8 @@ import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { APIError, createAuthMiddleware } from 'better-auth/api';
 import type { AuthConfig } from './config';
 
-export const MIN_PASSWORD_LENGTH = 8;
-export const MAX_PASSWORD_LENGTH = 128;
+export const MIN_PASSWORD_LENGTH = PASSWORD_MIN_LENGTH;
+export const MAX_PASSWORD_LENGTH = PASSWORD_MAX_LENGTH;
 
 /** Window of the rate limiter, in seconds. Limits are expressed per minute in the config. */
 const RATE_LIMIT_WINDOW = 60;

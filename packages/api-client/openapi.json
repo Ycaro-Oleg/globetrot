@@ -18,6 +18,43 @@
     "parameters": {}
   },
   "paths": {
+    "/v1/auth/providers": {
+      "get": {
+        "operationId": "listAuthProviders",
+        "tags": [
+          "Account"
+        ],
+        "summary": "Which social sign-in buttons to show",
+        "description": "Public. A provider is listed only when the server has it configured, so a screen never offers a button that cannot work. Email and password is always available and is not listed.",
+        "responses": {
+          "200": {
+            "description": "The enabled providers (possibly none).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "providers": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "enum": [
+                          "google"
+                        ]
+                      },
+                      "description": "The social sign-in providers that are configured and can be offered."
+                    }
+                  },
+                  "required": [
+                    "providers"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/me": {
       "get": {
         "operationId": "getCurrentUser",

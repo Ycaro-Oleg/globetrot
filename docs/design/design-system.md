@@ -44,6 +44,14 @@ The inventory covers the handoff's token-level values, not every one-off prototy
 - **Icons:** Lucide, 20×20, stroke 1.6.
 - **Charts:** hand-rolled SVG (savings curve, status bar). No chart library in the MVP.
 
+### Patterns first used by the account screens (#57)
+
+- **Auth shell.** Two columns from 56rem: poster art (sea blue with land shapes and a white headline card, no text on the map itself, so contrast never depends on what is behind it) and a form column of 26 to 30rem. Below that the art is a 220 px banner. The wordmark sits in the form column.
+- **Password strength meter.** Four segments (danger, estimate, marigold, confirmed colors) plus the word, inside the field's description so a screen reader reads it with the field. The word is a polite live region that changes only when the level changes. It never blocks submitting; the only rule is length.
+- **Form errors.** Per-field error under the field, a summary banner with `role="alert"`, and focus moved to the first invalid field. Server errors map from stable codes, never from server text.
+- **Pending submit.** The button's pending state plus an `aria-live` status line; keep the pending button mounted (hidden) when the screen changes after success, because the React Aria pending announcement points back at it.
+- **Countdown button.** A disabled ghost button whose label counts down ("Send again in 12s"), enabled when it reaches zero.
+
 ## Motion
 
 - `motion/react` for UI transitions, CSS for the marching route stripes, Rive for Pip.

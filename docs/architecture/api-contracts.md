@@ -18,7 +18,7 @@ Browser ─► apps/web (proxy.ts: /api/auth/*, /v1/*) ─► apps/api ─► @g
 
 - `app.use('/v1/*')` in `apps/api/src/app.ts` resolves the **session cookie** through Better Auth and sets `actor = { kind: 'user', userId }`. It is the only place an actor is created.
 - **No request field can name the caller.** Not a header (`X-User-Id`, `Authorization`, …), not a query parameter, not a body field. Operations take no user id for "me". Tests try every one of these and check the answer does not change (`app.test.ts`, `v1.int.test.ts`).
-- No session: `401`, before any operation or port is touched. `/v1/openapi.json` is the only public path under `/v1`. It is registered **before** the authentication middleware, and Hono applies middleware in registration order, so anything registered after it requires a session.
+- No session: `401`, before any operation or port is touched. `/v1/openapi.json` and `/v1/auth/providers` are the only public paths under `/v1`. It is registered **before** the authentication middleware, and Hono applies middleware in registration order, so anything registered after it requires a session.
 - State-changing requests (`POST`, `PUT`, `PATCH`, `DELETE`) from an untrusted `Origin` get `403 INVALID_ORIGIN`, as for auth ([`authentication.md`](authentication.md#request-protection)).
 - The browser calls the web origin, never the API: `proxy.ts` forwards `/v1/*` (see `apps/web/lib/api-proxy.ts`), so the cookie is first-party. Server-side web code that calls the API must forward the request's `cookie` header itself.
 
@@ -65,6 +65,7 @@ Today:
 | Operation | HTTP | Notes |
 |---|---|---|
 | `getCurrentUser` | `GET /v1/me` | `{ id, email, name, emailVerified }` of the caller and nothing else |
+| `listAuthProviders` | `GET /v1/auth/providers` | **Public** (before sign-in). The social providers that are configured, so a screen never offers a button that cannot work. Empty until Google is set up (#55) |
 | `getPreferences` | `GET /v1/me/preferences` | The caller's settings. A user who saved nothing gets `en`, `USD`, no country, nationality or time zone, `metric` |
 | `updatePreferences` | `PATCH /v1/me/preferences` | Only the fields sent change, and none affects another. `null` clears `homeCountry`, `nationality` or `timeZone`; `locale`, `currency` and `units` cannot be cleared. At least one field. Audited (`preferences.update`, field names only) |
 | `listTrips` | `GET /v1/trips[?includeArchived=true]` | The caller's trips, newest first, at most 200 (no pagination yet). Archived ones only on request |

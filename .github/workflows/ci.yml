@@ -119,3 +119,7 @@ jobs:
       - run: pnpm --filter @globetrot/ui exec playwright install --with-deps chromium
       - run: pnpm --filter @globetrot/ui build
       - run: pnpm --filter @globetrot/ui test:a11y
+      # The account screens (log in, sign up, recover, reset, verify, /app), in a real browser against a stand-in
+      # API: every state reachable, keyboard path, safe redirects, axe in both themes and both languages.
+      - run: pnpm turbo run build --filter=@globetrot/web
+      - run: pnpm --filter @globetrot/web test:a11y
