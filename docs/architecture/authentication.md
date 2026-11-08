@@ -1,12 +1,13 @@
 # Authentication (as built)
 
-Decision and rationale: [ADR-0005](adr/0005-authentication.md). This page describes what is implemented (issue #53): email and password with server-side sessions. The authenticated API and the actor built from this session are in [`api-contracts.md`](api-contracts.md) (#56). Email verification and recovery (#54), Google (#55) and the screens (#57) build on it.
+Decisions: [ADR-0005](adr/0005-authentication.md) (Better Auth), [ADR-0010](adr/0010-web-proxies-the-api.md) (the web app proxies the API, so the cookie is first-party) and [ADR-0012](adr/0012-email-delivery-and-verified-sign-in.md) (email and the verified-address policy). This page describes what is built: email and password with server-side sessions (#53), email verification and recovery (#54) and the account screens (#57). **Google sign-in (#55) is not built yet**; the screens already show its button when the API lists the provider. The authenticated API and the actor built from the session are in [`api-contracts.md`](api-contracts.md) (#56). Business rules: [`../product/business-rules.md`](../product/business-rules.md#accounts-and-sign-in).
 
 ## Shape
 
 ```text
 Browser ──► apps/web (Next.js, public origin) ──proxy.ts──► apps/api (Hono + Better Auth, private)
-   cookie: globetrot.session_token (first-party)                    └──► PostgreSQL (user, session, account, verification, rate_limit)
+   cookie: globetrot.session_token (first-party)      /api/auth/*, /v1/*      └──► PostgreSQL (user, session, account, verification, rate_limit, …)
+                                                                         └──► SMTP (Mailpit locally): verification and reset emails
 ```
 
 - **Better Auth runs inside `apps/api`**, mounted at `/api/auth/*` (`src/auth.ts`, `src/app.ts`). It uses the Drizzle adapter over the shared `@globetrot/db` client.
@@ -14,32 +15,9 @@ Browser ──► apps/web (Next.js, public origin) ──proxy.ts──► apps
 - **The proxy target is read per request** from `API_INTERNAL_URL`, not at build time. A `rewrites()` entry in `next.config` is evaluated during `next build` and baked into the image, which would force one image per environment. `proxy.ts` keeps one image for every environment.
 - Sessions are database rows. The cookie holds only the opaque session token (`httpOnly`, `SameSite=Lax`, `Path=/`, no `Domain`, `Secure` in production). Cookie name: `globetrot.session_token` (`__Secure-globetrot.session_token` in production).
 
-## Configuration (`apps/api/src/config.ts`)
+## Configuration
 
-`loadApiConfig` is the only place in the API that reads `process.env`. An empty value counts as unset. A bad value stops the process at startup with a message that names the setting, never its value.
-
-| Variable | Default | Notes |
-|---|---|---|
-| `DATABASE_URL` | local compose database | Shared with `@globetrot/db` |
-| `PORT` (or `API_PORT`) | `4000` | `PORT` is what the container platform sets |
-| `BETTER_AUTH_SECRET` | the public dev secret outside production | **Required in production**, at least 32 characters, never the public dev secret. Generate with `openssl rand -base64 32` |
-| `BETTER_AUTH_URL` | `http://localhost:3000` | The public origin of the **web** app (not the API). Must be `https` in production |
-| `TRUSTED_ORIGINS` | none | Extra comma-separated origins allowed to call `/api/auth/*`. The `BETTER_AUTH_URL` origin is always trusted |
-| `SESSION_EXPIRES_IN_SECONDS` | 30 days | |
-| `SESSION_UPDATE_AGE_SECONDS` | 1 day | A session older than this is renewed when used |
-| `AUTH_SIGN_IN_ATTEMPTS_PER_MINUTE` | `5` | Per client address, see rate limits |
-| `AUTH_SIGN_UP_ATTEMPTS_PER_MINUTE` | `5` | Per client address |
-| `REQUIRE_VERIFIED_EMAIL` | `true` | A password sign-in needs a verified email (see "Email verification and recovery"). `false` lets unverified accounts in |
-| `VERIFICATION_EXPIRES_IN_SECONDS` | 24 hours | How long a verification link works |
-| `RESET_PASSWORD_EXPIRES_IN_SECONDS` | 1 hour | How long a password-reset link works |
-| `EMAIL_COOLDOWN_SECONDS` | `30` | Between two emails of the same kind to the same address |
-| `AUTH_EMAIL_REQUESTS_PER_MINUTE` | `5` | Resend and reset requests from one client address |
-| `SMTP_HOST`, `SMTP_PORT` | `localhost`, `1025` (Mailpit) | **Production requires `SMTP_HOST`**. `SMTP_USER` and `SMTP_PASSWORD` are optional |
-| `EMAIL_FROM` | `Globetrot <hello@globetrot.local>` | **Production requires it**: the local default never reaches a real inbox |
-
-Web side: `API_INTERNAL_URL` (default `http://localhost:4000`), read by Next from `apps/web/.env*` or the container environment, **not** from the root `.env`.
-
-Starting in development without a secret prints a warning and uses the public development secret. `NODE_ENV=production` refuses to start with a missing, short or default secret.
+Every setting (names, defaults, what production requires) is in the reference: [`../engineering/configuration.md`](../engineering/configuration.md). Behaviour that depends on them is described in the sections below. `apps/api/src/config.ts` is the only reader of the environment. Starting in development without a secret prints a warning and uses the public development secret; `NODE_ENV=production` refuses to start with a missing, short or default secret, a non-`https` `BETTER_AUTH_URL`, or no `SMTP_HOST` and `EMAIL_FROM`. Web side: `API_INTERNAL_URL` (default `http://localhost:4000`), read by Next from `apps/web/.env*` or the container environment, **not** from the root `.env`.
 
 ## Passwords
 

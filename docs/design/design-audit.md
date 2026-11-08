@@ -52,3 +52,29 @@ The handoff README stays authoritative for **visual specs** (tokens, components,
 - **Commercial:** a pricing section on the landing (currently missing), plan and billing screens, limit prompts.
 - **System states:** offline, syncing/conflict, per-view skeletons, notification centre, Pip proposal history with undo.
 - **Legal:** terms, privacy, cookie consent, data export, and a "decorative, not an official document" note on the passport.
+
+## Resolution status
+
+Which audit items have been carried out, so the next agent knows what is already decided and built. "Pending" means not built yet, not rejected.
+
+| Item | Status | Where |
+|---|---|---|
+| USD default, trip currency, original currency per expense, FX provenance | **Done in the domain** (`Money`, conversion with rate and source); screens pending (M6) | [money](../architecture/money.md) |
+| `saved` milestone at 10% instead of a fixed amount | **Done** in `packages/domain` | [business rules](../product/business-rules.md#readiness-milestones-trip-visa-page-stamps) |
+| Message catalogs instead of hardcoded copy, pt-BR expansion checked | **Done** for every screen built so far (account, settings, emails); each later feature must follow | [i18n](../architecture/i18n.md) |
+| Contrast: rail title, tertiary text, both themes | **Done in the tokens** (declared pairs checked in CI); new pairs must be added to the contrast script | [design-system](design-system.md#tokens) |
+| Self-hosted fonts and fallbacks | Pending (with #60). Today the system fallback is used | — |
+| Home journey line compact variant | Pending (M3 shell and trip list) | — |
+| Five-tab mobile bar, Pip as a separate action | Pending (#59) | — |
+| Mobile map label collisions | Pending (M4) | — |
+| Passport belongs to the account, visa page per trip | **Decided**, rules written; screens pending (M5, M9) | [business rules](../product/business-rules.md#passport) |
+| `PinConnection` as a first-class entity | **Decided**; built in M4 | [domain model](../architecture/domain-model.md) |
+| Status cycling menu on desktop | Pending (M6) | — |
+| Local dates for the itinerary | **Done in the domain** (`LocalDate`); stored as `date` | [data model](../architecture/data-model.md) |
+| MapLibre replaces the d3 workspace map | **Spike done**; build in M4 | [ADR-0003](../architecture/adr/0003-map-stack.md) |
+| Rive Pip, LLM change lists, real routes and API | Pending (M7; routes and API done for accounts, preferences and trips) | [ADR-0007](../architecture/adr/0007-ai-provider-abstraction.md) |
+| Multiple trips, lifecycle | **API done** (#61); list and switcher pending (#62) | [api contracts](../architecture/api-contracts.md) |
+| Language and region settings | **Built** (provisional page); onboarding step pending | [missing screens](missing-screens.md) |
+| Auth screens (log in, sign up, recover, reset, verify) | **Built** (#57) | [authentication](../architecture/authentication.md#screens-appsweb) |
+| Legal pages | Draft placeholders; the owner writes the text | [current state](../agents/current-state.md) |
+| Everything else under "Add" (identity, social, commercial, system states) | Pending, in later milestones | [progress](../product/progress.md) |

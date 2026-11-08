@@ -2,6 +2,8 @@
 
 Status: **approved direction (Phase 0)**. Individual features are refined in their milestone issues.
 
+Where each feature stands: [`progress.md`](progress.md).
+
 ## Goal of the MVP
 
 Validate the core question: *does planning on a map, combined with an honest "can I afford it, and when?" answer, make a trip feel achievable for beginners?* Ship it as a closed beta on responsive web/PWA, in English and Brazilian Portuguese.

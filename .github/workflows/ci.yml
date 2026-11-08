@@ -49,6 +49,10 @@ jobs:
       - name: Format
         run: pnpm format:check
 
+      # Links, anchors, the docs index, the context map, settings, contract, schema and catalogs agree.
+      - name: Documentation
+        run: pnpm docs:check
+
       - name: Lint, typecheck, test, build
         run: pnpm turbo run lint typecheck test build --output-logs=errors-only
 

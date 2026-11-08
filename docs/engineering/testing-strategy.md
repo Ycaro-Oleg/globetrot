@@ -9,10 +9,11 @@ Tests are part of every issue's definition of done, and each issue states its te
 | **Unit** | Vitest | Pure rules and helpers: domain, application, i18n, formatters | Next to the code, `*.test.ts` | Active |
 | **Property-based** | fast-check (in Vitest) | Invariants over many generated inputs: arithmetic, rounding, allocation, date math, savings | Same files | Active |
 | **Integration** | Vitest + local services | Adapters against real Postgres/PostGIS, S3 and SMTP (Mailpit). Run with `pnpm test:int` after `pnpm services:up`; each test gets a throwaway database ([`data-model.md`](../architecture/data-model.md#testing-against-a-real-database)) | `*.int.test.ts` in the adapter package | **Active** for `@globetrot/db` and `@globetrot/api` (CI job `Integration (Postgres)`, with Postgres and Mailpit as services); other adapters as they arrive |
-| **Contract** | Vitest + OpenAPI/Zod | API responses match the published schema, and the generated client compiles against it | `apps/api` | From M3 |
+| **Contract** | Vitest + OpenAPI/Zod | The committed OpenAPI file equals the one the app produces, the generated client types equal the file, and typed calls against real routes compile and pass | `apps/api` (`openapi.test.ts`, `*.int.test.ts`), `packages/api-client` (`contract.test.ts`) | **Active** since #56 |
 | **Component** | Storybook + Testing Library + axe | UI states, interactions and accessibility, in both themes and both locales | `packages/ui`, `apps/web` | From #6 |
-| **End-to-end** | Playwright | Critical journeys in a real browser, at desktop and phone viewports, in en and pt-BR | `apps/web/e2e` | From M3 |
+| **End-to-end** | Playwright | Critical journeys in a real browser, at desktop and phone viewports, in en and pt-BR | `apps/web/e2e` (not created yet) | #63. Today only the account screens have a real-browser check, against a stand-in API (below) |
 | **Accessibility** | axe (Storybook + Playwright) + manual WCAG 2.2 AA review | No automated violations, plus keyboard and screen-reader paths | With component and E2E tests | From #6 / M8. The account screens are covered since #57 (`pnpm --filter @globetrot/web test:a11y`) |
+| **Browser check of the account screens** | Playwright + axe, against the built web app and a stand-in API | Every screen and state reachable, keyboard-only log-in, a failed submit announced and focused, safe redirects, axe in both themes and languages | `apps/web/scripts/check-auth-pages.mjs`, CI job `Accessibility (axe)` | **Active** since #57 |
 | **Performance** | Lighthouse CI budgets | Landing and board load and interaction budgets | CI | M8 |
 
 The domain is pure, so most confidence comes from fast unit and property tests. E2E tests stay few and cover journeys, not every edge case.
@@ -25,7 +26,9 @@ The domain is pure, so most confidence comes from fast unit and property tests. 
 | Behaviour that mirrors the prototype | Assert against the shared fixture (`__fixtures__/japan-demo.ts`) and document any deliberate difference |
 | Application command/query | Unit tests with fake ports, covering authorization (another user's resource is **refused**), validation errors and idempotent retries |
 | Adapter (DB, S3, email, AI, Stripe) | An integration test against the local service or the provider's test mode. No live third-party calls in CI |
-| API endpoint | A contract test (request and response schemas) plus an auth test |
+| API endpoint | The OpenAPI file regenerated (`pnpm api:generate`), a unit test over fake ports, and an integration test (anonymous, owner and another user; invalid input; the typed client) |
+| Email or anything the API sends | An integration test that reads the message from Mailpit (language, link, expiry, single use), and a check that the logs hold no address, token or password |
+| Anything that bundles (a Dockerfile, a new dependency in `api`, `tsup.config.ts`) | Build and start the image and call `/health`. Source-level tests do not show bundling problems |
 | UI component | A story per state (empty, loading, error, filled), an interaction test for behaviour, and axe. Check both locales for text expansion |
 | User flow | Playwright on desktop and a phone viewport, with a keyboard-only pass where the flow involves the map or drag-and-drop |
 | Copy | Covered by the i18n catalog check (`pnpm lint`). Add a formatting test for new plural or select messages |
@@ -48,7 +51,7 @@ The domain is pure, so most confidence comes from fast unit and property tests. 
 
 ## Coverage
 
-- `@globetrot/domain` enforces **≥ 95%** statements, branches, functions and lines in CI (`vitest.config.ts`). It is at 100% today.
+- `@globetrot/domain` enforces **≥ 95%** statements, branches, functions and lines in CI (`vitest.config.ts`). It was at about 97% statements and 100% branches and functions on 2026-11-08, so keep new domain code covered.
 - Other packages have no hard gate yet. A coverage number is a smell detector, not a goal. A PR that lowers coverage of business logic must say why.
 
 ## Running tests

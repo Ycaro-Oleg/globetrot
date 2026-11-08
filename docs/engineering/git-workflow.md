@@ -26,7 +26,7 @@ Examples: `feature/issue-12-trip-creation`, `fix/issue-42-mobile-pin-selection`.
 3. Implement one focused change, with tests and doc updates.
 4. Open a PR into `develop` using the template, and include the handoff section.
 5. CI passes, review happens, the acceptance criteria are checked off.
-6. Squash-merge, with a PR title in Conventional Commit form. Delete the branch. **Close the issue manually** with a comment linking the PR. GitHub only honours `Closes #n` on merges into the default branch (`main`), so issues stay open after a merge into `develop`.
+6. **The owner approves the merge, in chat, for each PR.** Then squash-merge, with a PR title in Conventional Commit form. Delete the branch. **Close the issue manually** with a comment linking the PR. GitHub only honours `Closes #n` on merges into the default branch (`main`), so issues stay open after a merge into `develop`.
 7. For a release, open a PR `develop → main`, tag `vX.Y.Z` and record the changes in the release notes.
 
 ## Issues
@@ -70,14 +70,15 @@ Workflow: [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml). It runs 
 |---|---|---|
 | Prettier format, then lint, typecheck, unit tests and build for all workspaces (Turborepo, cached) | `Lint · typecheck · test · build` | Active |
 | i18n catalog consistency (keys, ICU syntax, placeholders) | same job: `@globetrot/i18n` `lint` runs `check-messages`, and its tests and `tsc` also catch missing keys | Active |
-| Integration tests (`*.int.test.ts`) against a real PostgreSQL + PostGIS, each in a throwaway database | `Integration (Postgres)` | Active (service container `postgis/postgis:17-3.7`) |
+| Integration tests (`*.int.test.ts`) against a real PostgreSQL + PostGIS (each test in a throwaway database) and a real SMTP catcher | `Integration (Postgres)` | Active (service containers `postgis/postgis:17-3.7` and `axllent/mailpit:v1.33.0`) |
 | Migration consistency (`drizzle-kit check`) | same job as lint: `@globetrot/db` `lint` | Active |
-| E2E (Playwright) | `E2E (Playwright)` | Placeholder (skipped) until M3 |
-| Accessibility (axe) | `Accessibility (axe)` | Active for Storybook stories in both themes and locales, with select, checkbox and switch keyboard checks. Screen-reader and complete interaction reviews remain manual |
+| E2E (Playwright) | `E2E (Playwright)` | Placeholder (skipped) until #63 |
+| Accessibility (axe) | `Accessibility (axe)` | Active for Storybook stories in both themes and locales (with select, checkbox and switch keyboard checks), and for every account-screen state in a real browser (`apps/web/scripts/check-auth-pages.mjs`: keyboard path, redirects, axe in both themes and languages). Screen-reader and complete interaction reviews remain manual |
+| Documentation (`pnpm docs:check`) | `Lint · typecheck · test · build` | Active: relative links and anchors, every doc reachable from the index, every ADR in the ADR index, every `.env.example` variable in the configuration reference |
 
 - **Do not merge a PR with a failing or missing `Lint · typecheck · test · build` or `Integration (Postgres)` check.** On GitHub Free nothing blocks the merge button, so this is enforced by convention (ADR-0009).
 - A newer push to the same PR cancels the older run.
-- Run the same checks locally before pushing: `pnpm format:check && pnpm turbo run lint typecheck test build`.
+- Run the same checks locally before pushing: `pnpm format:check && pnpm turbo run lint typecheck test build && pnpm docs:check`, and `pnpm test:int` when the database or email is involved.
 
 ## Hotfixes
 

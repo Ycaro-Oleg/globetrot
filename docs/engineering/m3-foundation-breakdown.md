@@ -1,6 +1,6 @@
 # M3 app foundation: proposed work breakdown
 
-**Status: issues created on 2026-11-07 with the owner's authorization.** This document keeps the slices and their reasoning. The **GitHub issues are now the contract**: the table in "Issues" maps each slice to its issue. M3 depends on M1 and M2; M1 still has open items that need the owner. The [roadmap](../product/roadmap.md) defines M3 as authentication, i18n, preferences, responsive shell, themes and trip CRUD.
+**Status: issues created on 2026-11-07 with the owner's authorization; 8 of the 13 are delivered (see "Issues").** This document keeps the slices and their reasoning. The **GitHub issues are now the contract**: the table in "Issues" maps each slice to its issue. M3 depends on M1 and M2; M1 still has open items that need the owner (the work that did not need them went ahead). The [roadmap](../product/roadmap.md) defines M3 as authentication, i18n, preferences, responsive shell, themes and trip CRUD.
 
 ## Boundaries and dependencies
 
@@ -41,28 +41,28 @@ Each slice became one issue (see "Issues"), worked on its own branch and PR. Ord
 
 All are in the milestone **M3 App Foundation**. "Depends on" lists issue numbers. A readiness label of `agent-ready` means the issue is fully specified and safe to pick up once its dependencies are merged.
 
-| Slice | Issue | Depends on | Priority / readiness |
-|---|---|---|---|
-| 1. Database migrations | #52 | none (M2 done) | p0, **done** |
-| 2. Auth server and sessions | #53 | #52 | p0, **done** |
-| 3. Email verification and recovery | #54 | #53 | p1, **done** |
-| 4. Google sign-in | #55 | #53 | p1, agent-ready (the real-provider smoke test is the owner's) |
-| 5. Authenticated API, actor, typed client | #56 | #53 | p0, **done** |
-| 6. Locale integration | #50 | M2 i18n | **done** (PR #51) |
-| 6b. Sign-up, log-in and recovery screens (added) | #57 | #53, #54, #55 (optional), #6 | p1, **done** |
-| 7. Preferences persistence | #58 | #52, #56, #50 | p1, **done** |
-| 8. Responsive authenticated shell | #59 | #53, #57, #6 | p1, agent-ready |
-| 9. Theme and motion preferences | #60 | #58, #59 | p2, agent-ready |
-| 10. Trip persistence and operations | #61 | #52, #56 | p0, **done** |
-| 11. Trip list and switcher | #62 | #58, #59, #61, owner review of #7 | p1, **needs:decision** (screen review) |
-| 12. First end-to-end and accessibility gate | #63 | #53, #54, #57–#62 | p1 |
+| Slice | Issue | Depends on | Priority / readiness | Delivered by |
+|---|---|---|---|---|
+| 1. Database migrations | #52 | none (M2 done) | p0, **done** | PR #65 |
+| 2. Auth server and sessions | #53 | #52 | p0, **done** | PR #66 |
+| 3. Email verification and recovery | #54 | #53 | p1, **done** | PR #70 |
+| 4. Google sign-in | #55 | #53 | p1, agent-ready (the real-provider smoke test is the owner's) | open |
+| 5. Authenticated API, actor, typed client | #56 | #53 | p0, **done** | PR #67 |
+| 6. Locale integration | #50 | M2 i18n | **done** | PR #51 |
+| 6b. Sign-up, log-in and recovery screens (added) | #57 | #53, #54, #55 (optional), #6 | p1, **done** | PR #71 |
+| 7. Preferences persistence | #58 | #52, #56, #50 | p1, **done** | PR #69 |
+| 8. Responsive authenticated shell | #59 | #53, #57, #6 | p1, agent-ready | open |
+| 9. Theme and motion preferences | #60 | #58, #59 | p2, agent-ready | open |
+| 10. Trip persistence and operations | #61 | #52, #56 | p0, **done** | PR #68 |
+| 11. Trip list and switcher | #62 | #58, #59, #61, owner review of #7 | p1, **needs:decision** (screen review) | open |
+| 12. First end-to-end and accessibility gate | #63 | #53, #54, #57–#62 | p1 | open |
 
 Suggested order: #52 → #53 → (#54, #55, #56 in parallel) → #57 → (#58, #61 in parallel) → #59 → (#60, #62) → #63.
 
 ## Gaps found while reconciling
 
 - **Auth screens were missing.** No slice covered the sign-up, log-in and recovery pages that the prototype specifies, and the end-to-end gate needs them. Added as slice 6b (#57).
-- **How the browser and the API share the session cookie** was undecided. Decided inside #53: the web app proxies `/api/auth/*` to the API from `proxy.ts`, reading the target at request time, so the cookie is first-party and one image serves every environment. `/v1/*` joins the proxy in #56. See [`authentication.md`](../architecture/authentication.md).
+- **How the browser and the API share the session cookie** was undecided. Decided inside #53: the web app proxies `/api/auth/*` to the API from `proxy.ts`, reading the target at request time, so the cookie is first-party and one image serves every environment. `/v1/*` joins the proxy in #56. See [`authentication.md`](../architecture/authentication.md) and [ADR-0010](../architecture/adr/0010-web-proxies-the-api.md).
 - **Typed API client generation** had no owner. It is part of #56.
 - **Integration tests had no CI job.** A `postgis` service job comes with #52.
 - **Terms and Privacy pages** are linked from the sign-up form. #57 uses pages marked as draft. The real legal text is an owner decision (open).

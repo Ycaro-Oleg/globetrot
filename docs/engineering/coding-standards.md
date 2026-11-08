@@ -77,5 +77,5 @@ apps/* (web, api, worker, mcp) → packages/application → packages/domain
 
 ## Dependencies and comments
 
-- **Pin exact versions.** Justify every new dependency in the PR: why it's needed, what it overlaps with, its size and licence. Prefer the platform (`Intl`, `fetch`) and libraries already chosen in the ADRs.
+- **Pin exact versions**, and for anything on an authentication, email or build path prefer a release that has been out for at least a week (a package published hours ago has had no time to be noticed if it is bad). Justify every new dependency in the PR: why it's needed, what it overlaps with, its size and licence. Prefer the platform (`Intl`, `fetch`) and libraries already chosen in the ADRs.
 - Comment **why**, not what. Link the owning doc or ADR when a rule comes from there. Exported functions get a short JSDoc that states the contract, including edge cases.

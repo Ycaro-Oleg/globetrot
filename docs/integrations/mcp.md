@@ -9,7 +9,7 @@ Let users manage Globetrot from MCP-compatible clients such as Claude and ChatGP
 ## Preparation that starts now
 
 - Every operation is an application command or query with Zod schemas. Each MCP tool is a thin wrapper over one of them.
-- Actor-based authorization, idempotency keys and audit logging are built in from M3.
+- Actor-based authorization, idempotency keys and audit logging exist since M3 (#56, #61): [ADR-0011](../architecture/adr/0011-idempotency-audit-and-units-of-work.md), [`api-contracts.md`](../architecture/api-contracts.md).
 - `AIProposal` already models "pending approval".
 
 ## Planned design
