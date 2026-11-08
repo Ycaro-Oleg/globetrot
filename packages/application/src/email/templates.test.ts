@@ -1,0 +1,111 @@
+import { catalogs, SUPPORTED_LOCALES } from '@globetrot/i18n';
+import { describe, expect, it } from 'vitest';
+import { renderEmail, type EmailData, type EmailTemplate } from './templates';
+
+const TEMPLATES: EmailTemplate[] = ['verifyEmail', 'resetPassword'];
+const URL_ = 'https://app.example.test/api/auth/verify-email?token=abc.def&callbackURL=%2F';
+const DATA: EmailData = { url: URL_, name: 'Ana', expiresInHours: 24 };
+
+/** The visible words of an HTML email, entities decoded. */
+const words = (html: string) =>
+  html
+    .replace(/<head>[\s\S]*?<\/head>/g, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replaceAll('&amp;', '&')
+    .replaceAll('&lt;', '<')
+    .replaceAll('&gt;', '>')
+    .replaceAll('&quot;', '"')
+    .replaceAll('&#39;', "'")
+    .replace(/\s+/g, ' ');
+
+describe.each(SUPPORTED_LOCALES)('renderEmail in %s', (locale) => {
+  const copy = catalogs[locale].email;
+
+  it.each(TEMPLATES)('%s uses the catalog subject, in the right language', (template) => {
+    expect(renderEmail(template, locale, DATA).subject).toBe(copy[template].subject);
+  });
+
+  it.each(TEMPLATES)('%s carries the same content in the text and the HTML', (template) => {
+    const { text, html } = renderEmail(template, locale, DATA);
+    const visible = words(html);
+    const strings = [
+      copy.greeting.replace('{name}', 'Ana'),
+      copy[template].body,
+      copy[template].action,
+      copy.footer,
+      copy[template].ignore,
+    ];
+    for (const value of strings) {
+      expect(text, value).toContain(value);
+      expect(visible, value).toContain(value);
+    }
+    // Both versions give the link, and the expiry sentence in the same words.
+    expect(text).toContain(URL_);
+    expect(html).toContain(URL_.replaceAll('&', '&amp;'));
+    const expiry = /(\d+) (hours?|horas?)/.exec(text)?.[0];
+    expect(expiry).toBeDefined();
+    expect(visible).toContain(expiry);
+  });
+
+  it('puts the language on the document', () => {
+    expect(renderEmail('verifyEmail', locale, DATA).html).toContain(`<html lang="${locale}">`);
+  });
+});
+
+describe('renderEmail content rules', () => {
+  it('speaks Portuguese to a Portuguese user and English to an English one', () => {
+    expect(renderEmail('verifyEmail', 'pt-BR', DATA).subject).toBe(
+      'Confirme seu endereço de e-mail',
+    );
+    expect(renderEmail('verifyEmail', 'en', DATA).subject).toBe('Confirm your email address');
+  });
+
+  it('says how long the link lasts, with the right plural', () => {
+    expect(renderEmail('resetPassword', 'en', { ...DATA, expiresInHours: 1 }).text).toContain(
+      'expires in 1 hour.',
+    );
+    expect(renderEmail('resetPassword', 'en', { ...DATA, expiresInHours: 24 }).text).toContain(
+      'expires in 24 hours.',
+    );
+    expect(renderEmail('resetPassword', 'pt-BR', { ...DATA, expiresInHours: 1 }).text).toContain(
+      'expira em 1 hora.',
+    );
+    // Short test lifetimes still read as "1 hour", never "0 hours".
+    expect(renderEmail('resetPassword', 'en', { ...DATA, expiresInHours: 0.01 }).text).toContain(
+      '1 hour',
+    );
+  });
+
+  it.each(TEMPLATES)(
+    '%s has no remote images, tracking or scripts, and exactly one destination',
+    (template) => {
+      const { html } = renderEmail(template, 'en', DATA);
+      expect(html).not.toMatch(/<img|<script|<iframe|<link|<style|src=|url\(|@import/i);
+      const targets = [...html.matchAll(/href="([^"]*)"/g)].map((match) => match[1]);
+      expect(new Set(targets)).toEqual(new Set([URL_.replaceAll('&', '&amp;')]));
+    },
+  );
+
+  it('escapes anything that goes into the HTML', () => {
+    const { html, text } = renderEmail('verifyEmail', 'en', {
+      url: 'https://app.example.test/x?a=1&b="2"',
+      name: '<script>alert(1)</script> & "co"',
+      expiresInHours: 1,
+    });
+    expect(html).not.toContain('<script>');
+    expect(html).toContain('&lt;script&gt;alert(1)&lt;/script&gt; &amp; &quot;co&quot;');
+    expect(html).toContain('href="https://app.example.test/x?a=1&amp;b=&quot;2&quot;"');
+    // The text version is not HTML: the name stays as written.
+    expect(text).toContain('<script>alert(1)</script> & "co"');
+  });
+
+  it.each([
+    'javascript:alert(1)',
+    'data:text/html,hi',
+    'ftp://example.test/x',
+    'not a url',
+    '//evil.example/x',
+  ])('refuses the link %s', (url) => {
+    expect(() => renderEmail('verifyEmail', 'en', { ...DATA, url })).toThrow(TypeError);
+  });
+});

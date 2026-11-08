@@ -1,7 +1,7 @@
 import type { TripStatus, TripVisibility, UnitSystem } from '@globetrot/domain';
-import { and, desc, eq, ne, type SQL } from 'drizzle-orm';
+import { and, desc, eq, ne, sql, type SQL } from 'drizzle-orm';
 import type { Database } from './client';
-import { auditEvent, idempotencyKey, trip, userPreference } from './schema';
+import { auditEvent, idempotencyKey, rateLimit, trip, userPreference } from './schema';
 
 /**
  * PostgreSQL adapters for the application ports (packages/application/src/ports.ts). The shapes below match
@@ -168,6 +168,39 @@ export function createPreferencesRepository(executor: Executor) {
   };
 }
 
+/**
+ * A per-key cooldown on the `rate_limit` table (the table Better Auth's limiter already uses, in PostgreSQL, so
+ * every API instance shares it). `acquire` is one atomic statement: it lets the first caller through and makes
+ * the others wait until `windowSeconds` have passed since the last one that got through. The key should not
+ * hold personal data: callers pass a hash.
+ */
+export function createCooldown(executor: Executor) {
+  return {
+    /** `0` when the caller may go ahead (and the cooldown starts), otherwise the whole seconds to wait. */
+    async acquire(key: string, windowSeconds: number, nowMs: number): Promise<number> {
+      const windowMs = windowSeconds * 1000;
+      const taken = await executor
+        .insert(rateLimit)
+        .values({ id: key, key, count: 1, lastRequest: nowMs })
+        .onConflictDoUpdate({
+          target: rateLimit.key,
+          set: { count: sql`${rateLimit.count} + 1`, lastRequest: nowMs },
+          setWhere: sql`${rateLimit.lastRequest} <= ${nowMs - windowMs}`,
+        })
+        .returning({ key: rateLimit.key });
+      if (taken.length > 0) return 0;
+
+      const [row] = await executor
+        .select({ lastRequest: rateLimit.lastRequest })
+        .from(rateLimit)
+        .where(eq(rateLimit.key, key))
+        .limit(1);
+      const remainingMs = (row?.lastRequest ?? nowMs) + windowMs - nowMs;
+      return Math.max(1, Math.ceil(remainingMs / 1000));
+    },
+  };
+}
+
 export function createAuditLog(executor: Executor) {
   return {
     async record(event: {
@@ -241,6 +274,7 @@ export function createIdempotencyStore(executor: Executor) {
 
 export type TripRepository = ReturnType<typeof createTripRepository>;
 export type PreferencesRepository = ReturnType<typeof createPreferencesRepository>;
+export type Cooldown = ReturnType<typeof createCooldown>;
 export type AuditLog = ReturnType<typeof createAuditLog>;
 export type IdempotencyStore = ReturnType<typeof createIdempotencyStore>;
 

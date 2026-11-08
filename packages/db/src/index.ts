@@ -8,12 +8,14 @@ export { MIGRATIONS_FOLDER, runMigrations } from './migrate';
 export * as schema from './schema';
 export {
   createAuditLog,
+  createCooldown,
   createIdempotencyStore,
   createPreferencesRepository,
   createTripRepository,
   createUnitOfWork,
   MAX_LISTED_TRIPS,
   type AuditLog,
+  type Cooldown,
   type IdempotencyStore,
   type PreferencesRepository,
   type PreferencesRow,

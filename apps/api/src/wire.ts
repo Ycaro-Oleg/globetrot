@@ -1,4 +1,4 @@
-import { createApplication, type UserReader } from '@globetrot/application';
+import { createApplication, type EmailPort, type UserReader } from '@globetrot/application';
 import {
   createPreferencesRepository,
   createTripRepository,
@@ -10,7 +10,8 @@ import { uuidV7 } from '@globetrot/domain';
 import { eq } from 'drizzle-orm';
 import { createApp, type AuthService } from './app';
 import { createAuth, type Auth } from './auth';
-import type { AuthConfig } from './config';
+import type { ApiConfig } from './config';
+import { createSmtpEmail } from './email';
 
 /** Adapter: the application's `UserReader` port over the `user` table. Selects only what the port names. */
 export function createUserReader(db: Database): UserReader {
@@ -42,9 +43,17 @@ export function toAuthService(auth: Auth): AuthService {
   };
 }
 
-/** Composition root of the API: database and settings in, a ready HTTP app out. */
-export function createServices(db: Database, config: AuthConfig) {
-  const auth = createAuth(db, config);
+/**
+ * Composition root of the API: database and settings in, a ready HTTP app out. `overrides.email` replaces the
+ * SMTP sender (tests pass a recording or no-op one).
+ */
+export function createServices(
+  db: Database,
+  config: ApiConfig,
+  overrides: { readonly email?: EmailPort } = {},
+) {
+  const email = overrides.email ?? createSmtpEmail(config.email);
+  const auth = createAuth(db, config.auth, { email });
   const app = createApp({
     auth: toAuthService(auth),
     application: createApplication({
@@ -55,7 +64,7 @@ export function createServices(db: Database, config: AuthConfig) {
       clock: { now: () => new Date() },
       ids: { newId: () => uuidV7(Date.now(), crypto.getRandomValues(new Uint8Array(10))) },
     }),
-    trustedOrigins: config.trustedOrigins,
+    trustedOrigins: config.auth.trustedOrigins,
   });
   return { auth, app };
 }

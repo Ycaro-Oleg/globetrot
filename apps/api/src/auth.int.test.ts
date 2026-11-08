@@ -1,5 +1,6 @@
 import { randomBytes } from 'node:crypto';
 import { schema } from '@globetrot/db';
+import { createFakeEmail } from '@globetrot/application/testing';
 import { createTestDatabase, type TestDatabase } from '@globetrot/db/testing';
 import { getAuthTables } from 'better-auth/db';
 import { getTableColumns } from 'drizzle-orm';
@@ -42,9 +43,10 @@ async function harness(env: Record<string, string> = {}) {
     DATABASE_URL: database.url,
     // Generated at runtime: no secret is ever written in the repository.
     BETTER_AUTH_SECRET: randomBytes(32).toString('hex'),
+    REQUIRE_VERIFIED_EMAIL: 'false',
     ...env,
   });
-  const { auth, app } = createServices(database.db, config.auth);
+  const { auth, app } = createServices(database.db, config, { email: createFakeEmail().port });
   const origin = config.auth.baseURL;
 
   const call = (path: string, init: CallOptions = {}) => {
@@ -249,6 +251,9 @@ describe('session cookie', () => {
     const { signUp } = await harness({
       NODE_ENV: 'production',
       BETTER_AUTH_URL: 'https://app.example.test',
+      // Production insists on a real mail server and sender; nothing is sent in this test.
+      SMTP_HOST: 'smtp.example.test',
+      EMAIL_FROM: 'Globetrot <hello@example.test>',
     });
     const cookies = (await signUp()).headers.getSetCookie();
     const sessionCookie = cookies.find((cookie) =>

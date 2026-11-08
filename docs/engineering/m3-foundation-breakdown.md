@@ -45,7 +45,7 @@ All are in the milestone **M3 App Foundation**. "Depends on" lists issue numbers
 |---|---|---|---|
 | 1. Database migrations | #52 | none (M2 done) | p0, **done** |
 | 2. Auth server and sessions | #53 | #52 | p0, **done** |
-| 3. Email verification and recovery | #54 | #53 | p1, agent-ready |
+| 3. Email verification and recovery | #54 | #53 | p1, **done** |
 | 4. Google sign-in | #55 | #53 | p1, agent-ready (the real-provider smoke test is the owner's) |
 | 5. Authenticated API, actor, typed client | #56 | #53 | p0, **done** |
 | 6. Locale integration | #50 | M2 i18n | **done** (PR #51) |

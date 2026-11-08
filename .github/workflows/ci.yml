@@ -52,7 +52,8 @@ jobs:
       - name: Lint, typecheck, test, build
         run: pnpm turbo run lint typecheck test build --output-logs=errors-only
 
-  # Integration tests (*.int.test.ts) run against a real PostgreSQL + PostGIS, never a mock.
+  # Integration tests (*.int.test.ts) run against a real PostgreSQL + PostGIS and a real SMTP catcher (Mailpit),
+  # never a mock.
   integration:
     name: Integration (Postgres)
     runs-on: ubuntu-latest
@@ -71,6 +72,17 @@ jobs:
           --health-interval 5s
           --health-timeout 5s
           --health-retries 12
+      # Catches the email the API sends (verification, password reset); tests read it over Mailpit's HTTP API.
+      mailpit:
+        image: axllent/mailpit:v1.33.0
+        ports:
+          - 1025:1025
+          - 8025:8025
+        options: >-
+          --health-cmd "/mailpit readyz"
+          --health-interval 2s
+          --health-timeout 3s
+          --health-retries 30
     env:
       # Throwaway credentials for the job's own service container; not a secret.
       DATABASE_URL: postgres://globetrot:globetrot@localhost:5432/globetrot

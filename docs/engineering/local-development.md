@@ -29,7 +29,7 @@ pnpm dev                  # web :3000, api :4000 (/health, /api/auth/*), worker
 | `postgres` | PostgreSQL 17 + PostGIS 3.7 | `POSTGRES_PORT=5455` | `postgis`, `pg_trgm` and `unaccent` are created on first start (`infra/postgres/init/`). Use `DATABASE_URL` |
 | `storage` | S3-compatible object storage (SeaweedFS) | `S3_PORT=8333` | Stands in for Hetzner Object Storage. Use path-style URLs (`S3_FORCE_PATH_STYLE=true`), region `us-east-1` |
 | `storage-init` | One-shot | — | Creates `S3_BUCKET` (idempotent), then exits |
-| `mailpit` | Catches all outgoing email | `SMTP_PORT=1025`, UI `MAILPIT_UI_PORT=8025` | Open http://localhost:8025 to read emails |
+| `mailpit` | Catches all outgoing email | `SMTP_PORT=1025`, UI `MAILPIT_UI_PORT=8025` | Open http://localhost:8025 to read emails. The API sends its verification and password-reset emails here, and the integration tests read them over its HTTP API |
 
 - Port defaults avoid common clashes. 5455 is used because another Postgres often runs on 5432. Change any port in `.env` and keep `DATABASE_URL`/`S3_ENDPOINT` in sync.
 - The credentials in `.env.example` are **local-only defaults, not secrets**. Real credentials live only in Coolify (M11) and never in the repository.
@@ -62,7 +62,8 @@ Conventions and the migration rules are in [`data-model.md`](../architecture/dat
 - `apps/web` (Next.js) reads `apps/web/.env*` files, not the root `.env`. Its one server-side variable is `API_INTERNAL_URL` (where `/api/auth/*` and `/v1/*` are proxied, and where the web server itself reads a signed-in user's settings; default `http://localhost:4000`, so `pnpm dev` needs nothing). Open `/settings` to change the language and region once you have an account (the sign-up screens arrive with #57; until then create one with `POST /api/auth/sign-up/email`).
 - The API reads its auth settings (secret, public URL, trusted origins, session and rate-limit knobs) from the environment. Without `BETTER_AUTH_SECRET` it uses the public development secret and warns; with `NODE_ENV=production` it refuses to start. Full table: [`authentication.md`](../architecture/authentication.md).
 - Open http://localhost:3000 and call `/api/auth/*` there, not on :4000: the browser always goes through the web origin so the session cookie is first-party.
-- Storage and email adapters arrive with their features.
+- **Email:** the API sends verification and reset emails over SMTP (`SMTP_HOST`, `SMTP_PORT`, `EMAIL_FROM`; the defaults are Mailpit). With `REQUIRE_VERIFIED_EMAIL=true` (the default) a new account must follow the link in Mailpit before it can sign in. Set it to `false` in your `.env` to skip that locally.
+- Storage adapters arrive with their features.
 
 ## Troubleshooting
 

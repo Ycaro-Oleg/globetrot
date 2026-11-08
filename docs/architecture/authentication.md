@@ -29,6 +29,13 @@ Browser ──► apps/web (Next.js, public origin) ──proxy.ts──► apps
 | `SESSION_UPDATE_AGE_SECONDS` | 1 day | A session older than this is renewed when used |
 | `AUTH_SIGN_IN_ATTEMPTS_PER_MINUTE` | `5` | Per client address, see rate limits |
 | `AUTH_SIGN_UP_ATTEMPTS_PER_MINUTE` | `5` | Per client address |
+| `REQUIRE_VERIFIED_EMAIL` | `true` | A password sign-in needs a verified email (see "Email verification and recovery"). `false` lets unverified accounts in |
+| `VERIFICATION_EXPIRES_IN_SECONDS` | 24 hours | How long a verification link works |
+| `RESET_PASSWORD_EXPIRES_IN_SECONDS` | 1 hour | How long a password-reset link works |
+| `EMAIL_COOLDOWN_SECONDS` | `30` | Between two emails of the same kind to the same address |
+| `AUTH_EMAIL_REQUESTS_PER_MINUTE` | `5` | Resend and reset requests from one client address |
+| `SMTP_HOST`, `SMTP_PORT` | `localhost`, `1025` (Mailpit) | **Production requires `SMTP_HOST`**. `SMTP_USER` and `SMTP_PASSWORD` are optional |
+| `EMAIL_FROM` | `Globetrot <hello@globetrot.local>` | **Production requires it**: the local default never reaches a real inbox |
 
 Web side: `API_INTERNAL_URL` (default `http://localhost:4000`), read by Next from `apps/web/.env*` or the container environment, **not** from the root `.env`.
 
@@ -37,9 +44,29 @@ Starting in development without a secret prints a warning and uses the public de
 ## Passwords
 
 - Email and password only (`emailAndPassword`). Length 8–128 characters; no composition rules (they do not improve passwords). Hashing is Better Auth's default (scrypt, salted).
-- Sign-up signs the user in (`autoSignIn`). #54 decides whether a verified email is required before password sign-in.
+- With `REQUIRE_VERIFIED_EMAIL` on (the default) sign-up **does not sign the person in**: the response has no session and a verification email is sent. With it off, sign-up signs in (`autoSignIn`).
 - Email addresses are trimmed and stored lowercase (a `before` hook plus the `user_email_lowercase` CHECK constraint), so `Ana@Example.com` and `ana@example.com` are the same account.
 - There is **no account lockout**. Locking an account after N failures lets anyone lock a victim out. Abuse is limited per client address by the rate limits below.
+
+## Email verification and recovery
+
+Policy (decided in #54, to be confirmed by the owner): **a password sign-in requires a verified email**, and Google sign-in counts as verified (#55). The alternative, letting unverified accounts in behind a banner, is the setting `REQUIRE_VERIFIED_EMAIL=false`. Changing the email address is not built yet.
+
+| | Verification | Password reset |
+|---|---|---|
+| Sent | On sign-up, and on request (`POST /api/auth/send-verification-email`) | On request (`POST /api/auth/request-password-reset`, body `{ email, redirectTo }`) |
+| Link | `/api/auth/verify-email?token=…&callbackURL=…` | `/api/auth/reset-password/<token>?callbackURL=<redirectTo>`, which checks the token and redirects to `redirectTo?token=…` (or `?error=INVALID_TOKEN`) |
+| Lifetime | 24 hours | 1 hour |
+| Token | A signed token that expires | A random token stored in `verification` |
+| Used once | The first visit verifies the address and signs the person in. Opening the link again changes nothing and signs nobody in | **Deleted when used**: a second use is `400 INVALID_TOKEN` |
+| After success | The person is signed in | The password changes and **every session of the account is revoked** |
+
+- **Unverified sign-in** is refused with `403` and code `EMAIL_NOT_VERIFIED`. After the link is followed it works.
+- **Same answer for known and unknown addresses.** A reset or resend request returns `200` with the same body whether or not an account exists, and only a known address receives mail. The cooldown below applies to the address as typed, so a second request is `429` for both. The mail is sent **in the background**: if the request waited for the mail server, a known address would answer more slowly and timing would reveal it.
+- **Cooldown and limits.** One email of each kind per address every `EMAIL_COOLDOWN_SECONDS`, from any client: `429` with code `EMAIL_COOLDOWN` and a `Retry-After` header in seconds. The key holds a hash of the address, in the `rate_limit` table. On top of that, `AUTH_EMAIL_REQUESTS_PER_MINUTE` per client address (Better Auth's limiter; its `X-Retry-After` is also sent as `Retry-After`).
+- **Language of the email.** The stored preference when there is one, otherwise the `globetrot_locale` cookie sent with the request (at sign-up), otherwise English. Never `Accept-Language`. Templates and strings: [`i18n.md`](i18n.md#email).
+- **Sending.** `EmailPort` (application layer) with an SMTP adapter in `apps/api/src/email.ts` (nodemailer). Locally it is Mailpit (<http://localhost:8025>). The production provider (Resend or Postmark) is an open decision; either works through SMTP settings. Plain text plus simple HTML, no remote images and no tracking. A delivery failure never fails the request: it is logged as `could not send the <template> email (<code>)`, never with an address or a link.
+- **Logs** hold no tokens, passwords or addresses (checked in `email.int.test.ts`).
 
 ## Request protection
 
@@ -65,6 +92,9 @@ Responses use Better Auth's stable `code` values; the UI (#57) maps each to a tr
 | `USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL` | Sign-up with a taken email |
 | `PASSWORD_TOO_SHORT` / `PASSWORD_TOO_LONG` | Outside 8–128 characters |
 | `INVALID_ORIGIN` | Untrusted `Origin` on a state-changing request (ours, from `app.ts`) |
+| `EMAIL_NOT_VERIFIED` | Password sign-in of an address that has not been verified (`403`) |
+| `EMAIL_COOLDOWN` | A second verification or reset email for the same address inside the cooldown (`429`, with `Retry-After`) |
+| `INVALID_TOKEN` | A reset token that is expired, used or unknown (`400`) |
 | HTTP `429` | Rate limit hit |
 
 ## The sign-up language
@@ -77,6 +107,7 @@ When an account is created, a Better Auth database hook (`databaseHooks.user.cre
 
 ## Tests
 
-- Unit: configuration rules, the Origin check and the proxy path guard (`config.test.ts`, `app.test.ts`, `apps/web/lib/api-proxy.test.ts`).
+- Integration with Mailpit (`email.int.test.ts`, reads the mail the API really sent): verification and reset flows, languages, expiry, single use, session revocation, cooldown and `Retry-After`, identical answers for unknown addresses, clean logs, and the mail server being down. Needs `pnpm services:up` (CI runs Mailpit as a service).
+- Unit: configuration rules, the email templates (`packages/application/src/email`), the Origin check and the proxy path guard (`config.test.ts`, `app.test.ts`, `apps/web/lib/api-proxy.test.ts`).
 - Integration against a real PostgreSQL (`auth.int.test.ts`, `pnpm test:int`): sign-up, case-insensitive email, duplicate and weak password, sign-in/out, sessions and expiry, rate limits per address, hostile origin, no password or token in responses.
 - The built images were also driven end to end with `curl` through the web origin: first-party cookie, proxy path guard, hostile origin `403`, rate limit `429`, clean logs.

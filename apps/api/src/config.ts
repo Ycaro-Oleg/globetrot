@@ -29,6 +29,16 @@ const envSchema = z.object({
   SESSION_UPDATE_AGE_SECONDS: number(DAY, 60),
   AUTH_SIGN_IN_ATTEMPTS_PER_MINUTE: number(5, 1, 1000),
   AUTH_SIGN_UP_ATTEMPTS_PER_MINUTE: number(5, 1, 1000),
+  REQUIRE_VERIFIED_EMAIL: z.enum(['true', 'false']).default('true'),
+  VERIFICATION_EXPIRES_IN_SECONDS: number(DAY, 1),
+  RESET_PASSWORD_EXPIRES_IN_SECONDS: number(60 * 60, 1),
+  EMAIL_COOLDOWN_SECONDS: number(30, 1, 3600),
+  AUTH_EMAIL_REQUESTS_PER_MINUTE: number(5, 1, 1000),
+  SMTP_HOST: z.string().default('localhost'),
+  SMTP_PORT: number(1025, 1, 65535),
+  SMTP_USER: z.string().optional(),
+  SMTP_PASSWORD: z.string().optional(),
+  EMAIL_FROM: z.string().default('Globetrot <hello@globetrot.local>'),
   PORT: number(4000, 1, 65535),
 });
 
@@ -44,6 +54,25 @@ export interface AuthConfig {
   readonly signInAttemptsPerMinute: number;
   readonly signUpAttemptsPerMinute: number;
   readonly secureCookies: boolean;
+  /** A password sign-in needs a verified email. Google sign-in counts as verified. */
+  readonly requireVerifiedEmail: boolean;
+  /** Seconds a verification link works. */
+  readonly verificationExpiresIn: number;
+  /** Seconds a password-reset link works. */
+  readonly resetPasswordExpiresIn: number;
+  /** Seconds before the same address can be sent another verification or reset email. */
+  readonly emailCooldownSeconds: number;
+  /** Resend and reset requests per minute from one client address. */
+  readonly emailRequestsPerMinute: number;
+}
+
+export interface EmailConfig {
+  readonly host: string;
+  readonly port: number;
+  /** `Name <address>` shown as the sender. */
+  readonly from: string;
+  readonly user: string | undefined;
+  readonly password: string | undefined;
 }
 
 export interface ApiConfig {
@@ -52,6 +81,7 @@ export interface ApiConfig {
   readonly port: number;
   readonly databaseUrl: string;
   readonly auth: AuthConfig;
+  readonly email: EmailConfig;
   /** True when no secret was provided and the public development one is in use (never in production). */
   readonly usingInsecureSecret: boolean;
 }
@@ -125,6 +155,12 @@ export function loadApiConfig(
     if (new URL(values.BETTER_AUTH_URL).protocol !== 'https:') {
       throw new ApiConfigError('BETTER_AUTH_URL must use https in production');
     }
+    // Accounts cannot be verified or recovered without a mail server, and the local defaults (Mailpit, a
+    // `.local` sender) never reach a real inbox.
+    if (present.SMTP_HOST === undefined)
+      throw new ApiConfigError('SMTP_HOST is required in production');
+    if (present.EMAIL_FROM === undefined)
+      throw new ApiConfigError('EMAIL_FROM is required in production');
   }
 
   const baseOrigin = new URL(values.BETTER_AUTH_URL).origin;
@@ -145,6 +181,18 @@ export function loadApiConfig(
       signInAttemptsPerMinute: values.AUTH_SIGN_IN_ATTEMPTS_PER_MINUTE,
       signUpAttemptsPerMinute: values.AUTH_SIGN_UP_ATTEMPTS_PER_MINUTE,
       secureCookies: isProduction,
+      requireVerifiedEmail: values.REQUIRE_VERIFIED_EMAIL === 'true',
+      verificationExpiresIn: values.VERIFICATION_EXPIRES_IN_SECONDS,
+      resetPasswordExpiresIn: values.RESET_PASSWORD_EXPIRES_IN_SECONDS,
+      emailCooldownSeconds: values.EMAIL_COOLDOWN_SECONDS,
+      emailRequestsPerMinute: values.AUTH_EMAIL_REQUESTS_PER_MINUTE,
+    },
+    email: {
+      host: values.SMTP_HOST,
+      port: values.SMTP_PORT,
+      from: values.EMAIL_FROM,
+      user: values.SMTP_USER,
+      password: values.SMTP_PASSWORD,
     },
   };
 }

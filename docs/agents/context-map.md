@@ -22,6 +22,7 @@ Read only what your task needs. Always start with [`current-state.md`](current-s
 | **MCP** | `integrations/mcp.md`, ADR-0006, ADR-0007, ADR-0005 | — |
 | **Repo / CI / workflow** | `engineering/git-workflow.md`, `engineering/project-structure.md`, ADR-0009 | `turbo.json`, `eslint.config.mjs` |
 | **Adding a package or app** | `engineering/project-structure.md`, `architecture/overview.md` | ADR-0002, ADR-0006 |
+| **Email (verification, reset, templates)** | `architecture/authentication.md` (Email verification and recovery), `architecture/i18n.md` (Email) | `packages/application/src/email`, `apps/api/src/{auth,email}.ts`, `apps/api/src/testing/mailpit.ts` |
 | **Auth / sessions / sign-in** | `architecture/authentication.md`, ADR-0005, `architecture/data-model.md` | `apps/api/src/{config,auth,app}.ts`, `apps/web/proxy.ts`, `packages/db/src/schema/auth.ts` |
 | **Database / migrations** | `architecture/data-model.md`, ADR-0002, ADR-0006 | `packages/db/migrations`, `engineering/local-development.md` (Database) |
 | **Local environment / services** | `engineering/local-development.md` | `compose.yaml`, `.env.example` |
