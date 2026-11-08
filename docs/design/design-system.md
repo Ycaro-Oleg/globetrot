@@ -68,6 +68,25 @@ The inventory covers the handoff's token-level values, not every one-off prototy
 
 Phones get equivalent essential capabilities through patterns that suit the device, not shrunken desktop components.
 
+### The shell as built (#59)
+
+`apps/web/app/app/_components/` holds the frame of every signed-in page. One markup, three layouts switched by CSS at 720px and 1100px; the parts a layout does not show are `display: none`, so they are also out of the accessibility tree.
+
+| Part | Desktop ≥ 1100 | Tablet 720–1099 | Phone < 720 |
+|---|---|---|---|
+| Navigation | 248px rail with labels: Home, Trips, Board, Days, Budget, Lists, Passport | 76px rail, icons only (labels stay in the link's accessible name) | Floating bar of five tabs: Board, Days, Budget, Lists, More |
+| Rest of the app | In the rail | In the rail | **More** page: Home, Trips, Passport, Settings (and Pip when the flag is on) |
+| Account | Name and avatar in the rail footer, opens upward | Avatar only | Avatar in the top bar, opens downward |
+| Pip | "Ask Pip" button in the rail footer | Icon button | Floating round button above the tab bar |
+
+- **Pip is behind `FEATURE_PIP`** ([configuration](../engineering/configuration.md#web-appsweb)), off by default. With it off there is no entry point and `/app/pip` answers 404 (decided in `proxy.ts`, because inside the app the loading boundary has already sent a 200 by the time a page could call `notFound()`). With it on, the entry points lead to a page that says Pip is not built yet.
+- **Placeholders are honest.** Board, Days, Budget, Lists, Trips and Passport each say plainly that the feature is not built yet (no fake data, no disabled controls) and link to Home. `app/app/loading.tsx` and `error.tsx` give every page a loading and an error state inside the shell.
+- **The current page** is a filled cream pill with dark text and `aria-current="page"`, so it is not marked by colour alone. On the More tab, the pages it holds (Trips, Passport, Pip) mark More as current.
+- **Keyboard.** The skip link is the first Tab stop and moves focus to `<main id="main">`. Every control draws a 3px focus ring (`--gt-component-focus-width`); on the blue rail and tab bar the ring is marigold in both themes, because the day theme's blue ring would vanish against the rail.
+- **The account menu** is a disclosure (a button with `aria-expanded`), not an ARIA menu: it holds a link to Settings and a Log out button, closes on Escape (focus returns to the button), on an outside click and when a link in it is followed. The avatar letter is drawn by CSS so the button's visible text is only the name its label contains (WCAG label-in-name).
+- **Phone details.** Tabs are at least 44px, the tab bar respects the bottom safe area, the content has room under it, and labels such as "Orçamento" fit one line down to 320px wide.
+- **Provisional.** The layout follows the prototype and stays provisional until the owner reviews the missing-screen studies (#7). Icons are [Lucide](https://lucide.dev) (`lucide-react`, ISC license) at stroke 1.6.
+
 ## Accessibility
 
 - WCAG 2.2 AA in both themes. Hit targets ≥ 44px. 3px focus rings (blue in light, marigold in dark).

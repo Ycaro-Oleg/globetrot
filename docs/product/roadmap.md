@@ -7,7 +7,7 @@ Each milestone maps to a GitHub milestone. Issues for a milestone are created wh
 | M0 | Product Foundation | **Complete** | Vision, PRD, business rules, design audit, ADRs 0001–0009, agent docs merged | — |
 | M1 | Design System & Spikes | **Partly open** (owner-dependent) | Tokens v1.1 (USD, fixed contrast). Storybook with primitives. **MapLibre spike** meets its metrics. Places spike meets its metrics. Usability test of the prototype run (5 beginners, en + pt-BR) | M0 |
 | M2 | Engineering Foundation | **Complete** | pnpm/Turborepo monorepo, CI (lint, typecheck, unit, integration; E2E arrives in M3), local Docker Compose, `packages/domain` with Money/FX and savings rules ported and tested | M0 |
-| M3 | App Foundation | **Active** (8 of 13 issues done) | Auth, i18n, preferences, responsive shell, themes, trip CRUD | M1, M2 |
+| M3 | App Foundation | **Active** (9 of 13 issues done) | Auth, i18n, preferences, responsive shell, themes, trip CRUD | M1, M2 |
 | M4 | Travel Workspace & Map | Not started | Full board, stop panel, mobile sheet, city search | M3 |
 | M5 | Itinerary & Checklists | Not started | Days, accessible drag-and-drop, checklists, readiness stamps | M4 |
 | M6 | Budget & Savings | Not started | Expenses, FX, savings plan, answer sentence | M3 (in parallel with M5) |
@@ -47,7 +47,7 @@ Breakdown, dependency table and reasoning: [`../engineering/m3-foundation-breakd
 | #56 | Authenticated API, actor, typed client | Done |
 | #57 | Sign-up, log-in and recovery screens | Done |
 | #58 | Preferences persistence | Done |
-| #59 | Responsive authenticated shell | Open |
+| #59 | Responsive authenticated shell | Done |
 | #60 | Theme and motion preferences | Open |
 | #61 | Trip persistence and operations | Done |
 | #62 | Trip list and switcher | Open (needs the owner's review of #7) |

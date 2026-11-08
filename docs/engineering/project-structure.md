@@ -57,11 +57,11 @@ Where to look, so you can find things without searching. Behaviour is documented
 | `proxy.ts` | Forwards `/api/auth/*` and `/v1/*` to the API, and sends anonymous visitors of `/app` to `/login?next=…` ([ADR-0010](../architecture/adr/0010-web-proxies-the-api.md)) |
 | `app/(auth)/` | Account screens: `login`, `signup`, `recover`, `reset-password`, `email-verified`, with `_components/` (forms, password field, resend control, language switcher) and `auth.module.css` |
 | `app/(legal)/` | Draft `/terms` and `/privacy` |
-| `app/app/` | The signed-in area (a placeholder until #59): layout with the session check, page, sign-out button |
+| `app/app/` | The signed-in area: `layout.tsx` (session check, then the shell), `page.tsx` (home), placeholder pages (`board`, `days`, `budget`, `lists`, `trips`, `passport`, `more`, and `pip` behind `FEATURE_PIP`), `loading.tsx`, `error.tsx`, and `_components/` (the shell, rail and tab bar, account menu, navigation model, `shell.module.css`) |
 | `app/settings/` | Provisional language and region page |
 | `app/actions.ts` | Server actions: language cookie, save settings |
 | `i18n/` | next-intl request config (stored language wins, cookie fallback), locale helpers |
-| `lib/` | `auth-client` (browser calls to `/api/auth/*`), `auth-errors` (stable codes to messages), `safe-next`, `password-strength`, `countdown`, `stored-preferences`, `current-user`, `providers`, `api-proxy`, `app-gate` |
+| `lib/` | `auth-client` (browser calls to `/api/auth/*`), `auth-errors` (stable codes to messages), `safe-next`, `password-strength`, `countdown`, `stored-preferences`, `current-user`, `providers`, `api-proxy`, `app-gate`, `flags` (feature flags) |
 | `scripts/check-auth-pages.mjs` | The real-browser check of the account screens (`pnpm --filter @globetrot/web test:a11y`) |
 
 ### Packages

@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { apiInternalUrl, apiProxyTarget } from './lib/api-proxy';
-import { isAppPath, loginRedirect } from './lib/app-gate';
+import { isAppPath, isFlagGatedOff, loginRedirect } from './lib/app-gate';
+import { isPipEnabled } from './lib/flags';
 import { sessionCookieHeader } from './lib/stored-preferences';
 
 /**
@@ -13,6 +14,7 @@ import { sessionCookieHeader } from './lib/stored-preferences';
  * 2. The signed-in app (`/app`) is for people with a session. A visitor without the session cookie goes to
  *    `/login?next=<page they wanted>`. Having the cookie proves nothing (it may be stale), so the app's layout
  *    asks the API too; this only saves rendering for anonymous visitors.
+ *    Pages behind a feature flag that is off (`FEATURE_PIP`, see lib/flags.ts) are a 404 for everyone.
  */
 export function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
@@ -25,6 +27,13 @@ export function proxy(request: NextRequest) {
       login.pathname = loginPath;
       login.search = loginQuery ? `?${loginQuery}` : '';
       return NextResponse.redirect(login);
+    }
+    if (isFlagGatedOff(pathname, { pip: isPipEnabled() })) {
+      // A page behind a feature flag that is off does not exist: answer exactly like an unknown address.
+      const missing = request.nextUrl.clone();
+      missing.pathname = '/feature-is-off';
+      missing.search = '';
+      return NextResponse.rewrite(missing);
     }
     return NextResponse.next();
   }
