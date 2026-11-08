@@ -3,7 +3,7 @@
   "extends": ["//"],
   "tasks": {
     "build": {
-      "dependsOn": ["@globetrot/tokens#build"]
+      "dependsOn": ["@globetrot/tokens#build", "typecheck"]
     },
     "dev": {
       "dependsOn": ["@globetrot/tokens#build"]

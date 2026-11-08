@@ -141,4 +141,5 @@ Leave a handoff ([`handoff.md`](handoff.md)): a comment on the issue, or the PR'
 | `window.location.assign('/path')` trips a Next lint rule | Use `useRouter().replace()` and `refresh()` for same-site paths |
 | ICU prefers old time-zone link names (`America/Buenos_Aires`) | Keep the name as the user chose it after fixing its case (`canonicalTimeZone`) |
 | A package version published hours ago | Prefer a release that has been out at least a week for anything on an authentication or build path, and pin it exactly |
+| `next typegen` (the web typecheck) and `next build` both write `apps/web/.next`, and the build empties it first. Run in parallel they fail with `ENOENT … routes.d.ts` | `apps/web/turbo.json` makes the web build wait for its typecheck. Keep it that way |
 | `0` and `-0` differ under `toBe` | See [`testing-strategy.md`](../engineering/testing-strategy.md#writing-good-tests) |
