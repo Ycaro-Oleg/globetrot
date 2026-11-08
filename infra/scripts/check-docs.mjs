@@ -138,7 +138,8 @@ for (const file of markdown) {
     const path = match[1];
     if (/[*<>{}…]/.test(path)) continue;
     // Build output exists on one machine and not on another, so it cannot be checked.
-    if (/(^|\/)(\.next|dist|node_modules|\.turbo|coverage|storybook-static)(\/|$)/.test(path)) continue;
+    if (/(^|\/)(\.next|dist|node_modules|\.turbo|coverage|storybook-static)(\/|$)/.test(path))
+      continue;
     const plain = path.replace(/\/$/, '');
     if (PLANNED_PATHS.has(plain) || [...PLANNED_PATHS].some((p) => plain.startsWith(`${p}/`)))
       continue;
