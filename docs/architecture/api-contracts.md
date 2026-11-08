@@ -1,6 +1,6 @@
 # API contracts
 
-The HTTP API is a thin adapter over [`packages/application`](adr/0006-api-and-application-layer.md): routes validate nothing about the business and decide nothing about permissions. They build an `Actor`, call one operation and translate the result. This page describes what is implemented (issue #56) and how to add an operation.
+The HTTP API is a thin adapter over [`packages/application`](adr/0006-api-and-application-layer.md): routes validate nothing about the business and decide nothing about permissions. They build an `Actor`, call one operation and translate the result. This page describes what is implemented (#56 the foundation, #61 trips, #58 preferences, #57 the providers query) and how to add an operation. Decisions: [ADR-0006](adr/0006-api-and-application-layer.md), [ADR-0010](adr/0010-web-proxies-the-api.md), [ADR-0011](adr/0011-idempotency-audit-and-units-of-work.md).
 
 ```text
 Browser ─► apps/web (proxy.ts: /api/auth/*, /v1/*) ─► apps/api ─► @globetrot/application ─► ports ─► @globetrot/db
@@ -18,9 +18,9 @@ Browser ─► apps/web (proxy.ts: /api/auth/*, /v1/*) ─► apps/api ─► @g
 
 - `app.use('/v1/*')` in `apps/api/src/app.ts` resolves the **session cookie** through Better Auth and sets `actor = { kind: 'user', userId }`. It is the only place an actor is created.
 - **No request field can name the caller.** Not a header (`X-User-Id`, `Authorization`, …), not a query parameter, not a body field. Operations take no user id for "me". Tests try every one of these and check the answer does not change (`app.test.ts`, `v1.int.test.ts`).
-- No session: `401`, before any operation or port is touched. `/v1/openapi.json` and `/v1/auth/providers` are the only public paths under `/v1`. It is registered **before** the authentication middleware, and Hono applies middleware in registration order, so anything registered after it requires a session.
+- No session: `401`, before any operation or port is touched. `/v1/openapi.json` and `/v1/auth/providers` are the only public paths under `/v1`. They are registered **before** the authentication middleware, and Hono applies middleware in registration order, so anything registered after it requires a session.
 - State-changing requests (`POST`, `PUT`, `PATCH`, `DELETE`) from an untrusted `Origin` get `403 INVALID_ORIGIN`, as for auth ([`authentication.md`](authentication.md#request-protection)).
-- The browser calls the web origin, never the API: `proxy.ts` forwards `/v1/*` (see `apps/web/lib/api-proxy.ts`), so the cookie is first-party. Server-side web code that calls the API must forward the request's `cookie` header itself.
+- The browser calls the web origin, never the API: `proxy.ts` forwards `/v1/*` (see `apps/web/lib/api-proxy.ts`), so the cookie is first-party. Server-side web code (pages, `i18n/request.ts`, server actions) calls the API directly through `API_INTERNAL_URL` and must forward the session cookie itself: `createServerApiClient` in `apps/web/lib/stored-preferences.ts` does, with a timeout, and nothing else of the browser's cookies.
 
 ## Errors: `application/problem+json`
 
@@ -89,7 +89,7 @@ Preference rules: `locale` is a supported language (`en`, `pt-BR`, exact case); 
 
 ### Audit
 
-Every mutation writes one `audit_event` in the same transaction: actor, action (`trip.create`, `trip.update`, `trip.archive`), entity and time. The metadata holds the **names** of the changed fields (and the new status, a fixed word), never titles, dates or any user text. A replayed or no-op request writes nothing. Reads are not audited. The table is append-only ([`data-model.md`](data-model.md#trips-idempotency-and-audit)).
+Every mutation writes one `audit_event` in the same transaction: actor, action (`trip.create`, `trip.update`, `trip.archive`, `preferences.update`), entity and time. The metadata holds the **names** of the changed fields (and the new status, a fixed word), never titles, dates, countries, time zones or any user text. A replayed or no-op request writes nothing. Reads are not audited. The table is append-only ([`data-model.md`](data-model.md#trips-idempotency-and-audit)).
 
 ## Adding an operation
 

@@ -19,8 +19,10 @@ pnpm install
 pnpm services:up          # start Postgres, object storage and Mailpit, wait until healthy
 pnpm services:check       # verify everything (DB extensions, S3 round trip, SMTP)
 pnpm --filter @globetrot/db migrate   # create or upgrade the schema (extensions and the auth tables today, more as features land)
-pnpm dev                  # web :3000, api :4000 (/health, /api/auth/*), worker
+pnpm dev                  # web :3000, api :4000 (/health, /api/auth/*, /v1/*), worker. Builds the design tokens first
 ```
+
+Then open <http://localhost:3000/signup>. A fresh clone needs no other step: `pnpm dev` builds `@globetrot/tokens` (its CSS is generated, not committed) before starting the web app.
 
 ## Services (`compose.yaml`)
 
@@ -52,7 +54,7 @@ pnpm dev                  # web :3000, api :4000 (/health, /api/auth/*), worker
 | `pnpm --filter @globetrot/db migrate` | Apply pending migrations to `DATABASE_URL`. Running it again changes nothing |
 | `pnpm --filter @globetrot/db reset` | Drop and recreate the local database, then migrate. Refuses non-local hosts and `NODE_ENV=production` |
 | `pnpm --filter @globetrot/db generate` | Generate a migration from `src/schema` (add `--custom --name=<what>` through `drizzle-kit` for hand-written SQL) |
-| `pnpm test:int` | Integration tests: each one creates and drops its own `globetrot_test_*` database, so your data is safe |
+| `pnpm test:int` | Integration tests: each one creates and drops its own `globetrot_test_*` database, so your data is safe. They also need Mailpit (the email tests read what the API sent) |
 
 Conventions and the migration rules are in [`data-model.md`](../architecture/data-model.md).
 
@@ -65,8 +67,28 @@ Conventions and the migration rules are in [`data-model.md`](../architecture/dat
 - **Email:** the API sends verification and reset emails over SMTP (`SMTP_HOST`, `SMTP_PORT`, `EMAIL_FROM`; the defaults are Mailpit). With `REQUIRE_VERIFIED_EMAIL=true` (the default) a new account must follow the link in Mailpit before it can sign in. Set it to `false` in your `.env` to skip that locally.
 - Storage adapters arrive with their features.
 
+## Running the built images locally
+
+Useful to check what CI cannot (bundling, the proxy, the full journey). The images set `NODE_ENV=production`, so for a local run override it:
+
+```bash
+docker build -f apps/api/Dockerfile -t globetrot-api . && docker build -f apps/web/Dockerfile -t globetrot-web .
+docker run -d --network host -e NODE_ENV=development -e PORT=4000 -e BETTER_AUTH_URL=http://localhost:3000 \
+  -e DATABASE_URL=postgres://globetrot:globetrot@localhost:5455/globetrot globetrot-api
+docker run -d --network host -e PORT=3000 -e HOSTNAME=127.0.0.1 -e API_INTERNAL_URL=http://127.0.0.1:4000 globetrot-web
+```
+
+In production the API refuses to start without a real `BETTER_AUTH_SECRET`, an `https` `BETTER_AUTH_URL`, `SMTP_HOST` and `EMAIL_FROM` ([`configuration.md`](configuration.md)).
+
 ## Troubleshooting
 
 - **Port already allocated:** change the port in `.env` (and the matching URL), then `pnpm services:up`.
 - **Extensions missing:** the init SQL only runs on a fresh volume. Run `pnpm services:reset`.
 - **WSL2:** keep the repository on the Linux filesystem (`~/…`), not under `/mnt/c`, for fast installs and file watching.
+- **`pnpm test:int` fails to reach Mailpit:** run `pnpm services:up`. The email tests read <http://localhost:8025> (change with `MAILPIT_URL` or `MAILPIT_UI_PORT`).
+- **A new account cannot log in:** it has to follow the verification link first. Read the email in Mailpit, or set `REQUIRE_VERIFIED_EMAIL=false` in your `.env`.
+- **`EACCES` writing `node_modules`, `.next` or `.turbo`:** a container ran as root. Run containers with `-u "$(id -u):$(id -g)"`, and fix the owner of the leftovers (build artifacts only; never touch uncommitted source files).
+- **`next dev` or the web build cannot find `@globetrot/tokens/tokens.css`:** build the tokens: `pnpm --filter @globetrot/tokens build` (`pnpm dev` and `turbo run build` do it for you).
+- **`Dynamic require of … is not supported` when starting a built API:** a CommonJS dependency was bundled without the `createRequire` banner in `apps/api/tsup.config.ts`.
+- **The web app shows English although you chose Portuguese:** a signed-in user's stored language wins over the cookie. Change it in `/settings`.
+- **Changed an API route and two tests fail:** run `pnpm api:generate` and commit the two generated files.

@@ -32,6 +32,21 @@ Only adapters touch the database. `packages/domain` never does, and `packages/ap
 | Geography | `geography(Point, 4326)` for places and pins, with a GiST index ([places spike](spikes/places.md)) |
 | Deletion | Not implemented until specified. Archive with a status instead of deleting |
 
+## Schema reference
+
+Every table, in the order it was introduced. `pnpm --filter @globetrot/db generate` writes a migration when a schema file changes; add the table here in the same PR.
+
+| Table | Migration | Schema file | Purpose | Rows belong to | Documented in |
+|---|---|---|---|---|---|
+| `user`, `session`, `account`, `verification` | `0001_auth_tables` | `schema/auth.ts` | Better Auth: accounts, sessions, password hashes and OAuth links, verification and reset tokens. Text ids | the user | [authentication](authentication.md) |
+| `rate_limit` | `0001_auth_tables` | `schema/auth.ts` | Request counters of the auth limiter, and the per-address email cooldown (keys hold a hash, never an address) | nobody (operational) | [authentication](authentication.md) |
+| `trip` | `0002_trips` | `schema/trip.ts` | A user's trip with an explicit status | `owner_id` | [below](#trips-idempotency-and-audit) |
+| `idempotency_key` | `0002_trips` | `schema/trip.ts` | A mutation already done, to replay it | `owner_id` | [below](#trips-idempotency-and-audit) |
+| `audit_event` | `0002_trips`, `0003_audit_event_append_only` | `schema/trip.ts` | Append-only history of mutations | the actor (no foreign key) | [below](#trips-idempotency-and-audit) |
+| `user_preference` | `0004_user_preferences` | `schema/preference.ts` | One row of settings per user | `user_id` | [below](#user-preferences) |
+
+`0000_extensions` enables `postgis`, `pg_trgm` and `unaccent` and creates no table. Planned, not built: destinations and pins (M4), itinerary and checklists (M5), expenses, exchange rates and savings (M6), stamps and the passport (M5 and M9), proposals (M7), billing (M10).
+
 ## Authentication tables
 
 `user`, `session`, `account`, `verification` and `rate_limit` come from Better Auth (migration `0001_auth_tables`) and keep its text ids and its column shapes; the rest of the conventions above still apply (singular snake_case names, `timestamptz`). `user.email` is stored lowercase and a CHECK constraint enforces it. Behaviour, configuration and the trust model: [`authentication.md`](authentication.md).

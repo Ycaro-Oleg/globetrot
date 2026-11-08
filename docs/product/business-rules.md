@@ -11,6 +11,21 @@ This is the authoritative list. The prototype's executable spec is `design/refer
 - No silent conversion: wherever a converted amount appears, its rate, source and date are available.
 - The payment currency (what Stripe charges for a subscription) is unrelated to trip currencies.
 
+## Accounts and sign-in
+
+Implemented in #53, #54, #57 and #58. Mechanics: [`../architecture/authentication.md`](../architecture/authentication.md); decisions: [ADR-0005](../architecture/adr/0005-authentication.md), [ADR-0012](../architecture/adr/0012-email-delivery-and-verified-sign-in.md).
+
+- Sign-in is by email and password, and by Google (planned, #55). **One account per email address**, compared case-insensitively; addresses are stored in lower case.
+- **Password:** 8 to 128 characters and no composition rules (they do not make passwords better; passphrases are welcome). The strength meter on the screens is guidance and never blocks submitting. There is **no account lockout** (it would let anyone lock a victim out); abuse is limited per client address by rate limits.
+- **A password sign-in needs a verified email**, and Google sign-in counts as verified. This is the default chosen in #54 and **awaits the owner's confirmation**; it is a setting (`REQUIRE_VERIFIED_EMAIL`).
+- **Verification link:** valid 24 hours; following it verifies the address and signs the person in. **Reset link:** valid 1 hour, works once, and a successful reset ends every session of the account.
+- **Recovery never reveals whether an address has an account.** The answer is the same for both, and so is the wait: at most one email of each kind per address every 30 seconds.
+- **Sessions** last 30 days and are renewed daily when used. The cookie is `HttpOnly`, `SameSite=Lax` and belongs to the web origin.
+- **Language at sign-up:** the language the person was using is recorded as their language. Currency, country, nationality and time zone are not inferred from it.
+- **Terms and privacy:** the sign-up form requires accepting them. Acceptance is not stored yet, and the legal text is a draft the owner has to write.
+- **Email** is transactional only (verification and reset): plain, in the person's language, with no tracking and no remote images. Marketing email needs explicit consent and does not exist.
+- **Every mutation is audited** with the names of the fields it changed, never their values. Another user's data is reported as not found.
+
 ## Trips
 
 - A user can have many trips.
@@ -91,7 +106,8 @@ Implementation: `packages/domain/src/trip/` (`tripDays`, `emptyDays`, `tripTotal
 
 ## Privacy (applies from day one)
 
-- Trips are private by default.
+- Trips are private by default, and the API answers "not found" (never "forbidden") for another user's trip.
+- The audit log records who changed what and when, with field names only, and cannot be edited. Account data export and deletion must be designed around that before a public release.
 - Future public content must support delayed location publication, and never shows live location.
 - EXIF location data is stripped from uploaded media unless the user explicitly keeps it.
 - Users can export and delete their data (LGPD/GDPR).

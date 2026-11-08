@@ -1,6 +1,6 @@
 # Domain model
 
-Status: **conceptual (Phase 0)**. The physical schema is defined in `packages/db` from M3. Rules referenced here are owned by [`../product/business-rules.md`](../product/business-rules.md).
+Status: **conceptual, with parts implemented**. The physical schema is in `packages/db` and described in [`data-model.md`](data-model.md#schema-reference). Implemented so far: Identity (user, session, account), Profile and Preferences, the Trip entity with its status, and Audit (events and idempotency keys). Everything else is still to be built in its milestone; the pure rules for stops, days, totals, savings and milestones already exist in `packages/domain`. Rules referenced here are owned by [`../product/business-rules.md`](../product/business-rules.md).
 
 ## Bounded contexts
 

@@ -1,6 +1,6 @@
 # Architecture overview
 
-Status: **approved direction**. Decisions are recorded in [`adr/`](adr/). The monorepo itself is created in M2.
+Status: **approved direction, partly built**. Decisions are recorded in [`adr/`](adr/). The monorepo exists (M2). "What exists today" below says which boxes of the diagram are real.
 
 ## Shape
 
@@ -22,7 +22,26 @@ flowchart LR
 
 **The core rule:** web, mobile, Pip, the MCP server, background jobs and admin tools all call the **same** application commands and queries. UI components hold no business rules.
 
-## Planned monorepo (pnpm + Turborepo)
+## What exists today
+
+| Piece | State |
+|---|---|
+| `apps/web` | Built: account screens, settings, a placeholder `/app`, the proxy to the API. No board, itinerary, budget or landing yet |
+| `apps/api` | Built: Hono + OpenAPI, Better Auth, `/v1` for `me`, `me/preferences`, `trips`, `auth/providers` |
+| `apps/worker` | Placeholder (starts and stops; no jobs). pg-boss comes with the first job |
+| `apps/mobile`, `apps/mcp` | Not started (post-MVP) |
+| `packages/domain` | Built: money, dates, trip derivations, countries, time zones, ids |
+| `packages/application` | Built: the operation convention, ports, trips, preferences, email templates |
+| `packages/db` | Built: Drizzle schema (auth, trips, idempotency, audit, preferences), migrations, repositories |
+| `packages/api-client`, `tokens`, `ui`, `i18n`, `config` | Built (the UI library keeps growing with #6) |
+| Chosen in the ADRs but **not installed yet** | TanStack Query, Zustand, `motion`, Rive, Lucide, MapLibre and Protomaps, `pg-boss`, the Vercel AI SDK, Sentry or GlitchTip, d3 (for static mini-maps). Each arrives with the first feature that needs it; add it with the justification the dependency rules ask for ([`coding-standards.md`](../engineering/coding-standards.md#dependencies-and-comments)) |
+| Ports with an adapter | Storage of users, trips, preferences, audit, idempotency (PostgreSQL); email (SMTP). Not yet: geocoding, FX rates, AI, object storage, Stripe |
+| Local services | PostgreSQL + PostGIS, S3-compatible storage, Mailpit (`compose.yaml`) |
+| Deployment | None. Dockerfiles exist for web, api and worker (M11 deploys) |
+
+## Monorepo (pnpm + Turborepo)
+
+The layout below is the target; the table above says what is there. The folder-by-folder guide is in [`../engineering/project-structure.md`](../engineering/project-structure.md).
 
 ```
 apps/
@@ -48,10 +67,10 @@ packages/
 |---|---|---|
 | Language | TypeScript everywhere | 0002 |
 | Web | Next.js (App Router), TanStack Query, Zustand | 0002 |
-| API | Hono + Zod/OpenAPI (REST) | 0006 |
+| API | Hono + Zod/OpenAPI (REST); mutations are one transaction with audit and idempotency | 0006, 0011 |
 | DB | PostgreSQL 17 + PostGIS, Drizzle ORM | 0002 |
 | Jobs | pg-boss (Postgres-backed queue, no Redis in the MVP) | 0002 |
-| Auth | Better Auth (email/password, Google, sessions; OAuth 2.1 provider later for MCP) | 0005 |
+| Auth | Better Auth (email/password, Google, sessions; OAuth 2.1 provider later for MCP). The web app proxies the API so the cookie is first-party | 0005, 0010 |
 | Map | MapLibre GL JS + Protomaps PMTiles (OSM), GeoNames places in PostGIS, managed geocoder behind a port | 0003 |
 | Money | Integer minor units + ISO 4217, FX rate records | 0004 |
 | i18n | ICU messages, `next-intl` (web), `use-intl` (RN) | 0008 |
@@ -59,9 +78,9 @@ packages/
 | Motion | motion/react, CSS, Rive (Pip) | — |
 | AI | Vercel AI SDK (provider-agnostic), structured output via Zod | 0007 |
 | Media | S3-compatible (Hetzner Object Storage; MinIO locally) | — |
-| Email | Resend or Postmark (decided in M3) | — |
+| Email | An `EmailPort` with an SMTP adapter (Mailpit locally). The production provider (Resend or Postmark) is still to be chosen; it is a settings change | 0012 |
 | Errors | Sentry-compatible (Sentry or self-hosted GlitchTip) | — |
-| Tests | Vitest, Playwright, axe-core | — (testing-strategy, M2) |
+| Tests | Vitest, fast-check, Playwright, axe-core | — ([testing-strategy](../engineering/testing-strategy.md)) |
 
 ## Deployment shape (executed in M11)
 

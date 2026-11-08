@@ -18,6 +18,7 @@ Vision: [`docs/product/vision.md`](docs/product/vision.md) · MVP scope: [`docs/
 5. **Accessibility target: WCAG 2.2 AA** in light and dark themes. Never encode status by colour alone.
 6. **Honesty.** Estimates are labelled as estimates. The passport is decorative, never an official document. A visit is never shown as "verified" without a real mechanism.
 7. **Pricing is mocked** until approved. No real Stripe charges, and no production deployment before the Production Readiness milestone.
+8. **Security basics.** The actor comes only from the verified session, never from a request field. Another user's data is answered as "not found". Secrets, tokens, passwords and personal data never go into logs, audit events, tests, docs or handoffs. See [`docs/product/business-rules.md`](docs/product/business-rules.md#accounts-and-sign-in) and [ADR-0011](docs/architecture/adr/0011-idempotency-audit-and-units-of-work.md).
 
 Full rules: [`docs/product/business-rules.md`](docs/product/business-rules.md)
 
@@ -25,16 +26,17 @@ Full rules: [`docs/product/business-rules.md`](docs/product/business-rules.md)
 
 | Path | What |
 |---|---|
-| `docs/` | Canonical knowledge. Index: [`docs/README.md`](docs/README.md) |
-| `docs/agents/` | Current state, context map, handoff convention |
+| `docs/` | Canonical knowledge. Index: [`docs/README.md`](docs/README.md). Vocabulary: [`docs/glossary.md`](docs/glossary.md) |
+| `docs/agents/` | Current state, the playbook (issue to merged PR), context map, handoff convention |
 | `docs/architecture/adr/` | Architecture Decision Records. Read the ones relevant to your task |
 | `design/reference/claude-design-v1/` | High-fidelity HTML prototype + design handoff (tokens, components, behaviour). A **reference**, not production code |
 | `apps/*`, `packages/*` | pnpm + Turborepo monorepo (Node 24, pnpm 10). Layout, conventions and commands: [`docs/engineering/project-structure.md`](docs/engineering/project-structure.md) |
+| `.env.example` | Local defaults for every setting. Reference: [`docs/engineering/configuration.md`](docs/engineering/configuration.md) |
 
 ## 4. How to start a session (context rehydration)
 
 1. Read this file.
-2. Read [`docs/agents/current-state.md`](docs/agents/current-state.md) to find the active milestone, open work and blockers.
+2. Read [`docs/agents/current-state.md`](docs/agents/current-state.md) to find the active milestone, open work, what only the owner can unblock, and known gaps. Skim [`docs/agents/playbook.md`](docs/agents/playbook.md) for the procedure and the pitfalls.
 3. Use [`docs/agents/context-map.md`](docs/agents/context-map.md) to choose **only** the docs relevant to your task type.
 4. Read the GitHub issue you are working on (acceptance criteria are the contract).
 5. If there is a handoff on the issue or PR, read it. See [`docs/agents/handoff.md`](docs/agents/handoff.md).
@@ -49,16 +51,17 @@ Full details: [`docs/engineering/git-workflow.md`](docs/engineering/git-workflow
 - **Never push directly to `main` or `develop`.** Protection is by convention plus CI (the private repo is on GitHub Free), so it depends on you.
 - One issue → one focused branch → one reviewable PR. Don't mix unrelated changes.
 - Commits follow [Conventional Commits](https://www.conventionalcommits.org/): `feat(budget): …`, `fix(map): …`, `docs: …`, `chore: …`.
+- **The owner approves every merge, per PR, in chat.** Open the PR, get every active CI job green, report what you verified and what you did not, then **wait for an explicit yes**. After it: squash-merge, delete the branch, close the issue manually, confirm CI on `develop`. Full procedure: [`docs/agents/playbook.md`](docs/agents/playbook.md).
 
 ## 6. Definition of done
 
 - The issue's acceptance criteria are met.
 - Code follows [`docs/engineering/coding-standards.md`](docs/engineering/coding-standards.md).
-- Tests are added or updated per the issue and [`docs/engineering/testing-strategy.md`](docs/engineering/testing-strategy.md). Lint, typecheck and tests pass locally and in CI.
+- Tests are added or updated per the issue and [`docs/engineering/testing-strategy.md`](docs/engineering/testing-strategy.md). Lint, typecheck and tests pass locally and in CI. Anything you did not run or could not check (screen readers, real devices, real providers) is **said so in the PR**, never implied.
 - User-facing strings exist in **both** `en` and `pt-BR`.
-- **Canonical docs are updated** whenever a business rule, contract, architecture decision or convention changes. If the decision is significant, write a new ADR.
+- **Canonical docs are updated** whenever a business rule, contract, architecture decision, setting or convention changes ([which doc for which change](docs/agents/playbook.md#which-docs-to-update)). If the decision is significant, write a new ADR. `pnpm docs:check` passes.
 - The PR description includes the handoff section.
-- `docs/agents/current-state.md` is updated when the PR changes the project state.
+- `docs/agents/current-state.md`, `docs/product/progress.md` and (if a milestone moved) `docs/product/roadmap.md` are updated in the PR when it changes the project state, so `develop` is never out of date.
 
 ## 7. Architecture boundaries
 
@@ -67,14 +70,31 @@ Full details: [`docs/engineering/git-workflow.md`](docs/engineering/git-workflow
 - UI components never contain business rules. Adapters (Stripe, AI, geocoding, FX, storage, email) sit behind ports.
 - Stack and rationale: [ADR-0002](docs/architecture/adr/0002-monorepo-and-stack.md).
 
-## 8. Ask the human before
+## 8. Commands you will need
+
+```bash
+pnpm install                                   # Node 24 and pnpm 10 (see docs/engineering/local-development.md if the host has another Node)
+pnpm services:up                               # Postgres + PostGIS, S3 storage, Mailpit (needed for integration tests and the apps)
+pnpm --filter @globetrot/db migrate            # apply database migrations
+pnpm dev                                       # web :3000, api :4000
+pnpm format:check && pnpm turbo run lint typecheck test build
+pnpm test:int                                  # integration tests (real Postgres and Mailpit)
+pnpm api:generate                              # after changing an API route or schema (rewrites the OpenAPI file and typed client)
+pnpm docs:check                                # documentation links, anchors, the docs index, settings coverage
+```
+
+Account screens and `proxy.ts` also need `pnpm turbo run build --filter=@globetrot/web && pnpm --filter @globetrot/web test:a11y`. The full list, and what to run for which change, is in the [playbook](docs/agents/playbook.md#3-verify-before-you-open-the-pr).
+
+## 9. Ask the human before
 
 - Changing a business rule, pricing, the stack, or anything already decided in an ADR.
 - Adding a heavy dependency, or a library that overlaps one already chosen.
 - Creating many issues, changing milestones, or any GitHub settings.
 - Anything that deploys, charges money, sends email to real people or publishes content.
+- Merging a PR (see section 5), closing or creating milestones, and choosing a provider or account on the owner's behalf.
+- Marking something done that depends on the owner (credentials, a review, a decision): list it under "Owner-dependent items" in `current-state.md` instead.
 
-## 9. Never
+## 10. Never
 
 - Commit secrets, credentials, private keys, `.env` files or real user data, including in docs and handoffs.
 - Use the public Nominatim API or public OSM tile servers in the product.
@@ -82,6 +102,6 @@ Full details: [`docs/engineering/git-workflow.md`](docs/engineering/git-workflow
 - Mark mock pricing as a real offer, or activate Stripe live mode.
 - Rewrite history on shared branches (`main`, `develop`).
 
-## 10. Language policy
+## 11. Language policy
 
 Docs, code, identifiers, commits, issues and PRs are in **English**. User-facing copy lives in message catalogs (`en`, `pt-BR`, …). The product owner communicates in Brazilian Portuguese, so agents should reply to them in pt-BR. See [ADR-0001](docs/architecture/adr/0001-documentation-and-language-policy.md).
