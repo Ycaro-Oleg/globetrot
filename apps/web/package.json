@@ -10,7 +10,8 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "next typegen && tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:a11y": "node scripts/check-auth-pages.mjs"
   },
   "dependencies": {
     "@globetrot/api-client": "workspace:*",
@@ -25,8 +26,11 @@
     "react-dom": "19.3.1"
   },
   "devDependencies": {
+    "@axe-core/playwright": "4.14.0",
     "@globetrot/config": "workspace:*",
     "@types/react": "19.3.0",
-    "@types/react-dom": "19.3.0"
+    "@types/react-dom": "19.3.0",
+    "fast-check": "4.10.2",
+    "playwright": "1.64.0"
   }
 }

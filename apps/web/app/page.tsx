@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import { setScaffoldLocale } from './actions';
 import { SITE_NAME } from './site';
@@ -11,6 +12,9 @@ export default function HomePage() {
       <h1>{SITE_NAME}</h1>
       <h2>{t('headline')}</h2>
       <p>{t('description')}</p>
+      <p>
+        <Link href="/login">{t('login')}</Link> · <Link href="/signup">{t('signup')}</Link>
+      </p>
       <form action={setScaffoldLocale} aria-label={t('language')}>
         <button type="submit" name="locale" value="en" aria-pressed={locale === 'en'}>
           {t('english')}

@@ -12,7 +12,7 @@ Tests are part of every issue's definition of done, and each issue states its te
 | **Contract** | Vitest + OpenAPI/Zod | API responses match the published schema, and the generated client compiles against it | `apps/api` | From M3 |
 | **Component** | Storybook + Testing Library + axe | UI states, interactions and accessibility, in both themes and both locales | `packages/ui`, `apps/web` | From #6 |
 | **End-to-end** | Playwright | Critical journeys in a real browser, at desktop and phone viewports, in en and pt-BR | `apps/web/e2e` | From M3 |
-| **Accessibility** | axe (Storybook + Playwright) + manual WCAG 2.2 AA review | No automated violations, plus keyboard and screen-reader paths | With component and E2E tests | From #6 / M8 |
+| **Accessibility** | axe (Storybook + Playwright) + manual WCAG 2.2 AA review | No automated violations, plus keyboard and screen-reader paths | With component and E2E tests | From #6 / M8. The account screens are covered since #57 (`pnpm --filter @globetrot/web test:a11y`) |
 | **Performance** | Lighthouse CI budgets | Landing and board load and interaction budgets | CI | M8 |
 
 The domain is pure, so most confidence comes from fast unit and property tests. E2E tests stay few and cover journeys, not every edge case.

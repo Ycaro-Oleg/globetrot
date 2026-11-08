@@ -1,17 +1,38 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { apiInternalUrl, apiProxyTarget } from './lib/api-proxy';
+import { isAppPath, loginRedirect } from './lib/app-gate';
+import { sessionCookieHeader } from './lib/stored-preferences';
 
 /**
- * The browser only ever talks to the web origin. Auth and `/v1` requests are forwarded to the API, so the
- * session cookie the API sets is a first-party cookie of the web app (no CORS, no third-party cookie
- * rules). The destination is read **per request**, not at build time, so one image works in every
- * environment. Details and the trust assumptions: docs/architecture/authentication.md.
+ * Two jobs, both before any page renders.
+ *
+ * 1. The browser only ever talks to the web origin. Auth and `/v1` requests are forwarded to the API, so the
+ *    session cookie the API sets is a first-party cookie of the web app (no CORS, no third-party cookie
+ *    rules). The destination is read **per request**, not at build time, so one image works in every
+ *    environment. Details and the trust assumptions: docs/architecture/authentication.md.
+ * 2. The signed-in app (`/app`) is for people with a session. A visitor without the session cookie goes to
+ *    `/login?next=<page they wanted>`. Having the cookie proves nothing (it may be stale), so the app's layout
+ *    asks the API too; this only saves rendering for anonymous visitors.
  */
 export function proxy(request: NextRequest) {
-  const target = apiProxyTarget(request.nextUrl.pathname, request.nextUrl.search, apiInternalUrl());
+  const { pathname, search } = request.nextUrl;
+
+  if (isAppPath(pathname)) {
+    if (sessionCookieHeader(request.cookies.getAll()) === null) {
+      // Built from the request's own URL (host included): Next rejects a relative Location in a proxy.
+      const login = request.nextUrl.clone();
+      const [loginPath = '/login', loginQuery = ''] = loginRedirect(pathname, search).split('?');
+      login.pathname = loginPath;
+      login.search = loginQuery ? `?${loginQuery}` : '';
+      return NextResponse.redirect(login);
+    }
+    return NextResponse.next();
+  }
+
+  const target = apiProxyTarget(pathname, search, apiInternalUrl());
   if (target === null) return new NextResponse(null, { status: 404 });
   return NextResponse.rewrite(target);
 }
 
 // Constants only: Next analyses the matcher at build time.
-export const config = { matcher: ['/api/auth/:path*', '/v1/:path*'] };
+export const config = { matcher: ['/api/auth/:path*', '/v1/:path*', '/app/:path*'] };

@@ -50,7 +50,9 @@
     "description": "O Globetrot está em construção. O protótipo interativo está disponível separadamente.",
     "language": "Idioma",
     "english": "English",
-    "portuguese": "Português (Brasil)"
+    "portuguese": "Português (Brasil)",
+    "login": "Entrar",
+    "signup": "Criar uma conta"
   },
   "settings": {
     "title": "Idioma e região",
@@ -91,5 +93,105 @@
       "expiry": "Este link só pode ser usado uma vez e expira em {hours, plural, one {# hora} other {# horas}}.",
       "ignore": "Se você não pediu isso, ignore este e-mail: sua senha continua a mesma. Redefinir a senha encerra a sessão nos seus outros dispositivos."
     }
+  },
+  "auth": {
+    "brand": {
+      "headline": "Seu primeiro carimbo está mais perto do que você imagina."
+    },
+    "language": "Idioma",
+    "or": "ou com e-mail",
+    "google": "Continuar com o Google",
+    "email": "E-mail",
+    "password": "Senha",
+    "newPassword": "Nova senha",
+    "firstName": "Primeiro nome",
+    "login": {
+      "title": "Entrar",
+      "submit": "Entrar",
+      "pending": "Entrando…",
+      "forgot": "Esqueceu?",
+      "noAccount": "Novo no Globetrot?",
+      "toSignup": "Criar uma conta"
+    },
+    "signup": {
+      "title": "Crie sua conta",
+      "submit": "Criar minha conta",
+      "pending": "Criando sua conta…",
+      "haveAccount": "Já tem uma conta?",
+      "toLogin": "Entrar",
+      "terms": "Aceito os <terms>Termos de uso</terms> e a <privacy>Política de privacidade</privacy>.",
+      "passwordHint": "No mínimo {min, number} caracteres. Algumas palavras aleatórias fazem uma senha forte.",
+      "sentTitle": "Confira sua caixa de entrada",
+      "sentBody": "Enviamos um link de confirmação para {email}. Abra-o para concluir a criação da sua conta."
+    },
+    "strength": {
+      "label": "Força da senha",
+      "tooShort": "Curta demais",
+      "weak": "Fraca",
+      "okay": "Razoável",
+      "good": "Boa",
+      "strong": "Forte"
+    },
+    "recover": {
+      "title": "Redefina sua senha",
+      "intro": "Informe seu e-mail e enviaremos um link para você escolher uma nova senha.",
+      "submit": "Enviar link de redefinição",
+      "pending": "Enviando…",
+      "sentTitle": "Confira sua caixa de entrada",
+      "sentBody": "Se existir uma conta para {email}, enviamos um link para escolher uma nova senha. O link só funciona uma vez e expira em breve.",
+      "backToLogin": "Voltar para entrar"
+    },
+    "resend": {
+      "action": "Enviar o link de novo",
+      "wait": "Reenviar em {seconds, number}s",
+      "pending": "Enviando…",
+      "sent": "Enviado. Confira sua caixa de entrada."
+    },
+    "reset": {
+      "title": "Escolha uma nova senha",
+      "submit": "Salvar nova senha",
+      "pending": "Salvando…",
+      "done": "Sua senha foi alterada. Você saiu de todos os dispositivos: entre com a nova senha.",
+      "toLogin": "Entrar",
+      "requestNew": "Pedir um novo link"
+    },
+    "verified": {
+      "title": "E-mail confirmado",
+      "body": "Seu endereço de e-mail está confirmado e você já entrou na conta.",
+      "continue": "Continuar",
+      "errorTitle": "Esse link não funcionou",
+      "errorBody": "Ele expirou ou já foi usado. Informe seu e-mail e enviaremos um novo.",
+      "sendNew": "Enviar um novo link"
+    },
+    "errors": {
+      "generic": "Algo deu errado. Tente de novo.",
+      "network": "Não conseguimos falar com o servidor. Confira sua conexão e tente de novo.",
+      "rateLimited": "Muitas tentativas. Tente de novo em {seconds, plural, one {# segundo} other {# segundos}}.",
+      "invalidCredentials": "Esse e-mail e essa senha não conferem. Tente de novo ou redefina sua senha.",
+      "notVerified": "Confirme seu endereço de e-mail primeiro: enviamos um link para você.",
+      "emailTaken": "Já existe uma conta com este e-mail.",
+      "invalidEmail": "Informe um endereço de e-mail válido.",
+      "requiredEmail": "Informe seu endereço de e-mail.",
+      "requiredPassword": "Informe sua senha.",
+      "requiredName": "Informe seu primeiro nome.",
+      "requiredTerms": "Aceite os termos para criar uma conta.",
+      "passwordTooShort": "Use pelo menos {min, number} caracteres.",
+      "passwordTooLong": "Use no máximo {max, number} caracteres.",
+      "invalidToken": "Este link expirou ou já foi usado. Peça um novo.",
+      "summary": "Corrija os campos destacados."
+    }
+  },
+  "legal": {
+    "termsTitle": "Termos de uso",
+    "privacyTitle": "Política de privacidade",
+    "draft": "Rascunho. Esta página é provisória: não é o texto final e não tem efeito legal. O texto final ainda será escrito.",
+    "placeholder": "O texto aparecerá aqui.",
+    "back": "Voltar"
+  },
+  "app": {
+    "welcome": "Olá, {name}!",
+    "description": "Suas viagens ficarão aqui. O app ainda está sendo construído.",
+    "settings": "Idioma e região",
+    "signOut": "Sair"
   }
 }

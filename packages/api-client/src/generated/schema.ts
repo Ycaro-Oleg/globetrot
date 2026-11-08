@@ -4,6 +4,26 @@
  */
 
 export interface paths {
+    "/v1/auth/providers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Which social sign-in buttons to show
+         * @description Public. A provider is listed only when the server has it configured, so a screen never offers a button that cannot work. Email and password is always available and is not listed.
+         */
+        get: operations["listAuthProviders"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/me": {
         parameters: {
             query?: never;
@@ -125,6 +145,29 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    listAuthProviders: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The enabled providers (possibly none). */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @description The social sign-in providers that are configured and can be offered. */
+                        providers: "google"[];
+                    };
+                };
+            };
+        };
+    };
     getCurrentUser: {
         parameters: {
             query?: never;

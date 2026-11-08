@@ -50,7 +50,9 @@
     "description": "Globetrot is under construction. The interactive reference is available separately.",
     "language": "Language",
     "english": "English",
-    "portuguese": "Português (Brasil)"
+    "portuguese": "Português (Brasil)",
+    "login": "Log in",
+    "signup": "Create an account"
   },
   "settings": {
     "title": "Language & region",
@@ -91,5 +93,105 @@
       "expiry": "This link can be used once and expires in {hours, plural, one {# hour} other {# hours}}.",
       "ignore": "If you did not ask for this, ignore this email: your password stays as it is. Resetting it signs you out of your other devices."
     }
+  },
+  "auth": {
+    "brand": {
+      "headline": "Your first stamp is closer than you think."
+    },
+    "language": "Language",
+    "or": "or with email",
+    "google": "Continue with Google",
+    "email": "Email",
+    "password": "Password",
+    "newPassword": "New password",
+    "firstName": "First name",
+    "login": {
+      "title": "Log in",
+      "submit": "Log in",
+      "pending": "Logging in…",
+      "forgot": "Forgot it?",
+      "noAccount": "New to Globetrot?",
+      "toSignup": "Create an account"
+    },
+    "signup": {
+      "title": "Create your account",
+      "submit": "Create my account",
+      "pending": "Creating your account…",
+      "haveAccount": "Already have an account?",
+      "toLogin": "Log in",
+      "terms": "I accept the <terms>Terms of use</terms> and the <privacy>Privacy policy</privacy>.",
+      "passwordHint": "At least {min, number} characters. A few random words make a strong password.",
+      "sentTitle": "Check your inbox",
+      "sentBody": "We sent a confirmation link to {email}. Open it to finish creating your account."
+    },
+    "strength": {
+      "label": "Password strength",
+      "tooShort": "Too short",
+      "weak": "Weak",
+      "okay": "Okay",
+      "good": "Good",
+      "strong": "Strong"
+    },
+    "recover": {
+      "title": "Reset your password",
+      "intro": "Enter your email and we will send you a link to choose a new password.",
+      "submit": "Send reset link",
+      "pending": "Sending…",
+      "sentTitle": "Check your inbox",
+      "sentBody": "If there is an account for {email}, we sent a link to choose a new password. The link works only once and expires soon.",
+      "backToLogin": "Back to log in"
+    },
+    "resend": {
+      "action": "Send the link again",
+      "wait": "Send again in {seconds, number}s",
+      "pending": "Sending…",
+      "sent": "Sent. Check your inbox."
+    },
+    "reset": {
+      "title": "Choose a new password",
+      "submit": "Save new password",
+      "pending": "Saving…",
+      "done": "Your password was changed. You were signed out everywhere: log in with the new one.",
+      "toLogin": "Log in",
+      "requestNew": "Ask for a new link"
+    },
+    "verified": {
+      "title": "Email confirmed",
+      "body": "Your email address is confirmed and you are signed in.",
+      "continue": "Continue",
+      "errorTitle": "That link did not work",
+      "errorBody": "It has expired or was already used. Enter your email and we will send a new one.",
+      "sendNew": "Send a new link"
+    },
+    "errors": {
+      "generic": "Something went wrong. Try again.",
+      "network": "We could not reach the server. Check your connection and try again.",
+      "rateLimited": "Too many attempts. Try again in {seconds, plural, one {# second} other {# seconds}}.",
+      "invalidCredentials": "That email and password do not match. Try again, or reset your password.",
+      "notVerified": "Confirm your email address first: we sent you a link.",
+      "emailTaken": "An account with this email already exists.",
+      "invalidEmail": "Enter a valid email address.",
+      "requiredEmail": "Enter your email address.",
+      "requiredPassword": "Enter your password.",
+      "requiredName": "Enter your first name.",
+      "requiredTerms": "Accept the terms to create an account.",
+      "passwordTooShort": "Use at least {min, number} characters.",
+      "passwordTooLong": "Use at most {max, number} characters.",
+      "invalidToken": "This link has expired or was already used. Ask for a new one.",
+      "summary": "Please fix the highlighted fields."
+    }
+  },
+  "legal": {
+    "termsTitle": "Terms of use",
+    "privacyTitle": "Privacy policy",
+    "draft": "Draft. This page is a placeholder: it is not the final text and has no legal effect. The final text is still to be written.",
+    "placeholder": "The text will appear here.",
+    "back": "Back"
+  },
+  "app": {
+    "welcome": "Hi, {name}!",
+    "description": "Your trips will live here. The app is still being built.",
+    "settings": "Language and region",
+    "signOut": "Log out"
   }
 }

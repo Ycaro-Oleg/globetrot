@@ -49,7 +49,7 @@ All are in the milestone **M3 App Foundation**. "Depends on" lists issue numbers
 | 4. Google sign-in | #55 | #53 | p1, agent-ready (the real-provider smoke test is the owner's) |
 | 5. Authenticated API, actor, typed client | #56 | #53 | p0, **done** |
 | 6. Locale integration | #50 | M2 i18n | **done** (PR #51) |
-| 6b. Sign-up, log-in and recovery screens (added) | #57 | #53, #54, #55 (optional), #6 | p1, agent-ready |
+| 6b. Sign-up, log-in and recovery screens (added) | #57 | #53, #54, #55 (optional), #6 | p1, **done** |
 | 7. Preferences persistence | #58 | #52, #56, #50 | p1, **done** |
 | 8. Responsive authenticated shell | #59 | #53, #57, #6 | p1, agent-ready |
 | 9. Theme and motion preferences | #60 | #58, #59 | p2, agent-ready |
