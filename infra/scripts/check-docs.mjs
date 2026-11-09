@@ -137,7 +137,9 @@ for (const file of markdown) {
   for (const match of prose.matchAll(REPO_PATH)) {
     const path = match[1];
     if (/[*<>{}…]/.test(path)) continue;
-    // Build output exists on one machine and not on another, so it cannot be checked.
+    // Build output and git-ignored local files (`.env.local`) exist on one machine and not on another, so they
+    // cannot be checked.
+    if (/(^|\/)\.env\.local$/.test(path)) continue;
     if (/(^|\/)(\.next|dist|node_modules|\.turbo|coverage|storybook-static)(\/|$)/.test(path))
       continue;
     const plain = path.replace(/\/$/, '');
