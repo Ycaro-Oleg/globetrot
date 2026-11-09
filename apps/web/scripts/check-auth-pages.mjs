@@ -496,19 +496,35 @@ try {
     return entries;
   }
 
+  /** Runs `task` over `items`, at most `limit` at a time. */
+  async function inParallel(items, limit, task) {
+    let next = 0;
+    await Promise.all(
+      Array.from({ length: Math.min(limit, items.length) }, async () => {
+        while (next < items.length) await task(items[next++]);
+      }),
+    );
+  }
+
+  // Each state is reached once and checked in both themes (the theme is one attribute on <html>). Languages run
+  // one after the other because the stand-in API answers with one stored language at a time; the states of one
+  // language run side by side (AXE_CONCURRENCY, default 6).
+  const concurrency = Number(process.env.AXE_CONCURRENCY ?? 6);
   for (const locale of ['en', 'pt-BR']) {
     const copy = CATALOGS[locale].auth;
-    for (const theme of ['day', 'red-eye']) {
-      for (const [name, signedIn, reach, viewport] of scenarios(copy)) {
-        // Debugging aid: AXE_ONLY=<regex> runs only the matching scenarios (and skips the behavior checks).
-        if (process.env.AXE_ONLY && !new RegExp(process.env.AXE_ONLY).test(name)) continue;
-        const { context, page } = await open(locale, { signedIn, viewport });
-        try {
-          await reach(page);
-          // Debugging aid: DUMP_SCENARIO=<name> prints the page's HTML for that state.
-          if (process.env.DUMP_SCENARIO === name && theme === 'day' && locale === 'en') {
-            console.log(await page.evaluate(() => document.body.innerHTML));
-          }
+    const chosen = scenarios(copy).filter(
+      // Debugging aid: AXE_ONLY=<regex> runs only the matching scenarios (and skips the behavior checks).
+      ([name]) => !process.env.AXE_ONLY || new RegExp(process.env.AXE_ONLY).test(name),
+    );
+    await inParallel(chosen, concurrency, async ([name, signedIn, reach, viewport]) => {
+      const { context, page } = await open(locale, { signedIn, viewport });
+      try {
+        await reach(page);
+        // Debugging aid: DUMP_SCENARIO=<name> prints the page's HTML for that state.
+        if (process.env.DUMP_SCENARIO === name && locale === 'en') {
+          console.log(await page.evaluate(() => document.body.innerHTML));
+        }
+        for (const theme of ['day', 'red-eye']) {
           await page.evaluate(
             (value) => document.documentElement.setAttribute('data-theme', value),
             theme,
@@ -517,16 +533,6 @@ try {
             .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
             .analyze();
           for (const violation of results.violations) {
-            if (process.env.DUMP_SCENARIO === name && theme === 'day' && locale === 'en') {
-              console.log(
-                await page.evaluate(() => {
-                  const img = document.querySelector('[role="img"]');
-                  return img
-                    ? `PARENT: ${img.parentElement?.outerHTML.slice(0, 600)} | ID TARGET: ${img.getAttribute('aria-labelledby')} -> ${document.getElementById(img.getAttribute('aria-labelledby') ?? '')?.outerHTML}`
-                    : 'no img now';
-                }),
-              );
-            }
             const where = violation.nodes
               .map(
                 (node) =>
@@ -535,19 +541,19 @@ try {
               .join(' | ');
             failures.push(`axe ${theme}/${locale}/${name}: ${violation.id} (${where})`);
           }
-          check(
-            (await page.locator('html').getAttribute('lang')) === locale,
-            `${locale}/${name}: <html lang> is not ${locale}`,
-          );
-        } catch (error) {
-          failures.push(
-            `${theme}/${locale}/${name}: could not reach the state (${error.message.split('\n')[0]})`,
-          );
-        } finally {
-          await context.close();
         }
+        check(
+          (await page.locator('html').getAttribute('lang')) === locale,
+          `${locale}/${name}: <html lang> is not ${locale}`,
+        );
+      } catch (error) {
+        failures.push(
+          `${locale}/${name}: could not reach the state (${error.message.split('\n')[0]})`,
+        );
+      } finally {
+        await context.close();
       }
-    }
+    });
   }
 
   if (process.env.AXE_ONLY) {
