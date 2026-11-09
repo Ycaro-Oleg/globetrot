@@ -135,7 +135,7 @@ describe.each(SUPPORTED_LOCALES)('app shell (%s)', (locale) => {
     expect(html).not.toContain(copy.pip.ask);
   });
 
-  it('shows the Pip entry point on the rail and as the phone button when the flag is on', () => {
+  it('shows the Pip entry point in the wide header and as the phone button when the flag is on', () => {
     const html = shell(locale, true);
     expect(html.match(/href="\/app\/pip"/g)).toHaveLength(2);
     expect(html).toContain(`aria-label="${copy.pip.ask}"`);
@@ -148,7 +148,7 @@ describe.each(SUPPORTED_LOCALES)('app shell (%s)', (locale) => {
 });
 
 describe('placeholder pages', () => {
-  const sections: ComingSoonSection[] = ['board', 'days', 'budget', 'lists', 'trips', 'passport'];
+  const sections: ComingSoonSection[] = ['board', 'days', 'budget', 'lists', 'passport'];
 
   it.each(
     SUPPORTED_LOCALES.flatMap((locale) => sections.map((section) => [locale, section] as const)),

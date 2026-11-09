@@ -1,6 +1,6 @@
 # Missing MVP screens: interaction specification
 
-**Status: draft, not owner-approved.** This specifies behavior and layout for #7. Initial desktop/mobile frames in both themes and languages are in [the screen studies](../../design/prototypes/missing-screens.html). They are visual-only examples, not a functional application. The owner has not approved them. Existing visual language comes from [the design system](design-system.md) and [prototype](../../design/reference/claude-design-v1/README.md). Business rules take precedence over the prototype.
+**Status: the trip list and switcher study was reviewed and approved by the product owner on 2026-11-08 for issue #62.** Other #7 screens remain draft. This specifies behavior and layout for the missing MVP screens. Initial desktop/mobile frames in both themes and languages are in [the screen studies](../../design/prototypes/missing-screens.html). They are visual-only examples, not a functional application. The other screen studies remain under review. Existing visual language comes from [the design system](design-system.md) and [prototype](../../design/reference/claude-design-v1/README.md). Business rules take precedence over the prototype.
 
 ## Shared layout and states
 
@@ -63,8 +63,12 @@
 
 1. Extend the initial frames with long names, validation, empty and error states. The current examples are not a complete interaction prototype.
 2. Automated geometry checks covered the initial pt-BR examples in both themes at 375 px and 1100 px without horizontal frame overflow. Review text wrapping, focus order, 44 px targets, contrast and navigation manually; the current static-frame controls are illustrative.
-3. Present the frames to the product owner for approval. Only after approval update the design-audit items as resolved and close #7.
+3. The product owner approved the trip list and switcher study on 2026-11-08; this unblocks #62. Review the remaining frames and copy before closing #7.
 
+
+## As built in #62
+
+The trip list screen implements the approved card grid / single-column layout, explicit status and date/currency, status filters, create form, archive with undo, and a current-trip switcher in the app rail and phone header. It keeps the trip overview intentionally small until M4 builds the map board. The layout remains easy to adjust while the rest of #7 is reviewed.
 
 ## Viewing the studies
 

@@ -1,0 +1,499 @@
+/* Trip list: an open travel journal with focused filters and postcard-like trip cards. */
+.page {
+  display: grid;
+  gap: clamp(1.5rem, 3vw, 2.25rem);
+  width: min(100%, 72rem);
+  margin-inline: auto;
+  padding: 0;
+  color: var(--gt-semantic-color-text);
+}
+
+.page h1,
+.page h2,
+.page h3,
+.page p {
+  margin: 0;
+}
+
+.pageHeader {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 2rem;
+}
+
+.headingGroup {
+  min-width: 0;
+}
+
+.eyebrow {
+  margin: 0 0 0.35rem !important;
+  color: var(--gt-semantic-color-text-secondary);
+  font: 700 0.72rem/1.25 var(--gt-primitive-font-mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.pageHeader h1 {
+  font-size: clamp(2.8rem, 4.4vw, 3.55rem);
+  font-weight: 800;
+  font-stretch: 80%;
+  letter-spacing: -0.055em;
+  line-height: 0.98;
+}
+
+.description {
+  max-width: 42rem;
+  margin-top: 0.7rem !important;
+  color: var(--gt-semantic-color-text-secondary);
+  font-size: 1rem;
+}
+
+.createDetails {
+  position: relative;
+  z-index: 16;
+  flex: none;
+  margin-block-end: 0.15rem;
+}
+
+.createDetails > summary {
+  list-style: none;
+}
+
+.createDetails > summary::-webkit-details-marker {
+  display: none;
+}
+
+.createDetails[open] > summary {
+  box-shadow: 0 1px 0 var(--gt-semantic-color-outline);
+}
+
+.createPlus {
+  margin-inline-end: 0.35rem;
+  font-size: 1.25em;
+  line-height: 0;
+}
+
+.createPopover {
+  position: absolute;
+  inset-inline-end: 0;
+  inset-block-start: calc(100% + 0.9rem);
+  display: grid;
+  width: min(27rem, calc(100vw - 2rem));
+  gap: 0.55rem;
+  box-sizing: border-box;
+  padding: 1.25rem;
+  border: 2.5px solid var(--gt-semantic-color-outline);
+  border-radius: 1.2rem;
+  background: var(--gt-semantic-color-surface-card);
+  box-shadow: 0 7px 0 var(--gt-semantic-color-outline);
+}
+
+.createPopover h2 {
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.createPopover > p {
+  margin-bottom: 0.35rem;
+  color: var(--gt-semantic-color-text-secondary);
+}
+
+.workspace,
+.listSection {
+  min-width: 0;
+}
+
+.listSection {
+  display: grid;
+  gap: 1.15rem;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sectionHeader h2 {
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+}
+
+.tripCount {
+  display: inline-grid;
+  min-width: 1.6rem;
+  height: 1.6rem;
+  place-items: center;
+  padding-inline: 0.2rem;
+  border: 1px solid rgba(29, 26, 53, 0.25);
+  border-radius: 50%;
+  color: var(--gt-semantic-color-text-secondary);
+  font: 700 0.7rem/1 var(--gt-primitive-font-mono);
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.filter {
+  display: inline-flex;
+  min-height: 40px;
+  align-items: center;
+  justify-content: center;
+  padding: 0.4rem 0.85rem;
+  border: 1.5px solid rgba(29, 26, 53, 0.28);
+  border-radius: 999px;
+  background: var(--gt-semantic-color-surface-card);
+  color: var(--gt-semantic-color-text-secondary);
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition:
+    background 120ms ease,
+    color 120ms ease,
+    transform 120ms ease;
+}
+
+.filter:hover {
+  transform: translateY(-1px);
+  background: #fff;
+  color: var(--gt-semantic-color-always-light-text);
+}
+
+.filter[aria-current='page'] {
+  border-color: var(--gt-semantic-color-outline);
+  background: var(--gt-semantic-color-text);
+  color: var(--gt-semantic-color-surface-page);
+  box-shadow: 0 2px 0 var(--gt-semantic-color-outline);
+}
+
+.tripGrid {
+  display: grid;
+  gap: 1.1rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.tripCard,
+.emptyState {
+  min-width: 0;
+  border: 2.5px solid var(--gt-semantic-color-outline);
+  border-radius: 1.25rem;
+  background: var(--gt-semantic-color-surface-card);
+  box-shadow: 0 5px 0 var(--gt-semantic-color-outline);
+}
+
+.tripCard {
+  display: flex;
+  min-height: 15.5rem;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1.25rem;
+}
+
+.cardHeader,
+.cardActions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.tripStatus,
+.currentTrip {
+  display: inline-flex;
+  min-height: 30px;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 750;
+}
+
+.tripStatus {
+  color: var(--gt-semantic-color-text-secondary);
+}
+
+.tripStatus span {
+  color: var(--gt-semantic-color-danger);
+  font-size: 1rem;
+}
+
+.currentTrip {
+  padding: 0.25rem 0.65rem;
+  border: 1px solid rgba(29, 26, 53, 0.16);
+  border-radius: 999px;
+  background: var(--gt-primitive-color-marigold);
+  color: var(--gt-primitive-color-ink);
+  font-size: 0.72rem;
+}
+
+.tripTitle {
+  overflow-wrap: anywhere;
+  font-size: clamp(1.35rem, 2vw, 1.7rem);
+  font-weight: 800;
+  font-stretch: 86%;
+  letter-spacing: -0.035em;
+  line-height: 1.05;
+}
+
+.tripMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.3rem;
+  color: var(--gt-semantic-color-text-secondary);
+  font: 400 0.75rem/1.45 var(--gt-primitive-font-mono);
+}
+
+.tripSummary {
+  flex: 1;
+  margin-top: 0.1rem !important;
+  padding-top: 0.75rem;
+  border-top: 1px dashed rgba(29, 26, 53, 0.22);
+  color: var(--gt-semantic-color-text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.cardActions {
+  justify-content: flex-start;
+  gap: 0.65rem;
+  padding-top: 0.2rem;
+}
+
+.cardActions form {
+  margin: 0;
+}
+
+.primaryAction,
+.secondaryAction,
+.undoAction,
+.backLink {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  padding: 0.6rem 1rem;
+  border: 2px solid var(--gt-semantic-color-outline);
+  border-radius: 0.9rem;
+  font: 750 0.9rem/1.15 var(--gt-primitive-font-body);
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    transform 120ms ease,
+    box-shadow 120ms ease,
+    background 120ms ease;
+}
+
+.primaryAction {
+  background: var(--gt-semantic-color-text);
+  color: var(--gt-semantic-color-surface-page);
+  box-shadow: 0 3px 0 var(--gt-semantic-color-outline);
+}
+
+.primaryAction:hover,
+.secondaryAction:hover,
+.undoAction:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 0 var(--gt-semantic-color-outline);
+}
+
+.secondaryAction,
+.undoAction,
+.backLink {
+  background: #fff;
+  color: var(--gt-semantic-color-always-light-text);
+}
+
+.primaryAction:focus-visible,
+.secondaryAction:focus-visible,
+.undoAction:focus-visible,
+.backLink:focus-visible,
+.filter:focus-visible,
+.createPopover input:focus-visible,
+.createPopover select:focus-visible {
+  outline: var(--gt-component-focus-width) solid var(--gt-semantic-color-focus);
+  outline-offset: 3px;
+}
+
+.createForm {
+  display: grid;
+  gap: 0.85rem;
+  margin-top: 0.4rem;
+}
+
+.createFields {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: 1fr 1fr;
+}
+
+.field {
+  display: grid;
+  min-width: 0;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.field input,
+.field select {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 46px;
+  padding: 0.55rem 0.7rem;
+  border: 1.5px solid rgba(29, 26, 53, 0.48);
+  border-radius: 0.7rem;
+  background: #fff;
+  color: var(--gt-semantic-color-always-light-text);
+  font: 500 0.9rem/1.25 var(--gt-primitive-font-body);
+}
+
+.banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding: 0.9rem 1rem;
+  border: 2px solid var(--gt-semantic-color-outline);
+  border-radius: 1rem;
+  background: var(--gt-semantic-color-surface-page-alt);
+  box-shadow: 0 3px 0 var(--gt-semantic-color-outline);
+}
+
+.emptyState {
+  display: grid;
+  justify-items: start;
+  gap: 0.85rem;
+  padding: clamp(1.5rem, 4vw, 2.5rem);
+}
+
+.emptyState h3 {
+  max-width: 24ch;
+  font-size: 1.45rem;
+  font-weight: 800;
+  letter-spacing: -0.035em;
+}
+
+.emptyState p,
+.createSection > p {
+  max-width: 50ch;
+  color: var(--gt-semantic-color-text-secondary);
+}
+
+.details {
+  display: grid;
+  max-width: 48rem;
+  gap: 0.75rem;
+}
+
+.details > div {
+  display: grid;
+  grid-template-columns: minmax(8rem, 1fr) 2fr;
+  gap: 0.75rem;
+  padding: 0.8rem 1rem;
+  border: 1.5px solid rgba(29, 26, 53, 0.2);
+  border-radius: 0.9rem;
+  background: var(--gt-semantic-color-surface-card);
+}
+
+.details dt {
+  color: var(--gt-semantic-color-text-secondary);
+  font-weight: 650;
+}
+
+.details dd {
+  margin: 0;
+  font-weight: 750;
+}
+
+.loading {
+  display: grid;
+  min-height: 8rem;
+  place-items: center;
+}
+
+@media (max-width: 880px) {
+  .tripGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .page {
+    gap: 1.35rem;
+  }
+
+  .pageHeader {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .pageHeader h1 {
+    font-size: clamp(2.45rem, 10vw, 3rem);
+  }
+
+  .createDetails {
+    align-self: stretch;
+  }
+
+  .createDetails > summary {
+    width: fit-content;
+  }
+
+  .createPopover {
+    inset-inline-start: 0;
+    inset-inline-end: auto;
+    width: min(calc(100vw - 2rem), 27rem);
+  }
+
+  .createFields {
+    grid-template-columns: 1fr;
+  }
+
+  .tripGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .tripCard {
+    min-height: 14rem;
+    padding: 1rem;
+  }
+
+  .filters {
+    flex-wrap: nowrap;
+    max-width: calc(100vw - 2rem);
+    overflow-x: auto;
+    padding: 0.15rem 0.1rem 0.5rem;
+    scrollbar-width: thin;
+  }
+
+  .filter {
+    flex: none;
+    min-height: 38px;
+    font-size: 0.82rem;
+  }
+
+  .details > div {
+    grid-template-columns: 1fr;
+    gap: 0.3rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .filter,
+  .primaryAction,
+  .secondaryAction,
+  .undoAction {
+    transition: none;
+  }
+}

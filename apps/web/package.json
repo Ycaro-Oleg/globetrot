@@ -21,6 +21,7 @@
     "@globetrot/tokens": "workspace:*",
     "@globetrot/ui": "workspace:*",
     "lucide-react": "1.67.0",
+    "maplibre-gl": "6.15.0",
     "next": "16.4.5",
     "next-intl": "4.14.9",
     "react": "19.3.1",

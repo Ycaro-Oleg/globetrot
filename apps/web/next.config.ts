@@ -5,6 +5,7 @@ import createNextIntlPlugin from 'next-intl/plugin';
 const config: NextConfig = {
   // Self-contained server output for the Docker image (Hetzner + Coolify, ADR-0002).
   output: 'standalone',
+  devIndicators: false,
   // Trace files from the monorepo root so workspace packages are included in the standalone output.
   outputFileTracingRoot: path.join(process.cwd(), '../..'),
   // Workspace packages ship TypeScript sources.

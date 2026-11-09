@@ -1,9 +1,11 @@
-import { ComingSoon, sectionTitle } from '../_components/coming-soon';
+import { getTranslations } from 'next-intl/server';
+import { WorldMapBoard } from './world-map';
 
 export async function generateMetadata() {
-  return { title: await sectionTitle('board') };
+  const t = await getTranslations('mapBoard');
+  return { title: t('title') };
 }
 
 export default function BoardPage() {
-  return <ComingSoon section="board" />;
+  return <WorldMapBoard />;
 }

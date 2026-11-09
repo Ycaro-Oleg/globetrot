@@ -58,6 +58,14 @@ The inventory covers the handoff's token-level values, not every one-off prototy
 - Timings and easings follow the handoff's "Interactions & motion" table.
 - Every animation has a reduced-motion equivalent, triggered by **both** `prefers-reduced-motion` and the in-app Motion setting.
 
+## Typography and fonts
+
+The brand fonts, Bricolage Grotesque (display and body) and Space Mono (labels), are **self-hosted** under `apps/web/public/fonts/` as `woff2` subsets (latin, latin-ext, vietnamese) with their OFL licences next to them, and declared with `@font-face` and `font-display: swap` in `apps/web/app/globals.css`. Nothing is loaded from a font CDN (LGPD/GDPR and performance). The token `primitive.font` still names the stack with system fallbacks, so text stays readable while a font loads.
+
+## Surfaces that are light in both themes
+
+Some surfaces are cream or white in the red-eye theme too (the account pages' paper, the board and landing cards, the trip cards, form fields). Inside them the themed text, error and focus tokens would turn light on light, so each such surface must override them with the `always-light` tokens (`--gt-semantic-color-always-light-text`, `-secondary`, `-tertiary`, and the day-theme danger and focus colours) or the `data-always-light` attribute. The axe check in both themes (`pnpm --filter @globetrot/web test:a11y`) fails on any miss.
+
 ## Responsive interaction models
 
 | Size | Layout | Map interaction |
@@ -77,8 +85,9 @@ Phones get equivalent essential capabilities through patterns that suit the devi
 | Navigation | 248px rail with labels: Home, Trips, Board, Days, Budget, Lists, Passport | 76px rail, icons only (labels stay in the link's accessible name) | Floating bar of five tabs: Board, Days, Budget, Lists, More |
 | Rest of the app | In the rail | In the rail | **More** page: Home, Trips, Passport, Settings (and Pip when the flag is on) |
 | Account | Name and avatar in the rail footer, opens upward | Avatar only | Avatar in the top bar, opens downward |
-| Pip | "Ask Pip" button in the rail footer | Icon button | Floating round button above the tab bar |
+| Pip | "Ask Pip" button in the wide header | Same | Floating round button above the tab bar |
 
+- **The trip switcher** (current trip's name, a list of trips and a link to manage them) sits at the top of the rail and in the phone top bar; the wide header shows the current trip's name and, with the flag on, the Pip button. The chosen trip is kept in an HTTP-only cookie.
 - **Pip is behind `FEATURE_PIP`** ([configuration](../engineering/configuration.md#web-appsweb)), off by default. With it off there is no entry point and `/app/pip` answers 404 (decided in `proxy.ts`, because inside the app the loading boundary has already sent a 200 by the time a page could call `notFound()`). With it on, the entry points lead to a page that says Pip is not built yet.
 - **Placeholders are honest.** Board, Days, Budget, Lists, Trips and Passport each say plainly that the feature is not built yet (no fake data, no disabled controls) and link to Home. `app/app/loading.tsx` and `error.tsx` give every page a loading and an error state inside the shell.
 - **The current page** is a filled cream pill with dark text and `aria-current="page"`, so it is not marked by colour alone. On the More tab, the pages it holds (Trips, Passport, Pip) mark More as current.

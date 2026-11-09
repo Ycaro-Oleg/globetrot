@@ -54,7 +54,7 @@ All are in the milestone **M3 App Foundation**. "Depends on" lists issue numbers
 | 8. Responsive authenticated shell | #59 | #53, #57, #6 | p1, **done** | PR #73 |
 | 9. Theme and motion preferences | #60 | #58, #59 | p2, agent-ready | open |
 | 10. Trip persistence and operations | #61 | #52, #56 | p0, **done** | PR #68 |
-| 11. Trip list and switcher | #62 | #58, #59, #61, owner review of #7 | p1, **needs:decision** (screen review) | open |
+| 11. Trip list and switcher | #62 | #58, #59, #61, owner review of #7 | p1, **done** | PR #76 |
 | 12. First end-to-end and accessibility gate | #63 | #53, #54, #57–#62 | p1 | open |
 
 Suggested order: #52 → #53 → (#54, #55, #56 in parallel) → #57 → (#58, #61 in parallel) → #59 → (#60, #62) → #63.

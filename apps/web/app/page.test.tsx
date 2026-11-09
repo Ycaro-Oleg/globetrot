@@ -21,6 +21,9 @@ function visibleText(html: string): string {
   return html
     .replace(/<script[\s\S]*?<\/script>/g, ' ')
     .replace(/<[^>]+>/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&#x27;/g, "'")
+    .replace(/&quot;/g, '"')
     .replace(/\s+/g, ' ')
     .trim();
 }
@@ -31,20 +34,25 @@ function pressed(html: string, value: string): string | undefined {
   return button && /aria-pressed="(true|false)"/.exec(button)?.[1];
 }
 
-describe('web scaffold home page', () => {
+describe('Globetrot landing page', () => {
   it.each(SUPPORTED_LOCALES)('renders its copy from the shared %s catalog', (locale) => {
     const html = render(locale);
-    const copy = catalogs[locale].webScaffold;
-    expect(html).toContain(copy.headline);
-    expect(html).toContain(copy.description);
-    expect(html).toContain(`aria-label="${copy.language}"`);
-    expect(html).toContain(copy.english);
-    expect(html).toContain(copy.portuguese);
+    const copy = catalogs[locale].landing;
+    const headline = copy.headline.replace('<accent>', '').replace('</accent>', '');
+    expect(visibleText(html)).toContain(headline);
+    expect(visibleText(html)).toContain(copy.heroCopy);
+    expect(html).toContain(`aria-label="${catalogs[locale].auth.language}"`);
+    expect(html).toContain('href="/signup"');
+    expect(html).toContain('href="/login"');
+    expect(visibleText(html)).toContain(copy.step1Title);
+    expect(visibleText(html)).toContain(copy.step4Title);
+    expect(visibleText(html)).toContain(copy.stage5Title);
+    expect(visibleText(html)).toContain(copy.trip3Body);
   });
 
   it('shows different copy per locale', () => {
     expect(render('en')).not.toBe(render('pt-BR'));
-    expect(catalogs.en.webScaffold.headline).not.toBe(catalogs['pt-BR'].webScaffold.headline);
+    expect(catalogs.en.landing.headline).not.toBe(catalogs['pt-BR'].landing.headline);
   });
 
   it.each([
@@ -56,10 +64,14 @@ describe('web scaffold home page', () => {
     expect(pressed(html, 'pt-BR')).toBe(ptBR);
   });
 
-  it('keeps language choice separate from currency and country', () => {
+  it('renders the full map-led story, budget planner, examples and product previews', () => {
     for (const locale of SUPPORTED_LOCALES) {
-      // No currency symbol, code or country is shown or implied by choosing a language.
-      expect(visibleText(render(locale))).not.toMatch(/[$€£¥]|\b(USD|BRL|EUR)\b/);
+      const html = visibleText(render(locale));
+      const copy = catalogs[locale].landing;
+      expect(html).toContain(copy.moneyEyebrow);
+      expect(html).toContain(copy.pipChanges);
+      expect(html).toContain(copy.platformPhone);
+      expect(html).toContain(copy.finalButton);
     }
   });
 });

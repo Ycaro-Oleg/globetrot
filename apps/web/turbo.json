@@ -3,7 +3,8 @@
   "extends": ["//"],
   "tasks": {
     "build": {
-      "dependsOn": ["@globetrot/tokens#build", "typecheck"]
+      "dependsOn": ["@globetrot/tokens#build", "typecheck"],
+      "env": ["NEXT_PUBLIC_GEOAPIFY_API_KEY"]
     },
     "dev": {
       "dependsOn": ["@globetrot/tokens#build"]

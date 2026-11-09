@@ -1,6 +1,6 @@
 import { getLocale, getTranslations } from 'next-intl/server';
 import { cookies } from 'next/headers';
-import { Banner } from '@globetrot/ui';
+import { Banner } from '@globetrot/ui/banner';
 import { apiInternalUrl } from '../../lib/api-proxy';
 import { fetchStoredPreferences, sessionCookieHeader } from '../../lib/stored-preferences';
 import { countryOptions, currencyOptions, timeZoneOptions } from './options';
