@@ -116,6 +116,27 @@ export function createAuth(db: Database, config: AuthConfig, { email }: AuthDepe
         deliver('verifyEmail', user, url, request, config.verificationExpiresIn);
       },
     },
+    // Google only when both credentials are configured. The redirect URI Google must allow is
+    // `<BETTER_AUTH_URL>/api/auth/callback/google` (the web origin, which proxies /api/auth/*).
+    ...(config.google
+      ? {
+          socialProviders: {
+            google: {
+              clientId: config.google.clientId,
+              clientSecret: config.google.clientSecret,
+            },
+          },
+        }
+      : {}),
+    account: {
+      // A Google identity links to an existing account only when Google reports the address as verified and it
+      // equals the account's address; otherwise sign-in fails with an explicit error. No provider is trusted to
+      // skip that check, and an address that differs is never linked.
+      accountLinking: { enabled: true, trustedProviders: [], allowDifferentEmails: false },
+    },
+    // A failed callback (denied consent, bad state, a refused link) lands on the sign-in page with a short code,
+    // never an error page with details.
+    onAPIError: { errorURL: `${config.baseURL}/login` },
     session: {
       expiresIn: config.sessionExpiresIn,
       updateAge: config.sessionUpdateAge,

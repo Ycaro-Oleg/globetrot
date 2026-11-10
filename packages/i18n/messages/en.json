@@ -188,7 +188,8 @@
       "passwordTooShort": "Use at least {min, number} characters.",
       "passwordTooLong": "Use at most {max, number} characters.",
       "invalidToken": "This link has expired or was already used. Ask for a new one.",
-      "summary": "Please fix the highlighted fields."
+      "summary": "Please fix the highlighted fields.",
+      "socialFailed": "We could not sign you in with Google. Try again, or use your email and password."
     }
   },
   "legal": {

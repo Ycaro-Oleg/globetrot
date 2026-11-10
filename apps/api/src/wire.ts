@@ -67,6 +67,7 @@ export function createServices(
       ids: { newId: () => uuidV7(Date.now(), crypto.getRandomValues(new Uint8Array(10))) },
     }),
     trustedOrigins: config.auth.trustedOrigins,
+    enabledProviders: config.auth.google ? ['google'] : [],
   });
   return { auth, app };
 }

@@ -18,7 +18,16 @@ import { GoogleButton } from './google-button';
 import { ResendControl } from './resend-control';
 import styles from '../auth.module.css';
 
-export function LoginForm({ next, googleEnabled }: { next: string; googleEnabled: boolean }) {
+export function LoginForm({
+  next,
+  googleEnabled,
+  providerFailed = false,
+}: {
+  next: string;
+  googleEnabled: boolean;
+  /** The visitor came back from a provider that did not sign them in (`/login?error=...`). */
+  providerFailed?: boolean;
+}) {
   const t = useTranslations('auth');
   const router = useRouter();
   const text = useAuthMessage();
@@ -28,7 +37,9 @@ export function LoginForm({ next, googleEnabled }: { next: string; googleEnabled
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState<{ email?: MessageRef; password?: MessageRef }>({});
-  const [banner, setBanner] = useState<MessageRef | null>(null);
+  const [banner, setBanner] = useState<MessageRef | null>(
+    providerFailed ? { key: 'errors.socialFailed' } : null,
+  );
   const [offerResend, setOfferResend] = useState(false);
   const [pending, setPending] = useState(false);
   const [attempt, setAttempt] = useState(0);

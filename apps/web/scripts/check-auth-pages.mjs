@@ -303,6 +303,7 @@ try {
         await page.getByText(copy.errors.notVerified).waitFor();
       },
     ],
+    ['login-provider-failed', false, async (page) => go(page, `${base}/login?error=access_denied`)],
     ['signup', false, async (page) => go(page, `${base}/signup`)],
     [
       'signup-empty-submit',
@@ -605,6 +606,18 @@ try {
     const boardHeading = page.getByRole('heading', { name: CATALOGS.en.mapBoard.title, level: 1 });
     await boardHeading.waitFor({ timeout: 10_000 }).catch(() => {});
     check(await boardHeading.isVisible(), 'the board page has no heading');
+    await context.close();
+  }
+
+  {
+    // A failed Google sign-in comes back as /login?error=<code>: one message, announced as an alert, no code shown.
+    const { context, page } = await open('en');
+    await go(page, `${base}/login?error=access_denied`);
+    await page.getByRole('alert').filter({ hasText: copy.errors.socialFailed }).waitFor();
+    check(
+      !(await page.locator('body').innerText()).includes('access_denied'),
+      'login: the provider error code is shown to the visitor',
+    );
     await context.close();
   }
 

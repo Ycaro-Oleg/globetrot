@@ -188,7 +188,8 @@
       "passwordTooShort": "Use pelo menos {min, number} caracteres.",
       "passwordTooLong": "Use no máximo {max, number} caracteres.",
       "invalidToken": "Este link expirou ou já foi usado. Peça um novo.",
-      "summary": "Corrija os campos destacados."
+      "summary": "Corrija os campos destacados.",
+      "socialFailed": "Não foi possível entrar com o Google. Tente de novo ou use seu e-mail e senha."
     }
   },
   "legal": {

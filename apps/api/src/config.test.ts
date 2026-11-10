@@ -245,3 +245,35 @@ describe('email and verification settings', () => {
     expect(loadApiConfig(production()).email.host).toBe('smtp.example.test');
   });
 });
+
+describe('Google sign-in settings', () => {
+  const base = { DATABASE_URL: 'postgres://u:p@localhost:5432/db' };
+
+  it('is off with no credentials', () => {
+    expect(loadApiConfig(base).auth.google).toBeNull();
+    expect(
+      loadApiConfig({ ...base, GOOGLE_CLIENT_ID: '', GOOGLE_CLIENT_SECRET: '' }).auth.google,
+    ).toBeNull();
+  });
+
+  it('is on with both credentials', () => {
+    const config = loadApiConfig({
+      ...base,
+      GOOGLE_CLIENT_ID: 'id.apps.example',
+      GOOGLE_CLIENT_SECRET: 'secret-value',
+    });
+    expect(config.auth.google).toEqual({
+      clientId: 'id.apps.example',
+      clientSecret: 'secret-value',
+    });
+  });
+
+  it.each([{ GOOGLE_CLIENT_ID: 'id' }, { GOOGLE_CLIENT_SECRET: 'secret-value' }])(
+    'refuses to start with only one of the two (%j), naming the settings and never a value',
+    (env) => {
+      const attempt = () => loadApiConfig({ ...base, ...env });
+      expect(attempt).toThrow(/GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET must be set together/);
+      expect(attempt).not.toThrow(/secret-value/);
+    },
+  );
+});

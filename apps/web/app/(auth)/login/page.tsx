@@ -17,9 +17,16 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ next?: string | string[] }>;
+  searchParams: Promise<{ next?: string | string[]; error?: string | string[] }>;
 }) {
   const query = await searchParams;
   const providers = await fetchEnabledProviders({ apiUrl: apiInternalUrl() });
-  return <LoginForm next={safeNext(query.next)} googleEnabled={providers.includes('google')} />;
+  return (
+    <LoginForm
+      next={safeNext(query.next)}
+      googleEnabled={providers.includes('google')}
+      // Better Auth sends a failed provider callback back here with `?error=<code>`: one message for all of them.
+      providerFailed={query.error !== undefined}
+    />
+  );
 }
