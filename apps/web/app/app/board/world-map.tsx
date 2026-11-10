@@ -1,6 +1,7 @@
 'use client';
 
 import { useLocale, useTranslations } from 'next-intl';
+import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import { MapCanvas, type MapPlace } from './map-canvas';
 import styles from './world-map.module.css';
@@ -109,35 +110,7 @@ const CITIES: City[] = [
   },
 ];
 const CITY_BY_ID = new Map(CITIES.map((city) => [city.id, city]));
-const STORAGE_KEY = 'globetrot.board.stops.v2';
 const API_KEY = process.env.NEXT_PUBLIC_GEOAPIFY_API_KEY ?? '';
-
-function parsePlace(value: unknown): MapPlace | null {
-  if (!value || typeof value !== 'object') return null;
-  const place = value as Partial<MapPlace>;
-  if (
-    typeof place.id !== 'string' ||
-    typeof place.name !== 'string' ||
-    typeof place.longitude !== 'number' ||
-    typeof place.latitude !== 'number' ||
-    !Number.isFinite(place.longitude) ||
-    !Number.isFinite(place.latitude) ||
-    place.longitude < -180 ||
-    place.longitude > 180 ||
-    place.latitude < -90 ||
-    place.latitude > 90
-  )
-    return null;
-  return {
-    id: place.id,
-    name: place.name,
-    country: typeof place.country === 'string' ? place.country : '',
-    countryCode: typeof place.countryCode === 'string' ? place.countryCode : '',
-    region: typeof place.region === 'string' ? place.region : '',
-    longitude: place.longitude,
-    latitude: place.latitude,
-  };
-}
 
 function toPlace(result: Record<string, unknown>): MapPlace | null {
   const longitude = Number(result.lon);
@@ -168,10 +141,40 @@ function toPlace(result: Record<string, unknown>): MapPlace | null {
   };
 }
 
-export function WorldMapBoard() {
+/** What the API stores for one stop. Nights are kept as loaded: the board does not edit them yet. */
+function toDestination(place: MapPlace, nights: number) {
+  return {
+    placeKey: place.id.slice(0, 200),
+    name: place.name.trim().slice(0, 200) || place.id.slice(0, 200),
+    countryCode: /^[A-Z]{2}$/.test(place.countryCode) ? place.countryCode : null,
+    region: place.region.trim().slice(0, 200) || null,
+    latitude: place.latitude,
+    longitude: place.longitude,
+    nights,
+  };
+}
+
+export function WorldMapBoard({
+  tripId,
+  initialStops,
+  initialNights,
+}: {
+  /** The trip the route belongs to, or `null` when there is no trip yet (the board then works unsaved). */
+  tripId: string | null;
+  initialStops: MapPlace[];
+  initialNights: Record<string, number>;
+}) {
   const t = useTranslations('mapBoard');
   const locale = useLocale();
-  const [stops, setStops] = useState<MapPlace[]>([]);
+  const [stops, setStops] = useState<MapPlace[]>(initialStops);
+  const [failed, setFailed] = useState(false);
+  const [retry, setRetry] = useState(0);
+  const routeBody = (places: MapPlace[]) =>
+    JSON.stringify(places.map((place) => toDestination(place, initialNights[place.id] ?? 0)));
+  /** The route as last stored on the trip. What differs from it is not saved yet. */
+  const [savedBody, setSavedBody] = useState(() => routeBody(initialStops));
+  const body = routeBody(stops);
+  const unsaved = body !== savedBody;
   const [selected, setSelected] = useState<string | null>(null);
   const [tool, setTool] = useState<'select' | 'pin' | 'thread'>('select');
   const [threadFrom, setThreadFrom] = useState<string | null>(null);
@@ -181,38 +184,30 @@ export function WorldMapBoard() {
   const [searchError, setSearchError] = useState(false);
   /** A query long enough to search: below this the results, spinner and error are not shown. */
   const searchActive = query.trim().length >= 2;
-  const [hydrated, setHydrated] = useState(false);
   const active =
     stops.find((place) => place.id === selected) ??
     CITIES.find((city) => city.id === selected) ??
     null;
 
+  // Every change to the route is saved to the trip, a moment after the last one (or when "try again" is pressed).
   useEffect(() => {
-    const timer = window.setTimeout(() => {
+    if (!tripId || body === savedBody) return;
+    const timer = window.setTimeout(async () => {
       try {
-        const current = localStorage.getItem(STORAGE_KEY);
-        const legacy = localStorage.getItem('globetrot.board.stops.v1');
-        const stored: unknown = current ? JSON.parse(current) : legacy ? JSON.parse(legacy) : [];
-        if (Array.isArray(stored)) {
-          const migrated = stored
-            .map((value) => {
-              if (typeof value === 'string') return CITY_BY_ID.get(value) ?? null;
-              return parsePlace(value);
-            })
-            .filter((place): place is MapPlace => Boolean(place));
-          setStops(migrated);
-        }
+        const response = await fetch(`/v1/trips/${tripId}/destinations`, {
+          method: 'PUT',
+          headers: { 'content-type': 'application/json' },
+          body: `{"destinations":${body}}`,
+        });
+        if (!response.ok) throw new Error('save failed');
+        setFailed(false);
+        setSavedBody(body);
       } catch {
-        localStorage.removeItem(STORAGE_KEY);
+        setFailed(true);
       }
-      setHydrated(true);
-    }, 0);
+    }, 600);
     return () => window.clearTimeout(timer);
-  }, []);
-
-  useEffect(() => {
-    if (hydrated) localStorage.setItem(STORAGE_KEY, JSON.stringify(stops));
-  }, [hydrated, stops]);
+  }, [body, savedBody, tripId, retry]);
 
   useEffect(() => {
     const text = query.trim();
@@ -430,7 +425,24 @@ export function WorldMapBoard() {
               <i className={styles.legendSelected} />
               {t('selectedLegend')}
             </span>
-            <span className={styles.localSaved}>{t('savedLocal')}</span>
+            <span className={styles.localSaved} role="status" aria-live="polite">
+              {tripId === null ? (
+                <>
+                  {t('notSaved')} <Link href="/app/trips">{t('notSavedLink')}</Link>
+                </>
+              ) : unsaved && !failed ? (
+                t('saving')
+              ) : unsaved ? (
+                <>
+                  {t('saveError')}{' '}
+                  <button type="button" onClick={() => setRetry((count) => count + 1)}>
+                    {t('saveRetry')}
+                  </button>
+                </>
+              ) : (
+                t('saved')
+              )}
+            </span>
           </div>
         </section>
 

@@ -9,6 +9,7 @@ export * as schema from './schema';
 export {
   createAuditLog,
   createCooldown,
+  createDestinationRepository,
   createIdempotencyStore,
   createPreferencesRepository,
   createTripRepository,
@@ -16,6 +17,9 @@ export {
   MAX_LISTED_TRIPS,
   type AuditLog,
   type Cooldown,
+  type DestinationRepository,
+  type DestinationRow,
+  type NewDestinationRow,
   type IdempotencyStore,
   type PreferencesRepository,
   type PreferencesRow,

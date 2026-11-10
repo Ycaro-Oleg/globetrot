@@ -133,6 +133,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/trips/{id}/destinations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The stops of a trip’s route, in order */
+        get: operations["listDestinations"];
+        /**
+         * Replace a trip’s whole route
+         * @description Sends the route as it should be, in order. The server assigns ids and positions, so sending the same route twice changes nothing. At most 100 stops. An empty list clears the route.
+         */
+        put: operations["replaceDestinations"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1001,6 +1022,247 @@ export interface operations {
                 };
             };
             /** @description The id is not valid. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    listDestinations: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Trip id (UUID). */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The route. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        destinations: {
+                            /** Format: uuid */
+                            id: string;
+                            position: number;
+                            placeKey: string;
+                            name: string;
+                            countryCode: string | null;
+                            region: string | null;
+                            latitude: number;
+                            longitude: number;
+                            nights: number;
+                        }[];
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description No such trip, or it belongs to someone else. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description The id is not valid. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    replaceDestinations: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Trip id (UUID). */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @description The whole route, in order (at most 100 stops). */
+                    destinations: {
+                        /**
+                         * @description The client’s stable key for the place.
+                         * @example geoapify:51a1b2
+                         */
+                        placeKey: string;
+                        /**
+                         * @description Display name of the place.
+                         * @example Kyoto
+                         */
+                        name: string;
+                        /**
+                         * @description ISO 3166-1 alpha-2, upper case.
+                         * @example JP
+                         */
+                        countryCode?: string | null;
+                        region?: string | null;
+                        latitude: number;
+                        longitude: number;
+                        /**
+                         * @description Nights spent here. Day trips are 0.
+                         * @default 0
+                         */
+                        nights?: number;
+                    }[];
+                };
+            };
+        };
+        responses: {
+            /** @description The route as stored. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        destinations: {
+                            /** Format: uuid */
+                            id: string;
+                            position: number;
+                            placeKey: string;
+                            name: string;
+                            countryCode: string | null;
+                            region: string | null;
+                            latitude: number;
+                            longitude: number;
+                            nights: number;
+                        }[];
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description No such trip, or it belongs to someone else. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description The id or the body is not valid. */
             422: {
                 headers: {
                     [name: string]: unknown;

@@ -72,6 +72,8 @@ Today:
 | `createTrip` | `POST /v1/trips` | `201`. Private and active, USD unless a currency is given. Honours `Idempotency-Key` |
 | `getTrip` | `GET /v1/trips/{id}` | |
 | `updateTrip` | `PATCH /v1/trips/{id}` | Only the fields sent change; `startDate: null` clears the date; `status: "active"` restores an archived trip. At least one field |
+| `listDestinations` | `GET /v1/trips/{id}/destinations` | The trip's route in order. A trip that is missing or someone else's is the same `404` |
+| `replaceDestinations` | `PUT /v1/trips/{id}/destinations` | Replaces the whole route with the list sent (at most 100 stops; an empty list clears it). The server assigns ids and positions. Atomic and audited (`destination.replace`, the count only) |
 | `archiveTrip` | `POST /v1/trips/{id}/archive` | Hides the trip from the default list. **There is no delete** (retention is specified separately), so there is deliberately no `DELETE`. Archiving twice is a no-op |
 
 Trip rules: the title is trimmed and has 1 to 120 characters; `startDate` is a real calendar date or null; `currency` is an active ISO 4217 code (`VALIDATION_FAILED`, field `currency`, code `custom` when unknown); `status` is one of `active`, `traveling`, `completed`, `archived`. Status is set by the user and never derived. `visibility` is always `private` for now. The response never includes the owner. Field error codes are Zod's issue codes (`too_small`, `too_big`, `invalid_format`, `invalid_value`, `custom`).

@@ -15,6 +15,7 @@ export function buildOpenApiDocument() {
     application: createApplication({
       users: { findById: unreachable },
       trips: { findById: unreachable, listByOwner: unreachable },
+      destinations: { listByTrip: unreachable },
       preferences: { find: unreachable },
       unitOfWork: { run: unreachable },
       clock: { now: unreachable },

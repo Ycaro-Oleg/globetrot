@@ -254,6 +254,29 @@ async function journey(browser, { width, height, locale }) {
       'the board has no heading',
     );
 
+    // ---- the route on the board is saved to the trip and is still there after a reload
+    const board = CATALOGS[locale].mapBoard;
+    await go('/app/board');
+    expect((await page.locator('ol li').count()) === 0, 'the board of a new trip is not empty');
+    await page.getByRole('button', { name: board.japanRoute, exact: true }).click();
+    await page.getByText(board.saved, { exact: true }).waitFor({ timeout: 15_000 });
+    const stops = await page.locator('ol li').count();
+    expect(stops > 1, 'the sample route did not put stops on the board');
+    await page.reload();
+    await page.waitForLoadState('networkidle');
+    expect(
+      (await page.locator('ol li').count()) === stops,
+      'the saved route is not the same after a reload',
+    );
+    await page.getByRole('button', { name: board.clearRoute, exact: true }).click();
+    await page.getByText(board.saved, { exact: true }).waitFor({ timeout: 15_000 });
+    await page.reload();
+    await page.waitForLoadState('networkidle');
+    expect(
+      (await page.locator('ol li').count()) === 0,
+      'clearing the route did not stick after a reload',
+    );
+
     // ---- theme on the first paint: choose red-eye, then load with JavaScript off
     await go('/settings');
     await page

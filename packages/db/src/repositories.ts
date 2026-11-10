@@ -7,7 +7,7 @@ import type {
 } from '@globetrot/domain';
 import { and, desc, eq, ne, sql, type SQL } from 'drizzle-orm';
 import type { Database } from './client';
-import { auditEvent, idempotencyKey, rateLimit, trip, userPreference } from './schema';
+import { auditEvent, destination, idempotencyKey, rateLimit, trip, userPreference } from './schema';
 
 /**
  * PostgreSQL adapters for the application ports (packages/application/src/ports.ts). The shapes below match
@@ -16,7 +16,7 @@ import { auditEvent, idempotencyKey, rateLimit, trip, userPreference } from './s
  */
 
 /** A pooled client or a transaction: both run the same queries. */
-type Executor = Pick<Database, 'select' | 'insert' | 'update'>;
+type Executor = Pick<Database, 'select' | 'insert' | 'update' | 'delete'>;
 
 /** Most trips returned by one list call. Pagination arrives when a user can plausibly reach it. */
 export const MAX_LISTED_TRIPS = 200;
@@ -286,6 +286,69 @@ export function createIdempotencyStore(executor: Executor) {
   };
 }
 
+export interface DestinationRow {
+  readonly id: string;
+  readonly tripId: string;
+  readonly position: number;
+  readonly placeKey: string;
+  readonly name: string;
+  readonly countryCode: string | null;
+  readonly region: string | null;
+  readonly latitude: number;
+  readonly longitude: number;
+  readonly nights: number;
+  readonly createdAt: Date;
+  readonly updatedAt: Date;
+}
+
+export interface NewDestinationRow {
+  readonly id: string;
+  readonly placeKey: string;
+  readonly name: string;
+  readonly countryCode: string | null;
+  readonly region: string | null;
+  readonly latitude: number;
+  readonly longitude: number;
+  readonly nights: number;
+}
+
+/** A trip's route, in order. Replaced as a whole inside one transaction. */
+export function createDestinationRepository(executor: Executor) {
+  const list = async (tripId: string): Promise<DestinationRow[]> =>
+    executor
+      .select()
+      .from(destination)
+      .where(eq(destination.tripId, tripId))
+      .orderBy(destination.position);
+  return {
+    listByTrip: list,
+
+    /** Deletes the trip's stops and writes `items` in order (position = index). Returns what is stored. */
+    async replaceForTrip(
+      tripId: string,
+      items: readonly NewDestinationRow[],
+      now: Date,
+    ): Promise<DestinationRow[]> {
+      await executor.delete(destination).where(eq(destination.tripId, tripId));
+      if (items.length === 0) return [];
+      const rows = await executor
+        .insert(destination)
+        .values(
+          items.map((item, position) => ({
+            ...item,
+            tripId,
+            position,
+            createdAt: now,
+            updatedAt: now,
+          })),
+        )
+        .returning();
+      return rows.sort((a, b) => a.position - b.position);
+    },
+  };
+}
+
+export type DestinationRepository = ReturnType<typeof createDestinationRepository>;
 export type TripRepository = ReturnType<typeof createTripRepository>;
 export type PreferencesRepository = ReturnType<typeof createPreferencesRepository>;
 export type Cooldown = ReturnType<typeof createCooldown>;
@@ -294,6 +357,7 @@ export type IdempotencyStore = ReturnType<typeof createIdempotencyStore>;
 
 export interface Transaction {
   readonly trips: TripRepository;
+  readonly destinations: DestinationRepository;
   readonly preferences: PreferencesRepository;
   readonly audit: AuditLog;
   readonly idempotency: IdempotencyStore;
@@ -306,6 +370,7 @@ export function createUnitOfWork(db: Database) {
       return db.transaction((tx) =>
         work({
           trips: createTripRepository(tx),
+          destinations: createDestinationRepository(tx),
           preferences: createPreferencesRepository(tx),
           audit: createAuditLog(tx),
           idempotency: createIdempotencyStore(tx),

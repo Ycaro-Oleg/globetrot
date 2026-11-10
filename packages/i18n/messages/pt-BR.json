@@ -483,7 +483,6 @@
     "routeLegend": "Rota",
     "suggestedLegend": "Lugar sugerido",
     "selectedLegend": "Na sua rota",
-    "savedLocal": "Salvo neste dispositivo",
     "savingLocal": "Salvando…",
     "search": "Encontre um lugar para marcar",
     "searchPlaceholder": "Busque uma cidade, país ou lugar",
@@ -534,6 +533,12 @@
     },
     "searching": "Buscando no mundo…",
     "searchUnavailable": "A busca está indisponível no momento. Tente novamente.",
-    "mapPinName": "Lugar marcado no mapa"
+    "mapPinName": "Lugar marcado no mapa",
+    "saving": "Salvando…",
+    "saved": "Salvo na sua viagem",
+    "saveError": "Não foi possível salvar sua rota.",
+    "saveRetry": "Tentar de novo",
+    "notSaved": "Não salvo: ainda não há uma viagem.",
+    "notSavedLink": "Criar uma viagem"
   }
 }

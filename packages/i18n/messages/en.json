@@ -483,7 +483,6 @@
     "routeLegend": "Route",
     "suggestedLegend": "Suggested place",
     "selectedLegend": "On your route",
-    "savedLocal": "Saved on this device",
     "savingLocal": "Saving…",
     "search": "Find a place to pin",
     "searchPlaceholder": "Search any city, country or place",
@@ -534,6 +533,12 @@
     },
     "searching": "Searching worldwide…",
     "searchUnavailable": "Search is temporarily unavailable. Please try again.",
-    "mapPinName": "Pinned location"
+    "mapPinName": "Pinned location",
+    "saving": "Saving…",
+    "saved": "Saved to your trip",
+    "saveError": "Could not save your route.",
+    "saveRetry": "Try again",
+    "notSaved": "Not saved: there is no trip yet.",
+    "notSavedLink": "Create a trip"
   }
 }

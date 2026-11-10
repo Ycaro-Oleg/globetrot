@@ -2019,6 +2019,626 @@
           }
         }
       }
+    },
+    "/v1/trips/{id}/destinations": {
+      "get": {
+        "operationId": "listDestinations",
+        "tags": [
+          "Trips"
+        ],
+        "summary": "The stops of a trip’s route, in order",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Trip id (UUID)."
+            },
+            "required": true,
+            "description": "Trip id (UUID).",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The route.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "destinations": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "position": {
+                            "type": "integer"
+                          },
+                          "placeKey": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "countryCode": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "region": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "latitude": {
+                            "type": "number"
+                          },
+                          "longitude": {
+                            "type": "number"
+                          },
+                          "nights": {
+                            "type": "integer"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "position",
+                          "placeKey",
+                          "name",
+                          "countryCode",
+                          "region",
+                          "latitude",
+                          "longitude",
+                          "nights"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "destinations"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid session.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "description": "A URN identifying the kind of problem."
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "integer"
+                    },
+                    "code": {
+                      "type": "string",
+                      "description": "Stable machine-readable code. Clients switch on this."
+                    },
+                    "detail": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "field": {
+                            "type": "string"
+                          },
+                          "code": {
+                            "type": "string"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "field",
+                          "code",
+                          "message"
+                        ]
+                      },
+                      "description": "Per-field problems, present for VALIDATION_FAILED."
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "title",
+                    "status",
+                    "code"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such trip, or it belongs to someone else.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "description": "A URN identifying the kind of problem."
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "integer"
+                    },
+                    "code": {
+                      "type": "string",
+                      "description": "Stable machine-readable code. Clients switch on this."
+                    },
+                    "detail": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "field": {
+                            "type": "string"
+                          },
+                          "code": {
+                            "type": "string"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "field",
+                          "code",
+                          "message"
+                        ]
+                      },
+                      "description": "Per-field problems, present for VALIDATION_FAILED."
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "title",
+                    "status",
+                    "code"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The id is not valid.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "description": "A URN identifying the kind of problem."
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "integer"
+                    },
+                    "code": {
+                      "type": "string",
+                      "description": "Stable machine-readable code. Clients switch on this."
+                    },
+                    "detail": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "field": {
+                            "type": "string"
+                          },
+                          "code": {
+                            "type": "string"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "field",
+                          "code",
+                          "message"
+                        ]
+                      },
+                      "description": "Per-field problems, present for VALIDATION_FAILED."
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "title",
+                    "status",
+                    "code"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "operationId": "replaceDestinations",
+        "tags": [
+          "Trips"
+        ],
+        "summary": "Replace a trip’s whole route",
+        "description": "Sends the route as it should be, in order. The server assigns ids and positions, so sending the same route twice changes nothing. At most 100 stops. An empty list clears the route.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Trip id (UUID)."
+            },
+            "required": true,
+            "description": "Trip id (UUID).",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "destinations": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "placeKey": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 200,
+                          "description": "The client’s stable key for the place.",
+                          "example": "geoapify:51a1b2"
+                        },
+                        "name": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 200,
+                          "description": "Display name of the place.",
+                          "example": "Kyoto"
+                        },
+                        "countryCode": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "pattern": "^[A-Z]{2}$",
+                          "description": "ISO 3166-1 alpha-2, upper case.",
+                          "example": "JP"
+                        },
+                        "region": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "minLength": 1,
+                          "maxLength": 200
+                        },
+                        "latitude": {
+                          "type": "number",
+                          "minimum": -90,
+                          "maximum": 90
+                        },
+                        "longitude": {
+                          "type": "number",
+                          "minimum": -180,
+                          "maximum": 180
+                        },
+                        "nights": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 365,
+                          "default": 0,
+                          "description": "Nights spent here. Day trips are 0."
+                        }
+                      },
+                      "required": [
+                        "placeKey",
+                        "name",
+                        "latitude",
+                        "longitude"
+                      ]
+                    },
+                    "maxItems": 100,
+                    "description": "The whole route, in order (at most 100 stops)."
+                  }
+                },
+                "required": [
+                  "destinations"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The route as stored.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "destinations": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "position": {
+                            "type": "integer"
+                          },
+                          "placeKey": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "countryCode": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "region": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "latitude": {
+                            "type": "number"
+                          },
+                          "longitude": {
+                            "type": "number"
+                          },
+                          "nights": {
+                            "type": "integer"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "position",
+                          "placeKey",
+                          "name",
+                          "countryCode",
+                          "region",
+                          "latitude",
+                          "longitude",
+                          "nights"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "destinations"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid session.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "description": "A URN identifying the kind of problem."
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "integer"
+                    },
+                    "code": {
+                      "type": "string",
+                      "description": "Stable machine-readable code. Clients switch on this."
+                    },
+                    "detail": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "field": {
+                            "type": "string"
+                          },
+                          "code": {
+                            "type": "string"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "field",
+                          "code",
+                          "message"
+                        ]
+                      },
+                      "description": "Per-field problems, present for VALIDATION_FAILED."
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "title",
+                    "status",
+                    "code"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such trip, or it belongs to someone else.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "description": "A URN identifying the kind of problem."
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "integer"
+                    },
+                    "code": {
+                      "type": "string",
+                      "description": "Stable machine-readable code. Clients switch on this."
+                    },
+                    "detail": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "field": {
+                            "type": "string"
+                          },
+                          "code": {
+                            "type": "string"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "field",
+                          "code",
+                          "message"
+                        ]
+                      },
+                      "description": "Per-field problems, present for VALIDATION_FAILED."
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "title",
+                    "status",
+                    "code"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The id or the body is not valid.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "description": "A URN identifying the kind of problem."
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "integer"
+                    },
+                    "code": {
+                      "type": "string",
+                      "description": "Stable machine-readable code. Clients switch on this."
+                    },
+                    "detail": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "field": {
+                            "type": "string"
+                          },
+                          "code": {
+                            "type": "string"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "field",
+                          "code",
+                          "message"
+                        ]
+                      },
+                      "description": "Per-field problems, present for VALIDATION_FAILED."
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "title",
+                    "status",
+                    "code"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "webhooks": {}

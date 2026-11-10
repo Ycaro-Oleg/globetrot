@@ -32,7 +32,7 @@ export const idempotencyKeySchema = z
   });
 
 /** Loads a trip for an actor. Missing and someone else's are the same `NotFoundError`. */
-async function loadOwned(
+export async function loadOwnedTrip(
   reader: { findById(id: string): Promise<TripRecord | null> },
   actor: Actor,
   id: string,
@@ -71,7 +71,7 @@ export function createGetTrip(deps: Pick<Ports, 'trips'>) {
     input: z.object({ id: tripIdSchema }),
     output: tripSchema,
     async handler(actor, input) {
-      return toTripView(await loadOwned(deps.trips, actor, input.id));
+      return toTripView(await loadOwnedTrip(deps.trips, actor, input.id));
     },
   });
 }
@@ -155,7 +155,7 @@ export function createUpdateTrip(deps: Pick<Ports, 'unitOfWork' | 'clock' | 'ids
       );
 
       return deps.unitOfWork.run(async (tx) => {
-        await loadOwned(tx.trips, actor, input.id);
+        await loadOwnedTrip(tx.trips, actor, input.id);
         const trip = await tx.trips.update(input.id, patch, now);
         await tx.audit.record({
           id: deps.ids.newId(),
@@ -182,7 +182,7 @@ export function createArchiveTrip(deps: Pick<Ports, 'unitOfWork' | 'clock' | 'id
     async handler(actor, input) {
       const now = deps.clock.now();
       return deps.unitOfWork.run(async (tx) => {
-        const current = await loadOwned(tx.trips, actor, input.id);
+        const current = await loadOwnedTrip(tx.trips, actor, input.id);
         // Archiving twice is a no-op: same answer, no write, no audit entry.
         if (current.status === 'archived') return toTripView(current);
 
