@@ -5,7 +5,7 @@ import { SITE_NAME } from '../../site';
 import styles from './shell.module.css';
 
 /** The sections that exist in the navigation but are not built yet. Each is a key of `shell.comingSoon`. */
-export type ComingSoonSection = 'board' | 'days' | 'budget' | 'lists' | 'passport';
+export type ComingSoonSection = 'board' | 'budget' | 'lists' | 'passport';
 
 /** Page title for a section: its navigation label, then the product name. */
 export async function sectionTitle(section: ComingSoonSection): Promise<string> {

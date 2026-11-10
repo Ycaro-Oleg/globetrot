@@ -1,0 +1,105 @@
+.page {
+  max-width: 44rem;
+}
+
+.page h1 {
+  margin: 0 0 var(--gt-primitive-space-12);
+  font-size: clamp(1.75rem, 1.3rem + 1.6vw, 2.5rem);
+  font-weight: var(--gt-primitive-type-weight-black);
+  line-height: 1.1;
+}
+
+.eyebrow {
+  margin: 0 0 var(--gt-primitive-space-8);
+  color: var(--gt-semantic-color-text-secondary);
+  font-family: var(--gt-primitive-font-mono);
+  font-size: 0.8125rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.lead {
+  margin: 0 0 var(--gt-primitive-space-8);
+  font-size: 1.125rem;
+}
+
+.note {
+  margin: 0 0 var(--gt-primitive-space-24);
+  color: var(--gt-semantic-color-text-secondary);
+}
+
+.action {
+  display: inline-flex;
+  min-height: var(--gt-component-hit-target);
+  align-items: center;
+  padding: var(--gt-primitive-space-8) var(--gt-primitive-space-16);
+  border: var(--gt-primitive-border-3) solid var(--gt-semantic-color-outline);
+  border-radius: var(--gt-primitive-radius-12);
+  background: var(--gt-semantic-color-surface-card);
+  font-weight: var(--gt-primitive-type-weight-bold);
+  text-decoration: none;
+  box-shadow: var(--gt-primitive-shadow-small);
+}
+
+.stops,
+.days {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.stops {
+  display: grid;
+  gap: var(--gt-primitive-space-16);
+}
+
+.stop {
+  padding: var(--gt-primitive-space-16) var(--gt-primitive-space-20);
+  border: var(--gt-primitive-border-3) solid var(--gt-semantic-color-outline);
+  border-radius: var(--gt-primitive-radius-16);
+  background: var(--gt-semantic-color-surface-card);
+  box-shadow: var(--gt-primitive-shadow-small);
+}
+
+.stop h2 {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--gt-primitive-space-8);
+  margin: 0 0 var(--gt-primitive-space-8);
+  font-size: 1.25rem;
+}
+
+.stop h2 span {
+  color: var(--gt-semantic-color-text-secondary);
+  font-size: 0.9rem;
+  font-weight: var(--gt-primitive-type-weight-600);
+}
+
+.days li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--gt-primitive-space-12);
+  padding: var(--gt-primitive-space-8) 0;
+  border-block-start: 1px dashed var(--gt-semantic-color-rule-strong);
+}
+
+.days li:first-child {
+  border-block-start: 0;
+}
+
+.days b {
+  min-width: 4.5rem;
+}
+
+.days em {
+  padding: 0 var(--gt-primitive-space-8);
+  border: var(--gt-primitive-border-2) solid var(--gt-semantic-color-outline);
+  border-radius: var(--gt-primitive-radius-12);
+  background: var(--gt-primitive-color-marigold);
+  color: var(--gt-primitive-color-ink);
+  font-size: 0.75rem;
+  font-style: normal;
+  font-weight: var(--gt-primitive-type-weight-bold);
+}

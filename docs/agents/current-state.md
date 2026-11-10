@@ -1,6 +1,6 @@
 # Current state
 
-_Last updated: 2026-11-10, after the board saves to the trip. Code state: `develop` includes #63; the destinations are in PR #79._
+_Last updated: 2026-11-10, after the Days page. Code state: `develop` includes #79; nights and the Days page are in the next PR._
 
 Read this first. It says where the project is, what exists, what is open, what only the owner can unblock and what to do next. Procedure for working: [`playbook.md`](playbook.md). Feature-by-feature progress: [`../product/progress.md`](../product/progress.md). Milestones and exit criteria: [`../product/roadmap.md`](../product/roadmap.md).
 
@@ -8,7 +8,7 @@ Read this first. It says where the project is, what exists, what is open, what o
 
 - **Active milestone: M3 App Foundation.** 12 of 13 issues are done; 1 is open (#55, which needs the owner's Google credentials). M2 (engineering foundation) is complete. M0 (product foundation) is complete. **M1 (design system and spikes) is partly open** and its open items need the owner.
 - **What works end to end today** (checked against the real API, Postgres and Mailpit): a person can see the landing page, create an account in English or Portuguese, confirm the email through Mailpit, log in, create a trip, see it in the list and switcher, archive it and undo, open the world-map board, search places, pin a route, change language, currency, country, nationality, time zone, units, theme (day, red-eye or follow the device) and motion, recover a password and log out.
-- **The map board saves its route to the trip** (#75): MapLibre with Geoapify tiles, place search and an ordered route, stored as the trip's destinations and reloaded on the next visit (checked in the end-to-end journey). Still to do: the mobile bottom sheet, the stop panel (nights, notes, costs), reorder and undo, a server-side geocoder, `PinConnection`.
+- **The map board saves its route to the trip** (#75): MapLibre with Geoapify tiles, place search and an ordered route, stored as the trip's destinations and reloaded on the next visit (checked in the end-to-end journey). Nights per stop are edited here too (they feed the Days page). Still to do: the mobile bottom sheet, the stop panel (notes, costs), reorder and undo, a server-side geocoder, `PinConnection`.
 - **The landing page is a first version** (#74): no pricing section and no example trips yet.
 - **What does not exist yet:** itinerary, budget, checklists, Pip, passport, example trips, billing, deployment. The domain rules for money, dates, savings, milestones and journey stage are built and tested but not wired to screens.
 - **Branches:** `main` has no release yet; `develop` is the integration branch. All work goes through `feature/*` or `docs/*` PRs into `develop`.
@@ -79,7 +79,7 @@ Honest list of what is missing or deliberately simple, so nobody assumes otherwi
 - **An unknown or foreign trip id shows a "not found" page with status 200**, not a 404 (the loading boundary has already sent the status). Harmless; fix if it matters for monitoring.
 - **Light surfaces inside the red-eye theme** (auth panel, board cards, landing cream sections, trip cards) are hard-coded light and use the `always-light` token overrides; any new light surface must do the same or axe fails on contrast in the red-eye theme.
 - **The end-to-end suite is one journey** (`apps/web/e2e/journey.mjs`, #63): sign-up to trip to theme and keyboard, two widths, two languages. The board, itinerary and budget have no journey yet (M4 onwards). The account screens, the shell and the trip screens also have the stand-in browser check (`pnpm --filter @globetrot/web test:a11y`).
-- **The shell's pages are still placeholders.** Board, Days, Budget, Lists and Passport are not built yet; the Trips list and overview exist (#62). Pip's page exists only behind `FEATURE_PIP`. 
+- **The shell's pages are still placeholders.** Budget, Lists and Passport are not built yet (the Days page works: one day per night, from the board's nights); the Trips list and overview exist (#62). Pip's page exists only behind `FEATURE_PIP`. 
 - **Not verified by a person:** screen readers on any screen (including the shell's navigation and account menu); the shell on a real phone (safe-area, on-screen keyboard); the account screens at very large font sizes in pt-BR; MapLibre on a real phone.
 - The client address used for rate limits is only trustworthy behind a trusted edge, and the API must not be reachable from the internet ([`authentication.md`](../architecture/authentication.md#which-client-address-counts-trust-model)).
 - `NextIntlClientProvider` ships the whole catalog to the browser (fine for now; see [`i18n.md`](../architecture/i18n.md)).

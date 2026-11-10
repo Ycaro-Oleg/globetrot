@@ -262,6 +262,20 @@ async function journey(browser, { width, height, locale }) {
     await page.getByText(board.saved, { exact: true }).waitFor({ timeout: 15_000 });
     const stops = await page.locator('ol li').count();
     expect(stops > 1, 'the sample route did not put stops on the board');
+    // two nights at the first stop, saved, and the Days page shows them
+    const moreNights = new RegExp(board.nightsMore.replace('{place}', '.*'));
+    await page.locator('ol li').first().getByRole('button', { name: moreNights }).click();
+    await page.locator('ol li').first().getByRole('button', { name: moreNights }).click();
+    await page.getByText(board.saved, { exact: true }).waitFor({ timeout: 15_000 });
+    await go('/app/days');
+    await axe('days');
+    expect(
+      (await page
+        .getByText(CATALOGS[locale].daysPage.day.replace('{index}', '2'), { exact: true })
+        .count()) === 1,
+      'the two nights are not two days on the Days page',
+    );
+    await go('/app/board');
     await page.reload();
     await page.waitForLoadState('networkidle');
     expect(

@@ -235,7 +235,6 @@
       "label": "Ainda não disponível",
       "backHome": "Voltar para o início",
       "board": "O mapa, onde você marca paradas e desenha sua rota, ainda não foi construído.",
-      "days": "O planejamento dia a dia ainda não foi construído.",
       "budget": "O orçamento, as moedas e o plano de economia ainda não foram construídos.",
       "lists": "As listas de documentos, dinheiro, reservas e bagagem ainda não foram construídas.",
       "passport": "O seu passaporte e os carimbos ainda não foram construídos."
@@ -539,6 +538,23 @@
     "saveError": "Não foi possível salvar sua rota.",
     "saveRetry": "Tentar de novo",
     "notSaved": "Não salvo: ainda não há uma viagem.",
-    "notSavedLink": "Criar uma viagem"
+    "notSavedLink": "Criar uma viagem",
+    "nights": "{count, plural, =0 {Bate-volta} one {# noite} other {# noites}}",
+    "nightsMore": "Mais uma noite em {place}",
+    "nightsFewer": "Uma noite a menos em {place}"
+  },
+  "daysPage": {
+    "title": "Dias",
+    "summary": "{count, plural, one {# dia} other {# dias}} planejados, um para cada noite da sua rota.",
+    "noTrip": "Crie uma viagem para ver os dias dela.",
+    "noStops": "Sua rota está vazia. Marque lugares no mapa para começar.",
+    "noNights": "Suas paradas ainda não têm noites. Adicione noites a uma parada no mapa e os dias aparecem aqui.",
+    "starts": "Começa em {date}.",
+    "noStartDate": "Ainda não há data de início, então os dias só são numerados.",
+    "goBoard": "Abrir o mapa",
+    "goTrips": "Ir para as suas viagens",
+    "nights": "{count, plural, =0 {Bate-volta} one {# noite} other {# noites}}",
+    "day": "Dia {index}",
+    "arrival": "Chegada"
   }
 }

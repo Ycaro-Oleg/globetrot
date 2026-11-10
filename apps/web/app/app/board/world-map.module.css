@@ -379,6 +379,7 @@
 }
 .stopList li {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 0.5rem;
@@ -678,4 +679,35 @@
   background: #fff5e1;
   color: #1d1a35;
   font: 600 0.58rem var(--gt-primitive-font-mono);
+}
+
+/* Nights at a stop: a stepper on its own row under the stop, with 44px targets. */
+.nights {
+  display: flex;
+  flex-basis: 100%;
+  align-items: center;
+  gap: 0.4rem;
+  padding-inline-start: calc(26px + 0.6rem);
+}
+.nights button {
+  display: grid;
+  min-width: 44px;
+  min-height: 44px;
+  place-items: center;
+  border: 2px solid var(--gt-semantic-color-outline);
+  border-radius: 0.6rem;
+  background: #fff;
+  color: var(--gt-semantic-color-always-light-text);
+  font: 800 1.1rem var(--gt-primitive-font-body);
+  cursor: pointer;
+}
+.nights button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.nights output {
+  min-width: 5.5rem;
+  text-align: center;
+  font-size: 0.85rem;
+  font-weight: 700;
 }
