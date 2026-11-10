@@ -43,7 +43,7 @@ Every table, in the order it was introduced. `pnpm --filter @globetrot/db genera
 | `trip` | `0002_trips` | `schema/trip.ts` | A user's trip with an explicit status | `owner_id` | [below](#trips-idempotency-and-audit) |
 | `idempotency_key` | `0002_trips` | `schema/trip.ts` | A mutation already done, to replay it | `owner_id` | [below](#trips-idempotency-and-audit) |
 | `audit_event` | `0002_trips`, `0003_audit_event_append_only` | `schema/trip.ts` | Append-only history of mutations | the actor (no foreign key) | [below](#trips-idempotency-and-audit) |
-| `user_preference` | `0004_user_preferences` | `schema/preference.ts` | One row of settings per user | `user_id` | [below](#user-preferences) |
+| `user_preference` | `0004_user_preferences`, `0005_theme_and_motion_preferences` | `schema/preference.ts` | One row of settings per user | `user_id` | [below](#user-preferences) |
 
 `0000_extensions` enables `postgis`, `pg_trgm` and `unaccent` and creates no table. Planned, not built: destinations and pins (M4), itinerary and checklists (M5), expenses, exchange rates and savings (M6), stamps and the passport (M5 and M9), proposals (M7), billing (M10).
 
@@ -69,7 +69,7 @@ Migration `0002_trips` (and `0003_audit_event_append_only`). Code: `packages/db/
 
 ## User preferences
 
-Migration `0004_user_preferences`. One row per user in `user_preference` (primary key `user_id`, `ON DELETE CASCADE`: it is settings, not history).
+Migrations `0004_user_preferences` and `0005_theme_and_motion_preferences`. One row per user in `user_preference` (primary key `user_id`, `ON DELETE CASCADE`: it is settings, not history).
 
 | Column | Rule |
 |---|---|
@@ -78,6 +78,8 @@ Migration `0004_user_preferences`. One row per user in `user_preference` (primar
 | `home_country`, `nationality` | ISO 3166-1 alpha-2, `char(2)`, nullable |
 | `time_zone` | IANA name, nullable. Stored in the platform's spelling (`america/sao_paulo` becomes `America/Sao_Paulo`) |
 | `units` | `metric` or `imperial`, default `metric` |
+| `theme` | `day`, `red-eye` or `system` (follow the operating system), default `system` (CHECK from `THEME_CHOICES`) |
+| `motion` | `full` or `reduced`, default `full` (CHECK from `MOTION_CHOICES`). The OS's reduced-motion setting wins over `full` at display time, so it is not stored |
 
 - **Independent by construction.** Nothing derives one column from another, and the update writes only the columns it is given (`INSERT ... ON CONFLICT DO UPDATE SET <given columns>`). Choosing Portuguese cannot move the currency or the country.
 - **The row is created at sign-up** with the language the person was using, read from the `globetrot_locale` cookie ([`authentication.md`](authentication.md)). If it is missing (the hook failed, or an account predates #58), `getPreferences` answers with the defaults and the first save creates the row.

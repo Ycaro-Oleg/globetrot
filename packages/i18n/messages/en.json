@@ -74,7 +74,15 @@
     "saved": "Your settings were saved.",
     "error": "Your settings could not be saved. Check these fields and try again: {fields}.",
     "signedOut": "Sign in to change your language and region.",
-    "eyebrow": "Personalize your account"
+    "eyebrow": "Personalize your account",
+    "theme": "Theme",
+    "themeDay": "Day",
+    "themeRedEye": "Red-eye",
+    "themeSystem": "Match my device",
+    "motion": "Motion",
+    "motionFull": "Full",
+    "motionReduced": "Reduced",
+    "appearanceHelp": "“Match my device” follows your device’s light or dark setting. If your device asks for reduced motion, the app always follows it."
   },
   "email": {
     "greeting": "Hi {name},",

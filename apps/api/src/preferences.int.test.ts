@@ -25,6 +25,8 @@ const DEFAULTS = {
   nationality: null,
   timeZone: null,
   units: 'metric',
+  theme: 'system',
+  motion: 'full',
 };
 
 async function harness() {
@@ -120,6 +122,8 @@ describe('preferences against a real database', () => {
       nationality: 'PT',
       timeZone: 'America/Sao_Paulo',
       units: 'imperial',
+      theme: 'red-eye',
+      motion: 'reduced',
     };
     expect((await call(ana.cookie, 'PATCH', full)).json).toEqual(full);
 
@@ -130,6 +134,8 @@ describe('preferences against a real database', () => {
       ['nationality', 'US'],
       ['timeZone', 'Asia/Tokyo'],
       ['units', 'metric'],
+      ['theme', 'day'],
+      ['motion', 'full'],
     ] as const) {
       const before = (await call(ana.cookie, 'GET')).json;
       const { json } = await call(ana.cookie, 'PATCH', { [field]: value });
@@ -165,6 +171,8 @@ describe('preferences against a real database', () => {
       { nationality: 'br' },
       { timeZone: 'Mars/Olympus' },
       { units: 'nautical' },
+      { theme: 'night' },
+      { motion: 'none' },
       {},
     ]) {
       const { response, json } = await call(ana.cookie, 'PATCH', body);
@@ -261,6 +269,8 @@ describe('what the database enforces for preferences', () => {
       ['home_country', 'br', 'user_preference_home_country_format'],
       ['nationality', 'B1', 'user_preference_nationality_format'],
       ['units', 'nautical', 'user_preference_units_valid'],
+      ['theme', 'night', 'user_preference_theme_valid'],
+      ['motion', 'none', 'user_preference_motion_valid'],
     ] as const) {
       const error = await database.pool
         .query(`UPDATE user_preference SET ${column} = $1 WHERE user_id = $2`, [value, ana.id])

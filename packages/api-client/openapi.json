@@ -269,6 +269,25 @@
                         "metric",
                         "imperial"
                       ]
+                    },
+                    "theme": {
+                      "type": "string",
+                      "enum": [
+                        "day",
+                        "red-eye",
+                        "system"
+                      ],
+                      "description": "Look of the app: a designed theme, or `system` to follow the OS.",
+                      "example": "system"
+                    },
+                    "motion": {
+                      "type": "string",
+                      "enum": [
+                        "full",
+                        "reduced"
+                      ],
+                      "description": "Amount of animation. The OS reduced-motion setting wins over `full`.",
+                      "example": "full"
                     }
                   },
                   "required": [
@@ -277,7 +296,9 @@
                     "homeCountry",
                     "nationality",
                     "timeZone",
-                    "units"
+                    "units",
+                    "theme",
+                    "motion"
                   ]
                 }
               }
@@ -405,6 +426,25 @@
                       "metric",
                       "imperial"
                     ]
+                  },
+                  "theme": {
+                    "type": "string",
+                    "enum": [
+                      "day",
+                      "red-eye",
+                      "system"
+                    ],
+                    "description": "Look of the app: a designed theme, or `system` to follow the OS.",
+                    "example": "system"
+                  },
+                  "motion": {
+                    "type": "string",
+                    "enum": [
+                      "full",
+                      "reduced"
+                    ],
+                    "description": "Amount of animation. The OS reduced-motion setting wins over `full`.",
+                    "example": "full"
                   }
                 }
               }
@@ -449,6 +489,25 @@
                         "metric",
                         "imperial"
                       ]
+                    },
+                    "theme": {
+                      "type": "string",
+                      "enum": [
+                        "day",
+                        "red-eye",
+                        "system"
+                      ],
+                      "description": "Look of the app: a designed theme, or `system` to follow the OS.",
+                      "example": "system"
+                    },
+                    "motion": {
+                      "type": "string",
+                      "enum": [
+                        "full",
+                        "reduced"
+                      ],
+                      "description": "Amount of animation. The OS reduced-motion setting wins over `full`.",
+                      "example": "full"
                     }
                   },
                   "required": [
@@ -457,7 +516,9 @@
                     "homeCountry",
                     "nationality",
                     "timeZone",
-                    "units"
+                    "units",
+                    "theme",
+                    "motion"
                   ]
                 }
               }

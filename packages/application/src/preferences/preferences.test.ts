@@ -18,6 +18,8 @@ const FULL = {
   nationality: 'PT',
   timeZone: 'America/Sao_Paulo',
   units: 'imperial',
+  theme: 'red-eye',
+  motion: 'reduced',
 } as const;
 
 function setup() {
@@ -44,6 +46,8 @@ describe('getPreferences', () => {
       nationality: null,
       timeZone: null,
       units: 'metric',
+      theme: 'system',
+      motion: 'full',
     });
   });
 
@@ -62,6 +66,8 @@ describe('updatePreferences changes one field and nothing else', () => {
     ['nationality', 'US'],
     ['timeZone', 'Asia/Tokyo'],
     ['units', 'metric'],
+    ['theme', 'day'],
+    ['motion', 'full'],
   ] as const)('%s', async (field, value) => {
     const { app } = setup();
     await app.updatePreferences.execute(as(ana), FULL);
@@ -81,6 +87,8 @@ describe('updatePreferences changes one field and nothing else', () => {
       nationality: null,
       timeZone: null,
       units: 'metric',
+      theme: 'system',
+      motion: 'full',
     });
   });
 
@@ -136,6 +144,9 @@ describe('updatePreferences validation', () => {
     ['an unknown time zone', { timeZone: 'Mars/Olympus' }, 'timeZone', 'custom'],
     ['a UTC offset instead of a time zone', { timeZone: '+01:00' }, 'timeZone', 'custom'],
     ['an unknown unit system', { units: 'nautical' }, 'units', 'invalid_value'],
+    ['an unknown theme', { theme: 'night' }, 'theme', 'invalid_value'],
+    ['an unknown motion setting', { motion: 'none' }, 'motion', 'invalid_value'],
+    ['a null theme (it cannot be cleared)', { theme: null }, 'theme', 'invalid_value'],
     ['a null language (it cannot be cleared)', { locale: null }, 'locale', 'invalid_type'],
     ['a null currency (it cannot be cleared)', { currency: null }, 'currency', 'invalid_type'],
     ['nothing to change', {}, '', 'custom'],
@@ -145,6 +156,17 @@ describe('updatePreferences validation', () => {
     expect(issues).toContainEqual(expect.objectContaining({ field, code }));
     expect(state.preferences.size).toBe(0);
     expect(state.audit).toHaveLength(0);
+  });
+});
+
+describe('appearance', () => {
+  it('starts on the system theme with full motion, and changing the language moves neither', async () => {
+    const { app } = setup();
+    const first = await app.updatePreferences.execute(as(ana), { locale: 'pt-BR' });
+    expect(first).toMatchObject({ theme: 'system', motion: 'full' });
+    await app.updatePreferences.execute(as(ana), { theme: 'red-eye', motion: 'reduced' });
+    const later = await app.updatePreferences.execute(as(ana), { locale: 'en', currency: 'JPY' });
+    expect(later).toMatchObject({ theme: 'red-eye', motion: 'reduced' });
   });
 });
 

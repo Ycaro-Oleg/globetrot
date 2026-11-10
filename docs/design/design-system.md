@@ -58,6 +58,15 @@ The inventory covers the handoff's token-level values, not every one-off prototy
 - Timings and easings follow the handoff's "Interactions & motion" table.
 - Every animation has a reduced-motion equivalent, triggered by **both** `prefers-reduced-motion` and the in-app Motion setting.
 
+### Theme and motion: how they are initialised (#60)
+
+- **The choice.** `theme` is `day`, `red-eye` or `system`; `motion` is `full` or `reduced`. A signed-in person's choice is stored with their settings (`user_preference`); the same values are kept in the `globetrot_theme` and `globetrot_motion` cookies on the device, which is all an anonymous visitor has. The stored choice wins over the cookie ([`chooseAppearance`](../../apps/web/lib/appearance.ts)); unknown values fall back to `system` and `full`.
+- **No flash.** The root layout renders `<html data-theme data-theme-choice data-motion>` on the server. An explicit theme is therefore already right in the first HTML, with no script. For `system` the server cannot know the OS, so it renders `day` and a tiny script in `<head>` (`THEME_SCRIPT`) switches to `red-eye` before anything is painted and follows the OS if it changes. `<html>` has `suppressHydrationWarning` for that reason.
+- **Resolution rules** (pure, in `@globetrot/domain`): `resolveTheme(choice, systemPrefersDark)` and `resolveMotion(choice, systemPrefersReduced)`: an explicit theme beats the OS; the OS asking for reduced motion **always** wins over `full`.
+- **Reduced motion in CSS.** One rule in `apps/web/app/globals.css` removes animation and transition durations under both `@media (prefers-reduced-motion: reduce)` and `[data-motion='reduced']`. Because the media query applies whatever the setting says, the OS always wins.
+- **The control** is the "Appearance" part of `/settings`: two segmented controls (radio groups, arrow keys), saved with the rest of the form.
+- **The landing page has its own day/night switch** and does not follow this setting yet (its night palette was never wired to the global theme); unifying them is part of #74.
+
 ## Typography and fonts
 
 The brand fonts, Bricolage Grotesque (display and body) and Space Mono (labels), are **self-hosted** under `apps/web/public/fonts/` as `woff2` subsets (latin, latin-ext, vietnamese) with their OFL licences next to them, and declared with `@font-face` and `font-display: swap` in `apps/web/app/globals.css`. Nothing is loaded from a font CDN (LGPD/GDPR and performance). The token `primitive.font` still names the stack with system fallbacks, so text stays readable while a font loads.

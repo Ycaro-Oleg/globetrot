@@ -66,8 +66,8 @@ Today:
 |---|---|---|
 | `getCurrentUser` | `GET /v1/me` | `{ id, email, name, emailVerified }` of the caller and nothing else |
 | `listAuthProviders` | `GET /v1/auth/providers` | **Public** (before sign-in). The social providers that are configured, so a screen never offers a button that cannot work. Empty until Google is set up (#55) |
-| `getPreferences` | `GET /v1/me/preferences` | The caller's settings. A user who saved nothing gets `en`, `USD`, no country, nationality or time zone, `metric` |
-| `updatePreferences` | `PATCH /v1/me/preferences` | Only the fields sent change, and none affects another. `null` clears `homeCountry`, `nationality` or `timeZone`; `locale`, `currency` and `units` cannot be cleared. At least one field. Audited (`preferences.update`, field names only) |
+| `getPreferences` | `GET /v1/me/preferences` | The caller's settings. A user who saved nothing gets `en`, `USD`, no country, nationality or time zone, `metric`, theme `system`, motion `full` |
+| `updatePreferences` | `PATCH /v1/me/preferences` | Only the fields sent change, and none affects another. `null` clears `homeCountry`, `nationality` or `timeZone`; `locale`, `currency`, `units`, `theme` and `motion` cannot be cleared. At least one field. Audited (`preferences.update`, field names only) |
 | `listTrips` | `GET /v1/trips[?includeArchived=true]` | The caller's trips, newest first, at most 200 (no pagination yet). Archived ones only on request |
 | `createTrip` | `POST /v1/trips` | `201`. Private and active, USD unless a currency is given. Honours `Idempotency-Key` |
 | `getTrip` | `GET /v1/trips/{id}` | |
@@ -76,7 +76,7 @@ Today:
 
 Trip rules: the title is trimmed and has 1 to 120 characters; `startDate` is a real calendar date or null; `currency` is an active ISO 4217 code (`VALIDATION_FAILED`, field `currency`, code `custom` when unknown); `status` is one of `active`, `traveling`, `completed`, `archived`. Status is set by the user and never derived. `visibility` is always `private` for now. The response never includes the owner. Field error codes are Zod's issue codes (`too_small`, `too_big`, `invalid_format`, `invalid_value`, `custom`).
 
-Preference rules: `locale` is a supported language (`en`, `pt-BR`, exact case); `currency` an active ISO 4217 code; `homeCountry` and `nationality` an assigned ISO 3166-1 alpha-2 code in upper case; `timeZone` an IANA name (UTC offsets are refused); `units` `metric` or `imperial`. Errors are `VALIDATION_FAILED` with the field name and a Zod code (`custom` for an unknown value, `invalid_format` for the wrong shape, `invalid_value` for a unit system, `invalid_type` when a field that cannot be cleared is `null`). There is no user id in the request: the actor is the only source of "whose".
+Preference rules: `locale` is a supported language (`en`, `pt-BR`, exact case); `currency` an active ISO 4217 code; `homeCountry` and `nationality` an assigned ISO 3166-1 alpha-2 code in upper case; `timeZone` an IANA name (UTC offsets are refused); `units` `metric` or `imperial`; `theme` `day`, `red-eye` or `system`; `motion` `full` or `reduced`. Errors are `VALIDATION_FAILED` with the field name and a Zod code (`custom` for an unknown value, `invalid_format` for the wrong shape, `invalid_value` for a unit system, theme or motion setting, `invalid_type` when a field that cannot be cleared is `null`). There is no user id in the request: the actor is the only source of "whose".
 
 ### Idempotency (mutations)
 

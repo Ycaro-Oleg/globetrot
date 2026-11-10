@@ -74,7 +74,15 @@
     "saved": "Suas configurações foram salvas.",
     "error": "Não foi possível salvar suas configurações. Confira estes campos e tente de novo: {fields}.",
     "signedOut": "Entre na sua conta para mudar o idioma e a região.",
-    "eyebrow": "Personalize sua conta"
+    "eyebrow": "Personalize sua conta",
+    "theme": "Tema",
+    "themeDay": "Dia",
+    "themeRedEye": "Red-eye",
+    "themeSystem": "Seguir o dispositivo",
+    "motion": "Movimento",
+    "motionFull": "Completo",
+    "motionReduced": "Reduzido",
+    "appearanceHelp": "“Seguir o dispositivo” usa o modo claro ou escuro do seu aparelho. Se o aparelho pedir menos movimento, o app sempre respeita."
   },
   "email": {
     "greeting": "Olá, {name},",

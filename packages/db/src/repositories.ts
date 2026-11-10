@@ -1,4 +1,10 @@
-import type { TripStatus, TripVisibility, UnitSystem } from '@globetrot/domain';
+import type {
+  MotionChoice,
+  ThemeChoice,
+  TripStatus,
+  TripVisibility,
+  UnitSystem,
+} from '@globetrot/domain';
 import { and, desc, eq, ne, sql, type SQL } from 'drizzle-orm';
 import type { Database } from './client';
 import { auditEvent, idempotencyKey, rateLimit, trip, userPreference } from './schema';
@@ -99,6 +105,8 @@ export interface PreferencesRow {
   readonly nationality: string | null;
   readonly timeZone: string | null;
   readonly units: UnitSystem;
+  readonly theme: ThemeChoice;
+  readonly motion: MotionChoice;
 }
 
 const asPreferencesRow = (row: typeof userPreference.$inferSelect): PreferencesRow => ({
@@ -108,6 +116,8 @@ const asPreferencesRow = (row: typeof userPreference.$inferSelect): PreferencesR
   nationality: row.nationality,
   timeZone: row.timeZone,
   units: row.units as UnitSystem,
+  theme: row.theme as ThemeChoice,
+  motion: row.motion as MotionChoice,
 });
 
 export function createPreferencesRepository(executor: Executor) {
@@ -135,6 +145,8 @@ export function createPreferencesRepository(executor: Executor) {
         readonly nationality?: string | null | undefined;
         readonly timeZone?: string | null | undefined;
         readonly units?: UnitSystem | undefined;
+        readonly theme?: ThemeChoice | undefined;
+        readonly motion?: MotionChoice | undefined;
       },
       now: Date,
     ): Promise<PreferencesRow> {
@@ -145,6 +157,8 @@ export function createPreferencesRepository(executor: Executor) {
         ...(patch.nationality === undefined ? {} : { nationality: patch.nationality }),
         ...(patch.timeZone === undefined ? {} : { timeZone: patch.timeZone }),
         ...(patch.units === undefined ? {} : { units: patch.units }),
+        ...(patch.theme === undefined ? {} : { theme: patch.theme }),
+        ...(patch.motion === undefined ? {} : { motion: patch.motion }),
       };
       const [row] = await executor
         .insert(userPreference)

@@ -79,6 +79,8 @@ export function createFakePorts(options: FakeOptions = {}) {
         nationality: null,
         timeZone: null,
         units: 'metric' as const,
+        theme: 'system' as const,
+        motion: 'full' as const,
       };
       const next: PreferencesRecord = {
         locale: patch.locale ?? current.locale,
@@ -87,6 +89,8 @@ export function createFakePorts(options: FakeOptions = {}) {
         nationality: patch.nationality === undefined ? current.nationality : patch.nationality,
         timeZone: patch.timeZone === undefined ? current.timeZone : patch.timeZone,
         units: patch.units ?? current.units,
+        theme: patch.theme ?? current.theme,
+        motion: patch.motion ?? current.motion,
       };
       state.preferences.set(userId, next);
       return next;
