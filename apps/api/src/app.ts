@@ -8,6 +8,7 @@ import {
 import { HTTPException } from 'hono/http-exception';
 import { problemResponse, type Env } from './http';
 import { problem, problemFromApplicationError } from './problem';
+import { registerDestinationRoutes } from './routes/destinations';
 import { registerPreferencesRoutes } from './routes/preferences';
 import { registerProviderRoutes } from './routes/providers';
 import { registerTripRoutes } from './routes/trips';
@@ -156,6 +157,7 @@ export function createApp({
 
   registerPreferencesRoutes(app, application);
   registerTripRoutes(app, application);
+  registerDestinationRoutes(app, application);
 
   app.notFound(() => problem(404, 'NOT_FOUND', { detail: 'No such route' }));
 

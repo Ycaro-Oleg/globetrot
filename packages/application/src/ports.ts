@@ -107,6 +107,49 @@ export interface PreferencesWriter extends PreferencesReader {
   upsert(userId: string, patch: PreferencesPatch, now: Date): Promise<PreferencesRecord>;
 }
 
+// --- Destinations (a trip's route) ---------------------------------------------------------------------
+
+export interface DestinationRecord {
+  readonly id: string;
+  readonly tripId: string;
+  /** 0-based order on the route. */
+  readonly position: number;
+  readonly placeKey: string;
+  readonly name: string;
+  readonly countryCode: string | null;
+  readonly region: string | null;
+  readonly latitude: number;
+  readonly longitude: number;
+  readonly nights: number;
+  readonly createdAt: Date;
+  readonly updatedAt: Date;
+}
+
+export interface NewDestination {
+  readonly id: string;
+  readonly placeKey: string;
+  readonly name: string;
+  readonly countryCode: string | null;
+  readonly region: string | null;
+  readonly latitude: number;
+  readonly longitude: number;
+  readonly nights: number;
+}
+
+export interface DestinationReader {
+  /** In route order. */
+  listByTrip(tripId: string): Promise<DestinationRecord[]>;
+}
+
+export interface DestinationWriter extends DestinationReader {
+  /** Replaces the trip's whole route with `items` (position = index) and returns what is stored. */
+  replaceForTrip(
+    tripId: string,
+    items: readonly NewDestination[],
+    now: Date,
+  ): Promise<DestinationRecord[]>;
+}
+
 // --- Audit ---------------------------------------------------------------------------------------------
 
 export type AuditMetadata = Readonly<Record<string, string | number | boolean | readonly string[]>>;
@@ -154,6 +197,7 @@ export interface IdempotencyStore {
 /** What a mutation may touch. Everything in one `UnitOfWork.run` commits or rolls back together. */
 export interface Transaction {
   readonly trips: TripWriter;
+  readonly destinations: DestinationWriter;
   readonly preferences: PreferencesWriter;
   readonly audit: AuditLog;
   readonly idempotency: IdempotencyStore;
@@ -176,6 +220,7 @@ export interface Ports {
   readonly users: UserReader;
   /** Reads outside a transaction (queries). */
   readonly trips: TripReader;
+  readonly destinations: DestinationReader;
   readonly preferences: PreferencesReader;
   readonly unitOfWork: UnitOfWork;
   readonly clock: Clock;

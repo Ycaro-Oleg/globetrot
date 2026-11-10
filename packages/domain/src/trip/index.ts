@@ -44,3 +44,4 @@ export {
   type TripStatus,
   type TripVisibility,
 } from './status';
+export * from './destinations';

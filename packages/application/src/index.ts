@@ -35,12 +35,17 @@ export {
   type EmailTemplate,
   type RenderedEmail,
 } from './email/templates';
+import { createListDestinations, createReplaceDestinations } from './destinations/operations';
 export { defineOperation, type Operation } from './operation';
 export type {
   AuditEventInput,
   AuditLog,
   AuditMetadata,
   Clock,
+  DestinationReader,
+  DestinationRecord,
+  DestinationWriter,
+  NewDestination,
   IdempotencyStart,
   IdempotencyStore,
   IdGenerator,
@@ -78,6 +83,14 @@ export {
 export { idempotencyKeySchema } from './trips/operations';
 
 export {
+  destinationFields,
+  destinationListSchema,
+  destinationSchema,
+  replaceDestinationsBody,
+  type DestinationView,
+} from './destinations/schemas';
+
+export {
   countrySchema,
   DEFAULT_PREFERENCES,
   localeSchema,
@@ -98,6 +111,8 @@ export function createApplication(ports: Ports) {
     createTrip: createCreateTrip(ports),
     updateTrip: createUpdateTrip(ports),
     archiveTrip: createArchiveTrip(ports),
+    listDestinations: createListDestinations(ports),
+    replaceDestinations: createReplaceDestinations(ports),
     getPreferences: createGetPreferences(ports),
     updatePreferences: createUpdatePreferences(ports),
   };

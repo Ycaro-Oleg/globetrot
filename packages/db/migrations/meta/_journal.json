@@ -43,6 +43,13 @@
       "when": 1794269373075,
       "tag": "0005_theme_and_motion_preferences",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1794273325044,
+      "tag": "0006_trip_destinations",
+      "breakpoints": true
     }
   ]
 }

@@ -44,8 +44,9 @@ Every table, in the order it was introduced. `pnpm --filter @globetrot/db genera
 | `idempotency_key` | `0002_trips` | `schema/trip.ts` | A mutation already done, to replay it | `owner_id` | [below](#trips-idempotency-and-audit) |
 | `audit_event` | `0002_trips`, `0003_audit_event_append_only` | `schema/trip.ts` | Append-only history of mutations | the actor (no foreign key) | [below](#trips-idempotency-and-audit) |
 | `user_preference` | `0004_user_preferences`, `0005_theme_and_motion_preferences` | `schema/preference.ts` | One row of settings per user | `user_id` | [below](#user-preferences) |
+| `destination` | `0006_trip_destinations` | `schema/destination.ts` | The ordered stops of a trip's route | the trip's owner (through `trip_id`) | [below](#destinations-a-trips-route) |
 
-`0000_extensions` enables `postgis`, `pg_trgm` and `unaccent` and creates no table. Planned, not built: destinations and pins (M4), itinerary and checklists (M5), expenses, exchange rates and savings (M6), stamps and the passport (M5 and M9), proposals (M7), billing (M10).
+`0000_extensions` enables `postgis`, `pg_trgm` and `unaccent` and creates no table. Planned, not built: pins and their connections (M4), itinerary and checklists (M5), expenses, exchange rates and savings (M6), stamps and the passport (M5 and M9), proposals (M7), billing (M10).
 
 ## Authentication tables
 
@@ -84,6 +85,25 @@ Migrations `0004_user_preferences` and `0005_theme_and_motion_preferences`. One 
 - **Independent by construction.** Nothing derives one column from another, and the update writes only the columns it is given (`INSERT ... ON CONFLICT DO UPDATE SET <given columns>`). Choosing Portuguese cannot move the currency or the country.
 - **The row is created at sign-up** with the language the person was using, read from the `globetrot_locale` cookie ([`authentication.md`](authentication.md)). If it is missing (the hook failed, or an account predates #58), `getPreferences` answers with the defaults and the first save creates the row.
 - Country and time-zone validity is checked in the application (`isCountryCode`, `canonicalTimeZone` in `@globetrot/domain`); the database checks the shape and the closed lists.
+
+## Destinations (a trip's route)
+
+Migration `0006_trip_destinations`. One row per stop in `destination`, `trip_id` references `trip` with `ON DELETE CASCADE` (a trip is never deleted today, but its route must never outlive it).
+
+| Column | Rule |
+|---|---|
+| `id` | UUIDv7 made by the application |
+| `position` | 0-based order on the route, never negative. The whole route is replaced together, so positions are always `0..n-1` |
+| `place_key` | The client's stable key for the place (`geoapify:<id>`, `catalog:tokyo`), 1 to 200 characters. **Not** a foreign key: the places table arrives with the geocoder |
+| `name` | 1 to 200 characters |
+| `country_code` | ISO 3166-1 alpha-2, upper case, nullable |
+| `region` | Free text, nullable |
+| `latitude`, `longitude` | `double precision`, CHECKed to -90..90 and -180..180 |
+| `nights` | 0 to 365, default 0 (day trips are 0) |
+
+- **Replace, don't patch.** `replaceDestinations` deletes the trip's rows and inserts the list in order inside one transaction (with the audit entry), so a failed save leaves the old route intact and sending the same route twice changes nothing. At most 100 stops (`MAX_DESTINATIONS`).
+- **State** (`planned` or `draft`, for Pip proposals) and the link to a places table are added by the migrations of the features that need them.
+- The audit entry (`destination.replace`) holds the **number** of stops, never which places: where someone plans to go is personal.
 
 ## Extensions
 

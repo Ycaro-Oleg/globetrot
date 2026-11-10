@@ -1,5 +1,7 @@
 import type {
   AuditEventInput,
+  DestinationRecord,
+  DestinationWriter,
   NewTrip,
   Ports,
   PreferencesRecord,
@@ -14,6 +16,8 @@ import type {
 /** In-memory ports for unit tests (here and in apps/api). Real adapters are tested against PostgreSQL. */
 export interface FakeState {
   trips: Map<string, TripRecord>;
+  /** Routes by trip id. */
+  destinations: Map<string, DestinationRecord[]>;
   preferences: Map<string, PreferencesRecord>;
   audit: AuditEventInput[];
   idempotency: Map<string, { fingerprint: string; response: unknown }>;
@@ -31,6 +35,7 @@ export function createFakePorts(options: FakeOptions = {}) {
   const faults = { auditFails: false };
   const state: FakeState = {
     trips: new Map(),
+    destinations: new Map(),
     preferences: new Map(),
     audit: [],
     idempotency: new Map(),
@@ -97,8 +102,26 @@ export function createFakePorts(options: FakeOptions = {}) {
     },
   };
 
+  const destinationWriter: DestinationWriter = {
+    async listByTrip(tripId) {
+      return [...(state.destinations.get(tripId) ?? [])];
+    },
+    async replaceForTrip(tripId, items, now) {
+      const records = items.map((item, position): DestinationRecord => ({
+        ...item,
+        tripId,
+        position,
+        createdAt: now,
+        updatedAt: now,
+      }));
+      state.destinations.set(tripId, records);
+      return [...records];
+    },
+  };
+
   const transaction: Transaction = {
     trips: tripWriter,
+    destinations: destinationWriter,
     preferences: preferencesWriter,
     audit: {
       async record(event) {
@@ -131,12 +154,14 @@ export function createFakePorts(options: FakeOptions = {}) {
       },
     },
     trips: tripWriter,
+    destinations: destinationWriter,
     preferences: preferencesWriter,
     unitOfWork: {
       // Commit or roll back as one, like a database transaction.
       async run(work) {
         const before: FakeState = {
           trips: new Map(state.trips),
+          destinations: new Map(state.destinations),
           preferences: new Map(state.preferences),
           audit: [...state.audit],
           idempotency: new Map(
@@ -147,6 +172,7 @@ export function createFakePorts(options: FakeOptions = {}) {
           return await work(transaction);
         } catch (error) {
           state.trips = before.trips;
+          state.destinations = before.destinations;
           state.preferences = before.preferences;
           state.audit = before.audit;
           state.idempotency = before.idempotency;

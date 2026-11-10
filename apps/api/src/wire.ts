@@ -1,5 +1,6 @@
 import { createApplication, type EmailPort, type UserReader } from '@globetrot/application';
 import {
+  createDestinationRepository,
   createPreferencesRepository,
   createTripRepository,
   createUnitOfWork,
@@ -59,6 +60,7 @@ export function createServices(
     application: createApplication({
       users: createUserReader(db),
       trips: createTripRepository(db),
+      destinations: createDestinationRepository(db),
       preferences: createPreferencesRepository(db),
       unitOfWork: createUnitOfWork(db),
       clock: { now: () => new Date() },
