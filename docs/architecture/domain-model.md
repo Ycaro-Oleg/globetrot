@@ -22,7 +22,7 @@ flowchart TB
 | Context | Entities | Notes |
 |---|---|---|
 | **Identity** | User, Session, Account (OAuth link), AgentGrant | AgentGrant = scoped, revocable access for external MCP clients |
-| **Profile & Preferences** | UserPreference (one row per user; `Profile` later) | `locale`, `currency` (default USD), `homeCountry`, `nationality`, `timeZone`, `units` (#58), then `theme` and `motion`. All independent: no field is derived from another. Physical shape: [`data-model.md`](data-model.md#user-preferences) |
+| **Profile & Preferences** | UserPreference (one row per user; `Profile` later) | `locale`, `currency` (default USD), `homeCountry`, `nationality`, `timeZone`, `units` (#58), `theme` and `motion` (#60). All independent: no field is derived from another. Physical shape: [`data-model.md`](data-model.md#user-preferences) |
 | **Geo** | Place, GeocodeCache | `Place` is hierarchical (`country → region → city → district → poi`), with a PostGIS point, ISO codes and localized names |
 | **Trip Planning** | Trip, Destination (stop), Pin, PinConnection, ItineraryDay, Activity, Accommodation, Transportation, Checklist, ChecklistItem, Note, Attachment | Described below |
 | **Finance** | Budget, Expense, ExchangeRate, SavingsGoal, SavingsEntry | See [`money.md`](money.md) |

@@ -125,3 +125,27 @@ a:focus-visible {
   white-space: nowrap;
   border: 0;
 }
+
+/*
+ * Reduced motion: the person's own setting (`data-motion="reduced"` on <html>) and the operating system's
+ * `prefers-reduced-motion` both turn animation and transitions off. The OS one wins over `full`, because it is
+ * a media query that applies whatever the setting says.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+[data-motion='reduced'] *,
+[data-motion='reduced'] *::before,
+[data-motion='reduced'] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}

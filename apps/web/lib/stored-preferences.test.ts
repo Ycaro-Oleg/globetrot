@@ -12,6 +12,8 @@ const STORED: StoredPreferences = {
   nationality: null,
   timeZone: 'America/Sao_Paulo',
   units: 'metric',
+  theme: 'system',
+  motion: 'full',
 };
 
 describe('sessionCookieHeader', () => {

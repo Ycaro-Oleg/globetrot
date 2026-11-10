@@ -1,4 +1,10 @@
-import type { TripStatus, TripVisibility, UnitSystem } from '@globetrot/domain';
+import type {
+  MotionChoice,
+  ThemeChoice,
+  TripStatus,
+  TripVisibility,
+  UnitSystem,
+} from '@globetrot/domain';
 import type { Actor } from './actor';
 
 /**
@@ -75,6 +81,8 @@ export interface PreferencesRecord {
   readonly nationality: string | null;
   readonly timeZone: string | null;
   readonly units: UnitSystem;
+  readonly theme: ThemeChoice;
+  readonly motion: MotionChoice;
 }
 
 /** Only the fields present are written. `null` clears country, nationality or time zone. */
@@ -85,6 +93,8 @@ export interface PreferencesPatch {
   readonly nationality?: string | null | undefined;
   readonly timeZone?: string | null | undefined;
   readonly units?: UnitSystem | undefined;
+  readonly theme?: ThemeChoice | undefined;
+  readonly motion?: MotionChoice | undefined;
 }
 
 export interface PreferencesReader {

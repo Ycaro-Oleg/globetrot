@@ -16,6 +16,8 @@ const VALUES: SettingsViewProps['values'] = {
   nationality: 'PT',
   timeZone: 'America/Sao_Paulo',
   units: 'metric',
+  theme: 'system',
+  motion: 'full',
 };
 
 function render(locale: SupportedLocale, status?: string, values = VALUES): string {
@@ -107,4 +109,37 @@ describe('settings view', () => {
       expect(html).toContain('Português (Brasil)');
     }
   });
+
+  it.each(SUPPORTED_LOCALES)(
+    'shows the theme and motion controls with their labels (%s)',
+    (locale) => {
+      const copy = catalogs[locale].settings;
+      const html = render(locale, undefined, { ...VALUES, theme: 'red-eye', motion: 'reduced' });
+      const text = visibleText(html);
+      for (const key of [
+        'theme',
+        'themeDay',
+        'themeRedEye',
+        'themeSystem',
+        'motion',
+        'motionFull',
+        'motionReduced',
+        'appearanceHelp',
+      ] as const) {
+        expect(text, key).toContain(copy[key]);
+      }
+      // Radios named for the form, with the stored choice checked.
+      const radios = (name: string) =>
+        [...html.matchAll(/<input[^>]*>/g)]
+          .map((m) => m[0])
+          .filter((tag) => tag.includes(`name="${name}"`));
+      const value = (tag: string) => /value="([^"]+)"/.exec(tag)?.[1];
+      expect(radios('theme').map(value)).toEqual(['day', 'red-eye', 'system']);
+      // The stored choice is the selected segment (React Aria marks it on its label).
+      const selected = [
+        ...html.matchAll(/<label[^>]*data-selected="true"[^>]*>([\s\S]*?)<\/label>/g),
+      ].map((m) => m[1]?.replace(/<[^>]+>/g, '').trim());
+      expect(selected).toEqual([copy.themeRedEye, copy.motionReduced]);
+    },
+  );
 });

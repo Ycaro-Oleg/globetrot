@@ -49,6 +49,8 @@ const PREFERENCES = {
   nationality: null,
   timeZone: null,
   units: 'metric',
+  theme: 'system',
+  motion: 'full',
 };
 
 const NOW = '2026-11-08T12:00:00.000Z';
@@ -97,7 +99,7 @@ const readBody = (request) =>
 const stub = createServer(async (request, response) => {
   const url = new URL(request.url ?? '/', 'http://stub');
   const signedIn = (request.headers.cookie ?? '').includes(SESSION);
-  const body = request.method === 'POST' ? await readBody(request) : {};
+  const body = ['POST', 'PATCH'].includes(request.method ?? '') ? await readBody(request) : {};
   const route = `${request.method} ${url.pathname}`;
 
   if (route === 'GET /v1/auth/providers') return reply(response, 200, { providers: ['google'] });
@@ -123,6 +125,11 @@ const stub = createServer(async (request, response) => {
     const found = TRIPS.find((trip) => trip.id === tripRoute[1]);
     if (!signedIn) return reply(response, 401, { code: 'UNAUTHENTICATED' });
     return found ? reply(response, 200, found) : reply(response, 404, { code: 'NOT_FOUND' });
+  }
+  if (route === 'PATCH /v1/me/preferences') {
+    if (!signedIn) return reply(response, 401, { code: 'UNAUTHENTICATED' });
+    Object.assign(PREFERENCES, body);
+    return reply(response, 200, PREFERENCES);
   }
   if (route === 'GET /v1/me/preferences') {
     return signedIn
@@ -377,6 +384,7 @@ try {
     ['terms-draft', false, async (page) => go(page, `${base}/terms`)],
     ['privacy-draft', false, async (page) => go(page, `${base}/privacy`)],
     ...shellScenarios(copy),
+    ['settings', true, async (page) => go(page, `${base}/settings`)],
     ...publicScenarios(),
     ...tripScenarios(copy),
   ];
@@ -1127,6 +1135,158 @@ try {
       );
       await page.getByRole('heading', { level: 1 }).first().waitFor();
       await context.close();
+    }
+
+    {
+      // Theme and motion: the first paint is already right, for explicit and system choices, anonymous and signed in.
+      const themeOf = (page) => page.evaluate(() => document.documentElement.dataset.theme);
+      const withCookies = async (cookies, options = {}) => {
+        PREFERENCES.theme = 'system';
+        PREFERENCES.motion = 'full';
+        const browserContext = await browser.newContext({
+          viewport: VIEWPORTS.desktop,
+          ...options,
+        });
+        await browserContext.addCookies(
+          cookies.map(([name, value]) => ({ name, value, url: base })),
+        );
+        return { context: browserContext, page: await browserContext.newPage() };
+      };
+
+      // An explicit choice is in the server's HTML: no script needed, so no flash.
+      const noScript = await withCookies([['globetrot_theme', 'red-eye']], {
+        javaScriptEnabled: false,
+      });
+      await noScript.page.goto(`${base}/login`);
+      check(
+        (await themeOf(noScript.page)) === 'red-eye',
+        'a saved red-eye theme is not in the server-rendered page',
+      );
+      await noScript.context.close();
+
+      // `system` follows the OS before the first paint (the head script runs before the body is parsed).
+      for (const [scheme, expected] of [
+        ['dark', 'red-eye'],
+        ['light', 'day'],
+      ]) {
+        const { context, page } = await withCookies([], { colorScheme: scheme });
+        await page.goto(`${base}/login`, { waitUntil: 'domcontentloaded' });
+        check(
+          (await themeOf(page)) === expected,
+          `system theme with a ${scheme} OS is ${await themeOf(page)} at DOMContentLoaded, not ${expected}`,
+        );
+        if (scheme === 'dark') {
+          await page.emulateMedia({ colorScheme: 'light' });
+          check(
+            (await themeOf(page)) === 'day',
+            'the system theme did not follow the OS changing to light',
+          );
+        }
+        await context.close();
+      }
+
+      // An explicit choice beats the OS.
+      {
+        const { context, page } = await withCookies([['globetrot_theme', 'day']], {
+          colorScheme: 'dark',
+        });
+        await page.goto(`${base}/login`, { waitUntil: 'domcontentloaded' });
+        check((await themeOf(page)) === 'day', 'a saved day theme lost to a dark OS');
+        await context.close();
+      }
+
+      // Reduced motion: the person's setting and the OS setting both stop transitions; the OS wins over "full".
+      const transitionOf = (page) =>
+        page.evaluate(() => {
+          const el = document.querySelector('.gt-button');
+          return el ? getComputedStyle(el).transitionDuration : null;
+        });
+      const isStill = (value) =>
+        value !== null && value.split(',').every((part) => parseFloat(part) < 0.001);
+      {
+        const full = await withCookies([['globetrot_motion', 'full']]);
+        await go(full.page, `${base}/login`);
+        check(
+          !isStill(await transitionOf(full.page)),
+          'full motion has no transition on the buttons',
+        );
+        await full.context.close();
+
+        const reduced = await withCookies([['globetrot_motion', 'reduced']]);
+        await go(reduced.page, `${base}/login`);
+        check(
+          (await reduced.page.locator('html').getAttribute('data-motion')) === 'reduced',
+          'the reduced motion choice is not on <html>',
+        );
+        check(isStill(await transitionOf(reduced.page)), 'reduced motion still has transitions');
+        await reduced.context.close();
+
+        const os = await withCookies([['globetrot_motion', 'full']], { reducedMotion: 'reduce' });
+        await go(os.page, `${base}/login`);
+        check(
+          isStill(await transitionOf(os.page)),
+          'the OS reduced-motion setting did not win over full motion',
+        );
+        await os.context.close();
+      }
+
+      // The settings form: keyboard operable, saved with the account, and still there after a reload.
+      {
+        const { context, page } = await withCookies([['globetrot.session_token', 'ok']]);
+        await go(page, `${base}/settings`);
+        const group = page.getByRole('radiogroup', { name: CATALOGS.en.settings.theme });
+        check(
+          (await group.getByRole('radio').count()) === 3,
+          'the theme control does not have three options',
+        );
+        await group
+          .getByRole('radio', { name: CATALOGS.en.settings.themeSystem })
+          .check({ force: true });
+        // Keyboard: focus the selected radio and move with the arrow keys.
+        await group.getByRole('radio', { name: CATALOGS.en.settings.themeSystem }).focus();
+        await page.keyboard.press('ArrowLeft');
+        check(
+          await group.getByRole('radio', { name: CATALOGS.en.settings.themeRedEye }).isChecked(),
+          'the arrow keys do not move the theme choice',
+        );
+        await page
+          .getByRole('radiogroup', { name: CATALOGS.en.settings.motion })
+          .getByRole('radio', { name: CATALOGS.en.settings.motionReduced })
+          .check({ force: true });
+        await page.getByRole('button', { name: CATALOGS.en.settings.save, exact: true }).click();
+        await page.waitForURL(/status=saved/, { timeout: 10_000 }).catch(() => {});
+        check(
+          page.url().includes('status=saved'),
+          `saving the settings did not succeed (at ${page.url()})`,
+        );
+        check(
+          (await themeOf(page)) === 'red-eye',
+          'the saved theme did not apply to the page after saving',
+        );
+        check(
+          (await page.locator('html').getAttribute('data-motion')) === 'reduced',
+          'the saved motion did not apply to the page after saving',
+        );
+        check(
+          PREFERENCES.theme === 'red-eye' && PREFERENCES.motion === 'reduced',
+          'the choice was not saved with the account',
+        );
+        await context.close();
+
+        // Another device, signed in: the stored choice applies with no cookie at all.
+        const fresh = await withCookies([['globetrot.session_token', 'ok']]);
+        PREFERENCES.theme = 'red-eye';
+        PREFERENCES.motion = 'reduced';
+        await fresh.page.goto(`${base}/login`, { waitUntil: 'domcontentloaded' });
+        check(
+          (await themeOf(fresh.page)) === 'red-eye',
+          'the stored theme did not apply on a device with no cookie',
+        );
+        await fresh.context.close();
+      }
+
+      PREFERENCES.theme = 'system';
+      PREFERENCES.motion = 'full';
     }
 
     {

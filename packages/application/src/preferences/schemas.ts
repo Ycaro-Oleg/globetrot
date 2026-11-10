@@ -1,9 +1,13 @@
 import {
   DEFAULT_CURRENCY,
+  DEFAULT_MOTION_CHOICE,
+  DEFAULT_THEME_CHOICE,
   DEFAULT_UNIT_SYSTEM,
   isCountryCode,
   isCurrencyCode,
   isTimeZone,
+  MOTION_CHOICES,
+  THEME_CHOICES,
   UNIT_SYSTEMS,
 } from '@globetrot/domain';
 import { DEFAULT_LOCALE, isSupportedLocale, SUPPORTED_LOCALES } from '@globetrot/i18n';
@@ -35,6 +39,14 @@ export const timeZoneSchema = z
   .meta({ description: 'IANA time zone name.', example: 'America/Sao_Paulo' });
 
 export const unitsSchema = z.enum(UNIT_SYSTEMS);
+export const themeSchema = z.enum(THEME_CHOICES).meta({
+  description: 'Look of the app: a designed theme, or `system` to follow the OS.',
+  example: 'system',
+});
+export const motionSchema = z.enum(MOTION_CHOICES).meta({
+  description: 'Amount of animation. The OS reduced-motion setting wins over `full`.',
+  example: 'full',
+});
 
 /** Every field of the stored preferences. Country, nationality and time zone are optional (null). */
 export const preferencesSchema = z.object({
@@ -44,6 +56,8 @@ export const preferencesSchema = z.object({
   nationality: z.string().nullable(),
   timeZone: z.string().nullable(),
   units: unitsSchema,
+  theme: themeSchema,
+  motion: motionSchema,
 });
 export type PreferencesView = z.infer<typeof preferencesSchema>;
 
@@ -58,6 +72,8 @@ export const updatePreferencesFields = z.object({
   nationality: countrySchema.nullable().optional(),
   timeZone: timeZoneSchema.nullable().optional(),
   units: unitsSchema.optional(),
+  theme: themeSchema.optional(),
+  motion: motionSchema.optional(),
 });
 
 export const hasAPreferenceChange = (input: z.infer<typeof updatePreferencesFields>) =>
@@ -76,6 +92,8 @@ export const DEFAULT_PREFERENCES: PreferencesView = {
   nationality: null,
   timeZone: null,
   units: DEFAULT_UNIT_SYSTEM,
+  theme: DEFAULT_THEME_CHOICE,
+  motion: DEFAULT_MOTION_CHOICE,
 };
 
 export const toPreferencesView = (record: PreferencesRecord): PreferencesView => ({
@@ -85,4 +103,6 @@ export const toPreferencesView = (record: PreferencesRecord): PreferencesView =>
   nationality: record.nationality,
   timeZone: record.timeZone,
   units: record.units,
+  theme: record.theme,
+  motion: record.motion,
 });

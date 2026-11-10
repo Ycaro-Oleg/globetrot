@@ -262,6 +262,18 @@ export interface operations {
                         timeZone: string | null;
                         /** @enum {string} */
                         units: "metric" | "imperial";
+                        /**
+                         * @description Look of the app: a designed theme, or `system` to follow the OS.
+                         * @example system
+                         * @enum {string}
+                         */
+                        theme: "day" | "red-eye" | "system";
+                        /**
+                         * @description Amount of animation. The OS reduced-motion setting wins over `full`.
+                         * @example full
+                         * @enum {string}
+                         */
+                        motion: "full" | "reduced";
                     };
                 };
             };
@@ -327,6 +339,18 @@ export interface operations {
                     timeZone?: string | null;
                     /** @enum {string} */
                     units?: "metric" | "imperial";
+                    /**
+                     * @description Look of the app: a designed theme, or `system` to follow the OS.
+                     * @example system
+                     * @enum {string}
+                     */
+                    theme?: "day" | "red-eye" | "system";
+                    /**
+                     * @description Amount of animation. The OS reduced-motion setting wins over `full`.
+                     * @example full
+                     * @enum {string}
+                     */
+                    motion?: "full" | "reduced";
                 };
             };
         };
@@ -345,6 +369,18 @@ export interface operations {
                         timeZone: string | null;
                         /** @enum {string} */
                         units: "metric" | "imperial";
+                        /**
+                         * @description Look of the app: a designed theme, or `system` to follow the OS.
+                         * @example system
+                         * @enum {string}
+                         */
+                        theme: "day" | "red-eye" | "system";
+                        /**
+                         * @description Amount of animation. The OS reduced-motion setting wins over `full`.
+                         * @example full
+                         * @enum {string}
+                         */
+                        motion: "full" | "reduced";
                     };
                 };
             };

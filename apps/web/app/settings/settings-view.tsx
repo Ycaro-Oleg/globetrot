@@ -1,6 +1,6 @@
 'use client';
 
-import { Banner, Button, SelectField } from '@globetrot/ui';
+import { Banner, Button, SegmentedControl, SelectField } from '@globetrot/ui';
 import { useTranslations } from 'next-intl';
 import { savePreferences } from '../actions';
 import { NOT_SET, type Option } from './options';
@@ -14,6 +14,8 @@ export interface SettingsViewProps {
     readonly nationality: string | null;
     readonly timeZone: string | null;
     readonly units: string;
+    readonly theme: string;
+    readonly motion: string;
   };
   readonly currencies: readonly Option[];
   readonly countries: readonly Option[];
@@ -46,6 +48,15 @@ export function SettingsView({
   const units: Option[] = [
     { id: 'metric', label: t('unitsMetric') },
     { id: 'imperial', label: t('unitsImperial') },
+  ];
+  const themes: Option[] = [
+    { id: 'day', label: t('themeDay') },
+    { id: 'red-eye', label: t('themeRedEye') },
+    { id: 'system', label: t('themeSystem') },
+  ];
+  const motions: Option[] = [
+    { id: 'full', label: t('motionFull') },
+    { id: 'reduced', label: t('motionReduced') },
   ];
   const failed = status?.startsWith('error:') ? status.slice('error:'.length) : null;
 
@@ -110,6 +121,19 @@ export function SettingsView({
             options={units}
             defaultSelectedKey={values.units}
           />
+          <SegmentedControl
+            name="theme"
+            label={t('theme')}
+            options={themes}
+            defaultValue={values.theme}
+          />
+          <SegmentedControl
+            name="motion"
+            label={t('motion')}
+            options={motions}
+            defaultValue={values.motion}
+          />
+          <p className={styles.description}>{t('appearanceHelp')}</p>
           <div className={styles.actions}>
             <Button type="submit">{t('save')}</Button>
           </div>

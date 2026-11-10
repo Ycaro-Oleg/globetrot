@@ -1,11 +1,12 @@
 'use server';
 
-import { UNIT_SYSTEMS } from '@globetrot/domain';
+import { isMotionChoice, isThemeChoice, UNIT_SYSTEMS } from '@globetrot/domain';
 import { isSupportedLocale } from '@globetrot/i18n';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { LOCALE_COOKIE } from '../i18n/locale';
 import { apiInternalUrl } from '../lib/api-proxy';
+import { MOTION_COOKIE, THEME_COOKIE } from '../lib/appearance';
 import { createServerApiClient, sessionCookieHeader } from '../lib/stored-preferences';
 import { NOT_SET } from './settings/options';
 
@@ -55,6 +56,10 @@ export async function savePreferences(formData: FormData): Promise<void> {
   const homeCountry = optional(formData, 'homeCountry');
   const nationality = optional(formData, 'nationality');
   const timeZone = optional(formData, 'timeZone');
+  const submittedTheme = text(formData, 'theme');
+  const submittedMotion = text(formData, 'motion');
+  const theme = isThemeChoice(submittedTheme) ? submittedTheme : undefined;
+  const motion = isMotionChoice(submittedMotion) ? submittedMotion : undefined;
   const body = {
     ...(locale === undefined ? {} : { locale }),
     ...(currency === undefined ? {} : { currency }),
@@ -62,6 +67,8 @@ export async function savePreferences(formData: FormData): Promise<void> {
     ...(nationality === undefined ? {} : { nationality }),
     ...(timeZone === undefined ? {} : { timeZone }),
     ...(units === undefined ? {} : { units }),
+    ...(theme === undefined ? {} : { theme }),
+    ...(motion === undefined ? {} : { motion }),
   };
   const client = createServerApiClient({ cookieHeader, apiUrl: apiInternalUrl() });
   const { error } = await client.PATCH('/v1/me/preferences', { body });
@@ -73,5 +80,8 @@ export async function savePreferences(formData: FormData): Promise<void> {
   if (locale !== undefined && isSupportedLocale(locale)) {
     store.set(LOCALE_COOKIE, locale, localeCookieOptions());
   }
+  // Aligned with the stored choice, so signing out keeps the look the person chose on this device.
+  if (theme) store.set(THEME_COOKIE, theme, localeCookieOptions());
+  if (motion) store.set(MOTION_COOKIE, motion, localeCookieOptions());
   redirect('/settings?status=saved');
 }

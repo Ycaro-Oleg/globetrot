@@ -75,6 +75,8 @@ describe('/v1/me/preferences', () => {
       nationality: null,
       timeZone: null,
       units: 'metric',
+      theme: 'system',
+      motion: 'full',
     });
   });
 
@@ -89,6 +91,8 @@ describe('/v1/me/preferences', () => {
       nationality: null,
       timeZone: 'Europe/Lisbon',
       units: 'metric',
+      theme: 'system',
+      motion: 'full',
     });
     expect((await call(ana, 'PATCH', { homeCountry: null })).json).toMatchObject({
       homeCountry: null,
@@ -102,6 +106,8 @@ describe('/v1/me/preferences', () => {
     ['an unknown country', { nationality: 'ZZ' }, 'nationality'],
     ['an unknown time zone', { timeZone: 'Mars/Olympus' }, 'timeZone'],
     ['an unknown unit system', { units: 'nautical' }, 'units'],
+    ['an unknown theme', { theme: 'night' }, 'theme'],
+    ['an unknown motion setting', { motion: 'none' }, 'motion'],
     ['a cleared language', { locale: null }, 'locale'],
   ])('rejects %s with 422 problem+json naming the field', async (_name, body, field) => {
     const { call } = setup();

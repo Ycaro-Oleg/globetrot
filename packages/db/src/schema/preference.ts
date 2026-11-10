@@ -1,6 +1,14 @@
 // One row of settings per user. Language, currency, country, nationality, time zone and units are
 // independent columns: nothing derives one from another (business rules, "Locale and currency").
-import { DEFAULT_CURRENCY, DEFAULT_UNIT_SYSTEM, UNIT_SYSTEMS } from '@globetrot/domain';
+import {
+  DEFAULT_CURRENCY,
+  DEFAULT_MOTION_CHOICE,
+  DEFAULT_THEME_CHOICE,
+  DEFAULT_UNIT_SYSTEM,
+  MOTION_CHOICES,
+  THEME_CHOICES,
+  UNIT_SYSTEMS,
+} from '@globetrot/domain';
 import { DEFAULT_LOCALE, SUPPORTED_LOCALES } from '@globetrot/i18n';
 import { sql, type AnyColumn, type SQL } from 'drizzle-orm';
 import { char, check, pgTable, text, timestamp } from 'drizzle-orm/pg-core';
@@ -27,6 +35,10 @@ export const userPreference = pgTable(
     /** IANA name (`America/Sao_Paulo`), canonical spelling. Optional. */
     timeZone: text('time_zone'),
     units: text('units').notNull().default(DEFAULT_UNIT_SYSTEM),
+    /** `day`, `red-eye` or `system` (follow the OS). */
+    theme: text('theme').notNull().default(DEFAULT_THEME_CHOICE),
+    /** `full` or `reduced`; the OS's reduced-motion setting wins over `full` at display time. */
+    motion: text('motion').notNull().default(DEFAULT_MOTION_CHOICE),
     createdAt: instant('created_at').defaultNow().notNull(),
     updatedAt: instant('updated_at').defaultNow().notNull(),
   },
@@ -36,5 +48,7 @@ export const userPreference = pgTable(
     check('user_preference_home_country_format', sql`${table.homeCountry} ~ '^[A-Z]{2}$'`),
     check('user_preference_nationality_format', sql`${table.nationality} ~ '^[A-Z]{2}$'`),
     check('user_preference_units_valid', oneOf(table.units, UNIT_SYSTEMS)),
+    check('user_preference_theme_valid', oneOf(table.theme, THEME_CHOICES)),
+    check('user_preference_motion_valid', oneOf(table.motion, MOTION_CHOICES)),
   ],
 );

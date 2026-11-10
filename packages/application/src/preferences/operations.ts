@@ -46,6 +46,8 @@ export function createUpdatePreferences(deps: Pick<Ports, 'unitOfWork' | 'clock'
         // Stored in the canonical spelling ("america/sao_paulo" becomes "America/Sao_Paulo").
         timeZone: input.timeZone === undefined ? undefined : canonicalTimeZone(input.timeZone),
         units: input.units,
+        theme: input.theme,
+        motion: input.motion,
       };
       const fields = (Object.keys(patch) as (keyof PreferencesPatch)[]).filter(
         (field) => patch[field] !== undefined,

@@ -1,4 +1,5 @@
 import { createApiClient } from '@globetrot/api-client';
+import type { MotionChoice, ThemeChoice } from '@globetrot/domain';
 import { isSupportedLocale } from '@globetrot/i18n';
 
 /** The session cookie set by the API: with the `__Secure-` prefix over https, without it in development. */
@@ -14,6 +15,8 @@ export interface StoredPreferences {
   readonly nationality: string | null;
   readonly timeZone: string | null;
   readonly units: 'metric' | 'imperial';
+  readonly theme: ThemeChoice;
+  readonly motion: MotionChoice;
 }
 
 /**
