@@ -525,41 +525,49 @@ try {
       ([name]) => !process.env.AXE_ONLY || new RegExp(process.env.AXE_ONLY).test(name),
     );
     await inParallel(chosen, concurrency, async ([name, signedIn, reach, viewport]) => {
-      const { context, page } = await open(locale, { signedIn, viewport });
-      try {
-        await reach(page);
-        // Debugging aid: DUMP_SCENARIO=<name> prints the page's HTML for that state.
-        if (process.env.DUMP_SCENARIO === name && locale === 'en') {
-          console.log(await page.evaluate(() => document.body.innerHTML));
-        }
-        for (const theme of ['day', 'red-eye']) {
-          await page.evaluate(
-            (value) => document.documentElement.setAttribute('data-theme', value),
-            theme,
-          );
-          const results = await new AxeBuilder({ page })
-            .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
-            .analyze();
-          for (const violation of results.violations) {
-            const where = violation.nodes
-              .map(
-                (node) =>
-                  `${node.target.join(' ')} ${node.html.slice(0, 140)} [${(node.any[0]?.message ?? '').slice(0, 170)}]`,
-              )
-              .join(' | ');
-            failures.push(`axe ${theme}/${locale}/${name}: ${violation.id} (${where})`);
+      // A page that redirects while the machine is busy can swap its document under a running check ("Execution
+      // context was destroyed"). That is the harness racing the page, not a finding: try the state once more.
+      for (let attempt = 0; attempt < 2; attempt++) {
+        const { context, page } = await open(locale, { signedIn, viewport });
+        const found = [];
+        try {
+          await reach(page);
+          await page.waitForLoadState('networkidle');
+          // Debugging aid: DUMP_SCENARIO=<name> prints the page's HTML for that state.
+          if (process.env.DUMP_SCENARIO === name && locale === 'en') {
+            console.log(await page.evaluate(() => document.body.innerHTML));
           }
+          for (const theme of ['day', 'red-eye']) {
+            await page.evaluate(
+              (value) => document.documentElement.setAttribute('data-theme', value),
+              theme,
+            );
+            const results = await new AxeBuilder({ page })
+              .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+              .analyze();
+            for (const violation of results.violations) {
+              const where = violation.nodes
+                .map(
+                  (node) =>
+                    `${node.target.join(' ')} ${node.html.slice(0, 140)} [${(node.any[0]?.message ?? '').slice(0, 170)}]`,
+                )
+                .join(' | ');
+              found.push(`axe ${theme}/${locale}/${name}: ${violation.id} (${where})`);
+            }
+          }
+          if ((await page.locator('html').getAttribute('lang')) !== locale) {
+            found.push(`${locale}/${name}: <html lang> is not ${locale}`);
+          }
+          failures.push(...found);
+          break;
+        } catch (error) {
+          const message = error.message.split('\n')[0];
+          if (attempt === 0 && /context was destroyed|navigation/i.test(message)) continue;
+          failures.push(`${locale}/${name}: could not reach the state (${message})`);
+          break;
+        } finally {
+          await context.close();
         }
-        check(
-          (await page.locator('html').getAttribute('lang')) === locale,
-          `${locale}/${name}: <html lang> is not ${locale}`,
-        );
-      } catch (error) {
-        failures.push(
-          `${locale}/${name}: could not reach the state (${error.message.split('\n')[0]})`,
-        );
-      } finally {
-        await context.close();
       }
     });
   }
