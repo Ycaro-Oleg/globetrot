@@ -1177,6 +1177,12 @@ try {
         );
         if (scheme === 'dark') {
           await page.emulateMedia({ colorScheme: 'light' });
+          // The browser reports the change to the page asynchronously: wait for the result, never a fixed delay.
+          await page
+            .waitForFunction(() => document.documentElement.dataset.theme === 'day', null, {
+              timeout: 5000,
+            })
+            .catch(() => {});
           check(
             (await themeOf(page)) === 'day',
             'the system theme did not follow the OS changing to light',

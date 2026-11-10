@@ -119,11 +119,12 @@ Leave a handoff ([`handoff.md`](handoff.md)): a comment on the issue, or the PR'
 
 ## Working with the owner
 
+- **Speed first.** The owner wants code and a working product, not planning. See [`AGENTS.md`](../../AGENTS.md#3b-speed-first-the-owners-standing-preference): start coding after a short read, run natively, keep PR text short, one question at a time.
 - **Reply in Brazilian Portuguese; write every repository artifact in English** ([ADR-0001](../architecture/adr/0001-documentation-and-language-policy.md)).
 - **Ask before:** changing a business rule, pricing, the stack or an ADR decision; adding a heavy or overlapping dependency; creating many issues, changing milestones, labels or any GitHub setting; anything that deploys, charges money, emails real people or publishes content.
 - **Do not guess credentials, accounts or provider choices.** Say what is needed and where it will be configured (environment, never the repository).
 - Be plain about state: what is done and verified, what is done but unverified, what is blocked on the owner.
-- Offer the next step with a recommendation, and keep the fork small.
+- Offer the next step with a recommendation, and keep the fork small. When the owner has said to keep going, take the next item of [`current-state.md`](current-state.md) "Next" without asking which one.
 
 ## Pitfalls that already cost time
 

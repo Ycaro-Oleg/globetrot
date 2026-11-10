@@ -33,6 +33,16 @@ Full rules: [`docs/product/business-rules.md`](docs/product/business-rules.md)
 | `apps/*`, `packages/*` | pnpm + Turborepo monorepo (Node 24, pnpm 10). Layout, conventions and commands: [`docs/engineering/project-structure.md`](docs/engineering/project-structure.md) |
 | `.env.example` | Local defaults for every setting. Reference: [`docs/engineering/configuration.md`](docs/engineering/configuration.md) |
 
+## 3b. Speed first (the owner's standing preference)
+
+The owner wants a finished product soon: **code and execution over planning**. Work like this:
+
+- **Start coding fast.** Read only what the change touches (3 to 5 files, the issue's acceptance criteria, the one doc that owns the area). Do not write plans, option lists or long summaries before acting; decide, build, show.
+- **Run everything natively** (Node 24, pnpm; see [`local-development.md`](docs/engineering/local-development.md#the-fast-loop)), not through Docker. While working run only the package you touch; before a PR run `pnpm check` and, for screens, `pnpm verify:web`.
+- **Keep the ceremony small.** Short PR descriptions (what, why, what you ran, what you did not). One question at a time, only when blocked. Do not re-explain decisions already taken.
+- **Batch.** Prefer one focused PR that finishes a feature end to end over many tiny ones, and fix what the checks find in the same push.
+- **Quality does not drop for speed:** tests for new behaviour, both locales, axe in both themes, docs updated, CI green. Speed comes from fewer words and faster tooling, not from skipping checks.
+
 ## 4. How to start a session (context rehydration)
 
 1. Read this file.
