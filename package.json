@@ -20,7 +20,9 @@
     "services:reset": "docker compose down -v",
     "services:logs": "docker compose logs -f",
     "services:check": "bash infra/scripts/check-services.sh",
-    "docs:check": "node infra/scripts/check-docs.mjs"
+    "docs:check": "node infra/scripts/check-docs.mjs",
+    "check": "pnpm docs:check && turbo run lint typecheck test",
+    "verify:web": "turbo run build --filter=@globetrot/web && pnpm --filter @globetrot/web test:a11y"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

@@ -1,9 +1,237 @@
-import { ComingSoon, sectionTitle } from '../_components/coming-soon';
+import { randomUUID } from 'node:crypto';
+import Link from 'next/link';
+import { getLocale, getTranslations } from 'next-intl/server';
+import { cookies } from 'next/headers';
+import { apiInternalUrl } from '../../../lib/api-proxy';
+import { createServerApiClient, sessionCookieHeader } from '../../../lib/stored-preferences';
+import { fetchTrips, SELECTED_TRIP_COOKIE } from '../../../lib/trips';
+import { currencyOptions } from '../../settings/options';
+import { archiveTrip, createTrip, openTrip, undoArchiveTrip } from './actions';
+import styles from './trips.module.css';
 
-export async function generateMetadata() {
-  return { title: await sectionTitle('trips') };
+const FILTERS = ['all', 'active', 'traveling', 'completed', 'archived'] as const;
+type Filter = (typeof FILTERS)[number];
+
+function displayCurrency(code: string, locale: string) {
+  const name = new Intl.DisplayNames([locale], { type: 'currency' }).of(code);
+  return name ? `${code} · ${name}` : code;
 }
 
-export default function TripsPage() {
-  return <ComingSoon section="trips" />;
+function dateLabel(date: string, locale: string) {
+  return new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeZone: 'UTC' }).format(
+    new Date(`${date}T12:00:00Z`),
+  );
+}
+
+export async function generateMetadata() {
+  const t = await getTranslations('tripWorkspace');
+  return { title: t('title') };
+}
+
+export default async function TripsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ filter?: string; archived?: string; status?: string }>;
+}) {
+  const [locale, t, store, query] = await Promise.all([
+    getLocale(),
+    getTranslations('tripWorkspace'),
+    cookies(),
+    searchParams,
+  ]);
+  const cookieHeader = sessionCookieHeader(store.getAll());
+  const options = cookieHeader ? { cookieHeader, apiUrl: apiInternalUrl() } : null;
+  const fetchedTrips = options ? await fetchTrips(options, true) : null;
+  const preferences = options
+    ? await createServerApiClient(options)
+        .GET('/v1/me/preferences')
+        .catch(() => null)
+    : null;
+
+  const error = fetchedTrips === null;
+  const trips = fetchedTrips ?? [];
+  const selectedFilter: Filter = FILTERS.includes(query.filter as Filter)
+    ? (query.filter as Filter)
+    : 'all';
+  const filtered = trips.filter((trip) =>
+    selectedFilter === 'all'
+      ? trip.status !== 'archived'
+      : selectedFilter === 'archived'
+        ? trip.status === 'archived'
+        : trip.status === selectedFilter,
+  );
+  const selectedTripId = store.get(SELECTED_TRIP_COOKIE)?.value;
+  const selectedTrip = trips.find((trip) => trip.id === selectedTripId) ?? trips[0];
+  const preferredCurrency = preferences?.data?.currency ?? 'USD';
+  const currencies = currencyOptions(locale);
+  const statusMessage =
+    query.status === 'create-error'
+      ? t('createError')
+      : query.status === 'not-found'
+        ? t('notFound')
+        : query.status === 'error'
+          ? t('requestError')
+          : null;
+  const archivedTrip = query.archived ? trips.find((trip) => trip.id === query.archived) : null;
+
+  return (
+    <section className={styles.page}>
+      <header className={styles.pageHeader}>
+        <div className={styles.headingGroup}>
+          <p className={styles.eyebrow}>{t('eyebrow')}</p>
+          <h1>{t('title')}</h1>
+          <p className={styles.description}>{t('description')}</p>
+        </div>
+        <details
+          className={styles.createDetails}
+          id="create-trip-form"
+          open={query.status === 'create-error'}
+        >
+          <summary className={styles.primaryAction}>
+            <span className={styles.createPlus} aria-hidden="true">
+              +
+            </span>
+            {t('create')}
+          </summary>
+          <div className={styles.createPopover}>
+            <h2>{t('createTitle')}</h2>
+            <p>{t('createDescription')}</p>
+            <form action={createTrip} className={styles.createForm} id="create-trip-form-body">
+              <input type="hidden" name="idempotencyKey" value={randomUUID()} />
+              <label className={styles.field}>
+                <span>{t('tripName')}</span>
+                <input name="title" required maxLength={120} autoComplete="off" />
+              </label>
+              <div className={styles.createFields}>
+                <label className={styles.field}>
+                  <span>{t('startDate')}</span>
+                  <input type="date" name="startDate" />
+                </label>
+                <label className={styles.field}>
+                  <span>{t('currency')}</span>
+                  <select name="currency" defaultValue={preferredCurrency} required>
+                    {currencies.map((currency) => (
+                      <option key={currency.id} value={currency.id}>
+                        {currency.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+              <button type="submit" className={styles.primaryAction}>
+                {t('create')}
+              </button>
+            </form>
+          </div>
+        </details>
+      </header>
+
+      {statusMessage ? (
+        <p className={styles.banner} role="alert">
+          {statusMessage}
+        </p>
+      ) : null}
+      {archivedTrip ? (
+        <div className={styles.banner} role="status" aria-live="polite">
+          <span>{t('archivedMessage', { title: archivedTrip.title })}</span>
+          <form action={undoArchiveTrip}>
+            <input type="hidden" name="tripId" value={archivedTrip.id} />
+            <button className={styles.undoAction} type="submit">
+              {t('undo')}
+            </button>
+          </form>
+        </div>
+      ) : null}
+
+      <div className={styles.workspace}>
+        <section className={styles.listSection} aria-labelledby="trip-list-title">
+          <div className={styles.sectionHeader}>
+            <h2 id="trip-list-title">{t('yourTrips')}</h2>
+            <span className={styles.tripCount}>{filtered.length}</span>
+          </div>
+          <nav className={styles.filters} aria-label={t('filterLabel')}>
+            {FILTERS.map((filter) => (
+              <Link
+                key={filter}
+                href={filter === 'all' ? '/app/trips' : `/app/trips?filter=${filter}`}
+                aria-current={selectedFilter === filter ? 'page' : undefined}
+                className={styles.filter}
+              >
+                {t(`filter.${filter}`)}
+              </Link>
+            ))}
+          </nav>
+
+          {error ? (
+            <div className={styles.emptyState} role="alert">
+              <h3>{t('loadErrorTitle')}</h3>
+              <p>{t('loadError')}</p>
+              <Link className={styles.primaryAction} href="/app/trips">
+                {t('retry')}
+              </Link>
+            </div>
+          ) : filtered.length ? (
+            <div className={styles.tripGrid}>
+              {filtered.map((trip) => (
+                <article className={styles.tripCard} key={trip.id} aria-label={trip.title}>
+                  <div className={styles.cardHeader}>
+                    <p className={styles.tripStatus}>
+                      <span aria-hidden="true">
+                        {trip.status === 'completed'
+                          ? '✓'
+                          : trip.status === 'traveling'
+                            ? '✈'
+                            : '◇'}
+                      </span>
+                      {t(`status.${trip.status}`)}
+                    </p>
+                    {trip.id === selectedTrip?.id ? (
+                      <span className={styles.currentTrip}>{t('current')}</span>
+                    ) : null}
+                  </div>
+                  <h3 className={styles.tripTitle}>{trip.title}</h3>
+                  <p className={styles.tripMeta}>
+                    {trip.startDate ? dateLabel(trip.startDate, locale) : t('dateNotSet')}
+                    <span aria-hidden="true"> · </span>
+                    {displayCurrency(trip.currency, locale)}
+                  </p>
+                  <p className={styles.tripSummary}>{t('noDestinations')}</p>
+                  <div className={styles.cardActions}>
+                    <form action={openTrip}>
+                      <input type="hidden" name="tripId" value={trip.id} />
+                      <button className={styles.primaryAction} type="submit">
+                        {t('open')}
+                      </button>
+                    </form>
+                    {trip.status !== 'archived' ? (
+                      <form action={archiveTrip}>
+                        <input type="hidden" name="tripId" value={trip.id} />
+                        <button className={styles.secondaryAction} type="submit">
+                          {t('archive')}
+                        </button>
+                      </form>
+                    ) : null}
+                  </div>
+                </article>
+              ))}
+            </div>
+          ) : (
+            <div className={styles.emptyState}>
+              <h3>{selectedFilter === 'all' ? t('emptyTitle') : t('filterEmptyTitle')}</h3>
+              <p>{selectedFilter === 'all' ? t('emptyDescription') : t('filterEmpty')}</p>
+              {selectedFilter !== 'all' ? (
+                <Link href="/app/trips" className={styles.secondaryAction}>
+                  {t('clearFilters')}
+                </Link>
+              ) : (
+                <a href="#create-trip-form" className={styles.primaryAction}>
+                  {t('create')}
+                </a>
+              )}
+            </div>
+          )}
+        </section>
+      </div>
+    </section>
+  );
 }

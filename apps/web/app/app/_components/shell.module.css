@@ -537,3 +537,483 @@
     transition: transform 120ms ease-out;
   }
 }
+
+.topBarBrand {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: var(--gt-primitive-space-8);
+}
+
+.tripSwitcher {
+  position: relative;
+  z-index: 25;
+  min-width: 0;
+}
+
+.tripSwitcherSummary {
+  box-sizing: border-box;
+  display: flex;
+  min-height: var(--gt-component-hit-target);
+  align-items: center;
+  gap: var(--gt-primitive-space-8);
+  padding: var(--gt-primitive-space-4) var(--gt-primitive-space-8);
+  border: 2px solid var(--gt-semantic-color-outline);
+  border-radius: var(--gt-primitive-radius-12);
+  color: var(--gt-semantic-color-text);
+  cursor: pointer;
+  list-style: none;
+}
+
+.tripSwitcherSummary::-webkit-details-marker {
+  display: none;
+}
+
+.tripSwitcherSummary:focus-visible,
+.tripSwitcherOption:focus-visible,
+.tripSwitcherManage:focus-visible {
+  outline: var(--gt-component-focus-width) solid var(--gt-semantic-color-focus);
+  outline-offset: 3px;
+}
+
+.tripSwitcherLabel {
+  color: var(--gt-semantic-color-text-secondary);
+  font-size: 0.75rem;
+}
+
+.tripSwitcherName {
+  max-width: 12rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tripSwitcherPanel {
+  position: absolute;
+  inset-block-start: calc(100% + var(--gt-primitive-space-8));
+  inset-inline-start: 0;
+  display: grid;
+  min-width: min(18rem, calc(100vw - 2rem));
+  gap: var(--gt-primitive-space-4);
+  padding: var(--gt-primitive-space-8);
+  border: 2px solid var(--gt-semantic-color-outline);
+  border-radius: var(--gt-primitive-radius-12);
+  background: var(--gt-semantic-color-surface-card);
+  color: var(--gt-semantic-color-text);
+  box-shadow: var(--gt-primitive-shadow-small);
+}
+
+.tripSwitcherOption,
+.tripSwitcherManage {
+  display: flex;
+  min-height: var(--gt-component-hit-target);
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gt-primitive-space-8);
+  padding: var(--gt-primitive-space-8) var(--gt-primitive-space-12);
+  border: 0;
+  border-radius: var(--gt-primitive-radius-8);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.tripSwitcherOption[aria-current='page'],
+.tripSwitcherOption:hover,
+.tripSwitcherManage:hover {
+  background: var(--gt-semantic-color-surface-page-alt);
+}
+
+.tripSwitcherOption span:first-child {
+  overflow: hidden;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tripSwitcherOption span:last-child,
+.tripSwitcherEmpty {
+  color: var(--gt-semantic-color-text-secondary);
+  font-size: 0.875rem;
+}
+
+.tripSwitcherEmpty {
+  margin: var(--gt-primitive-space-8);
+}
+
+.tripSwitcherManage {
+  border-top: 1px solid var(--gt-semantic-color-outline);
+  font-weight: 700;
+}
+
+@media (max-width: 719px) {
+  .topBrand {
+    font-size: 1rem;
+  }
+
+  .topBrand svg {
+    flex: none;
+  }
+
+  .tripSwitcherLabel {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+  }
+
+  .tripSwitcherName {
+    max-width: clamp(4rem, 22vw, 9rem);
+  }
+
+  .tripSwitcherPanel {
+    position: fixed;
+    inset-inline: var(--gt-primitive-space-8);
+    inset-block-start: 4.5rem;
+    max-height: calc(100dvh - 5.5rem);
+    overflow-y: auto;
+    border-radius: var(--gt-primitive-radius-20);
+  }
+}
+
+@media (min-width: 720px) {
+  .tripSwitcher {
+    display: flex;
+    justify-content: center;
+  }
+
+  .tripSwitcherSummary {
+    justify-content: center;
+    border-color: transparent;
+  }
+
+  .tripSwitcherLabel,
+  .tripSwitcherName {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+  }
+
+  .tripSwitcherPanel {
+    inset-inline-start: calc(100% + var(--gt-primitive-space-8));
+    inset-block-start: 0;
+  }
+}
+
+@media (min-width: 1100px) {
+  .tripSwitcher {
+    display: block;
+  }
+
+  .tripSwitcherSummary {
+    display: grid;
+    justify-items: start;
+    width: 100%;
+    grid-template-columns: 1fr auto;
+    border-color: var(--gt-semantic-color-outline);
+    text-align: start;
+  }
+
+  .tripSwitcherLabel,
+  .tripSwitcherName {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: hidden;
+    clip: auto;
+  }
+
+  .tripSwitcherLabel {
+    grid-column: 1;
+  }
+
+  .tripSwitcherName {
+    max-width: 12rem;
+    grid-column: 1;
+  }
+
+  .tripSwitcherSummary > span:last-child {
+    grid-column: 2;
+    grid-row: 1 / 3;
+  }
+
+  .tripSwitcherPanel {
+    inset-inline-start: 0;
+    inset-block-start: calc(100% + var(--gt-primitive-space-8));
+  }
+}
+
+/* Desktop workspace bar: a calm paper strip that anchors the current journey. */
+.desktopBar {
+  display: none;
+}
+
+.workspaceHeading {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+  line-height: 1.1;
+}
+
+.workspaceHeading > span {
+  color: var(--gt-semantic-color-text-secondary);
+  font: 700 0.66rem/1.2 var(--gt-primitive-font-mono);
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.workspaceHeading > strong {
+  overflow: hidden;
+  font-size: 1.15rem;
+  font-weight: 800;
+  font-stretch: 85%;
+  letter-spacing: -0.025em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.desktopPip {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 7px 16px;
+  border: 2px solid var(--gt-semantic-color-outline);
+  border-radius: 14px;
+  background: var(--gt-primitive-color-marigold);
+  color: var(--gt-primitive-color-ink);
+  font-weight: 800;
+  text-decoration: none;
+  box-shadow: var(--gt-primitive-shadow-button);
+}
+
+.tripSwitcherSummary {
+  display: flex;
+  min-height: 66px;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 11px;
+  border: 2px solid rgba(255, 245, 225, 0.34);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.075);
+  color: var(--gt-semantic-color-rail-title);
+}
+
+.tripSwitcherGlyph {
+  display: grid;
+  flex: none;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border: 2px solid rgba(255, 245, 225, 0.55);
+  border-radius: 11px;
+  color: var(--gt-primitive-color-marigold);
+}
+
+.tripSwitcherCopy {
+  display: grid;
+  min-width: 0;
+  flex: 1;
+  gap: 3px;
+}
+
+.tripSwitcherLabel {
+  position: static;
+  width: auto;
+  height: auto;
+  overflow: visible;
+  clip: auto;
+  color: rgba(255, 245, 225, 0.74);
+  font: 700 0.65rem/1.2 var(--gt-primitive-font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.tripSwitcherName {
+  max-width: 100%;
+  color: var(--gt-semantic-color-rail-title);
+  font-size: 0.92rem;
+  font-weight: 800;
+}
+
+.tripSwitcherCaret {
+  flex: none;
+  color: rgba(255, 245, 225, 0.74);
+  font-size: 0.9rem;
+}
+
+.tripSwitcherPanel {
+  z-index: 60;
+  min-width: min(19rem, calc(100vw - 2rem));
+  padding: 8px;
+  border: 2px solid var(--gt-semantic-color-outline);
+  border-radius: 16px;
+  box-shadow: 0 6px 0 var(--gt-semantic-color-outline);
+}
+
+.tripSwitcherOption,
+.tripSwitcherManage {
+  min-height: 46px;
+  border-radius: 10px;
+  font-size: 0.92rem;
+}
+
+.tripSwitcherOption[aria-current='page'] {
+  background: var(--gt-semantic-color-surface-page-alt);
+  color: var(--gt-semantic-color-text);
+}
+
+@media (min-width: 720px) {
+  .shell {
+    grid-template-rows: 68px minmax(0, 1fr);
+  }
+
+  .rail {
+    grid-row: 1 / -1;
+  }
+
+  .desktopBar {
+    position: sticky;
+    inset-block-start: 0;
+    z-index: 18;
+    display: flex;
+    grid-column: 2;
+    grid-row: 1;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    min-width: 0;
+    padding: 8px 28px;
+    border-block-end: 3px solid var(--gt-semantic-color-outline);
+    background: var(--gt-semantic-color-surface-page);
+  }
+
+  .main {
+    grid-column: 2;
+    grid-row: 2;
+    padding-block-start: 28px;
+  }
+
+  .tripSwitcher {
+    display: flex;
+    justify-content: center;
+  }
+
+  .tripSwitcherSummary {
+    min-height: 46px;
+    justify-content: center;
+    padding: 5px;
+    border-color: transparent;
+    background: transparent;
+  }
+
+  .tripSwitcherCopy,
+  .tripSwitcherCaret {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+  }
+
+  .tripSwitcherGlyph {
+    width: 44px;
+    height: 44px;
+  }
+}
+
+@media (min-width: 1100px) {
+  .desktopBar {
+    padding-inline: 40px;
+  }
+
+  .tripSwitcher {
+    display: block;
+  }
+
+  .tripSwitcherSummary {
+    display: flex;
+    width: 100%;
+    min-height: 66px;
+    justify-content: flex-start;
+    padding: 9px 11px;
+    border-color: rgba(255, 245, 225, 0.34);
+    background: rgba(255, 255, 255, 0.075);
+    text-align: start;
+  }
+
+  .tripSwitcherCopy {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: hidden;
+    clip: auto;
+    white-space: normal;
+  }
+
+  .tripSwitcherCaret {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip: auto;
+  }
+}
+
+@media (max-width: 719px) {
+  .desktopBar {
+    display: none;
+  }
+
+  .tripSwitcherSummary {
+    min-height: 44px;
+    gap: 5px;
+    padding: 4px 7px;
+  }
+
+  .tripSwitcherGlyph {
+    width: 30px;
+    height: 30px;
+    border: 0;
+  }
+
+  .tripSwitcherCopy {
+    display: flex;
+    align-items: center;
+  }
+
+  .tripSwitcherLabel {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+  }
+
+  .tripSwitcherName {
+    max-width: clamp(4rem, 22vw, 9rem);
+    font-size: 0.84rem;
+  }
+
+  .tripSwitcherCaret {
+    font-size: 0.7rem;
+  }
+}
+
+/* Native details must close its panel unless the disclosure itself is open. */
+.tripSwitcher:not([open]) > .tripSwitcherPanel {
+  display: none;
+}
+
+.tripSwitcher[open] > .tripSwitcherPanel {
+  display: grid;
+}

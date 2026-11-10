@@ -1,12 +1,12 @@
 # Spike #4: Managed geocoding evaluation
 
-- Status: research in progress; no provider selected.
+- Status: Geoapify selected for the MVP adapter by the product owner on 2026-11-08; implementation and benchmark remain open.
 - Checked: 2026-11-07. Recheck prices and terms before implementation.
 - Scope: address and POI search behind GeocodingPort. City search remains the local GeoNames index; public Nominatim is prohibited.
 
 ## Provisional recommendation
 
-Geoapify is the leading candidate for an MVP adapter because its published FAQ permits storage with attribution, its free tier permits commercial use, and it describes EU hosting. This is a terms and operational recommendation, not a measured quality verdict. Compare candidates on the same en/pt-BR address and POI corpus, verify contracts and data processing, and obtain approval before recording a decision in ADR-0003. Keep a provider-neutral port and a manual pin/form path.
+Geoapify is selected for the initial address-search/autocomplete adapter because its published FAQ permits storage with attribution, its free tier permits commercial use, and it describes EU hosting. This is a provider choice for MVP implementation, not a measured quality verdict or a completed privacy/legal review. Benchmark on the same en/pt-BR address and POI corpus and verify applicable contracts and data processing before launch. Keep a provider-neutral port and a manual pin/form path. The decision is recorded in [ADR-0003](../adr/0003-map-stack.md).
 
 ## Comparison
 
@@ -54,4 +54,4 @@ Sources: [Geoapify pricing](https://www.geoapify.com/pricing/), [pricing details
 1. Build a fixed, privacy-safe corpus with expected coordinates: Brazilian and Portuguese addresses and POIs, plus locations across Europe, Asia, Africa and the Americas; include accents, typos, partial input, ambiguous names, rural addresses and small islands. Exercise en and pt-BR with identical bias, limits and request stages. Do not use real user searches.
 2. With accounts and keys, record top-1/top-5 correctness, localization, no-result rate, p50/p95 latency, rate limiting and actual credit consumption. Record sample size, date, endpoint and known gaps.
 3. Confirm selected-place storage separately from shared query cache, attribution, rate limits, cancellation, proxy use, DPA, subprocessors and international transfers. Define retention and access before launch.
-4. Present results and recommendation to the product owner; update ADR-0003 only after approval. The issue remains open until its exit criteria are met.
+4. Implement the Geoapify adapter behind `GeocodingPort`, preserve attribution, and keep the manual pin/form path available. No provider account or API key is configured yet. The issue remains open until the quality benchmark, privacy/data-processing review, and operational exit criteria are met.

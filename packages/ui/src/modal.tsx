@@ -1,3 +1,5 @@
+'use client';
+
 import type { ReactNode } from 'react';
 import { Button, Dialog, Heading, Modal as AriaModal, ModalOverlay } from 'react-aria-components';
 

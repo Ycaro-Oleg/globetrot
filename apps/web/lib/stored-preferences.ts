@@ -49,7 +49,20 @@ export function createServerApiClient({
     baseUrl: apiUrl,
     fetch: (request) => {
       request.headers.set('cookie', cookieHeader);
-      return fetchImpl(new Request(request, { signal: AbortSignal.timeout(timeoutMs) }));
+      const controller = new AbortController();
+      let timeout: ReturnType<typeof setTimeout> | undefined;
+      const timedOut = new Promise<never>((_resolve, reject) => {
+        timeout = setTimeout(() => {
+          controller.abort();
+          reject(new DOMException('The API request timed out.', 'TimeoutError'));
+        }, timeoutMs);
+      });
+      const response = Promise.resolve().then(() =>
+        fetchImpl(new Request(request, { signal: controller.signal })),
+      );
+      return Promise.race([response, timedOut]).finally(() => {
+        if (timeout !== undefined) clearTimeout(timeout);
+      });
     },
   });
 }

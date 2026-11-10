@@ -57,6 +57,10 @@ Where to look, so you can find things without searching. Behaviour is documented
 | `proxy.ts` | Forwards `/api/auth/*` and `/v1/*` to the API, and sends anonymous visitors of `/app` to `/login?next=…` ([ADR-0010](../architecture/adr/0010-web-proxies-the-api.md)) |
 | `app/(auth)/` | Account screens: `login`, `signup`, `recover`, `reset-password`, `email-verified`, with `_components/` (forms, password field, resend control, language switcher) and `auth.module.css` |
 | `app/(legal)/` | Draft `/terms` and `/privacy` |
+| `app/page.tsx`, `app/landing*.tsx`, `app/landing*.module.css` | The public landing page |
+| `app/app/board/` | The starter map board: `world-map.tsx` (state, search, route, `localStorage`), `map-canvas.tsx` (MapLibre), styles |
+| `app/app/trips/` | The trip list and per-trip overview, with `actions.ts` (server actions: open, create, archive, undo) |
+| `public/` | `fonts/` (self-hosted brand fonts with their OFL licences) and the map illustrations |
 | `app/app/` | The signed-in area: `layout.tsx` (session check, then the shell), `page.tsx` (home), placeholder pages (`board`, `days`, `budget`, `lists`, `trips`, `passport`, `more`, and `pip` behind `FEATURE_PIP`), `loading.tsx`, `error.tsx`, and `_components/` (the shell, rail and tab bar, account menu, navigation model, `shell.module.css`) |
 | `app/settings/` | Provisional language and region page |
 | `app/actions.ts` | Server actions: language cookie, save settings |

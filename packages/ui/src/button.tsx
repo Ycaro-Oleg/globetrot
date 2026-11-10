@@ -1,3 +1,5 @@
+'use client';
+
 import { Button as AriaButton, type ButtonProps as AriaButtonProps } from 'react-aria-components';
 
 export interface ButtonProps extends Omit<AriaButtonProps, 'className'> {

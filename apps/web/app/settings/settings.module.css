@@ -1,0 +1,121 @@
+.page {
+  display: grid;
+  width: min(100%, 58rem);
+  gap: 1.5rem;
+  margin-inline: auto;
+  color: var(--gt-semantic-color-text);
+}
+
+.header {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.eyebrow {
+  margin: 0;
+  color: var(--gt-semantic-color-text-secondary);
+  font: 700 0.72rem/1.3 var(--gt-primitive-font-mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.header h1 {
+  margin: 0;
+  font-size: clamp(2.5rem, 5vw, 3.35rem);
+  font-weight: 800;
+  font-stretch: 80%;
+  letter-spacing: -0.055em;
+  line-height: 1;
+}
+
+.description {
+  max-width: 50ch;
+  margin: 0;
+  color: var(--gt-semantic-color-text-secondary);
+}
+
+.sheet {
+  display: grid;
+  gap: 1rem;
+  padding: clamp(1rem, 3vw, 2rem);
+  border: 2.5px solid var(--gt-semantic-color-outline);
+  border-radius: 1.35rem;
+  background: var(--gt-semantic-color-surface-card);
+  box-shadow: 0 5px 0 var(--gt-semantic-color-outline);
+}
+
+.form {
+  display: grid;
+  align-items: start;
+  gap: 1.4rem 1.25rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.form :global(.gt-field) {
+  max-width: none;
+  min-width: 0;
+  gap: 0.55rem;
+}
+
+.form :global(.gt-field__label) {
+  font-size: 0.9rem;
+  font-weight: 750;
+}
+
+.form :global(.gt-field__description) {
+  min-height: 2.8em;
+  color: var(--gt-semantic-color-text-secondary);
+  font-size: 0.84rem;
+  line-height: 1.4;
+}
+
+.form :global(.gt-select__trigger) {
+  box-sizing: border-box;
+  min-height: 3rem;
+  border-width: 2px;
+  border-radius: 0.8rem;
+  font-size: 0.94rem;
+}
+
+.actions {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-start;
+  padding-top: 0.35rem;
+  border-top: 1px solid rgba(29, 26, 53, 0.18);
+}
+
+.actions :global(.gt-button) {
+  min-width: 9rem;
+  min-height: 3rem;
+}
+
+@media (max-width: 640px) {
+  .page {
+    gap: 1rem;
+  }
+
+  .header h1 {
+    font-size: 2.45rem;
+  }
+
+  .form {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .form :global(.gt-field__description) {
+    min-height: 0;
+  }
+
+  .actions {
+    position: sticky;
+    inset-block-end: 0;
+    padding: 0.8rem 0 calc(0.5rem + env(safe-area-inset-bottom, 0px));
+    background: var(--gt-semantic-color-surface-card);
+  }
+
+  .actions :global(.gt-button) {
+    width: 100%;
+  }
+}

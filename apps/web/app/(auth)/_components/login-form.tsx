@@ -64,8 +64,10 @@ export function LoginForm({ next, googleEnabled }: { next: string; googleEnabled
   }
 
   return (
-    <>
-      <h1 className={styles.title}>{t('login.title')}</h1>
+    <section className={styles.view} aria-labelledby="login-title">
+      <h1 id="login-title" className={styles.title}>
+        {t('login.title')}
+      </h1>
 
       {googleEnabled && (
         <>
@@ -88,6 +90,7 @@ export function LoginForm({ next, googleEnabled }: { next: string; googleEnabled
           type="email"
           name="email"
           label={t('email')}
+          placeholder="you@email.com"
           value={email}
           onChange={setEmail}
           autoComplete="email"
@@ -106,10 +109,11 @@ export function LoginForm({ next, googleEnabled }: { next: string; googleEnabled
           isInvalid={errors.password !== undefined}
           errorMessage={errors.password && text(errors.password)}
         />
-        <p className={styles.row}>
-          <Link href="/recover">{t('login.forgot')}</Link>
+        <p className={styles.forgotRow}>
+          <Link className={styles.passwordForgot} href="/recover">
+            {t('login.forgot')}
+          </Link>
         </p>
-
         <Button type="submit" size="lg" isPending={pending}>
           {t('login.submit')}
         </Button>
@@ -120,6 +124,6 @@ export function LoginForm({ next, googleEnabled }: { next: string; googleEnabled
         <span>{t('login.noAccount')}</span>
         <Link href="/signup">{t('login.toSignup')}</Link>
       </p>
-    </>
+    </section>
   );
 }

@@ -4,6 +4,7 @@ import { Banner, Button, SelectField } from '@globetrot/ui';
 import { useTranslations } from 'next-intl';
 import { savePreferences } from '../actions';
 import { NOT_SET, type Option } from './options';
+import styles from './settings.module.css';
 
 export interface SettingsViewProps {
   readonly values: {
@@ -49,65 +50,71 @@ export function SettingsView({
   const failed = status?.startsWith('error:') ? status.slice('error:'.length) : null;
 
   return (
-    <main>
-      <h1>{t('title')}</h1>
-      <p>{t('description')}</p>
+    <main className={styles.page}>
+      <header className={styles.header}>
+        <p className={styles.eyebrow}>{t('eyebrow')}</p>
+        <h1>{t('title')}</h1>
+        <p className={styles.description}>{t('description')}</p>
+      </header>
+      <section className={styles.sheet} aria-label={t('title')}>
+        {status === 'saved' && (
+          <Banner tone="success" role="status">
+            {t('saved')}
+          </Banner>
+        )}
+        {failed !== null && (
+          <Banner tone="error" role="alert">
+            {t('error', { fields: failed })}
+          </Banner>
+        )}
 
-      {status === 'saved' && (
-        <Banner tone="success" role="status">
-          {t('saved')}
-        </Banner>
-      )}
-      {failed !== null && (
-        <Banner tone="error" role="alert">
-          {t('error', { fields: failed })}
-        </Banner>
-      )}
-
-      <form action={savePreferences}>
-        <SelectField
-          name="locale"
-          label={t('language')}
-          description={t('languageHelp')}
-          options={languages}
-          defaultSelectedKey={values.locale}
-        />
-        <SelectField
-          name="currency"
-          label={t('currency')}
-          description={t('currencyHelp')}
-          options={currencies}
-          defaultSelectedKey={values.currency}
-        />
-        <SelectField
-          name="homeCountry"
-          label={t('homeCountry')}
-          description={t('optionalHelp')}
-          options={optional(countries)}
-          defaultSelectedKey={values.homeCountry ?? NOT_SET}
-        />
-        <SelectField
-          name="nationality"
-          label={t('nationality')}
-          description={t('optionalHelp')}
-          options={optional(countries)}
-          defaultSelectedKey={values.nationality ?? NOT_SET}
-        />
-        <SelectField
-          name="timeZone"
-          label={t('timeZone')}
-          description={t('timeZoneHelp')}
-          options={optional(timeZones)}
-          defaultSelectedKey={values.timeZone ?? NOT_SET}
-        />
-        <SelectField
-          name="units"
-          label={t('units')}
-          options={units}
-          defaultSelectedKey={values.units}
-        />
-        <Button type="submit">{t('save')}</Button>
-      </form>
+        <form action={savePreferences} className={styles.form}>
+          <SelectField
+            name="locale"
+            label={t('language')}
+            description={t('languageHelp')}
+            options={languages}
+            defaultSelectedKey={values.locale}
+          />
+          <SelectField
+            name="currency"
+            label={t('currency')}
+            description={t('currencyHelp')}
+            options={currencies}
+            defaultSelectedKey={values.currency}
+          />
+          <SelectField
+            name="homeCountry"
+            label={t('homeCountry')}
+            description={t('optionalHelp')}
+            options={optional(countries)}
+            defaultSelectedKey={values.homeCountry ?? NOT_SET}
+          />
+          <SelectField
+            name="nationality"
+            label={t('nationality')}
+            description={t('optionalHelp')}
+            options={optional(countries)}
+            defaultSelectedKey={values.nationality ?? NOT_SET}
+          />
+          <SelectField
+            name="timeZone"
+            label={t('timeZone')}
+            description={t('timeZoneHelp')}
+            options={optional(timeZones)}
+            defaultSelectedKey={values.timeZone ?? NOT_SET}
+          />
+          <SelectField
+            name="units"
+            label={t('units')}
+            options={units}
+            defaultSelectedKey={values.units}
+          />
+          <div className={styles.actions}>
+            <Button type="submit">{t('save')}</Button>
+          </div>
+        </form>
+      </section>
     </main>
   );
 }

@@ -51,6 +51,31 @@ const PREFERENCES = {
   units: 'metric',
 };
 
+const NOW = '2026-11-08T12:00:00.000Z';
+const TRIPS = [
+  {
+    id: '01a1c28d-afc9-7767-af40-c937c80dd9dc',
+    title: 'Japan 2027',
+    startDate: '2027-04-10',
+    currency: 'JPY',
+    status: 'active',
+    visibility: 'private',
+    createdAt: NOW,
+    updatedAt: NOW,
+  },
+  {
+    id: '01a1c28d-afc9-7767-af40-c937c80dd9dd',
+    title: 'Lisbon weekend',
+    startDate: null,
+    currency: 'EUR',
+    status: 'archived',
+    visibility: 'private',
+    createdAt: NOW,
+    updatedAt: NOW,
+  },
+];
+const TRIP_ID = TRIPS[0].id;
+
 function reply(response, status, body, headers = {}) {
   response.writeHead(status, { 'content-type': 'application/json', ...headers });
   response.end(JSON.stringify(body));
@@ -80,6 +105,24 @@ const stub = createServer(async (request, response) => {
     return signedIn
       ? reply(response, 200, USER)
       : reply(response, 401, { code: 'UNAUTHENTICATED' });
+  }
+  if (route === 'GET /v1/trips') {
+    if (!signedIn) return reply(response, 401, { code: 'UNAUTHENTICATED' });
+    const all = url.searchParams.get('includeArchived') === 'true';
+    return reply(response, 200, {
+      trips: TRIPS.filter((trip) => all || trip.status !== 'archived'),
+    });
+  }
+  if (route === 'POST /v1/trips') {
+    return signedIn
+      ? reply(response, 201, { ...TRIPS[0], title: String(body.title ?? 'New trip') })
+      : reply(response, 401, { code: 'UNAUTHENTICATED' });
+  }
+  const tripRoute = /^\/v1\/trips\/([^/]+)$/.exec(url.pathname);
+  if (tripRoute && request.method === 'GET') {
+    const found = TRIPS.find((trip) => trip.id === tripRoute[1]);
+    if (!signedIn) return reply(response, 401, { code: 'UNAUTHENTICATED' });
+    return found ? reply(response, 200, found) : reply(response, 404, { code: 'NOT_FOUND' });
   }
   if (route === 'GET /v1/me/preferences') {
     return signedIn
@@ -334,7 +377,75 @@ try {
     ['terms-draft', false, async (page) => go(page, `${base}/terms`)],
     ['privacy-draft', false, async (page) => go(page, `${base}/privacy`)],
     ...shellScenarios(copy),
+    ...publicScenarios(),
+    ...tripScenarios(copy),
   ];
+
+  /** The public landing page, at the three layouts. */
+  function publicScenarios() {
+    return ['phone', 'tablet', 'desktop'].map((layout) => [
+      `landing-${layout}`,
+      false,
+      async (page) => go(page, `${base}/`),
+      VIEWPORTS[layout],
+    ]);
+  }
+
+  /** The trip screens: list, filters, create form, overview, unknown trip, and the switcher open. */
+  function tripScenarios(copy) {
+    const tripCopy = CATALOGS[copy === CATALOGS.en.auth ? 'en' : 'pt-BR'].tripWorkspace;
+    const entries = [];
+    for (const layout of ['phone', 'desktop']) {
+      entries.push([
+        `trips-list-${layout}`,
+        true,
+        async (page) => go(page, `${base}/app/trips`),
+        VIEWPORTS[layout],
+      ]);
+      entries.push([
+        `trip-overview-${layout}`,
+        true,
+        async (page) => go(page, `${base}/app/trips/${TRIP_ID}`),
+        VIEWPORTS[layout],
+      ]);
+    }
+    entries.push([
+      'trips-archived-desktop',
+      true,
+      async (page) => go(page, `${base}/app/trips?filter=archived`),
+      VIEWPORTS.desktop,
+    ]);
+    entries.push([
+      'trip-unknown-desktop',
+      true,
+      async (page) => go(page, `${base}/app/trips/01a1c28d-afc9-7767-af40-c937c80dd9ee`),
+      VIEWPORTS.desktop,
+    ]);
+    entries.push([
+      'trips-create-open-desktop',
+      true,
+      async (page) => {
+        await go(page, `${base}/app/trips`);
+        await page.locator('main summary').first().click();
+        await page.locator('form#create-trip-form-body input[name=title]').waitFor();
+      },
+      VIEWPORTS.desktop,
+    ]);
+    entries.push([
+      'trip-switcher-open-desktop',
+      true,
+      async (page) => {
+        await go(page, `${base}/app/trips`);
+        await page.locator('summary', { hasText: tripCopy.switcher.label }).first().click();
+        await page
+          .getByRole('button', { name: /Japan 2027/ })
+          .first()
+          .waitFor();
+      },
+      VIEWPORTS.desktop,
+    ]);
+    return entries;
+  }
 
   /** The signed-in shell: each layout, the placeholder pages, the open account menu, and Pip switched on. */
   function shellScenarios(copy) {
@@ -385,17 +496,35 @@ try {
     return entries;
   }
 
+  /** Runs `task` over `items`, at most `limit` at a time. */
+  async function inParallel(items, limit, task) {
+    let next = 0;
+    await Promise.all(
+      Array.from({ length: Math.min(limit, items.length) }, async () => {
+        while (next < items.length) await task(items[next++]);
+      }),
+    );
+  }
+
+  // Each state is reached once and checked in both themes (the theme is one attribute on <html>). Languages run
+  // one after the other because the stand-in API answers with one stored language at a time; the states of one
+  // language run side by side (AXE_CONCURRENCY, default 6).
+  const concurrency = Number(process.env.AXE_CONCURRENCY ?? 6);
   for (const locale of ['en', 'pt-BR']) {
     const copy = CATALOGS[locale].auth;
-    for (const theme of ['day', 'red-eye']) {
-      for (const [name, signedIn, reach, viewport] of scenarios(copy)) {
-        const { context, page } = await open(locale, { signedIn, viewport });
-        try {
-          await reach(page);
-          // Debugging aid: DUMP_SCENARIO=<name> prints the page's HTML for that state.
-          if (process.env.DUMP_SCENARIO === name && theme === 'day' && locale === 'en') {
-            console.log(await page.evaluate(() => document.body.innerHTML));
-          }
+    const chosen = scenarios(copy).filter(
+      // Debugging aid: AXE_ONLY=<regex> runs only the matching scenarios (and skips the behavior checks).
+      ([name]) => !process.env.AXE_ONLY || new RegExp(process.env.AXE_ONLY).test(name),
+    );
+    await inParallel(chosen, concurrency, async ([name, signedIn, reach, viewport]) => {
+      const { context, page } = await open(locale, { signedIn, viewport });
+      try {
+        await reach(page);
+        // Debugging aid: DUMP_SCENARIO=<name> prints the page's HTML for that state.
+        if (process.env.DUMP_SCENARIO === name && locale === 'en') {
+          console.log(await page.evaluate(() => document.body.innerHTML));
+        }
+        for (const theme of ['day', 'red-eye']) {
           await page.evaluate(
             (value) => document.documentElement.setAttribute('data-theme', value),
             theme,
@@ -404,34 +533,37 @@ try {
             .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
             .analyze();
           for (const violation of results.violations) {
-            if (process.env.DUMP_SCENARIO === name && theme === 'day' && locale === 'en') {
-              console.log(
-                await page.evaluate(() => {
-                  const img = document.querySelector('[role="img"]');
-                  return img
-                    ? `PARENT: ${img.parentElement?.outerHTML.slice(0, 600)} | ID TARGET: ${img.getAttribute('aria-labelledby')} -> ${document.getElementById(img.getAttribute('aria-labelledby') ?? '')?.outerHTML}`
-                    : 'no img now';
-                }),
-              );
-            }
             const where = violation.nodes
-              .map((node) => `${node.target.join(' ')} ${node.html.slice(0, 140)}`)
+              .map(
+                (node) =>
+                  `${node.target.join(' ')} ${node.html.slice(0, 140)} [${(node.any[0]?.message ?? '').slice(0, 170)}]`,
+              )
               .join(' | ');
             failures.push(`axe ${theme}/${locale}/${name}: ${violation.id} (${where})`);
           }
-          check(
-            (await page.locator('html').getAttribute('lang')) === locale,
-            `${locale}/${name}: <html lang> is not ${locale}`,
-          );
-        } catch (error) {
-          failures.push(
-            `${theme}/${locale}/${name}: could not reach the state (${error.message.split('\n')[0]})`,
-          );
-        } finally {
-          await context.close();
         }
+        check(
+          (await page.locator('html').getAttribute('lang')) === locale,
+          `${locale}/${name}: <html lang> is not ${locale}`,
+        );
+      } catch (error) {
+        failures.push(
+          `${locale}/${name}: could not reach the state (${error.message.split('\n')[0]})`,
+        );
+      } finally {
+        await context.close();
       }
-    }
+    });
+  }
+
+  if (process.env.AXE_ONLY) {
+    await browser.close();
+    await shutdown();
+    for (const failure of failures) console.error(`  - ${failure}`);
+    console.error(
+      `${failures.length} problem(s) in the scenarios matching ${process.env.AXE_ONLY}`,
+    );
+    process.exit(failures.length > 0 ? 1 : 0);
   }
 
   // -------------------------------------------------------------------------------------------------------
@@ -448,15 +580,15 @@ try {
     await page.keyboard.press('Tab');
     await page.keyboard.type(PASSWORD);
     await page.keyboard.press('Enter');
-    await page.waitForURL(`${base}/app`, { timeout: 10_000 }).catch(() => {});
+    // /app is the entry point and sends a signed-in visitor to the board.
+    await page.waitForURL(`${base}/app/board`, { timeout: 10_000 }).catch(() => {});
     check(
-      page.url() === `${base}/app`,
-      `keyboard-only login did not land on /app (at ${page.url()})`,
+      page.url() === `${base}/app/board`,
+      `keyboard-only login did not land on the board (at ${page.url()})`,
     );
-    check(
-      await page.getByRole('heading', { name: 'Hi, Ana!', level: 1 }).isVisible(),
-      'the app page does not greet the user by name',
-    );
+    const boardHeading = page.getByRole('heading', { name: CATALOGS.en.mapBoard.title, level: 1 });
+    await boardHeading.waitFor({ timeout: 10_000 }).catch(() => {});
+    check(await boardHeading.isVisible(), 'the board page has no heading');
     await context.close();
   }
 
@@ -738,9 +870,19 @@ try {
         viewport: { width: 719, height: 800 },
       });
       await go(page, `${base}/app`);
-      check(await page.locator('header').isVisible(), '719px: the phone top bar is missing');
+      // The phone layout is the one where the navigation floats at the bottom; from 720px it is a rail on the left.
+      const phoneNav = await page
+        .getByRole('navigation', { name: CATALOGS.en.shell.nav.label })
+        .boundingBox();
+      check(phoneNav !== null && phoneNav.y > 500, '719px: the tab bar is not at the bottom');
       await page.setViewportSize({ width: 720, height: 800 });
-      check(!(await page.locator('header').isVisible()), '720px: the top bar should be gone');
+      const railNav = await page
+        .getByRole('navigation', { name: CATALOGS.en.shell.nav.label })
+        .boundingBox();
+      check(
+        railNav !== null && railNav.x < 100 && railNav.y < 300,
+        '720px: the rail is not on the left',
+      );
       const rail720 = await page
         .locator('nav')
         .first()
@@ -806,8 +948,8 @@ try {
       await go(page, `${base}/app`);
       const nav = visibleNav(page);
       check(
-        (await nav.locator('[aria-current="page"]').allInnerTexts()).join() === shell.nav.home,
-        'Home is not the marked page on /app',
+        (await nav.locator('[aria-current="page"]').allInnerTexts()).join() === shell.nav.board,
+        'Board is not the marked page after /app redirects to it',
       );
       await nav.getByRole('link', { name: shell.nav.budget, exact: true }).click();
       await page.waitForURL(`${base}/app/budget`);
@@ -954,6 +1096,37 @@ try {
         );
         await on.context.close();
       }
+    }
+
+    {
+      // Trips: the list shows the active trip, the filter reaches the archived one, and the create form leads to
+      // the trip overview.
+      const { context, page } = await open('en', { signedIn: true, viewport: VIEWPORTS.desktop });
+      await go(page, `${base}/app/trips`);
+      check(
+        (await page.getByText('Japan 2027').count()) >= 1,
+        'the trip list does not show the active trip',
+      );
+      check(
+        (await page.getByText('Lisbon weekend').count()) === 0,
+        'the default list shows an archived trip',
+      );
+      await page.goto(`${base}/app/trips?filter=archived`);
+      check(
+        (await page.getByText('Lisbon weekend').count()) >= 1,
+        'the archived filter does not show the archived trip',
+      );
+      await go(page, `${base}/app/trips`);
+      await page.locator('main summary').first().click();
+      await page.locator('form#create-trip-form-body input[name=title]').fill('Peru 2028');
+      await page.locator('form#create-trip-form-body button[type=submit]').click();
+      await page.waitForURL(`${base}/app/trips/${TRIP_ID}`, { timeout: 10_000 }).catch(() => {});
+      check(
+        page.url() === `${base}/app/trips/${TRIP_ID}`,
+        `creating a trip did not lead to its overview (at ${page.url()})`,
+      );
+      await page.getByRole('heading', { level: 1 }).first().waitFor();
+      await context.close();
     }
 
     {

@@ -11,6 +11,22 @@ One command starts the services the apps need, close to the eventual Hetzner + C
 > No Node 24 on the host? Run any pnpm command inside the official image:
 > `docker run --rm -it -u "$(id -u):$(id -g)" -e HOME=/tmp -v "$PWD:/repo" -w /repo node:24-bookworm bash -c "corepack enable --install-directory /tmp/bin && PATH=/tmp/bin:\$PATH pnpm <command>"`
 
+## The fast loop
+
+Run everything natively with Node 24, not through Docker: it is an order of magnitude faster (installing takes seconds, the web unit tests under three, lint about eight, typecheck about three). Use Docker only for the services and for `docker build`.
+
+| When | Run | About |
+|---|---|---|
+| While you work | `pnpm --filter @globetrot/web test` (or the package you touch), `pnpm --filter @globetrot/web lint`, `... typecheck` | seconds |
+| Before a commit | `pnpm check` (`docs:check`, then lint, typecheck and unit tests of every package; Turborepo caches what did not change) | seconds when cached |
+| Before a PR that changes screens | `pnpm verify:web` (builds the web app, then the real-browser accessibility and behavior check; states run in parallel, `AXE_CONCURRENCY` sets how many) | about two minutes |
+| Debugging one state | `AXE_ONLY='^trips-list' pnpm --filter @globetrot/web test:a11y` after a build | under a minute |
+| Always before the PR | what the [playbook](../agents/playbook.md#3-verify-before-you-open-the-pr) lists | |
+
+The browser check needs Chromium once: `pnpm --filter @globetrot/web exec playwright install chromium` (add `--with-deps` on a machine where you may use `sudo`).
+
+**WSL2 without a system Node 24:** unpack the official Node 24 tarball under `~/.local` and symlink `node`, `npm`, `npx` and `corepack` into `~/.local/bin` (which must come first in `PATH`), then `corepack enable pnpm`. No `sudo` is needed.
+
 ## First run
 
 ```bash
