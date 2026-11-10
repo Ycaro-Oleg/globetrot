@@ -39,6 +39,8 @@ const envSchema = z.object({
   SMTP_USER: z.string().optional(),
   SMTP_PASSWORD: z.string().optional(),
   EMAIL_FROM: z.string().default('Globetrot <hello@globetrot.local>'),
+  GOOGLE_CLIENT_ID: z.string().optional(),
+  GOOGLE_CLIENT_SECRET: z.string().optional(),
   PORT: number(4000, 1, 65535),
 });
 
@@ -64,6 +66,8 @@ export interface AuthConfig {
   readonly emailCooldownSeconds: number;
   /** Resend and reset requests per minute from one client address. */
   readonly emailRequestsPerMinute: number;
+  /** Google sign-in, or `null` when no credentials are set (the provider is then off and the button hidden). */
+  readonly google: { readonly clientId: string; readonly clientSecret: string } | null;
 }
 
 export interface EmailConfig {
@@ -163,6 +167,15 @@ export function loadApiConfig(
       throw new ApiConfigError('EMAIL_FROM is required in production');
   }
 
+  // Google is on only with both values; one without the other is a mistake worth stopping for.
+  if ((values.GOOGLE_CLIENT_ID === undefined) !== (values.GOOGLE_CLIENT_SECRET === undefined)) {
+    throw new ApiConfigError('GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET must be set together');
+  }
+  const google =
+    values.GOOGLE_CLIENT_ID !== undefined && values.GOOGLE_CLIENT_SECRET !== undefined
+      ? { clientId: values.GOOGLE_CLIENT_ID, clientSecret: values.GOOGLE_CLIENT_SECRET }
+      : null;
+
   const baseOrigin = new URL(values.BETTER_AUTH_URL).origin;
   const trustedOrigins = [...new Set([baseOrigin, ...parseOrigins(values.TRUSTED_ORIGINS)])];
 
@@ -186,6 +199,7 @@ export function loadApiConfig(
       resetPasswordExpiresIn: values.RESET_PASSWORD_EXPIRES_IN_SECONDS,
       emailCooldownSeconds: values.EMAIL_COOLDOWN_SECONDS,
       emailRequestsPerMinute: values.AUTH_EMAIL_REQUESTS_PER_MINUTE,
+      google,
     },
     email: {
       host: values.SMTP_HOST,

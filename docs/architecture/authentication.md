@@ -63,7 +63,7 @@ Policy (decided in #54, to be confirmed by the owner): **a password sign-in requ
 - **Loading.** Every submit shows the button's pending state and an `aria-live` status; the button cannot be pressed twice.
 - **Password strength.** `lib/password-strength.ts` computes four segments and a word (too short, weak, okay, good, strong) in the browser. It rewards length and variety, treats a long passphrase as strong, and caps common passwords and keyboard runs at weak. It is guidance only: the one rule is the server's length (`PASSWORD_MIN_LENGTH` 8 to `PASSWORD_MAX_LENGTH` 128, from `@globetrot/domain`). The word is announced politely when the level changes.
 - **Resend countdown.** 30 s on the button after an email was sent; the server's own cooldown is authoritative (a `429` restarts the countdown with the wait it asks for).
-- **Google.** The button appears only when `GET /v1/auth/providers` lists `google`. It lists nothing until Google is configured (#55), and any failure to ask means no button.
+- **Google.** See [Google sign-in (#55)](#google-sign-in-55). The button appears only when `GET /v1/auth/providers` lists `google`, which happens only when both credentials are configured.
 - **Terms.** The checkbox is required by the screen. Acceptance is **not stored** yet: that needs the final legal text and a version to record.
 
 ### Redirect rules
@@ -116,3 +116,23 @@ When an account is created, a Better Auth database hook (`databaseHooks.user.cre
 - Unit: configuration rules, the email templates (`packages/application/src/email`), the Origin check and the proxy path guard (`config.test.ts`, `app.test.ts`, `apps/web/lib/api-proxy.test.ts`).
 - Integration against a real PostgreSQL (`auth.int.test.ts`, `pnpm test:int`): sign-up, case-insensitive email, duplicate and weak password, sign-in/out, sessions and expiry, rate limits per address, hostile origin, no password or token in responses.
 - The built images were also driven end to end with `curl` through the web origin: first-party cookie, proxy path guard, hostile origin `403`, rate limit `429`, clean logs.
+
+## Google sign-in (#55)
+
+Better Auth's Google provider, on **only** when `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` are both set (`apps/api/src/config.ts`, `auth.ts`). Without them nothing else changes: password sign-in works, the providers query is empty, the button is hidden. CI and local development never need them.
+
+- **Where Google sends the person back.** `<BETTER_AUTH_URL>/api/auth/callback/google`, on the **web** origin (the web app proxies `/api/auth/*`, so the session cookie stays first-party, [ADR-0010](adr/0010-web-proxies-the-api.md)). In the Google console allow exactly that redirect URI and the web origin as an authorized JavaScript origin. Locally that is `http://localhost:3000/api/auth/callback/google` and `http://localhost:3000` (`https` only when the app itself is served over https).
+- **Linking rule.** A Google identity links to an existing account only when **both** sides have verified the same address: Google reports it verified, it equals the account's address, and the local account's address was verified too. Otherwise sign-in fails with an explicit code and nothing is linked. The last condition is deliberate: someone could register another person's address with a password they know, and the real owner arriving with Google must not land in that account. A Google address that differs from every account's is simply a new account (`allowDifferentEmails: false`, `trustedProviders: []`).
+- **New accounts** start with the language cookie the visitor had (`globetrot_locale`); nothing is read from the Google profile besides name and address, and every other setting takes its default. Google addresses count as verified ([ADR-0012](adr/0012-email-delivery-and-verified-sign-in.md)).
+- **Failures.** A denied consent, a wrong or expired state, a refused link or a Google outage send the browser to `/login?error=<code>` (`onAPIError.errorURL`), where one message says Google sign-in did not work and offers email and password. No stack, token or code is ever in the URL or the page.
+- **Tests.** `apps/api/src/google.int.test.ts` runs the whole round trip against a real PostgreSQL with Google's token endpoint stubbed (no network, no credentials): the authorization URL, a new verified account with the cookie language, linking when both addresses are verified, refusing an unverified Google address and a never-verified local account, a different address, denied consent and a wrong state. `config.test.ts` covers both-or-neither.
+
+### Manual smoke checklist (the owner's, with real credentials)
+
+1. Put `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` in your git-ignored `.env`, allow the redirect URI above in the Google console, and start the stack (`pnpm services:up`, `pnpm dev`).
+2. `GET http://localhost:3000/v1/auth/providers` answers `{"providers":["google"]}` and `/login` shows "Continue with Google".
+3. Click it: Google's consent screen opens for your client; accept. You land on `/app/board`, signed in, with your Google name in the account menu.
+4. Settings: the language is the one you had before signing in; currency is USD; country, nationality and time zone are not set.
+5. Log out, then sign in with Google again: same account, no duplicate (check `user` has one row for your address).
+6. Deny consent on the Google screen: you return to `/login` with the Google error message and no session.
+7. With an email-and-password account for the same address that you **have verified**, sign in with Google: it links to that account (one `user` row, two `account` rows).

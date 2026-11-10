@@ -1,12 +1,12 @@
 # Current state
 
-_Last updated: 2026-11-10, after the Days page. Code state: `develop` includes #79; nights and the Days page are in the next PR._
+_Last updated: 2026-11-10, after Google sign-in. Code state: `develop` includes #80; Google sign-in (#55) is in the next PR._
 
 Read this first. It says where the project is, what exists, what is open, what only the owner can unblock and what to do next. Procedure for working: [`playbook.md`](playbook.md). Feature-by-feature progress: [`../product/progress.md`](../product/progress.md). Milestones and exit criteria: [`../product/roadmap.md`](../product/roadmap.md).
 
 ## Snapshot
 
-- **Active milestone: M3 App Foundation.** 12 of 13 issues are done; 1 is open (#55, which needs the owner's Google credentials). M2 (engineering foundation) is complete. M0 (product foundation) is complete. **M1 (design system and spikes) is partly open** and its open items need the owner.
+- **Active milestone: M3 App Foundation.** 13 of 13 issues are done in code; #55 stays open for the owner's real-provider smoke run. M2 (engineering foundation) is complete. M0 (product foundation) is complete. **M1 (design system and spikes) is partly open** and its open items need the owner.
 - **What works end to end today** (checked against the real API, Postgres and Mailpit): a person can see the landing page, create an account in English or Portuguese, confirm the email through Mailpit, log in, create a trip, see it in the list and switcher, archive it and undo, open the world-map board, search places, pin a route, change language, currency, country, nationality, time zone, units, theme (day, red-eye or follow the device) and motion, recover a password and log out.
 - **The map board saves its route to the trip** (#75): MapLibre with Geoapify tiles, place search and an ordered route, stored as the trip's destinations and reloaded on the next visit (checked in the end-to-end journey). Nights per stop are edited here too (they feed the Days page). Still to do: the mobile bottom sheet, the stop panel (notes, costs), reorder and undo, a server-side geocoder, `PinConnection`.
 - **The landing page is a first version** (#74): no pricing section and no example trips yet.

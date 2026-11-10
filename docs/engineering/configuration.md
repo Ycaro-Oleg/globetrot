@@ -25,6 +25,7 @@ Every environment variable the project reads, in one place. [`.env.example`](../
 | `SESSION_UPDATE_AGE_SECONDS` | `86400` (1 day) | optional | A session older than this is renewed when used |
 | `AUTH_SIGN_IN_ATTEMPTS_PER_MINUTE` | `5` | optional | Per client address |
 | `AUTH_SIGN_UP_ATTEMPTS_PER_MINUTE` | `5` | optional | Per client address |
+| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | unset | set both, in Coolify (secret) | Google sign-in. **Both or neither**: with one the API refuses to start (the message names the settings, never a value); with neither the provider is off, `GET /v1/auth/providers` is empty and the button is hidden. The redirect URI to allow in the Google console is `<BETTER_AUTH_URL>/api/auth/callback/google` and the authorized JavaScript origin is `<BETTER_AUTH_URL>` ([authentication](../architecture/authentication.md#google-sign-in-55)) |
 | `REQUIRE_VERIFIED_EMAIL` | `true` | `true` | A password sign-in needs a verified email ([ADR-0012](../architecture/adr/0012-email-delivery-and-verified-sign-in.md)). `false` lets unverified accounts in, and sign-up then opens a session |
 | `VERIFICATION_EXPIRES_IN_SECONDS` | `86400` (24 hours) | optional | Lifetime of a verification link. Minimum 1 |
 | `RESET_PASSWORD_EXPIRES_IN_SECONDS` | `3600` (1 hour) | optional | Lifetime of a reset link. Minimum 1 |
