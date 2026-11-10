@@ -20,6 +20,7 @@ Run everything natively with Node 24, not through Docker: it is an order of magn
 | While you work | `pnpm --filter @globetrot/web test` (or the package you touch), `pnpm --filter @globetrot/web lint`, `... typecheck` | seconds |
 | Before a commit | `pnpm check` (`docs:check`, then lint, typecheck and unit tests of every package; Turborepo caches what did not change) | seconds when cached |
 | Before a PR that changes screens | `pnpm verify:web` (builds the web app, then the real-browser accessibility and behavior check; states run in parallel, `AXE_CONCURRENCY` sets how many) | about two minutes |
+| The real journey (real API, Postgres, Mailpit) | `pnpm services:up`, `pnpm --filter @globetrot/db migrate`, `pnpm turbo run build --filter=@globetrot/web --filter=@globetrot/api`, then `pnpm --filter @globetrot/web test:e2e` (the script starts the API and the web app itself; run it with `.env` loaded, for example `set -a; . ./.env; set +a`) | about half a minute |
 | Debugging one state | `AXE_ONLY='^trips-list' pnpm --filter @globetrot/web test:a11y` after a build | under a minute |
 | Always before the PR | what the [playbook](../agents/playbook.md#3-verify-before-you-open-the-pr) lists | |
 

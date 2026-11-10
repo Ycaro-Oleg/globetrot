@@ -16,7 +16,7 @@ Tests are part of every issue's definition of done, and each issue states its te
 | **Browser check of the account screens** | Playwright + axe, against the built web app and a stand-in API | Every screen and state reachable, keyboard-only log-in, a failed submit announced and focused, safe redirects, axe in both themes and languages | `apps/web/scripts/check-auth-pages.mjs`, CI job `Accessibility (axe)` | **Active** since #57 |
 | **Performance** | Lighthouse CI budgets | Landing and board load and interaction budgets | CI | M8 |
 
-The domain is pure, so most confidence comes from fast unit and property tests. E2E tests stay few and cover journeys, not every edge case.
+The domain is pure, so most confidence comes from fast unit and property tests. E2E tests stay few and cover journeys, not every edge case. The first one is live (#63): `apps/web/e2e/journey.mjs` drives a real browser against the real web app, API, PostgreSQL and Mailpit (no stand-ins) at 1440 and 390 px wide in English and Portuguese, with axe on every page it visits and a keyboard-only pass. It starts the servers itself, needs no secrets and runs in about half a minute locally.
 
 ## What each change must test
 

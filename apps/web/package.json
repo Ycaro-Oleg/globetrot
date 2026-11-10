@@ -11,7 +11,8 @@
     "lint": "eslint .",
     "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run",
-    "test:a11y": "node scripts/check-auth-pages.mjs"
+    "test:a11y": "node scripts/check-auth-pages.mjs",
+    "test:e2e": "node e2e/journey.mjs"
   },
   "dependencies": {
     "@globetrot/api-client": "workspace:*",
