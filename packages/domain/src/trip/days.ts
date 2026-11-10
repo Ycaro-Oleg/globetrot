@@ -11,7 +11,10 @@ export interface TripDay {
   readonly arrival: boolean;
 }
 
-export function plannedStops(trip: TripPlan): TripStop[] {
+/** What the day rules read: the start date and the route. A full `TripPlan` fits. */
+export type DayPlan = Pick<TripPlan, 'startDate' | 'stops'>;
+
+export function plannedStops(trip: Pick<TripPlan, 'stops'>): TripStop[] {
   return trip.stops.filter((s) => s.state === 'planned');
 }
 
@@ -19,7 +22,7 @@ export function plannedStops(trip: TripPlan): TripStop[] {
  * Days are consecutive from `startDate` across planned stops in route order: each night is one day.
  * Day trips (0 nights) add no day. Draft stops are ignored.
  */
-export function tripDays(trip: TripPlan): TripDay[] {
+export function tripDays(trip: DayPlan): TripDay[] {
   const days: TripDay[] = [];
   for (const stop of plannedStops(trip)) {
     if (!Number.isSafeInteger(stop.nights) || stop.nights < 0) {

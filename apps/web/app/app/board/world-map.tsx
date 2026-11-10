@@ -111,6 +111,7 @@ const CITIES: City[] = [
 ];
 const CITY_BY_ID = new Map(CITIES.map((city) => [city.id, city]));
 const API_KEY = process.env.NEXT_PUBLIC_GEOAPIFY_API_KEY ?? '';
+const MAX_NIGHTS = 365;
 
 function toPlace(result: Record<string, unknown>): MapPlace | null {
   const longitude = Number(result.lon);
@@ -169,8 +170,10 @@ export function WorldMapBoard({
   const [stops, setStops] = useState<MapPlace[]>(initialStops);
   const [failed, setFailed] = useState(false);
   const [retry, setRetry] = useState(0);
+  /** Nights per stop, by place key. Edited here and saved with the route. */
+  const [nights, setNights] = useState(initialNights);
   const routeBody = (places: MapPlace[]) =>
-    JSON.stringify(places.map((place) => toDestination(place, initialNights[place.id] ?? 0)));
+    JSON.stringify(places.map((place) => toDestination(place, nights[place.id] ?? 0)));
   /** The route as last stored on the trip. What differs from it is not saved yet. */
   const [savedBody, setSavedBody] = useState(() => routeBody(initialStops));
   const body = routeBody(stops);
@@ -241,6 +244,12 @@ export function WorldMapBoard({
       controller.abort();
     };
   }, [query, locale]);
+
+  const changeNights = (id: string, change: number) =>
+    setNights((current) => ({
+      ...current,
+      [id]: Math.min(MAX_NIGHTS, Math.max(0, (current[id] ?? 0) + change)),
+    }));
 
   const addPlace = useCallback((place: MapPlace) => {
     setSelected(place.id);
@@ -507,6 +516,25 @@ export function WorldMapBoard({
                         </small>
                       </span>
                     </button>
+                    <div className={styles.nights}>
+                      <button
+                        type="button"
+                        aria-label={t('nightsFewer', { place: nameOf(place) })}
+                        disabled={(nights[place.id] ?? 0) <= 0}
+                        onClick={() => changeNights(place.id, -1)}
+                      >
+                        −
+                      </button>
+                      <output>{t('nights', { count: nights[place.id] ?? 0 })}</output>
+                      <button
+                        type="button"
+                        aria-label={t('nightsMore', { place: nameOf(place) })}
+                        disabled={(nights[place.id] ?? 0) >= MAX_NIGHTS}
+                        onClick={() => changeNights(place.id, 1)}
+                      >
+                        +
+                      </button>
+                    </div>
                     <button
                       type="button"
                       className={styles.removeStop}
