@@ -100,13 +100,51 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm turbo run test:int --output-logs=errors-only
 
-  # End-to-end journeys are enabled when the first app flows land (M3+).
+  # The first real journey (sign up, confirm by mail, settings, trip, theme, keyboard) in a real browser against
+  # the real API, PostgreSQL and Mailpit, at two widths in two languages. No stand-ins, no secrets, no outside calls.
   e2e:
     name: E2E (Playwright)
-    if: false
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgis/postgis:17-3.7
+        env:
+          POSTGRES_USER: globetrot
+          POSTGRES_PASSWORD: globetrot
+          POSTGRES_DB: globetrot
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U globetrot -d globetrot"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+      mailpit:
+        image: axllent/mailpit:v1.33.0
+        ports:
+          - 1025:1025
+          - 8025:8025
+        options: >-
+          --health-cmd "/mailpit readyz"
+          --health-interval 2s
+          --health-timeout 3s
+          --health-retries 30
+    env:
+      # Throwaway credentials for the job's own service container; not a secret.
+      DATABASE_URL: postgres://globetrot:globetrot@localhost:5432/globetrot
     steps:
-      - run: echo "Enabled in M3 with the first user flow."
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @globetrot/web exec playwright install --with-deps chromium
+      - run: pnpm --filter @globetrot/db migrate
+      - run: pnpm turbo run build --filter=@globetrot/web --filter=@globetrot/api
+      - run: pnpm --filter @globetrot/web test:e2e
 
   a11y:
     name: Accessibility (axe)

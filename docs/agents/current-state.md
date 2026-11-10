@@ -1,12 +1,12 @@
 # Current state
 
-_Last updated: 2026-11-09, after theme and motion preferences. Code state: `develop` includes #62; #60 is in PR #77._
+_Last updated: 2026-11-09, after the E2E gate. Code state: `develop` includes #60 and #62; #63 is in PR #78._
 
 Read this first. It says where the project is, what exists, what is open, what only the owner can unblock and what to do next. Procedure for working: [`playbook.md`](playbook.md). Feature-by-feature progress: [`../product/progress.md`](../product/progress.md). Milestones and exit criteria: [`../product/roadmap.md`](../product/roadmap.md).
 
 ## Snapshot
 
-- **Active milestone: M3 App Foundation.** 11 of 13 issues are done; 2 are open (#55, #63). M2 (engineering foundation) is complete. M0 (product foundation) is complete. **M1 (design system and spikes) is partly open** and its open items need the owner.
+- **Active milestone: M3 App Foundation.** 12 of 13 issues are done; 1 is open (#55, which needs the owner's Google credentials). M2 (engineering foundation) is complete. M0 (product foundation) is complete. **M1 (design system and spikes) is partly open** and its open items need the owner.
 - **What works end to end today** (checked against the real API, Postgres and Mailpit): a person can see the landing page, create an account in English or Portuguese, confirm the email through Mailpit, log in, create a trip, see it in the list and switcher, archive it and undo, open the world-map board, search places, pin a route, change language, currency, country, nationality, time zone, units, theme (day, red-eye or follow the device) and motion, recover a password and log out.
 - **The map board is a starter** (#75): MapLibre with Geoapify tiles, place search and a route, but the stops are kept **in the browser only** (`localStorage`), not on the trip. Persisting them, the mobile bottom sheet, the stop panel and a server-side geocoder are M4.
 - **The landing page is a first version** (#74): no pricing section and no example trips yet.
@@ -20,7 +20,7 @@ Read this first. It says where the project is, what exists, what is open, what o
 | M0 Product Foundation | **Complete** (the GitHub milestone is still open: the owner decides when to close it) | 0 | Vision, PRD, business rules, roadmap, design audit, ADRs 0001–0009, agent docs |
 | M1 Design System & Spikes | **Partly open** | #4, #6, #7, #8, #9 | #2 MapLibre and #3 places spikes and #5 tokens are done. The owner approved the trip list/switcher portion of #7; other studies and checks remain. |
 | M2 Engineering Foundation | **Complete** (closed) | 0 | Monorepo, CI, local services, domain rules (money, trips), i18n, standards |
-| **M3 App Foundation** | **Active** | #55, #63 | Done: #50, #52, #53, #54, #56, #57, #58, #59, #60, #61, #62. Plan and dependency table: [`m3-foundation-breakdown.md`](../engineering/m3-foundation-breakdown.md) |
+| **M3 App Foundation** | **Active** | #55 | Done: #50, #52, #53, #54, #56, #57, #58, #59, #60, #61, #62, #63. Plan and dependency table: [`m3-foundation-breakdown.md`](../engineering/m3-foundation-breakdown.md) |
 | M4 Travel Workspace & Map | **Started** (starter board, #75) | #75 | Needs M3 to finish. Map, search and a local route exist; persistence on the trip, mobile sheet and the rest are open. More issues are created when M3 nears its end |
 | M5 Itinerary & Checklists | Not started | — | |
 | M6 Budget & Savings | Not started | — | Can run in parallel with M5 |
@@ -78,7 +78,7 @@ Honest list of what is missing or deliberately simple, so nobody assumes otherwi
 - **The board's stops live only in the browser** (`localStorage` key in `world-map.tsx`), so they are lost on another device or after clearing site data. The Geoapify key is a **public** browser key written into the bundle at build time (`NEXT_PUBLIC_GEOAPIFY_API_KEY`); it must be restricted to the site's domains in the Geoapify dashboard, and address search should move behind the server-side `GeocodingPort` (#75).
 - **An unknown or foreign trip id shows a "not found" page with status 200**, not a 404 (the loading boundary has already sent the status). Harmless; fix if it matters for monitoring.
 - **Light surfaces inside the red-eye theme** (auth panel, board cards, landing cream sections, trip cards) are hard-coded light and use the `always-light` token overrides; any new light surface must do the same or axe fails on contrast in the red-eye theme.
-- **No end-to-end suite.** The account screens and the shell have a real-browser check against a stand-in API (`pnpm --filter @globetrot/web test:a11y`: five widths, both themes and languages, keyboard, account menu, Pip flag on and off); #63 adds the real journeys.
+- **The end-to-end suite is one journey** (`apps/web/e2e/journey.mjs`, #63): sign-up to trip to theme and keyboard, two widths, two languages. The board, itinerary and budget have no journey yet (M4 onwards). The account screens, the shell and the trip screens also have the stand-in browser check (`pnpm --filter @globetrot/web test:a11y`).
 - **The shell's pages are still placeholders.** Board, Days, Budget, Lists and Passport are not built yet; the Trips list and overview exist (#62). Pip's page exists only behind `FEATURE_PIP`. 
 - **Not verified by a person:** screen readers on any screen (including the shell's navigation and account menu); the shell on a real phone (safe-area, on-screen keyboard); the account screens at very large font sizes in pt-BR; MapLibre on a real phone.
 - The client address used for rate limits is only trustworthy behind a trusted edge, and the API must not be reachable from the internet ([`authentication.md`](../architecture/authentication.md#which-client-address-counts-trust-model)).
@@ -90,10 +90,9 @@ Honest list of what is missing or deliberately simple, so nobody assumes otherwi
 
 Suggested order, from the [M3 breakdown](../engineering/m3-foundation-breakdown.md):
 
-1. **#63** the first end-to-end and accessibility gate. A real-browser journey against the real stack already passes locally (sign-up, email, log-in, trip, archive and undo, board, log-out; the throwaway script is not in the repo); #63 turns it into a CI job and a committed test.
-2. **#55** Google sign-in; the real-provider smoke test still needs the owner's OAuth credentials.
-3. **M4** (map board): the starter exists (#75). Create the M4 issues with the owner (persist destinations and pins on the trip, server-side geocoding, mobile sheet, stop panel), about 10 to 15 at a time. The roadmap's exit criteria and [`progress.md`](../product/progress.md) say what each milestone must deliver.
-4. **M8**: finish the landing (#74) when M4 to M7 are further along.
+1. **#55** Google sign-in; the real-provider smoke test still needs the owner's OAuth credentials.
+2. **M4** (map board): the starter exists (#75). Create the M4 issues with the owner (persist destinations and pins on the trip, server-side geocoding, mobile sheet, stop panel), about 10 to 15 at a time. The roadmap's exit criteria and [`progress.md`](../product/progress.md) say what each milestone must deliver.
+3. **M8**: finish the landing (#74) when M4 to M7 are further along.
 
 In parallel, and owner-driven: the M1 items above. A docs-only PR may fix gaps at any time.
 
@@ -122,4 +121,4 @@ In parallel, and owner-driven: the M1 items above. A docs-only PR may fix gaps a
 
 ## Blockers
 
-No technical blocker for the next M3 issues (#63, #55 code).
+No technical blocker for #55's code; its real-provider test needs the owner's credentials.

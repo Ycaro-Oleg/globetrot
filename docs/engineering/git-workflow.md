@@ -72,7 +72,7 @@ Workflow: [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml). It runs 
 | i18n catalog consistency (keys, ICU syntax, placeholders) | same job: `@globetrot/i18n` `lint` runs `check-messages`, and its tests and `tsc` also catch missing keys | Active |
 | Integration tests (`*.int.test.ts`) against a real PostgreSQL + PostGIS (each test in a throwaway database) and a real SMTP catcher | `Integration (Postgres)` | Active (service containers `postgis/postgis:17-3.7` and `axllent/mailpit:v1.33.0`) |
 | Migration consistency (`drizzle-kit check`) | same job as lint: `@globetrot/db` `lint` | Active |
-| E2E (Playwright) | `E2E (Playwright)` | Placeholder (skipped) until #63 |
+| E2E (Playwright) | `E2E (Playwright)` | The real journey against the real API, PostgreSQL and Mailpit: sign up, confirm by mail, settings, trip, theme, keyboard, axe; two widths, two languages (`apps/web/e2e/journey.mjs`) |
 | Accessibility (axe) | `Accessibility (axe)` | Active for Storybook stories in both themes and locales (with select, checkbox and switch keyboard checks), and for every account-screen state in a real browser (`apps/web/scripts/check-auth-pages.mjs`: keyboard path, redirects, axe in both themes and languages). Screen-reader and complete interaction reviews remain manual |
 | Documentation (`pnpm docs:check`) | `Lint · typecheck · test · build` | Active: relative links and anchors, every doc reachable from the index, every ADR in the ADR index, every `.env.example` variable in the configuration reference |
 
