@@ -171,13 +171,14 @@ describe('budget against a real database', () => {
     await call(ana.cookie, 'POST', `/v1/trips/${id}/expenses`, COST);
     await call(ana.cookie, 'PUT', `/v1/trips/${id}/savings`, { saved: '777' });
     const events = await database.db.select().from(schema.auditEvent);
-    const text = JSON.stringify(
-      events.filter(
-        (event) => event.action.startsWith('expense') || event.action.startsWith('savings'),
-      ),
+    const ours = events.filter(
+      (event) => event.action.startsWith('expense') || event.action.startsWith('savings'),
     );
-    expect(text).toContain('expense.create');
-    expect(text).toContain('savings.update');
+    expect(ours.map((event) => event.action)).toEqual(
+      expect.arrayContaining(['expense.create', 'savings.update']),
+    );
+    // Only what was recorded about the change: ids and timestamps are random and may contain any digits.
+    const text = JSON.stringify(ours.map((event) => [event.action, event.metadata]));
     for (const personal of ['1250', '777', 'Tokyo']) expect(text).not.toContain(personal);
   });
 
