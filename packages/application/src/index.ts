@@ -49,6 +49,7 @@ import {
   createGetChecklist,
   createUpdateChecklistItem,
 } from './checklists/operations';
+import { createCreateTripFromExample } from './examples/operations';
 import { createListDestinations, createReplaceDestinations } from './destinations/operations';
 export { defineOperation, type Operation } from './operation';
 export type {
@@ -120,6 +121,16 @@ export {
 } from './budget/schemas';
 
 export {
+  EXAMPLE_TRIP_IDS,
+  EXAMPLE_TRIPS,
+  findExampleTrip,
+  type ExampleStop,
+  type ExampleTrip,
+  type ExampleTripId,
+} from './examples/catalog';
+export { createTripFromExampleFields } from './examples/operations';
+
+export {
   addChecklistItemsFields,
   CHECKLIST_MAX_ITEMS,
   checklistItemSchema,
@@ -159,6 +170,7 @@ export function createApplication(ports: Ports) {
     updateTrip: createUpdateTrip(ports),
     archiveTrip: createArchiveTrip(ports),
     listDestinations: createListDestinations(ports),
+    createTripFromExample: createCreateTripFromExample(ports),
     getChecklist: createGetChecklist(ports),
     addChecklistItems: createAddChecklistItems(ports),
     updateChecklistItem: createUpdateChecklistItem(ports),

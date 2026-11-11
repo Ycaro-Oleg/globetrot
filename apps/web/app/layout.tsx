@@ -5,12 +5,16 @@ import { NextIntlClientProvider } from 'next-intl';
 import { getLocale } from 'next-intl/server';
 import { chooseAppearance, MOTION_COOKIE, THEME_COOKIE, THEME_SCRIPT } from '../lib/appearance';
 import { getStoredPreferences } from '../lib/request-preferences';
+import { siteOrigin } from '../lib/site-url';
 import { SITE_NAME } from './site';
 import '@globetrot/tokens/tokens.css';
 import '@globetrot/ui/styles.css';
 import './globals.css';
 
-export const metadata: Metadata = { title: SITE_NAME };
+/** Absolute links (the social image) resolve against the request's own origin on every page. */
+export async function generateMetadata(): Promise<Metadata> {
+  return { metadataBase: await siteOrigin(), title: SITE_NAME };
+}
 
 export default async function RootLayout({ children }: { children: ReactNode }) {
   const [locale, store, stored] = await Promise.all([

@@ -508,6 +508,12 @@ try {
       VIEWPORTS[layout],
     ]),
     [
+      'trips-example',
+      true,
+      async (page) => go(page, `${base}/app/trips?example=japan`),
+      VIEWPORTS.phone,
+    ],
+    [
       'lists-error',
       true,
       async (page) => go(page, `${base}/app/lists?status=error`),
@@ -1460,6 +1466,9 @@ try {
     const views = [
       ['desktop-budget', 'en', VIEWPORTS.desktop, `${base}/app/budget`, null],
       ['desktop-lists', 'en', VIEWPORTS.desktop, `${base}/app/lists`, null],
+      ['phone-trips-example', 'en', VIEWPORTS.phone, `${base}/app/trips?example=japan`, null],
+      ['desktop-landing-pricing', 'en', VIEWPORTS.desktop, `${base}/#pricing`, null],
+      ['phone-landing-trips-ptbr', 'pt-BR', VIEWPORTS.phone, `${base}/#trips`, null],
       ['phone-lists-ptbr', 'pt-BR', VIEWPORTS.phone, `${base}/app/lists`, null],
       ['laptop-home-pip', 'en', VIEWPORTS.laptop, `${pipBase}/app`, null],
       ['tablet-home', 'en', VIEWPORTS.tablet, `${base}/app`, null],

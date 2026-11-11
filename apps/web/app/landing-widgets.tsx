@@ -1,5 +1,6 @@
 'use client';
 
+import { formatMoney, fromDecimal } from '@globetrot/domain';
 import { useLocale, useTranslations } from 'next-intl';
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
@@ -206,9 +207,17 @@ export function StoryMap() {
   );
 }
 
-const changeCosts = [4400, 6800, 1250, 1830, 0];
+/** Whole US dollars, formatted for the page's language (USD is the default currency; examples never use another). */
+function useUsd() {
+  const locale = useLocale();
+  return (whole: number) =>
+    formatMoney(fromDecimal(String(whole), 'USD'), locale, { precision: 'whole' });
+}
+
+const changeCosts = [900, 1400, 260, 380, 0];
 export function PipPlanner() {
   const t = useTranslations('landing');
+  const usd = useUsd();
   const [kept, setKept] = useState([true, true, true, true, false]);
   const total = kept.reduce(
     (sum, selected, index) => sum + (selected ? changeCosts[index]! : 0),
@@ -250,7 +259,7 @@ export function PipPlanner() {
       </div>
       <div className={styles.pipDemo}>
         <span className={styles.eyebrow}>{t('pipPromptLabel')}</span>
-        <blockquote>{t('pipPrompt')}</blockquote>
+        <blockquote>{t('pipPrompt', { budget: usd(3000) })}</blockquote>
         <div className={styles.pipListHeading}>
           <strong>{t('pipChanges')}</strong>
           <span>{t('estimateDisclaimer')}</span>
@@ -270,27 +279,13 @@ export function PipPlanner() {
                 <strong>{t(`pipChange${item}`)}</strong>
                 <small>{t(`pipDetail${item}`)}</small>
               </span>
-              <b>
-                {item === 5
-                  ? t('unknownAmount')
-                  : new Intl.NumberFormat('pt-BR', {
-                      style: 'currency',
-                      currency: 'BRL',
-                      maximumFractionDigits: 0,
-                    }).format(changeCosts[index]!)}
-              </b>
+              <b>{item === 5 ? t('unknownAmount') : usd(changeCosts[index]!)}</b>
             </label>
           ))}
         </div>
         <div className={styles.pipTotal}>
           <span>{t('pipKeptTotal')}</span>
-          <strong>
-            {new Intl.NumberFormat('pt-BR', {
-              style: 'currency',
-              currency: 'BRL',
-              maximumFractionDigits: 0,
-            }).format(total)}
-          </strong>
+          <strong>{usd(total)}</strong>
           <Link href="/signup">{t('pipApply')}</Link>
         </div>
         <p className={styles.visaHint}>{t('visaNote')}</p>
@@ -302,9 +297,10 @@ export function PipPlanner() {
 export function MoneyPlanner() {
   const t = useTranslations('landing');
   const locale = useLocale();
-  const [monthly, setMonthly] = useState(1500);
-  const total = 14280;
-  const saved = 6400;
+  const usd = useUsd();
+  const [monthly, setMonthly] = useState(300);
+  const total = 2860;
+  const saved = 1280;
   const months = Math.ceil((total - saved) / monthly);
   const readyDate = new Date(Date.UTC(2026, 10 + months, 1));
   const monthLabel = new Intl.DateTimeFormat(locale, {
@@ -312,11 +308,7 @@ export function MoneyPlanner() {
     year: 'numeric',
     timeZone: 'UTC',
   }).format(readyDate);
-  const money = new Intl.NumberFormat(locale, {
-    style: 'currency',
-    currency: 'BRL',
-    maximumFractionDigits: 0,
-  });
+  const money = { format: usd };
   const progress = Math.min(100, ((saved + monthly * months) / total) * 100);
 
   return (
@@ -336,9 +328,9 @@ export function MoneyPlanner() {
           </span>
           <input
             type="range"
-            min="500"
-            max="3000"
-            step="50"
+            min="100"
+            max="600"
+            step="10"
             value={monthly}
             onChange={(event) => setMonthly(Number(event.target.value))}
           />
@@ -369,7 +361,9 @@ export function MoneyPlanner() {
           <span>{t('markPaid')}</span>
           <span>{t('markUnknown')}</span>
         </div>
-        <p className={styles.moneyFootnote}>{t('moneyExample')}</p>
+        <p className={styles.moneyFootnote}>
+          {t('moneyExample', { total: usd(total), saved: usd(saved) })}
+        </p>
       </div>
     </div>
   );

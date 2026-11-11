@@ -6,7 +6,8 @@ import { apiInternalUrl } from '../../../lib/api-proxy';
 import { createServerApiClient, sessionCookieHeader } from '../../../lib/stored-preferences';
 import { fetchTrips, SELECTED_TRIP_COOKIE } from '../../../lib/trips';
 import { currencyOptions } from '../../settings/options';
-import { archiveTrip, createTrip, openTrip, undoArchiveTrip } from './actions';
+import { findExampleTrip } from '@globetrot/application';
+import { archiveTrip, copyExampleTrip, createTrip, openTrip, undoArchiveTrip } from './actions';
 import styles from './trips.module.css';
 
 const FILTERS = ['all', 'active', 'traveling', 'completed', 'archived'] as const;
@@ -31,7 +32,7 @@ export async function generateMetadata() {
 export default async function TripsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ filter?: string; archived?: string; status?: string }>;
+  searchParams: Promise<{ filter?: string; archived?: string; status?: string; example?: string }>;
 }) {
   const [locale, t, store, query] = await Promise.all([
     getLocale(),
@@ -71,7 +72,10 @@ export default async function TripsPage({
         ? t('notFound')
         : query.status === 'error'
           ? t('requestError')
-          : null;
+          : query.status === 'example-error'
+            ? t('example.copyError')
+            : null;
+  const example = query.example ? findExampleTrip(query.example) : undefined;
   const archivedTrip = query.archived ? trips.find((trip) => trip.id === query.archived) : null;
 
   return (
@@ -125,6 +129,34 @@ export default async function TripsPage({
           </div>
         </details>
       </header>
+
+      {example ? (
+        <section className={styles.exampleCard} aria-labelledby="example-title">
+          <p className={styles.eyebrow}>{t('example.title')}</p>
+          <h2 id="example-title">{t(`example.trips.${example.id}` as 'example.trips.japan')}</h2>
+          <p>{t('example.body')}</p>
+          <p className={styles.exampleRoute}>
+            {example.stops.map((stop) => stop.name).join(' → ')}
+            <br />
+            <small>
+              {t('example.stops', {
+                count: example.stops.length,
+                nights: example.stops.reduce((sum, stop) => sum + stop.nights, 0),
+              })}
+            </small>
+          </p>
+          <div className={styles.exampleActions}>
+            <form action={copyExampleTrip}>
+              <input type="hidden" name="exampleId" value={example.id} />
+              <input type="hidden" name="idempotencyKey" value={randomUUID()} />
+              <button type="submit" className={styles.primaryAction}>
+                {t('example.copy')}
+              </button>
+            </form>
+            <Link href="/app/trips">{t('example.dismiss')}</Link>
+          </div>
+        </section>
+      ) : null}
 
       {statusMessage ? (
         <p className={styles.banner} role="alert">

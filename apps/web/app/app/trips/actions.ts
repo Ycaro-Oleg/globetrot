@@ -1,6 +1,7 @@
 'use server';
 
-import { idempotencyKeySchema } from '@globetrot/application';
+import { EXAMPLE_TRIP_IDS, idempotencyKeySchema } from '@globetrot/application';
+import { getTranslations } from 'next-intl/server';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { apiInternalUrl } from '../../../lib/api-proxy';
@@ -82,4 +83,20 @@ export async function undoArchiveTrip(formData: FormData): Promise<void> {
   if (!data) redirect('/app/trips?status=error');
   store.set(SELECTED_TRIP_COOKIE, data.id, cookieOptions());
   redirect(`/app/trips/${data.id}`);
+}
+
+/** Copies a public example trip into the person's account and opens it on the board. */
+export async function copyExampleTrip(formData: FormData): Promise<void> {
+  const exampleId = EXAMPLE_TRIP_IDS.find((id) => id === formData.get('exampleId'));
+  const idempotencyKey = idempotencyKeySchema.safeParse(formData.get('idempotencyKey'));
+  if (!exampleId || !idempotencyKey.success) redirect('/app/trips?status=example-error');
+  const t = await getTranslations('tripWorkspace.example.trips');
+  const { store, client } = await apiClient();
+  const { data } = await client.POST('/v1/trips/from-example', {
+    body: { exampleId, title: t(exampleId) },
+    headers: { 'Idempotency-Key': idempotencyKey.data },
+  });
+  if (!data) redirect('/app/trips?status=example-error');
+  store.set(SELECTED_TRIP_COOKIE, data.id, cookieOptions());
+  redirect('/app/board');
 }
