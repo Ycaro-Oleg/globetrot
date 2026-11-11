@@ -1,0 +1,283 @@
+.page {
+  max-width: 72rem;
+}
+
+.page h1 {
+  margin: 0 0 var(--gt-primitive-space-16);
+  font-size: clamp(1.75rem, 1.3rem + 1.6vw, 2.5rem);
+  font-weight: var(--gt-primitive-type-weight-black);
+  line-height: 1.1;
+}
+
+.eyebrow {
+  margin: 0 0 var(--gt-primitive-space-8);
+  color: var(--gt-semantic-color-text-secondary);
+  font-family: var(--gt-primitive-font-mono);
+  font-size: 0.8125rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.lead {
+  margin: 0 0 var(--gt-primitive-space-16);
+  font-size: 1.125rem;
+}
+
+.note {
+  margin: 0 0 var(--gt-primitive-space-12);
+  color: var(--gt-semantic-color-text-secondary);
+  font-size: 0.9rem;
+}
+
+.action,
+.primary,
+.secondary {
+  display: inline-flex;
+  min-height: var(--gt-component-hit-target);
+  align-items: center;
+  justify-content: center;
+  padding: var(--gt-primitive-space-8) var(--gt-primitive-space-16);
+  border: var(--gt-primitive-border-3) solid var(--gt-semantic-color-outline);
+  border-radius: var(--gt-primitive-radius-12);
+  background: var(--gt-semantic-color-surface-card);
+  color: var(--gt-semantic-color-text);
+  font: inherit;
+  font-weight: var(--gt-primitive-type-weight-bold);
+  text-decoration: none;
+  box-shadow: var(--gt-primitive-shadow-small);
+  cursor: pointer;
+}
+
+.primary {
+  background: var(--gt-primitive-color-marigold);
+  color: var(--gt-primitive-color-ink);
+}
+
+.grid {
+  display: grid;
+  gap: var(--gt-primitive-space-24);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+  align-items: start;
+}
+
+.card,
+.passport {
+  min-width: 0;
+  padding: var(--gt-primitive-space-20);
+  border: var(--gt-primitive-border-3) solid var(--gt-semantic-color-outline);
+  border-radius: var(--gt-primitive-radius-16);
+  background: var(--gt-semantic-color-surface-card);
+  box-shadow: var(--gt-primitive-shadow-small);
+}
+
+/* The visa page: a card with a passport-blue band on top. The blue is the same in both themes. */
+.passport {
+  position: sticky;
+  top: var(--gt-primitive-space-16);
+  border-block-start: 14px solid var(--gt-semantic-color-airmail);
+}
+
+.passport h2,
+.listsTitle {
+  margin: 0 0 var(--gt-primitive-space-8);
+  font-size: 1.25rem;
+}
+
+.count {
+  margin: 0 0 var(--gt-primitive-space-12);
+  font-size: 1.1rem;
+  font-weight: var(--gt-primitive-type-weight-bold);
+}
+
+.stamps {
+  display: grid;
+  gap: var(--gt-primitive-space-8);
+  margin: 0 0 var(--gt-primitive-space-16);
+  padding: 0;
+  list-style: none;
+}
+
+.stamps li {
+  display: flex;
+  align-items: center;
+  gap: var(--gt-primitive-space-12);
+  padding: var(--gt-primitive-space-8) var(--gt-primitive-space-12);
+  border-radius: var(--gt-primitive-radius-12);
+}
+
+.stamps small {
+  display: block;
+  color: var(--gt-semantic-color-text-secondary);
+  font-size: 0.8rem;
+}
+
+/* Earned: a filled stamp with a tick. Not yet: a dashed, empty one. The words say it too, never colour alone. */
+.stampOn {
+  border: var(--gt-primitive-border-2) solid var(--gt-semantic-color-outline);
+  font-weight: var(--gt-primitive-type-weight-bold);
+}
+
+.stampOff {
+  border: var(--gt-primitive-border-2) dashed var(--gt-semantic-color-rule-strong);
+  color: var(--gt-semantic-color-text-secondary);
+}
+
+.stampMark {
+  display: grid;
+  flex: none;
+  width: 2rem;
+  height: 2rem;
+  place-items: center;
+  border: var(--gt-primitive-border-2) solid currentcolor;
+  border-radius: 50%;
+  font-weight: var(--gt-primitive-type-weight-black);
+}
+
+.stampOn .stampMark {
+  background: var(--gt-primitive-color-marigold);
+  color: var(--gt-primitive-color-ink);
+  transform: rotate(-8deg);
+}
+
+.lists {
+  display: grid;
+  gap: var(--gt-primitive-space-16);
+}
+
+.groupHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--gt-primitive-space-8);
+  margin-block-end: var(--gt-primitive-space-8);
+}
+
+.groupHead h3,
+.card h3 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.progress {
+  color: var(--gt-semantic-color-text-secondary);
+  font-family: var(--gt-primitive-font-mono);
+  font-size: 0.8125rem;
+}
+
+.items {
+  margin: 0 0 var(--gt-primitive-space-12);
+  padding: 0;
+  list-style: none;
+}
+
+.items li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--gt-primitive-space-8);
+  border-block-start: 1px dashed var(--gt-semantic-color-rule-strong);
+}
+
+.toggleForm {
+  min-width: 0;
+}
+
+.toggle,
+.toggleDone {
+  display: flex;
+  width: 100%;
+  min-height: var(--gt-component-hit-target);
+  align-items: center;
+  gap: var(--gt-primitive-space-12);
+  padding: var(--gt-primitive-space-4) 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.box {
+  display: grid;
+  flex: none;
+  width: 1.5rem;
+  height: 1.5rem;
+  place-items: center;
+  border: var(--gt-primitive-border-2) solid var(--gt-semantic-color-outline);
+  border-radius: var(--gt-primitive-radius-8, 6px);
+  font-weight: var(--gt-primitive-type-weight-black);
+}
+
+.toggleDone .box {
+  background: var(--gt-primitive-color-marigold);
+  color: var(--gt-primitive-color-ink);
+}
+
+.itemLabel {
+  overflow-wrap: anywhere;
+}
+
+.toggleDone .itemLabel {
+  color: var(--gt-semantic-color-text-secondary);
+  text-decoration: line-through;
+}
+
+.remove {
+  display: grid;
+  min-width: var(--gt-component-hit-target);
+  min-height: var(--gt-component-hit-target);
+  place-items: center;
+  border: var(--gt-primitive-border-2) solid transparent;
+  border-radius: var(--gt-primitive-radius-12);
+  background: transparent;
+  color: var(--gt-semantic-color-danger);
+  font-size: 1.4rem;
+  cursor: pointer;
+}
+
+.remove:hover {
+  border-color: var(--gt-semantic-color-danger);
+}
+
+.addForm {
+  display: grid;
+  gap: var(--gt-primitive-space-8);
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.field {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  min-height: var(--gt-component-hit-target);
+  padding: var(--gt-primitive-space-8) var(--gt-primitive-space-12);
+  border: var(--gt-primitive-border-2) solid var(--gt-semantic-color-outline);
+  border-radius: var(--gt-primitive-radius-12);
+  background: #fff;
+  color: var(--gt-semantic-color-always-light-text);
+  font: inherit;
+}
+
+.page a:focus-visible,
+.page button:focus-visible,
+.page input:focus-visible {
+  outline: var(--gt-component-focus-width) solid var(--gt-semantic-color-focus);
+  outline-offset: 2px;
+}
+
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .passport {
+    position: static;
+  }
+
+  /* On a phone the lists come first: they are what you act on; the stamps are the reward below. */
+  .lists {
+    order: -1;
+  }
+}

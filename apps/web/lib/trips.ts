@@ -83,3 +83,21 @@ export async function fetchExpenses(
     return null;
   }
 }
+
+export type ChecklistData =
+  paths['/v1/trips/{id}/checklist']['get']['responses'][200]['content']['application/json'];
+
+/** A trip's checklists and its readiness stamps, or `null` when they cannot be read. */
+export async function fetchChecklist(
+  options: FetchOptions,
+  tripId: string,
+): Promise<ChecklistData | null> {
+  try {
+    const { data } = await createServerApiClient(options).GET('/v1/trips/{id}/checklist', {
+      params: { path: { id: tripId } },
+    });
+    return data ?? null;
+  } catch {
+    return null;
+  }
+}

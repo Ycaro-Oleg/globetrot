@@ -1,4 +1,6 @@
 import type {
+  ChecklistItemRecord,
+  ChecklistWriter,
   AuditEventInput,
   DestinationRecord,
   DestinationWriter,
@@ -23,6 +25,7 @@ export interface FakeState {
   /** Routes by trip id. */
   destinations: Map<string, DestinationRecord[]>;
   expenses: Map<string, ExpenseRecord>;
+  checklist: Map<string, ChecklistItemRecord>;
   savings: Map<string, SavingsRecord>;
   preferences: Map<string, PreferencesRecord>;
   audit: AuditEventInput[];
@@ -43,6 +46,7 @@ export function createFakePorts(options: FakeOptions = {}) {
     trips: new Map(),
     destinations: new Map(),
     expenses: new Map(),
+    checklist: new Map(),
     savings: new Map(),
     preferences: new Map(),
     audit: [],
@@ -156,6 +160,37 @@ export function createFakePorts(options: FakeOptions = {}) {
     },
   };
 
+  const checklistWriter: ChecklistWriter = {
+    async listByTrip(tripId) {
+      return [...state.checklist.values()]
+        .filter((record) => record.tripId === tripId)
+        .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+    },
+    async findById(id) {
+      return state.checklist.get(id) ?? null;
+    },
+    async insertMany(items) {
+      return items.map((item) => {
+        const record: ChecklistItemRecord = { ...item, updatedAt: item.createdAt };
+        state.checklist.set(record.id, record);
+        return record;
+      });
+    },
+    async update(id, patch, updatedAt) {
+      const current = state.checklist.get(id);
+      if (!current) throw new Error('checklist item vanished');
+      const next: ChecklistItemRecord = { ...current, ...patch, updatedAt };
+      state.checklist.set(id, next);
+      return next;
+    },
+    async delete(id) {
+      state.checklist.delete(id);
+    },
+    async countByTrip(tripId) {
+      return [...state.checklist.values()].filter((record) => record.tripId === tripId).length;
+    },
+  };
+
   const savingsWriter: SavingsWriter = {
     async find(tripId) {
       return state.savings.get(tripId) ?? null;
@@ -175,6 +210,7 @@ export function createFakePorts(options: FakeOptions = {}) {
   const transaction: Transaction = {
     trips: tripWriter,
     expenses: expenseWriter,
+    checklist: checklistWriter,
     savings: savingsWriter,
     destinations: destinationWriter,
     preferences: preferencesWriter,
@@ -211,6 +247,7 @@ export function createFakePorts(options: FakeOptions = {}) {
     trips: tripWriter,
     destinations: destinationWriter,
     expenses: expenseWriter,
+    checklist: checklistWriter,
     savings: savingsWriter,
     preferences: preferencesWriter,
     unitOfWork: {
@@ -220,6 +257,7 @@ export function createFakePorts(options: FakeOptions = {}) {
           trips: new Map(state.trips),
           destinations: new Map(state.destinations),
           expenses: new Map(state.expenses),
+          checklist: new Map(state.checklist),
           savings: new Map(state.savings),
           preferences: new Map(state.preferences),
           audit: [...state.audit],
@@ -233,6 +271,7 @@ export function createFakePorts(options: FakeOptions = {}) {
           state.trips = before.trips;
           state.destinations = before.destinations;
           state.expenses = before.expenses;
+          state.checklist = before.checklist;
           state.savings = before.savings;
           state.preferences = before.preferences;
           state.audit = before.audit;

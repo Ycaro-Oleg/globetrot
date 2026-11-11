@@ -5,3 +5,4 @@ export * from './trip';
 export * from './preference';
 export * from './destination';
 export * from './budget';
+export * from './checklist';

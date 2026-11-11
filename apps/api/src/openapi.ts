@@ -17,6 +17,7 @@ export function buildOpenApiDocument() {
       trips: { findById: unreachable, listByOwner: unreachable },
       destinations: { listByTrip: unreachable },
       expenses: { listByTrip: unreachable, findById: unreachable },
+      checklist: { listByTrip: unreachable, findById: unreachable },
       savings: { find: unreachable },
       preferences: { find: unreachable },
       unitOfWork: { run: unreachable },

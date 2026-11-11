@@ -142,6 +142,30 @@ const EXPENSES = [
   },
 ];
 
+const CHECKLIST = {
+  items: [
+    {
+      id: '0193c0a8-7b1e-7c4a-9e2f-3d5a6b7c8e01',
+      group: 'documents',
+      label: 'Passport',
+      done: true,
+    },
+    { id: '0193c0a8-7b1e-7c4a-9e2f-3d5a6b7c8e02', group: 'documents', label: 'Visa', done: false },
+    { id: '0193c0a8-7b1e-7c4a-9e2f-3d5a6b7c8e03', group: 'packing', label: 'Charger', done: false },
+  ],
+  readiness: {
+    dest: true,
+    route: true,
+    budget: true,
+    saved: false,
+    docs: false,
+    stays: false,
+    itin: false,
+    check: false,
+    ready: false,
+  },
+};
+
 function reply(response, status, body, headers = {}) {
   response.writeHead(status, { 'content-type': 'application/json', ...headers });
   response.end(JSON.stringify(body));
@@ -196,6 +220,10 @@ const stub = createServer(async (request, response) => {
     return reply(response, 200, PREFERENCES);
   }
   const budgetRoute = /^\/v1\/trips\/([^/]+)\/(budget|expenses)$/.exec(url.pathname);
+  if (/^\/v1\/trips\/[^/]+\/checklist$/.test(url.pathname) && request.method === 'GET') {
+    if (!signedIn) return reply(response, 401, { code: 'UNAUTHENTICATED' });
+    return reply(response, 200, CHECKLIST);
+  }
   if (budgetRoute && request.method === 'GET') {
     if (!signedIn) return reply(response, 401, { code: 'UNAUTHENTICATED' });
     return reply(response, 200, budgetRoute[2] === 'budget' ? BUDGET : { expenses: EXPENSES });
@@ -471,6 +499,18 @@ try {
       'budget-error',
       true,
       async (page) => go(page, `${base}/app/budget?status=expense-error`),
+      VIEWPORTS.desktop,
+    ],
+    ...['phone', 'desktop'].map((layout) => [
+      `lists-${layout}`,
+      true,
+      async (page) => go(page, `${base}/app/lists`),
+      VIEWPORTS[layout],
+    ]),
+    [
+      'lists-error',
+      true,
+      async (page) => go(page, `${base}/app/lists?status=error`),
       VIEWPORTS.desktop,
     ],
     ...publicScenarios(),
@@ -1419,6 +1459,8 @@ try {
   if (process.env.SHOT_DIR) {
     const views = [
       ['desktop-budget', 'en', VIEWPORTS.desktop, `${base}/app/budget`, null],
+      ['desktop-lists', 'en', VIEWPORTS.desktop, `${base}/app/lists`, null],
+      ['phone-lists-ptbr', 'pt-BR', VIEWPORTS.phone, `${base}/app/lists`, null],
       ['laptop-home-pip', 'en', VIEWPORTS.laptop, `${pipBase}/app`, null],
       ['tablet-home', 'en', VIEWPORTS.tablet, `${base}/app`, null],
       ['phone-board-ptbr', 'pt-BR', VIEWPORTS.phone, `${base}/app/board`, null],

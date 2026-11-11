@@ -328,6 +328,36 @@ async function journey(browser, { width, height, locale }) {
       .click();
     await page.getByText(budgetCopy.expenseRemoved, { exact: true }).waitFor({ timeout: 15_000 });
 
+    // ---- checklists: start from the suggested list, check an item, see the stamp count move, remove one
+    const listsCopy = CATALOGS[locale].listsPage;
+    await go('/app/lists');
+    await axe('lists (empty)');
+    await page.getByRole('button', { name: listsCopy.startButton, exact: true }).click();
+    await page.getByText(listsCopy.flash.suggested, { exact: true }).waitFor({ timeout: 15_000 });
+    const boxes = page.getByRole('checkbox');
+    const total = await boxes.count();
+    expect(total >= 10, 'the suggested list did not add its items');
+    await boxes.first().click();
+    await page.locator('[role=checkbox][aria-checked=true]').first().waitFor({ timeout: 15_000 });
+    await page.reload();
+    await page.waitForLoadState('networkidle');
+    await axe('lists');
+    expect(
+      (await page.locator('[role=checkbox][aria-checked=true]').count()) === 1,
+      'the checked item is not saved after a reload',
+    );
+    await page
+      .getByRole('button', { name: new RegExp(listsCopy.removeItem.replace('{label}', '.*')) })
+      .first()
+      .click();
+    await page.waitForFunction(
+      (n) => document.querySelectorAll('[role=checkbox]').length === n - 1,
+      total,
+      {
+        timeout: 15_000,
+      },
+    );
+
     // ---- theme on the first paint: choose red-eye, then load with JavaScript off
     await go('/settings');
     await page
