@@ -102,6 +102,8 @@ Migration `0006_trip_destinations`. One row per stop in `destination`, `trip_id`
 | `region` | Free text, nullable |
 | `latitude`, `longitude` | `double precision`, CHECKed to -90..90 and -180..180 |
 | `nights` | 0 to 365, default 0 (day trips are 0) |
+| `note` | The person's note about the stop, 1 to 500 characters or null (blank is stored as null). Personal: never in logs or audit (migration `0009_stop_notes_and_legs`) |
+| `leg_mode` | How they travel to the **next** stop: `flight`, `train`, `bus`, `car`, `boat`, `walk`, `other` (`LEG_MODES`), or null. The application stores null on the last stop |
 
 - **Replace, don't patch.** `replaceDestinations` deletes the trip's rows and inserts the list in order inside one transaction (with the audit entry), so a failed save leaves the old route intact and sending the same route twice changes nothing. At most 100 stops (`MAX_DESTINATIONS`).
 - **State** (`planned` or `draft`, for Pip proposals) and the link to a places table are added by the migrations of the features that need them.

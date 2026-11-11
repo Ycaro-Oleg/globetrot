@@ -36,7 +36,7 @@ export function createReplaceDestinations(deps: Pick<Ports, 'unitOfWork' | 'cloc
         await loadOwnedTrip(tx.trips, actor, input.tripId);
         const records = await tx.destinations.replaceForTrip(
           input.tripId,
-          input.destinations.map((item) => ({
+          input.destinations.map((item, index) => ({
             id: deps.ids.newId(),
             placeKey: item.placeKey,
             name: item.name,
@@ -45,6 +45,9 @@ export function createReplaceDestinations(deps: Pick<Ports, 'unitOfWork' | 'cloc
             latitude: item.latitude,
             longitude: item.longitude,
             nights: item.nights,
+            note: item.note ?? null,
+            // A leg leads to the next stop: the last stop has none.
+            legMode: index === input.destinations.length - 1 ? null : (item.legMode ?? null),
           })),
           now,
         );

@@ -60,7 +60,7 @@
   display: grid;
   align-items: start;
   gap: 1rem;
-  grid-template-columns: minmax(0, 1fr) 20rem;
+  grid-template-columns: minmax(0, 1fr) 23rem;
 }
 .mapCard,
 .panel {
@@ -378,20 +378,20 @@
   list-style: none;
 }
 .stopList li {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr) auto;
   align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
+  gap: 0.35rem 0.5rem;
   padding: 0.45rem 0.5rem;
   border: 1px solid transparent;
   border-radius: 0.7rem;
 }
 .stopList .stopActive {
-  border-color: rgba(29, 26, 53, 0.2);
-  background: #fff9ee;
+  border-color: var(--gt-semantic-color-outline);
+  background: var(--gt-semantic-color-surface-nested);
 }
-.stopList li > button:first-child {
+.stopList .stopMain {
+  flex: 1 1 10rem;
   display: flex;
   min-width: 0;
   align-items: center;
@@ -403,7 +403,7 @@
   text-align: start;
   cursor: pointer;
 }
-.stopList li > button:first-child > b {
+.stopList .stopMain > b {
   display: grid;
   width: 26px;
   height: 26px;
@@ -427,8 +427,10 @@
   font-size: 0.72rem;
 }
 .removeStop {
-  width: 34px;
-  height: 34px;
+  grid-column: 3;
+  grid-row: 1;
+  width: 44px;
+  height: 44px;
   border: 0;
   border-radius: 0.5rem;
   background: transparent;
@@ -527,7 +529,7 @@
 }
 @media (max-width: 1100px) {
   .workspace {
-    grid-template-columns: minmax(0, 1fr) 18rem;
+    grid-template-columns: minmax(0, 1fr) 21rem;
   }
   .mapCanvas {
     min-height: 350px;
@@ -684,10 +686,18 @@
 /* Nights at a stop: a stepper on its own row under the stop, with 44px targets. */
 .nights {
   display: flex;
-  flex-basis: 100%;
   align-items: center;
+  gap: 0.3rem;
+}
+/* Order and nights share the row under the stop's name. */
+.stopControls {
+  grid-row: 2;
+  display: flex;
+  flex-wrap: wrap;
+  grid-column: 2 / 4;
+  align-items: center;
+  justify-content: space-between;
   gap: 0.4rem;
-  padding-inline-start: calc(26px + 0.6rem);
 }
 .nights button {
   display: grid;
@@ -706,8 +716,287 @@
   cursor: not-allowed;
 }
 .nights output {
-  min-width: 5.5rem;
+  min-width: 4.5rem;
   text-align: center;
   font-size: 0.85rem;
   font-weight: 700;
+}
+
+/* ---- Undo, reorder, the stop panel and the legs (#75) ---------------------------------------------- */
+.headerActions .undoButton {
+  min-height: 44px;
+  padding: 0.5rem 0.85rem;
+  border: 2px solid var(--gt-semantic-color-outline);
+  border-radius: 0.75rem;
+  background: var(--gt-semantic-color-surface-card);
+  color: var(--gt-semantic-color-text);
+  font: 800 0.85rem var(--gt-primitive-font-body);
+  cursor: pointer;
+}
+.dragHandle {
+  display: grid;
+  width: 22px;
+  min-height: 44px;
+  place-items: center;
+  color: var(--gt-semantic-color-text-secondary);
+  cursor: grab;
+  user-select: none;
+}
+.dragging {
+  opacity: 0.5;
+}
+.order {
+  display: flex;
+  gap: 0.25rem;
+}
+.order button {
+  display: grid;
+  min-width: 44px;
+  min-height: 44px;
+  place-items: center;
+  border: 2px solid var(--gt-semantic-color-outline);
+  border-radius: 0.6rem;
+  background: var(--gt-semantic-color-surface-card);
+  color: var(--gt-semantic-color-text);
+  font: 800 1rem var(--gt-primitive-font-body);
+  cursor: pointer;
+}
+.order button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.stopList .legLine {
+  display: block;
+  color: var(--gt-semantic-color-text);
+  font-weight: 700;
+}
+.stopList .legLine span {
+  display: inline;
+}
+.attribution {
+  display: block;
+  padding: 0.35rem 0.5rem 0;
+  color: var(--gt-semantic-color-text-secondary);
+  font-size: 0.65rem;
+}
+.stopPanel {
+  display: grid;
+  gap: 0.5rem;
+  margin-top: 0.6rem;
+  padding: 0.85rem;
+  border: 2px solid var(--gt-semantic-color-outline);
+  border-radius: 0.85rem;
+  background: var(--gt-semantic-color-surface-page);
+}
+.stopPanel h3,
+.stopPanel p {
+  margin: 0;
+}
+.stopPanel h3 {
+  font-size: 1.3rem;
+  letter-spacing: -0.03em;
+}
+.stopPanel p {
+  color: var(--gt-semantic-color-text-secondary);
+  font-size: 0.8rem;
+}
+.panelField {
+  display: grid;
+  gap: 0.25rem;
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+.panelField textarea,
+.panelField select {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 44px;
+  padding: 0.5rem 0.65rem;
+  border: 2px solid var(--gt-semantic-color-outline);
+  border-radius: 0.6rem;
+  background: #fff;
+  color: var(--gt-semantic-color-always-light-text);
+  font: 500 0.9rem var(--gt-primitive-font-body);
+  resize: vertical;
+}
+.stopPanelActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.stopPanelActions a {
+  color: var(--gt-semantic-color-text);
+  font-weight: 800;
+}
+.stopPanelActions button {
+  min-height: 44px;
+  padding: 0.4rem 0.7rem;
+  border: 2px solid var(--gt-semantic-color-danger);
+  border-radius: 0.6rem;
+  background: transparent;
+  color: var(--gt-semantic-color-danger);
+  font-weight: 800;
+  cursor: pointer;
+}
+.legMarker {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border: 2px solid #1d1a35;
+  border-radius: 50%;
+  background: #fff5e1;
+  font-size: 0.95rem;
+  pointer-events: none;
+}
+.toast {
+  position: fixed;
+  z-index: 60;
+  inset-inline: 50% auto;
+  inset-block-end: calc(1.25rem + env(safe-area-inset-bottom));
+  display: flex;
+  max-width: calc(100vw - 2rem);
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.6rem 0.6rem 0.6rem 1rem;
+  border: 2px solid #1d1a35;
+  border-radius: 0.9rem;
+  background: #1d1a35;
+  color: #fff5e1;
+  font-weight: 700;
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.25);
+  transform: translateX(-50%);
+}
+.toast button {
+  min-height: 40px;
+  padding: 0.35rem 0.8rem;
+  border: 2px solid #f5b31c;
+  border-radius: 0.6rem;
+  background: #f5b31c;
+  color: #1d1a35;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+/* "Pin here" and its crosshair are the phone's way to drop a pin (a tap on a small map is imprecise). */
+.crosshair,
+.pinHere,
+.sheetBar {
+  display: none;
+}
+
+/* ---- Phone: the route panel is a bottom sheet with three heights, above the tab bar ---------------- */
+@media (max-width: 720px) {
+  .board {
+    padding-bottom: 6rem;
+  }
+  .crosshair {
+    position: absolute;
+    z-index: 3;
+    inset: 50% auto auto 50%;
+    display: block;
+    width: 34px;
+    height: 34px;
+    border: 3px solid #e0401f;
+    border-radius: 50%;
+    box-shadow: 0 0 0 2px #fff5e1;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+  }
+  .pinHere {
+    position: absolute;
+    z-index: 3;
+    inset-inline: 50% auto;
+    inset-block-end: 0.9rem;
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.45rem 0.95rem;
+    border: 2px solid #1d1a35;
+    border-radius: 999px;
+    background: #f5b31c;
+    color: #1d1a35;
+    font-weight: 800;
+    box-shadow: 0 3px 0 #1d1a35;
+    transform: translateX(-50%);
+    cursor: pointer;
+  }
+  .panel {
+    position: fixed;
+    z-index: 40;
+    inset-inline: 0.5rem;
+    /* Above the tab bar and Pip's button (they sit at 10–152px): the sheet never covers either. */
+    inset-block-end: calc(160px + env(safe-area-inset-bottom));
+    max-height: calc(100dvh - 230px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    border-radius: 1.2rem 1.2rem 0.9rem 0.9rem;
+    box-shadow: 0 -4px 0 rgba(29, 26, 53, 0.25);
+    grid-template-columns: 1fr;
+  }
+  .panel[data-sheet='peek'] {
+    height: 7.5rem;
+  }
+  .panel[data-sheet='half'] {
+    height: 40dvh;
+  }
+  .panel[data-sheet='full'] {
+    height: calc(100dvh - 230px);
+  }
+  .panelSection {
+    grid-row: auto;
+  }
+  .sheetBar {
+    position: sticky;
+    z-index: 1;
+    top: -1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin: -1rem -1rem 0;
+    padding: 0.4rem 0.75rem;
+    border-bottom: 1px solid rgba(29, 26, 53, 0.15);
+    background: var(--gt-semantic-color-surface-card);
+  }
+  .sheetHandle {
+    display: grid;
+    min-width: 64px;
+    min-height: 44px;
+    place-items: center;
+    border: 0;
+    background: transparent;
+    cursor: grab;
+    touch-action: none;
+  }
+  .sheetHandle span {
+    width: 44px;
+    height: 5px;
+    border-radius: 3px;
+    background: var(--gt-semantic-color-text-secondary);
+  }
+  .sheetSizes {
+    display: flex;
+    gap: 0.25rem;
+  }
+  .sheetSizes button {
+    min-height: 36px;
+    padding: 0.25rem 0.55rem;
+    border: 1.5px solid var(--gt-semantic-color-outline);
+    border-radius: 0.55rem;
+    background: transparent;
+    color: var(--gt-semantic-color-text);
+    font: 700 0.72rem var(--gt-primitive-font-body);
+    cursor: pointer;
+  }
+  .sheetSizes button[aria-pressed='true'] {
+    background: var(--gt-semantic-color-text);
+    color: var(--gt-semantic-color-surface-card);
+  }
+  .toast {
+    inset-block-end: calc(168px + env(safe-area-inset-bottom));
+  }
 }

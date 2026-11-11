@@ -1,5 +1,7 @@
 import {
   DESTINATION_NAME_MAX_LENGTH,
+  DESTINATION_NOTE_MAX_LENGTH,
+  LEG_MODES,
   MAX_DESTINATIONS,
   MAX_NIGHTS_PER_DESTINATION,
 } from '@globetrot/domain';
@@ -36,6 +38,19 @@ export const destinationFields = z.object({
     .max(MAX_NIGHTS_PER_DESTINATION)
     .default(0)
     .meta({ description: 'Nights spent here. Day trips are 0.' }),
+  note: z
+    .string()
+    .trim()
+    .max(DESTINATION_NOTE_MAX_LENGTH)
+    .nullable()
+    .optional()
+    .transform((value) => (value ? value : null))
+    .meta({ description: 'The person’s note about the stop. Blank is no note.' }),
+  legMode: z
+    .enum(LEG_MODES)
+    .nullable()
+    .optional()
+    .meta({ description: 'How they travel from this stop to the next. Ignored on the last stop.' }),
 });
 
 export const replaceDestinationsBody = z.object({
@@ -55,6 +70,8 @@ export const destinationSchema = z.object({
   latitude: z.number(),
   longitude: z.number(),
   nights: z.number().int(),
+  note: z.string().nullable(),
+  legMode: z.enum(LEG_MODES).nullable(),
 });
 export type DestinationView = z.infer<typeof destinationSchema>;
 
@@ -70,4 +87,6 @@ export const toDestinationView = (record: DestinationRecord): DestinationView =>
   latitude: record.latitude,
   longitude: record.longitude,
   nights: record.nights,
+  note: record.note,
+  legMode: (record.legMode as DestinationView['legMode']) ?? null,
 });

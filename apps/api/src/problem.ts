@@ -25,12 +25,14 @@ const TITLES: Readonly<Record<number, string>> = {
   404: 'Not found',
   409: 'Conflict',
   422: 'Validation failed',
+  429: 'Too many requests',
   500: 'Internal server error',
+  503: 'Service unavailable',
 };
 
 /** Builds a problem+json response. Never pass stack traces, SQL, tokens or other users' data in `detail`. */
 export function problem(
-  status: 400 | 401 | 403 | 404 | 409 | 422 | 500,
+  status: 400 | 401 | 403 | 404 | 409 | 422 | 429 | 500 | 503,
   code: string,
   extra: { detail?: string; errors?: readonly FieldIssue[] } = {},
 ): Response {
@@ -48,12 +50,14 @@ export function problem(
   });
 }
 
-const STATUS_BY_CODE: Readonly<Record<string, 401 | 403 | 404 | 409 | 422>> = {
+const STATUS_BY_CODE: Readonly<Record<string, 401 | 403 | 404 | 409 | 422 | 429 | 503>> = {
   UNAUTHENTICATED: 401,
   FORBIDDEN: 403,
   NOT_FOUND: 404,
   IDEMPOTENCY_KEY_REUSED: 409,
   VALIDATION_FAILED: 422,
+  RATE_LIMITED: 429,
+  SERVICE_UNAVAILABLE: 503,
 };
 
 /** Translates an expected application failure. Unknown codes are a programming error, so they become a 500. */

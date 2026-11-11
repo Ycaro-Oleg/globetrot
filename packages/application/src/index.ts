@@ -23,7 +23,9 @@ export {
   ForbiddenError,
   IdempotencyKeyReusedError,
   NotFoundError,
+  RateLimitedError,
   UnauthenticatedError,
+  UnavailableError,
   ValidationError,
   type FieldIssue,
 } from './errors';
@@ -50,9 +52,13 @@ import {
   createUpdateChecklistItem,
 } from './checklists/operations';
 import { createCreateTripFromExample } from './examples/operations';
+import { createReversePlace, createSearchPlaces } from './places/operations';
 import { createListDestinations, createReplaceDestinations } from './destinations/operations';
 export { defineOperation, type Operation } from './operation';
 export type {
+  GeocodingPort,
+  PlaceResult,
+  RateLimiter,
   ChecklistItemPatch,
   ChecklistItemRecord,
   ChecklistReader,
@@ -121,6 +127,13 @@ export {
 } from './budget/schemas';
 
 export {
+  PLACE_LOOKUPS_PER_MINUTE,
+  placeSchema,
+  reversePlaceInput,
+  searchPlacesInput,
+} from './places/operations';
+
+export {
   EXAMPLE_TRIP_IDS,
   EXAMPLE_TRIPS,
   findExampleTrip,
@@ -171,6 +184,8 @@ export function createApplication(ports: Ports) {
     archiveTrip: createArchiveTrip(ports),
     listDestinations: createListDestinations(ports),
     createTripFromExample: createCreateTripFromExample(ports),
+    searchPlaces: createSearchPlaces(ports),
+    reversePlace: createReversePlace(ports),
     getChecklist: createGetChecklist(ports),
     addChecklistItems: createAddChecklistItems(ports),
     updateChecklistItem: createUpdateChecklistItem(ports),

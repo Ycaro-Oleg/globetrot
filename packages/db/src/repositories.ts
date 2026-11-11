@@ -307,6 +307,8 @@ export interface DestinationRow {
   readonly latitude: number;
   readonly longitude: number;
   readonly nights: number;
+  readonly note: string | null;
+  readonly legMode: string | null;
   readonly createdAt: Date;
   readonly updatedAt: Date;
 }
@@ -320,6 +322,8 @@ export interface NewDestinationRow {
   readonly latitude: number;
   readonly longitude: number;
   readonly nights: number;
+  readonly note: string | null;
+  readonly legMode: string | null;
 }
 
 /** A trip's route, in order. Replaced as a whole inside one transaction. */

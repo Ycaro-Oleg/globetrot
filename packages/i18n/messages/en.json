@@ -588,7 +588,41 @@
     "notSavedLink": "Create a trip",
     "nights": "{count, plural, =0 {Day trip} one {# night} other {# nights}}",
     "nightsMore": "One more night in {place}",
-    "nightsFewer": "One night fewer in {place}"
+    "nightsFewer": "One night fewer in {place}",
+    "undo": "Undo",
+    "mapAria": "Interactive map",
+    "mapLoading": "Loading map…",
+    "mapError": "The map could not load. You can still build your route with the search and the list.",
+    "pinHere": "Pin here",
+    "sheet": {
+      "label": "Route panel",
+      "toggle": "Resize the route panel",
+      "peek": "Small",
+      "half": "Half",
+      "full": "Full"
+    },
+    "searchBusy": "Too many searches in a minute. Wait a moment and try again.",
+    "searchAttribution": "Places © OpenStreetMap contributors · Geoapify",
+    "dragHint": "Drag to reorder",
+    "legSummary": "{mode} to {place}",
+    "legModes": {
+      "flight": "Flight",
+      "train": "Train",
+      "bus": "Bus",
+      "car": "Car",
+      "boat": "Boat",
+      "walk": "On foot",
+      "other": "Other"
+    },
+    "moveUp": "Move {place} up",
+    "moveDown": "Move {place} down",
+    "stopPanel": "THIS STOP",
+    "note": "Note",
+    "notePlaceholder": "Where to eat, what to book, anything to remember",
+    "legTo": "How do you get to {place}?",
+    "legNone": "Not decided yet",
+    "costsLink": "See the trip’s costs",
+    "removed": "{place} removed from your route."
   },
   "daysPage": {
     "title": "Days",

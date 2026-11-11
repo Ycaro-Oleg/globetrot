@@ -3,7 +3,7 @@ import { getLocale, getTranslations } from 'next-intl/server';
 import { apiInternalUrl } from '../../../lib/api-proxy';
 import { sessionCookieHeader } from '../../../lib/stored-preferences';
 import { fetchDestinations, fetchTrips, SELECTED_TRIP_COOKIE } from '../../../lib/trips';
-import type { MapPlace } from './map-canvas';
+import { isLegMode, type RouteStop } from './board-route';
 import { WorldMapBoard } from './world-map';
 
 export async function generateMetadata() {
@@ -25,7 +25,7 @@ export default async function BoardPage() {
   const destinations = options && trip ? ((await fetchDestinations(options, trip.id)) ?? []) : [];
 
   const countries = new Intl.DisplayNames([locale], { type: 'region' });
-  const stops: MapPlace[] = destinations.map((stop) => ({
+  const route: RouteStop[] = destinations.map((stop) => ({
     id: stop.placeKey,
     name: stop.name,
     country: stop.countryCode ? (countries.of(stop.countryCode) ?? '') : '',
@@ -33,15 +33,10 @@ export default async function BoardPage() {
     region: stop.region ?? '',
     longitude: stop.longitude,
     latitude: stop.latitude,
+    nights: stop.nights,
+    note: stop.note ?? '',
+    legMode: isLegMode(stop.legMode) ? stop.legMode : null,
   }));
-  const nights = Object.fromEntries(destinations.map((stop) => [stop.placeKey, stop.nights]));
 
-  return (
-    <WorldMapBoard
-      key={trip?.id ?? 'none'}
-      tripId={trip?.id ?? null}
-      initialStops={stops}
-      initialNights={nights}
-    />
-  );
+  return <WorldMapBoard key={trip?.id ?? 'none'} tripId={trip?.id ?? null} initialRoute={route} />;
 }

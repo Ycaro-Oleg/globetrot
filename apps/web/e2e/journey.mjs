@@ -267,6 +267,30 @@ async function journey(browser, { width, height, locale }) {
     await page.locator('ol li').first().getByRole('button', { name: moreNights }).click();
     await page.locator('ol li').first().getByRole('button', { name: moreNights }).click();
     await page.getByText(board.saved, { exact: true }).waitFor({ timeout: 15_000 });
+    // reorder with the keyboard path, undo it, then a note on the first stop survives a reload
+    const firstName = async () =>
+      (await page.locator('ol li').first().locator('strong').innerText()).trim();
+    const before = await firstName();
+    await page
+      .locator('ol li')
+      .first()
+      .getByRole('button', { name: new RegExp(board.moveDown.replace('{place}', '.*')) })
+      .click();
+    expect((await firstName()) !== before, 'moving the first stop down did not reorder the route');
+    await page.getByRole('button', { name: board.undo, exact: true }).first().click();
+    expect((await firstName()) === before, 'undo did not restore the order');
+    await page.locator('ol li').first().locator('button').nth(0).click();
+    await page.getByLabel(board.note, { exact: true }).fill('Ramen in Shinjuku');
+    await page.getByLabel(board.note, { exact: true }).press('Tab');
+    await page.getByText(board.saved, { exact: true }).waitFor({ timeout: 15_000 });
+    await page.reload();
+    await page.waitForLoadState('networkidle');
+    await page.locator('ol li').first().locator('button').nth(0).click();
+    expect(
+      (await page.getByLabel(board.note, { exact: true }).inputValue()) === 'Ramen in Shinjuku',
+      'the note on the stop is not saved',
+    );
+    await axe('board (stop panel)');
     await go('/app/days');
     await axe('days');
     expect(

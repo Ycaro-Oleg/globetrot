@@ -61,3 +61,21 @@ export class IdempotencyKeyReusedError extends ApplicationError {
     this.name = 'IdempotencyKeyReusedError';
   }
 }
+
+/** The actor asked too often. Try again after a short wait. */
+export class RateLimitedError extends ApplicationError {
+  readonly code = 'RATE_LIMITED';
+  constructor(message = 'Too many requests. Wait a moment and try again') {
+    super(message);
+    this.name = 'RateLimitedError';
+  }
+}
+
+/** An outside service this needs is not configured or not answering. Nothing was changed. */
+export class UnavailableError extends ApplicationError {
+  readonly code = 'SERVICE_UNAVAILABLE';
+  constructor(message = 'This is not available right now') {
+    super(message);
+    this.name = 'UnavailableError';
+  }
+}

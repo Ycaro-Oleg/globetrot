@@ -1,4 +1,9 @@
-import { createApplication, type EmailPort, type UserReader } from '@globetrot/application';
+import {
+  createApplication,
+  type EmailPort,
+  type GeocodingPort,
+  type UserReader,
+} from '@globetrot/application';
 import {
   createDestinationRepository,
   createChecklistRepository,
@@ -16,6 +21,7 @@ import { createApp, type AuthService } from './app';
 import { createAuth, type Auth } from './auth';
 import type { ApiConfig } from './config';
 import { createSmtpEmail } from './email';
+import { createGeoapifyGeocoder, createMemoryRateLimiter } from './places';
 
 /** Adapter: the application's `UserReader` port over the `user` table. Selects only what the port names. */
 export function createUserReader(db: Database): UserReader {
@@ -54,7 +60,7 @@ export function toAuthService(auth: Auth): AuthService {
 export function createServices(
   db: Database,
   config: ApiConfig,
-  overrides: { readonly email?: EmailPort } = {},
+  overrides: { readonly email?: EmailPort; readonly geocoding?: GeocodingPort } = {},
 ) {
   const email = overrides.email ?? createSmtpEmail(config.email);
   const auth = createAuth(db, config.auth, { email });
@@ -71,6 +77,8 @@ export function createServices(
       unitOfWork: createUnitOfWork(db),
       clock: { now: () => new Date() },
       ids: { newId: () => uuidV7(Date.now(), crypto.getRandomValues(new Uint8Array(10))) },
+      geocoding: overrides.geocoding ?? createGeoapifyGeocoder(config.geoapifyKey),
+      rateLimiter: createMemoryRateLimiter(),
     }),
     trustedOrigins: config.auth.trustedOrigins,
     enabledProviders: config.auth.google ? ['google'] : [],

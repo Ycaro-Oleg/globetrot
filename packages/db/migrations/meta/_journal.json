@@ -64,6 +64,13 @@
       "when": 1794357886634,
       "tag": "0008_checklists",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1794360614170,
+      "tag": "0009_stop_notes_and_legs",
+      "breakpoints": true
     }
   ]
 }
