@@ -102,7 +102,10 @@ describe('budget against a real database', () => {
     });
     expect(huge.json).toMatchObject({ original: { amount: '123456789012345.99' } });
 
-    const budget = (await call(ana.cookie, 'GET', `${base}/budget`)).json as Record<string, any>;
+    const budget = (await call(ana.cookie, 'GET', `${base}/budget`)).json as {
+      total: unknown;
+      savings: { status: string };
+    };
     expect(budget.total).toEqual({ amount: '123456789014570.99', currency: 'USD' });
     expect(budget.savings.status).toBe('saving');
     expect((await call(ana.cookie, 'GET', `${base}/expenses`)).json.expenses).toHaveLength(3);
@@ -122,15 +125,16 @@ describe('budget against a real database', () => {
     });
     const plan = (
       await call(ana.cookie, 'PUT', `${base}/savings`, { saved: '500', monthly: '300' })
-    ).json as Record<string, any>;
+    ).json as { savings: unknown };
     expect(plan.savings).toMatchObject({
       saved: { amount: '500.00', currency: 'EUR' },
       left: { amount: '1500.00' },
       monthsNeeded: 5,
     });
     // savings are partial: the monthly amount alone keeps what was saved
-    const faster = (await call(ana.cookie, 'PUT', `${base}/savings`, { monthly: '500' }))
-      .json as Record<string, any>;
+    const faster = (await call(ana.cookie, 'PUT', `${base}/savings`, { monthly: '500' })).json as {
+      savings: unknown;
+    };
     expect(faster.savings).toMatchObject({ saved: { amount: '500.00' }, monthsNeeded: 3 });
     const locked = await call(ana.cookie, 'PATCH', base, { currency: 'USD' });
     expect(locked.response.status).toBe(422);
