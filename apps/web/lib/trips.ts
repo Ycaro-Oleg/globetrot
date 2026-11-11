@@ -48,3 +48,38 @@ export async function fetchTrip(options: FetchOptions, id: string): Promise<Trip
     return null;
   }
 }
+
+export type BudgetData =
+  paths['/v1/trips/{id}/budget']['get']['responses'][200]['content']['application/json'];
+export type ExpenseData =
+  paths['/v1/trips/{id}/expenses']['get']['responses'][200]['content']['application/json']['expenses'][number];
+
+/** The totals and the savings answer of a trip, or `null` when they cannot be read. */
+export async function fetchBudget(
+  options: FetchOptions,
+  tripId: string,
+): Promise<BudgetData | null> {
+  try {
+    const { data } = await createServerApiClient(options).GET('/v1/trips/{id}/budget', {
+      params: { path: { id: tripId } },
+    });
+    return data ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/** A trip's costs, newest first, or `null` when they cannot be read. */
+export async function fetchExpenses(
+  options: FetchOptions,
+  tripId: string,
+): Promise<ExpenseData[] | null> {
+  try {
+    const { data } = await createServerApiClient(options).GET('/v1/trips/{id}/expenses', {
+      params: { path: { id: tripId } },
+    });
+    return data?.expenses ?? null;
+  } catch {
+    return null;
+  }
+}

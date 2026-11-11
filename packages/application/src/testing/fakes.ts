@@ -2,6 +2,10 @@ import type {
   AuditEventInput,
   DestinationRecord,
   DestinationWriter,
+  ExpenseRecord,
+  ExpenseWriter,
+  SavingsRecord,
+  SavingsWriter,
   NewTrip,
   Ports,
   PreferencesRecord,
@@ -18,6 +22,8 @@ export interface FakeState {
   trips: Map<string, TripRecord>;
   /** Routes by trip id. */
   destinations: Map<string, DestinationRecord[]>;
+  expenses: Map<string, ExpenseRecord>;
+  savings: Map<string, SavingsRecord>;
   preferences: Map<string, PreferencesRecord>;
   audit: AuditEventInput[];
   idempotency: Map<string, { fingerprint: string; response: unknown }>;
@@ -36,6 +42,8 @@ export function createFakePorts(options: FakeOptions = {}) {
   const state: FakeState = {
     trips: new Map(),
     destinations: new Map(),
+    expenses: new Map(),
+    savings: new Map(),
     preferences: new Map(),
     audit: [],
     idempotency: new Map(),
@@ -119,8 +127,55 @@ export function createFakePorts(options: FakeOptions = {}) {
     },
   };
 
+  const expenseWriter: ExpenseWriter = {
+    async listByTrip(tripId) {
+      return [...state.expenses.values()]
+        .filter((record) => record.tripId === tripId)
+        .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    },
+    async findById(id) {
+      return state.expenses.get(id) ?? null;
+    },
+    async insert(expense) {
+      const record: ExpenseRecord = { ...expense, updatedAt: expense.createdAt };
+      state.expenses.set(record.id, record);
+      return record;
+    },
+    async update(id, patch, updatedAt) {
+      const current = state.expenses.get(id);
+      if (!current) throw new Error('expense vanished');
+      const next: ExpenseRecord = { ...current, ...patch, updatedAt };
+      state.expenses.set(id, next);
+      return next;
+    },
+    async delete(id) {
+      state.expenses.delete(id);
+    },
+    async countByTrip(tripId) {
+      return [...state.expenses.values()].filter((record) => record.tripId === tripId).length;
+    },
+  };
+
+  const savingsWriter: SavingsWriter = {
+    async find(tripId) {
+      return state.savings.get(tripId) ?? null;
+    },
+    async upsert(tripId, patch) {
+      const current = state.savings.get(tripId) ?? { tripId, savedMinor: 0n, monthlyMinor: 0n };
+      const next: SavingsRecord = {
+        tripId,
+        savedMinor: patch.savedMinor ?? current.savedMinor,
+        monthlyMinor: patch.monthlyMinor ?? current.monthlyMinor,
+      };
+      state.savings.set(tripId, next);
+      return next;
+    },
+  };
+
   const transaction: Transaction = {
     trips: tripWriter,
+    expenses: expenseWriter,
+    savings: savingsWriter,
     destinations: destinationWriter,
     preferences: preferencesWriter,
     audit: {
@@ -155,6 +210,8 @@ export function createFakePorts(options: FakeOptions = {}) {
     },
     trips: tripWriter,
     destinations: destinationWriter,
+    expenses: expenseWriter,
+    savings: savingsWriter,
     preferences: preferencesWriter,
     unitOfWork: {
       // Commit or roll back as one, like a database transaction.
@@ -162,6 +219,8 @@ export function createFakePorts(options: FakeOptions = {}) {
         const before: FakeState = {
           trips: new Map(state.trips),
           destinations: new Map(state.destinations),
+          expenses: new Map(state.expenses),
+          savings: new Map(state.savings),
           preferences: new Map(state.preferences),
           audit: [...state.audit],
           idempotency: new Map(
@@ -173,6 +232,8 @@ export function createFakePorts(options: FakeOptions = {}) {
         } catch (error) {
           state.trips = before.trips;
           state.destinations = before.destinations;
+          state.expenses = before.expenses;
+          state.savings = before.savings;
           state.preferences = before.preferences;
           state.audit = before.audit;
           state.idempotency = before.idempotency;

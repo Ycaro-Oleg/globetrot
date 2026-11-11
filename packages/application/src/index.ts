@@ -35,6 +35,14 @@ export {
   type EmailTemplate,
   type RenderedEmail,
 } from './email/templates';
+import {
+  createCreateExpense,
+  createDeleteExpense,
+  createGetBudget,
+  createListExpenses,
+  createUpdateExpense,
+  createUpdateSavings,
+} from './budget/operations';
 import { createListDestinations, createReplaceDestinations } from './destinations/operations';
 export { defineOperation, type Operation } from './operation';
 export type {
@@ -45,6 +53,14 @@ export type {
   DestinationReader,
   DestinationRecord,
   DestinationWriter,
+  ExpensePatch,
+  ExpenseReader,
+  ExpenseRecord,
+  ExpenseWriter,
+  NewExpense,
+  SavingsReader,
+  SavingsRecord,
+  SavingsWriter,
   NewDestination,
   IdempotencyStart,
   IdempotencyStore,
@@ -83,6 +99,16 @@ export {
 export { idempotencyKeySchema } from './trips/operations';
 
 export {
+  budgetSchema,
+  expenseFields,
+  expenseListSchema,
+  expenseSchema,
+  savingsFields,
+  type BudgetView,
+  type ExpenseView,
+} from './budget/schemas';
+
+export {
   destinationFields,
   destinationListSchema,
   destinationSchema,
@@ -112,6 +138,12 @@ export function createApplication(ports: Ports) {
     updateTrip: createUpdateTrip(ports),
     archiveTrip: createArchiveTrip(ports),
     listDestinations: createListDestinations(ports),
+    getBudget: createGetBudget(ports),
+    listExpenses: createListExpenses(ports),
+    createExpense: createCreateExpense(ports),
+    updateExpense: createUpdateExpense(ports),
+    deleteExpense: createDeleteExpense(ports),
+    updateSavings: createUpdateSavings(ports),
     replaceDestinations: createReplaceDestinations(ports),
     getPreferences: createGetPreferences(ports),
     updatePreferences: createUpdatePreferences(ports),

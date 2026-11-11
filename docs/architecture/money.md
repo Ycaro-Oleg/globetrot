@@ -57,3 +57,9 @@ Use `formatMoney(money, locale)`, a wrapper over `Intl.NumberFormat`. The **loca
 - **Errors** extend `MoneyError`: `UnknownCurrencyError`, `CurrencyMismatchError`, `InvalidAmountError`, `InvalidRateError`.
 - **Registry maintenance:** when ISO 4217 adds or withdraws a code, update the table in `currency.ts` and its tests. Withdrawn codes on historical data need a migration decision first, so don't remove a code that stored rows still use without one.
 - **Tests:** unit plus property-based tests (fast-check), with coverage gated at ≥ 95% for `src/money/**` (`packages/domain/vitest.config.ts`).
+
+## In the product today (M6 v1)
+
+- A cost is stored as the amount typed (minor units and currency) **and** the same cost in the trip's currency, with the provenance of the conversion: the rate, its source and the day. Today the only source is `manual` (the person types the rate); a rates source arrives later and only adds another `source`. See [data-model](data-model.md#budget-expenses-and-savings).
+- The conversion is computed on the server with `convert` (half-even rounding); the client never sends a converted amount.
+- Totals add up the trip-currency amounts only, so a total never mixes currencies. The trip's currency is locked once it has costs or savings.

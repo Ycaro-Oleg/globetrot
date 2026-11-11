@@ -44,6 +44,7 @@ Every table, in the order it was introduced. `pnpm --filter @globetrot/db genera
 | `idempotency_key` | `0002_trips` | `schema/trip.ts` | A mutation already done, to replay it | `owner_id` | [below](#trips-idempotency-and-audit) |
 | `audit_event` | `0002_trips`, `0003_audit_event_append_only` | `schema/trip.ts` | Append-only history of mutations | the actor (no foreign key) | [below](#trips-idempotency-and-audit) |
 | `user_preference` | `0004_user_preferences`, `0005_theme_and_motion_preferences` | `schema/preference.ts` | One row of settings per user | `user_id` | [below](#user-preferences) |
+| `expense`, `trip_savings` | `0007_budget_and_savings` | `schema/budget.ts` | A trip's costs (with the conversion provenance) and what it has set aside | the trip's owner (through `trip_id`) | [below](#budget-expenses-and-savings) |
 | `destination` | `0006_trip_destinations` | `schema/destination.ts` | The ordered stops of a trip's route | the trip's owner (through `trip_id`) | [below](#destinations-a-trips-route) |
 
 `0000_extensions` enables `postgis`, `pg_trgm` and `unaccent` and creates no table. Planned, not built: pins and their connections (M4), itinerary and checklists (M5), expenses, exchange rates and savings (M6), stamps and the passport (M5 and M9), proposals (M7), billing (M10).
@@ -104,6 +105,23 @@ Migration `0006_trip_destinations`. One row per stop in `destination`, `trip_id`
 - **Replace, don't patch.** `replaceDestinations` deletes the trip's rows and inserts the list in order inside one transaction (with the audit entry), so a failed save leaves the old route intact and sending the same route twice changes nothing. At most 100 stops (`MAX_DESTINATIONS`).
 - **State** (`planned` or `draft`, for Pip proposals) and the link to a places table are added by the migrations of the features that need them.
 - The audit entry (`destination.replace`) holds the **number** of stops, never which places: where someone plans to go is personal.
+
+## Budget: expenses and savings
+
+Migration `0007_budget_and_savings`. Both tables reference `trip` with `ON DELETE CASCADE`. Amounts are `bigint` **minor units** (`mode: 'bigint'`), never floats, and cross the API as exact decimal strings ([money.md](money.md)).
+
+| `expense` column | Rule |
+|---|---|
+| `category`, `status` | CHECKed against the domain lists (`EXPENSE_CATEGORIES`, `EXPENSE_STATUSES`: estimate, confirmed, paid, unknown) |
+| `description` | Trimmed, 1 to 120 characters |
+| `amount_minor`, `currency` | What was typed: positive, in the currency the person chose |
+| `trip_amount_minor` | The same cost in the **trip's currency**, positive. This is what totals add up. Equal to `amount_minor` when the currencies match |
+| `fx_rate`, `fx_source`, `fx_as_of` | Provenance of the conversion: 1 `currency` = `fx_rate` trip currency, where it came from (`manual` today) and the day. **All three or none**: a rate without its source and day is refused by a CHECK |
+
+- **The server converts.** The client sends the amount and, for another currency, the rate; the converted amount is always computed by `convert` from the domain, never read from the request. A cost too small to be worth one minor unit after converting is refused.
+- `trip_savings` is one row per trip: `saved_minor` and `monthly_minor` in the trip's currency, never negative.
+- **The trip's currency is locked once there is money in it.** `PATCH /v1/trips/{id}` with another currency answers `422` (`currency_locked`) while the trip has a cost or non-zero savings, because every stored amount is in that currency. It can change freely before that.
+- Audit entries (`expense.create`, `.update`, `.delete`, `savings.update`) hold the category and status, never an amount or a description.
 
 ## Extensions
 

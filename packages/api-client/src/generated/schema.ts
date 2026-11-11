@@ -154,6 +154,85 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/trips/{id}/budget": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Totals and the savings answer of a trip
+         * @description Everything in the trip’s currency: the total, by category and by status, and the savings plan (how much is left, the month the goal is reached at the current monthly amount, and what to put aside to be ready by departure).
+         */
+        get: operations["getBudget"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/trips/{id}/expenses": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The costs of a trip, newest first */
+        get: operations["listExpenses"];
+        put?: never;
+        /**
+         * Add a cost
+         * @description The amount is in `currency`. When that is not the trip’s currency, send `fxRate` (how much of the trip’s currency 1 unit is worth); the server converts, and keeps the rate, its source (`manual`) and its date with the cost. The converted amount is never taken from the client.
+         */
+        post: operations["createExpense"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/trips/{id}/expenses/{expenseId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Replace a cost */
+        put: operations["updateExpense"];
+        post?: never;
+        /** Remove a cost */
+        delete: operations["deleteExpense"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/trips/{id}/savings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Set what is saved and the monthly amount
+         * @description In the trip’s currency. Only the fields sent change. Answers with the new budget.
+         */
+        put: operations["updateSavings"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1240,6 +1319,894 @@ export interface operations {
                 };
             };
             /** @description No such trip, or it belongs to someone else. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description The id or the body is not valid. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    getBudget: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Trip id (UUID). */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The budget. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        currency: string;
+                        total: {
+                            /**
+                             * @description Major units, exact.
+                             * @example 1250.00
+                             */
+                            amount: string;
+                            currency: string;
+                        };
+                        byCategory: {
+                            /** @enum {string} */
+                            category: "flights" | "stay" | "local_transport" | "intercity_transport" | "food" | "experiences" | "insurance" | "documents" | "taxes" | "shopping" | "buffer" | "other";
+                            amount: {
+                                /**
+                                 * @description Major units, exact.
+                                 * @example 1250.00
+                                 */
+                                amount: string;
+                                currency: string;
+                            };
+                        }[];
+                        byStatus: {
+                            /** @enum {string} */
+                            status: "estimate" | "confirmed" | "paid" | "unknown";
+                            amount: {
+                                /**
+                                 * @description Major units, exact.
+                                 * @example 1250.00
+                                 */
+                                amount: string;
+                                currency: string;
+                            };
+                        }[];
+                        savings: {
+                            /** @enum {string} */
+                            status: "no-costs" | "fully-saved" | "saving";
+                            saved: {
+                                /**
+                                 * @description Major units, exact.
+                                 * @example 1250.00
+                                 */
+                                amount: string;
+                                currency: string;
+                            };
+                            monthly: {
+                                /**
+                                 * @description Major units, exact.
+                                 * @example 1250.00
+                                 */
+                                amount: string;
+                                currency: string;
+                            };
+                            left: {
+                                /**
+                                 * @description Major units, exact.
+                                 * @example 1250.00
+                                 */
+                                amount: string;
+                                currency: string;
+                            };
+                            progressBasisPoints: number;
+                            monthsNeeded: number | null;
+                            readyMonth: string | null;
+                            departure: string | null;
+                            departed: boolean;
+                            monthsUntilDeparture: number | null;
+                            monthlyNeeded: {
+                                /**
+                                 * @description Major units, exact.
+                                 * @example 1250.00
+                                 */
+                                amount: string;
+                                currency: string;
+                            } | null;
+                            onTime: boolean | null;
+                        };
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description No such trip or cost, or it belongs to someone else. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description The id is not valid. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    listExpenses: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Trip id (UUID). */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The costs. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        expenses: {
+                            /** Format: uuid */
+                            id: string;
+                            description: string;
+                            /** @enum {string} */
+                            category: "flights" | "stay" | "local_transport" | "intercity_transport" | "food" | "experiences" | "insurance" | "documents" | "taxes" | "shopping" | "buffer" | "other";
+                            /** @enum {string} */
+                            status: "estimate" | "confirmed" | "paid" | "unknown";
+                            original: {
+                                /**
+                                 * @description Major units, exact.
+                                 * @example 1250.00
+                                 */
+                                amount: string;
+                                currency: string;
+                            };
+                            inTripCurrency: {
+                                /**
+                                 * @description Major units, exact.
+                                 * @example 1250.00
+                                 */
+                                amount: string;
+                                currency: string;
+                            };
+                            fx: {
+                                rate: string;
+                                source: string;
+                                asOf: string;
+                            } | null;
+                            /** Format: date-time */
+                            createdAt: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description No such trip or cost, or it belongs to someone else. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description The id is not valid. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    createExpense: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Trip id (UUID). */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @example Flights to Tokyo */
+                    description: string;
+                    /** @enum {string} */
+                    category: "flights" | "stay" | "local_transport" | "intercity_transport" | "food" | "experiences" | "insurance" | "documents" | "taxes" | "shopping" | "buffer" | "other";
+                    /**
+                     * @description estimate (≈), confirmed (✓), paid (●) or unknown (?).
+                     * @enum {string}
+                     */
+                    status: "estimate" | "confirmed" | "paid" | "unknown";
+                    /**
+                     * @description Major units as a decimal string.
+                     * @example 1250.00
+                     */
+                    amount: string;
+                    /**
+                     * @description ISO 4217 currency code. Defaults to USD.
+                     * @example USD
+                     */
+                    currency: string;
+                    /**
+                     * @description Required when `currency` is not the trip’s: how much of the trip’s currency 1 unit of `currency` is worth.
+                     * @example 0.0065
+                     */
+                    fxRate?: string | null;
+                    /**
+                     * Format: date
+                     * @description The day the rate was taken. Defaults to today.
+                     * @example 2027-04-03
+                     */
+                    fxAsOf?: string | null;
+                };
+            };
+        };
+        responses: {
+            /** @description The cost. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                        description: string;
+                        /** @enum {string} */
+                        category: "flights" | "stay" | "local_transport" | "intercity_transport" | "food" | "experiences" | "insurance" | "documents" | "taxes" | "shopping" | "buffer" | "other";
+                        /** @enum {string} */
+                        status: "estimate" | "confirmed" | "paid" | "unknown";
+                        original: {
+                            /**
+                             * @description Major units, exact.
+                             * @example 1250.00
+                             */
+                            amount: string;
+                            currency: string;
+                        };
+                        inTripCurrency: {
+                            /**
+                             * @description Major units, exact.
+                             * @example 1250.00
+                             */
+                            amount: string;
+                            currency: string;
+                        };
+                        fx: {
+                            rate: string;
+                            source: string;
+                            asOf: string;
+                        } | null;
+                        /** Format: date-time */
+                        createdAt: string;
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description No such trip or cost, or it belongs to someone else. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description The id or the body is not valid. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    updateExpense: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Trip id (UUID). */
+                id: string;
+                expenseId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @example Flights to Tokyo */
+                    description: string;
+                    /** @enum {string} */
+                    category: "flights" | "stay" | "local_transport" | "intercity_transport" | "food" | "experiences" | "insurance" | "documents" | "taxes" | "shopping" | "buffer" | "other";
+                    /**
+                     * @description estimate (≈), confirmed (✓), paid (●) or unknown (?).
+                     * @enum {string}
+                     */
+                    status: "estimate" | "confirmed" | "paid" | "unknown";
+                    /**
+                     * @description Major units as a decimal string.
+                     * @example 1250.00
+                     */
+                    amount: string;
+                    /**
+                     * @description ISO 4217 currency code. Defaults to USD.
+                     * @example USD
+                     */
+                    currency: string;
+                    /**
+                     * @description Required when `currency` is not the trip’s: how much of the trip’s currency 1 unit of `currency` is worth.
+                     * @example 0.0065
+                     */
+                    fxRate?: string | null;
+                    /**
+                     * Format: date
+                     * @description The day the rate was taken. Defaults to today.
+                     * @example 2027-04-03
+                     */
+                    fxAsOf?: string | null;
+                };
+            };
+        };
+        responses: {
+            /** @description The cost. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                        description: string;
+                        /** @enum {string} */
+                        category: "flights" | "stay" | "local_transport" | "intercity_transport" | "food" | "experiences" | "insurance" | "documents" | "taxes" | "shopping" | "buffer" | "other";
+                        /** @enum {string} */
+                        status: "estimate" | "confirmed" | "paid" | "unknown";
+                        original: {
+                            /**
+                             * @description Major units, exact.
+                             * @example 1250.00
+                             */
+                            amount: string;
+                            currency: string;
+                        };
+                        inTripCurrency: {
+                            /**
+                             * @description Major units, exact.
+                             * @example 1250.00
+                             */
+                            amount: string;
+                            currency: string;
+                        };
+                        fx: {
+                            rate: string;
+                            source: string;
+                            asOf: string;
+                        } | null;
+                        /** Format: date-time */
+                        createdAt: string;
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description No such trip or cost, or it belongs to someone else. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description The ids or the body are not valid. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    deleteExpense: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Trip id (UUID). */
+                id: string;
+                expenseId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Removed. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": Record<string, never>;
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description No such trip or cost, or it belongs to someone else. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description The ids are not valid. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    updateSavings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Trip id (UUID). */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /**
+                     * @description Already set aside, in the trip’s currency.
+                     * @example 300.00
+                     */
+                    saved?: string;
+                    /**
+                     * @description Planned monthly amount, in the trip’s currency.
+                     * @example 300.00
+                     */
+                    monthly?: string;
+                };
+            };
+        };
+        responses: {
+            /** @description The budget. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        currency: string;
+                        total: {
+                            /**
+                             * @description Major units, exact.
+                             * @example 1250.00
+                             */
+                            amount: string;
+                            currency: string;
+                        };
+                        byCategory: {
+                            /** @enum {string} */
+                            category: "flights" | "stay" | "local_transport" | "intercity_transport" | "food" | "experiences" | "insurance" | "documents" | "taxes" | "shopping" | "buffer" | "other";
+                            amount: {
+                                /**
+                                 * @description Major units, exact.
+                                 * @example 1250.00
+                                 */
+                                amount: string;
+                                currency: string;
+                            };
+                        }[];
+                        byStatus: {
+                            /** @enum {string} */
+                            status: "estimate" | "confirmed" | "paid" | "unknown";
+                            amount: {
+                                /**
+                                 * @description Major units, exact.
+                                 * @example 1250.00
+                                 */
+                                amount: string;
+                                currency: string;
+                            };
+                        }[];
+                        savings: {
+                            /** @enum {string} */
+                            status: "no-costs" | "fully-saved" | "saving";
+                            saved: {
+                                /**
+                                 * @description Major units, exact.
+                                 * @example 1250.00
+                                 */
+                                amount: string;
+                                currency: string;
+                            };
+                            monthly: {
+                                /**
+                                 * @description Major units, exact.
+                                 * @example 1250.00
+                                 */
+                                amount: string;
+                                currency: string;
+                            };
+                            left: {
+                                /**
+                                 * @description Major units, exact.
+                                 * @example 1250.00
+                                 */
+                                amount: string;
+                                currency: string;
+                            };
+                            progressBasisPoints: number;
+                            monthsNeeded: number | null;
+                            readyMonth: string | null;
+                            departure: string | null;
+                            departed: boolean;
+                            monthsUntilDeparture: number | null;
+                            monthlyNeeded: {
+                                /**
+                                 * @description Major units, exact.
+                                 * @example 1250.00
+                                 */
+                                amount: string;
+                                currency: string;
+                            } | null;
+                            onTime: boolean | null;
+                        };
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description No such trip or cost, or it belongs to someone else. */
             404: {
                 headers: {
                     [name: string]: unknown;

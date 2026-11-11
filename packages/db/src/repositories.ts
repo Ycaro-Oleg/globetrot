@@ -7,7 +7,16 @@ import type {
 } from '@globetrot/domain';
 import { and, desc, eq, ne, sql, type SQL } from 'drizzle-orm';
 import type { Database } from './client';
-import { auditEvent, destination, idempotencyKey, rateLimit, trip, userPreference } from './schema';
+import {
+  auditEvent,
+  destination,
+  expense,
+  idempotencyKey,
+  rateLimit,
+  trip,
+  tripSavings,
+  userPreference,
+} from './schema';
 
 /**
  * PostgreSQL adapters for the application ports (packages/application/src/ports.ts). The shapes below match
@@ -348,6 +357,113 @@ export function createDestinationRepository(executor: Executor) {
   };
 }
 
+export interface ExpenseRow {
+  readonly id: string;
+  readonly tripId: string;
+  readonly category: string;
+  readonly status: string;
+  readonly description: string;
+  readonly amountMinor: bigint;
+  readonly currency: string;
+  readonly tripAmountMinor: bigint;
+  readonly fxRate: string | null;
+  readonly fxSource: string | null;
+  readonly fxAsOf: string | null;
+  readonly createdAt: Date;
+  readonly updatedAt: Date;
+}
+
+export type NewExpenseRow = Omit<ExpenseRow, 'updatedAt'>;
+
+export type ExpensePatchRow = Partial<
+  Omit<ExpenseRow, 'id' | 'tripId' | 'createdAt' | 'updatedAt'>
+>;
+
+export function createExpenseRepository(executor: Executor) {
+  return {
+    async listByTrip(tripId: string): Promise<ExpenseRow[]> {
+      return executor
+        .select()
+        .from(expense)
+        .where(eq(expense.tripId, tripId))
+        .orderBy(desc(expense.createdAt), desc(expense.id));
+    },
+    async findById(id: string): Promise<ExpenseRow | null> {
+      const [row] = await executor.select().from(expense).where(eq(expense.id, id)).limit(1);
+      return row ?? null;
+    },
+    async insert(input: NewExpenseRow): Promise<ExpenseRow> {
+      const [row] = await executor
+        .insert(expense)
+        .values({ ...input, updatedAt: input.createdAt })
+        .returning();
+      if (!row) throw new Error('expense insert returned no row');
+      return row;
+    },
+    async update(id: string, patch: ExpensePatchRow, updatedAt: Date): Promise<ExpenseRow> {
+      const [row] = await executor
+        .update(expense)
+        .set({ ...patch, updatedAt })
+        .where(eq(expense.id, id))
+        .returning();
+      if (!row) throw new Error('expense to update does not exist');
+      return row;
+    },
+    async delete(id: string): Promise<void> {
+      await executor.delete(expense).where(eq(expense.id, id));
+    },
+    async countByTrip(tripId: string): Promise<number> {
+      const [row] = await executor
+        .select({ count: sql<number>`count(*)::int` })
+        .from(expense)
+        .where(eq(expense.tripId, tripId));
+      return row?.count ?? 0;
+    },
+  };
+}
+
+export interface SavingsRow {
+  readonly tripId: string;
+  readonly savedMinor: bigint;
+  readonly monthlyMinor: bigint;
+}
+
+export function createSavingsRepository(executor: Executor) {
+  return {
+    async find(tripId: string): Promise<SavingsRow | null> {
+      const [row] = await executor
+        .select()
+        .from(tripSavings)
+        .where(eq(tripSavings.tripId, tripId))
+        .limit(1);
+      return row ?? null;
+    },
+    /** Creates the row (zero for what the patch leaves out) or changes only the fields in the patch. */
+    async upsert(
+      tripId: string,
+      patch: {
+        readonly savedMinor?: bigint | undefined;
+        readonly monthlyMinor?: bigint | undefined;
+      },
+      now: Date,
+    ): Promise<SavingsRow> {
+      const changes = {
+        ...(patch.savedMinor === undefined ? {} : { savedMinor: patch.savedMinor }),
+        ...(patch.monthlyMinor === undefined ? {} : { monthlyMinor: patch.monthlyMinor }),
+      };
+      const [row] = await executor
+        .insert(tripSavings)
+        .values({ tripId, ...changes, updatedAt: now })
+        .onConflictDoUpdate({ target: tripSavings.tripId, set: { ...changes, updatedAt: now } })
+        .returning();
+      if (!row) throw new Error('savings upsert returned no row');
+      return row;
+    },
+  };
+}
+
+export type ExpenseRepository = ReturnType<typeof createExpenseRepository>;
+export type SavingsRepository = ReturnType<typeof createSavingsRepository>;
 export type DestinationRepository = ReturnType<typeof createDestinationRepository>;
 export type TripRepository = ReturnType<typeof createTripRepository>;
 export type PreferencesRepository = ReturnType<typeof createPreferencesRepository>;
@@ -358,6 +474,8 @@ export type IdempotencyStore = ReturnType<typeof createIdempotencyStore>;
 export interface Transaction {
   readonly trips: TripRepository;
   readonly destinations: DestinationRepository;
+  readonly expenses: ExpenseRepository;
+  readonly savings: SavingsRepository;
   readonly preferences: PreferencesRepository;
   readonly audit: AuditLog;
   readonly idempotency: IdempotencyStore;
@@ -371,6 +489,8 @@ export function createUnitOfWork(db: Database) {
         work({
           trips: createTripRepository(tx),
           destinations: createDestinationRepository(tx),
+          expenses: createExpenseRepository(tx),
+          savings: createSavingsRepository(tx),
           preferences: createPreferencesRepository(tx),
           audit: createAuditLog(tx),
           idempotency: createIdempotencyStore(tx),
