@@ -7,7 +7,7 @@ import {
 import { z } from 'zod';
 import { assertOwner } from '../authorization';
 import { canonicalJson } from '../canonical-json';
-import { IdempotencyKeyReusedError, NotFoundError } from '../errors';
+import { IdempotencyKeyReusedError, NotFoundError, ValidationError } from '../errors';
 import { defineOperation } from '../operation';
 import type { Actor } from '../actor';
 import type { AuditMetadata, Ports, TripPatch, TripRecord } from '../ports';
@@ -155,7 +155,24 @@ export function createUpdateTrip(deps: Pick<Ports, 'unitOfWork' | 'clock' | 'ids
       );
 
       return deps.unitOfWork.run(async (tx) => {
-        await loadOwnedTrip(tx.trips, actor, input.id);
+        const current = await loadOwnedTrip(tx.trips, actor, input.id);
+        // Amounts are stored in the trip's currency: changing it under existing costs or savings would silently
+        // change what they mean. It can be changed while the trip has no money in it.
+        if (input.currency !== undefined && input.currency !== current.currency) {
+          const savings = await tx.savings.find(input.id);
+          if (
+            (await tx.expenses.countByTrip(input.id)) > 0 ||
+            (savings !== null && (savings.savedMinor > 0n || savings.monthlyMinor > 0n))
+          ) {
+            throw new ValidationError([
+              {
+                field: 'currency',
+                code: 'currency_locked',
+                message: 'The currency cannot change while the trip has costs or savings',
+              },
+            ]);
+          }
+        }
         const trip = await tx.trips.update(input.id, patch, now);
         await tx.audit.record({
           id: deps.ids.newId(),

@@ -74,6 +74,12 @@ Today:
 | `updateTrip` | `PATCH /v1/trips/{id}` | Only the fields sent change; `startDate: null` clears the date; `status: "active"` restores an archived trip. At least one field |
 | `listDestinations` | `GET /v1/trips/{id}/destinations` | The trip's route in order. A trip that is missing or someone else's is the same `404` |
 | `replaceDestinations` | `PUT /v1/trips/{id}/destinations` | Replaces the whole route with the list sent (at most 100 stops; an empty list clears it). The server assigns ids and positions. Atomic and audited (`destination.replace`, the count only) |
+| `getBudget` | `GET /v1/trips/{id}/budget` | Everything in the trip's currency: the total, by category and by status, and the savings plan from the domain rule (`status`, saved, monthly, left, progress, the month the goal is reached at the current monthly amount, what to put aside to be ready by departure, whether that is on time). Amounts are exact decimal strings with their currency |
+| `listExpenses` | `GET /v1/trips/{id}/expenses` | The costs, newest first. Each shows what was typed, the amount in the trip's currency and, for another currency, the rate with its source and day |
+| `createExpense` | `POST /v1/trips/{id}/expenses` | `201`. `amount` and `currency`, plus `fxRate` when the currency is not the trip's (required then, refused otherwise). The server converts and keeps the provenance. Audited (category and status only) |
+| `updateExpense` | `PUT /v1/trips/{id}/expenses/{expenseId}` | Replaces the cost and reprices it. A cost of another trip is the same `404` |
+| `deleteExpense` | `DELETE /v1/trips/{id}/expenses/{expenseId}` | Removes it |
+| `updateSavings` | `PUT /v1/trips/{id}/savings` | `saved` and/or `monthly`, in the trip's currency, zero allowed. Answers with the new budget |
 | `archiveTrip` | `POST /v1/trips/{id}/archive` | Hides the trip from the default list. **There is no delete** (retention is specified separately), so there is deliberately no `DELETE`. Archiving twice is a no-op |
 
 Trip rules: the title is trimmed and has 1 to 120 characters; `startDate` is a real calendar date or null; `currency` is an active ISO 4217 code (`VALIDATION_FAILED`, field `currency`, code `custom` when unknown); `status` is one of `active`, `traveling`, `completed`, `archived`. Status is set by the user and never derived. `visibility` is always `private` for now. The response never includes the owner. Field error codes are Zod's issue codes (`too_small`, `too_big`, `invalid_format`, `invalid_value`, `custom`).

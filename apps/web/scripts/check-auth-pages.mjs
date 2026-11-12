@@ -78,6 +78,70 @@ const TRIPS = [
 ];
 const TRIP_ID = TRIPS[0].id;
 
+const usd = (amount) => ({ amount, currency: 'USD' });
+const CATEGORY_KEYS = [
+  'flights',
+  'stay',
+  'local_transport',
+  'intercity_transport',
+  'food',
+  'experiences',
+  'insurance',
+  'documents',
+  'taxes',
+  'shopping',
+  'buffer',
+  'other',
+];
+const BUDGET = {
+  currency: 'USD',
+  total: usd('2225.00'),
+  byCategory: CATEGORY_KEYS.map((category) => ({
+    category,
+    amount: usd(category === 'flights' ? '1250.00' : category === 'stay' ? '975.00' : '0.00'),
+  })),
+  byStatus: ['estimate', 'confirmed', 'paid', 'unknown'].map((status) => ({
+    status,
+    amount: usd(status === 'estimate' ? '1250.00' : status === 'paid' ? '975.00' : '0.00'),
+  })),
+  savings: {
+    status: 'saving',
+    saved: usd('500.00'),
+    monthly: usd('300.00'),
+    left: usd('1725.00'),
+    progressBasisPoints: 2247,
+    monthsNeeded: 6,
+    readyMonth: '2027-05',
+    departure: '2027-07-03',
+    departed: false,
+    monthsUntilDeparture: 8,
+    monthlyNeeded: usd('220.00'),
+    onTime: true,
+  },
+};
+const EXPENSES = [
+  {
+    id: '0193c0a8-7b1e-7c4a-9e2f-3d5a6b7c8d01',
+    description: 'Flights to Tokyo',
+    category: 'flights',
+    status: 'estimate',
+    original: usd('1250.00'),
+    inTripCurrency: usd('1250.00'),
+    fx: null,
+    createdAt: NOW,
+  },
+  {
+    id: '0193c0a8-7b1e-7c4a-9e2f-3d5a6b7c8d02',
+    description: 'Ryokan',
+    category: 'stay',
+    status: 'paid',
+    original: { amount: '150000', currency: 'JPY' },
+    inTripCurrency: usd('975.00'),
+    fx: { rate: '0.0065', source: 'manual', asOf: '2026-11-01' },
+    createdAt: NOW,
+  },
+];
+
 function reply(response, status, body, headers = {}) {
   response.writeHead(status, { 'content-type': 'application/json', ...headers });
   response.end(JSON.stringify(body));
@@ -130,6 +194,11 @@ const stub = createServer(async (request, response) => {
     if (!signedIn) return reply(response, 401, { code: 'UNAUTHENTICATED' });
     Object.assign(PREFERENCES, body);
     return reply(response, 200, PREFERENCES);
+  }
+  const budgetRoute = /^\/v1\/trips\/([^/]+)\/(budget|expenses)$/.exec(url.pathname);
+  if (budgetRoute && request.method === 'GET') {
+    if (!signedIn) return reply(response, 401, { code: 'UNAUTHENTICATED' });
+    return reply(response, 200, budgetRoute[2] === 'budget' ? BUDGET : { expenses: EXPENSES });
   }
   if (route === 'GET /v1/me/preferences') {
     return signedIn
@@ -386,6 +455,24 @@ try {
     ['privacy-draft', false, async (page) => go(page, `${base}/privacy`)],
     ...shellScenarios(copy),
     ['settings', true, async (page) => go(page, `${base}/settings`)],
+    ...['phone', 'desktop'].map((layout) => [
+      `budget-${layout}`,
+      true,
+      async (page) => go(page, `${base}/app/budget`),
+      VIEWPORTS[layout],
+    ]),
+    [
+      'budget-added',
+      true,
+      async (page) => go(page, `${base}/app/budget?status=expense-added`),
+      VIEWPORTS.desktop,
+    ],
+    [
+      'budget-error',
+      true,
+      async (page) => go(page, `${base}/app/budget?status=expense-error`),
+      VIEWPORTS.desktop,
+    ],
     ...publicScenarios(),
     ...tripScenarios(copy),
   ];
@@ -988,8 +1075,8 @@ try {
         'Budget is not the marked page on /app/budget',
       );
       check(
-        await page.getByText(shell.comingSoon.budget).isVisible(),
-        'the Budget placeholder does not say it is not built yet',
+        await page.getByText(CATALOGS.en.budgetPage.answerTitle).isVisible(),
+        'the Budget page does not show the savings answer',
       );
       check(
         (await page.title()).startsWith(shell.nav.budget),

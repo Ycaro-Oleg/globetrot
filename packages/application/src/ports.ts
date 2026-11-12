@@ -150,6 +150,63 @@ export interface DestinationWriter extends DestinationReader {
   ): Promise<DestinationRecord[]>;
 }
 
+// --- Budget (expenses and savings) ---------------------------------------------------------------------
+
+export interface ExpenseRecord {
+  readonly id: string;
+  readonly tripId: string;
+  readonly category: string;
+  readonly status: string;
+  readonly description: string;
+  /** What was typed, in minor units of `currency`. */
+  readonly amountMinor: bigint;
+  readonly currency: string;
+  /** The same cost in the trip's currency (what totals add up). */
+  readonly tripAmountMinor: bigint;
+  readonly fxRate: string | null;
+  readonly fxSource: string | null;
+  readonly fxAsOf: string | null;
+  readonly createdAt: Date;
+  readonly updatedAt: Date;
+}
+
+export type NewExpense = Omit<ExpenseRecord, 'updatedAt'>;
+export type ExpensePatch = Partial<
+  Omit<ExpenseRecord, 'id' | 'tripId' | 'createdAt' | 'updatedAt'>
+>;
+
+export interface ExpenseReader {
+  /** Newest first. */
+  listByTrip(tripId: string): Promise<ExpenseRecord[]>;
+  findById(id: string): Promise<ExpenseRecord | null>;
+}
+
+export interface ExpenseWriter extends ExpenseReader {
+  insert(expense: NewExpense): Promise<ExpenseRecord>;
+  update(id: string, patch: ExpensePatch, updatedAt: Date): Promise<ExpenseRecord>;
+  delete(id: string): Promise<void>;
+  countByTrip(tripId: string): Promise<number>;
+}
+
+export interface SavingsRecord {
+  readonly tripId: string;
+  readonly savedMinor: bigint;
+  readonly monthlyMinor: bigint;
+}
+
+export interface SavingsReader {
+  /** `null` until the trip's savings were set. */
+  find(tripId: string): Promise<SavingsRecord | null>;
+}
+
+export interface SavingsWriter extends SavingsReader {
+  upsert(
+    tripId: string,
+    patch: { readonly savedMinor?: bigint | undefined; readonly monthlyMinor?: bigint | undefined },
+    now: Date,
+  ): Promise<SavingsRecord>;
+}
+
 // --- Audit ---------------------------------------------------------------------------------------------
 
 export type AuditMetadata = Readonly<Record<string, string | number | boolean | readonly string[]>>;
@@ -198,6 +255,8 @@ export interface IdempotencyStore {
 export interface Transaction {
   readonly trips: TripWriter;
   readonly destinations: DestinationWriter;
+  readonly expenses: ExpenseWriter;
+  readonly savings: SavingsWriter;
   readonly preferences: PreferencesWriter;
   readonly audit: AuditLog;
   readonly idempotency: IdempotencyStore;
@@ -221,6 +280,8 @@ export interface Ports {
   /** Reads outside a transaction (queries). */
   readonly trips: TripReader;
   readonly destinations: DestinationReader;
+  readonly expenses: ExpenseReader;
+  readonly savings: SavingsReader;
   readonly preferences: PreferencesReader;
   readonly unitOfWork: UnitOfWork;
   readonly clock: Clock;

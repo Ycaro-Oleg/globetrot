@@ -291,6 +291,43 @@ async function journey(browser, { width, height, locale }) {
       'clearing the route did not stick after a reload',
     );
 
+    // ---- a cost and savings: the budget answers "can I afford it, and when?" and keeps it after a reload
+    const budgetCopy = CATALOGS[locale].budgetPage;
+    await go('/app/budget');
+    await axe('budget (empty)');
+    await page.locator('form#add-expense-form input[name=description]').fill('Flights to Tokyo');
+    await page.locator('form#add-expense-form input[name=amount]').fill('1200');
+    await page.locator('form#add-expense-form select[name=currency]').selectOption('USD');
+    await page.locator('form#add-expense-form input[name=fxRate]').fill('0.9');
+    await page.locator('form#add-expense-form button[type=submit]').click();
+    await page.getByText(budgetCopy.expenseAdded, { exact: true }).waitFor({ timeout: 15_000 });
+    expect((await page.getByText('Flights to Tokyo').count()) === 1, 'the cost is not in the list');
+    await page.locator('form#savings-form input[name=saved]').fill('300');
+    await page.locator('form#savings-form input[name=monthly]').fill('200');
+    await page.locator('form#savings-form button[type=submit]').click();
+    await page.getByText(budgetCopy.savingsSaved, { exact: true }).waitFor({ timeout: 15_000 });
+    await page.reload();
+    await page.waitForLoadState('networkidle');
+    await axe('budget');
+    expect(
+      (await page.locator('progress').getAttribute('value')) !== null,
+      'the budget has no progress bar once there is a cost',
+    );
+    expect(
+      (await page.getByText('Flights to Tokyo').count()) === 1,
+      'the cost is gone after a reload',
+    );
+    expect(
+      (await page.locator('p', { hasText: /1[.,]?080/ }).count()) >= 1,
+      'the converted amount (1200 USD at 0.9) is not on the page',
+    );
+    await page
+      .getByRole('button', {
+        name: budgetCopy.removeExpense.replace('{description}', 'Flights to Tokyo'),
+      })
+      .click();
+    await page.getByText(budgetCopy.expenseRemoved, { exact: true }).waitFor({ timeout: 15_000 });
+
     // ---- theme on the first paint: choose red-eye, then load with JavaScript off
     await go('/settings');
     await page
