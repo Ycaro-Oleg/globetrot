@@ -41,6 +41,7 @@ const envSchema = z.object({
   EMAIL_FROM: z.string().default('Globetrot <hello@globetrot.local>'),
   GOOGLE_CLIENT_ID: z.string().optional(),
   GOOGLE_CLIENT_SECRET: z.string().optional(),
+  GEOAPIFY_API_KEY: z.string().optional(),
   PORT: number(4000, 1, 65535),
 });
 
@@ -84,6 +85,8 @@ export interface ApiConfig {
   readonly isProduction: boolean;
   readonly port: number;
   readonly databaseUrl: string;
+  /** Server-side Geoapify key for place search; `null` turns search off (it answers 503). */
+  readonly geoapifyKey: string | null;
   readonly auth: AuthConfig;
   readonly email: EmailConfig;
   /** True when no secret was provided and the public development one is in use (never in production). */
@@ -184,6 +187,7 @@ export function loadApiConfig(
     isProduction,
     port: values.PORT,
     databaseUrl,
+    geoapifyKey: values.GEOAPIFY_API_KEY ?? null,
     usingInsecureSecret: secret === INSECURE_DEV_SECRET,
     auth: {
       secret,

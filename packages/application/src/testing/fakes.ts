@@ -1,4 +1,5 @@
 import type {
+  PlaceResult,
   ChecklistItemRecord,
   ChecklistWriter,
   AuditEventInput,
@@ -42,6 +43,21 @@ export function createFakePorts(options: FakeOptions = {}) {
   let time = options.now ?? new Date('2026-11-07T12:00:00.000Z');
   let counter = 0;
   const faults = { auditFails: false };
+  const places = {
+    offline: false,
+    hits: new Map<string, number>(),
+    known: [
+      {
+        key: 'fake:kyoto',
+        name: 'Kyoto',
+        countryCode: 'JP',
+        region: 'Kansai',
+        latitude: 35.0116,
+        longitude: 135.7681,
+        attribution: '© OpenStreetMap contributors',
+      },
+    ] as PlaceResult[],
+  };
   const state: FakeState = {
     trips: new Map(),
     destinations: new Map(),
@@ -284,6 +300,31 @@ export function createFakePorts(options: FakeOptions = {}) {
     ids: {
       newId: () => `00000000-0000-7000-8000-${String(++counter).padStart(12, '0')}`,
     },
+    geocoding: {
+      // A tiny gazetteer: enough for the board's tests. `places.offline` makes it behave like a provider that is down.
+      async search(query) {
+        if (places.offline) return null;
+        const text = query.toLowerCase();
+        return places.known.filter((place) => place.name.toLowerCase().includes(text));
+      },
+      async reverse(point) {
+        if (places.offline) return undefined;
+        return (
+          places.known.find(
+            (place) =>
+              Math.abs(place.latitude - point.latitude) < 0.5 &&
+              Math.abs(place.longitude - point.longitude) < 0.5,
+          ) ?? null
+        );
+      },
+    },
+    rateLimiter: {
+      consume(key, limitPerMinute) {
+        const used = (places.hits.get(key) ?? 0) + 1;
+        places.hits.set(key, used);
+        return used <= limitPerMinute;
+      },
+    },
   };
 
   return {
@@ -291,6 +332,7 @@ export function createFakePorts(options: FakeOptions = {}) {
     /** Live view of what is stored. Reassigned on rollback, so read it through this object. */
     state,
     faults,
+    places,
     setNow(date: Date) {
       time = date;
     },

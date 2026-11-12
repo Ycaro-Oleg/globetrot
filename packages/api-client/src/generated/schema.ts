@@ -295,6 +295,46 @@ export interface paths {
         patch: operations["updateChecklistItem"];
         trace?: never;
     };
+    "/v1/places/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Search places by name
+         * @description Cities, regions and addresses from the geocoding provider, in the language asked for. The provider key stays on the server. Show each result’s `attribution`. At most 60 lookups a minute per person.
+         */
+        get: operations["searchPlaces"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/places/reverse": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The place at a point
+         * @description For a pin dropped on the map. `place` is null when nothing named is there (the sea).
+         */
+        get: operations["reversePlace"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1346,6 +1386,9 @@ export interface operations {
                             latitude: number;
                             longitude: number;
                             nights: number;
+                            note: string | null;
+                            /** @enum {string|null} */
+                            legMode: "flight" | "train" | "bus" | "car" | "boat" | "walk" | "other" | null;
                         }[];
                     };
                 };
@@ -1459,6 +1502,13 @@ export interface operations {
                          * @default 0
                          */
                         nights?: number;
+                        /** @description The person’s note about the stop. Blank is no note. */
+                        note?: string | null;
+                        /**
+                         * @description How they travel from this stop to the next. Ignored on the last stop.
+                         * @enum {string|null}
+                         */
+                        legMode?: "flight" | "train" | "bus" | "car" | "boat" | "walk" | "other" | null;
                     }[];
                 };
             };
@@ -1482,6 +1532,9 @@ export interface operations {
                             latitude: number;
                             longitude: number;
                             nights: number;
+                            note: string | null;
+                            /** @enum {string|null} */
+                            legMode: "flight" | "train" | "bus" | "car" | "boat" | "walk" | "other" | null;
                         }[];
                     };
                 };
@@ -2892,6 +2945,263 @@ export interface operations {
             };
             /** @description The ids or the body are not valid. */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    searchPlaces: {
+        parameters: {
+            query: {
+                query: string;
+                /** @description Language for place names. */
+                language?: "en" | "pt-BR";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Up to 8 places. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        places: {
+                            /** @description Stable key of the place (use it as `placeKey`). */
+                            key: string;
+                            name: string;
+                            countryCode: string | null;
+                            region: string | null;
+                            latitude: number;
+                            longitude: number;
+                            /** @example © OpenStreetMap contributors · Geoapify */
+                            attribution: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description The query is not valid. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description Too many lookups in a minute. Wait and try again. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description Place search is not configured or the provider is not answering. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    reversePlace: {
+        parameters: {
+            query?: {
+                latitude?: number | null;
+                longitude?: number | null;
+                /** @description Language for place names. */
+                language?: "en" | "pt-BR";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The place, or null. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        place: {
+                            /** @description Stable key of the place (use it as `placeKey`). */
+                            key: string;
+                            name: string;
+                            countryCode: string | null;
+                            region: string | null;
+                            latitude: number;
+                            longitude: number;
+                            /** @example © OpenStreetMap contributors · Geoapify */
+                            attribution: string;
+                        } | null;
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description The query is not valid. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description Too many lookups in a minute. Wait and try again. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description Place search is not configured or the provider is not answering. */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };

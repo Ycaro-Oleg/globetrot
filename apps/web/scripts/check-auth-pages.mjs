@@ -142,6 +142,26 @@ const EXPENSES = [
   },
 ];
 
+const DESTINATIONS = {
+  destinations: [
+    ['tokyo', 'Tokyo', 35.68, 139.69, 4, 'Ramen in Shinjuku', 'train'],
+    ['kyoto', 'Kyoto', 35.01, 135.77, 3, null, 'train'],
+    ['osaka', 'Osaka', 34.69, 135.5, 2, null, null],
+  ].map(([key, name, latitude, longitude, nights, note, legMode], position) => ({
+    id: `0193c0a8-7b1e-7c4a-9e2f-3d5a6b7c8f0${position}`,
+    position,
+    placeKey: `example:${key}`,
+    name,
+    countryCode: 'JP',
+    region: 'Japan',
+    latitude,
+    longitude,
+    nights,
+    note,
+    legMode,
+  })),
+};
+
 const CHECKLIST = {
   items: [
     {
@@ -220,6 +240,10 @@ const stub = createServer(async (request, response) => {
     return reply(response, 200, PREFERENCES);
   }
   const budgetRoute = /^\/v1\/trips\/([^/]+)\/(budget|expenses)$/.exec(url.pathname);
+  if (/^\/v1\/trips\/[^/]+\/destinations$/.test(url.pathname) && request.method === 'GET') {
+    if (!signedIn) return reply(response, 401, { code: 'UNAUTHENTICATED' });
+    return reply(response, 200, DESTINATIONS);
+  }
   if (/^\/v1\/trips\/[^/]+\/checklist$/.test(url.pathname) && request.method === 'GET') {
     if (!signedIn) return reply(response, 401, { code: 'UNAUTHENTICATED' });
     return reply(response, 200, CHECKLIST);
@@ -1468,6 +1492,8 @@ try {
       ['desktop-lists', 'en', VIEWPORTS.desktop, `${base}/app/lists`, null],
       ['phone-trips-example', 'en', VIEWPORTS.phone, `${base}/app/trips?example=japan`, null],
       ['desktop-landing-pricing', 'en', VIEWPORTS.desktop, `${base}/#pricing`, null],
+      ['desktop-board', 'en', VIEWPORTS.desktop, `${base}/app/board`, 'stop'],
+      ['phone-board-sheet-ptbr', 'pt-BR', VIEWPORTS.phone, `${base}/app/board`, 'stop'],
       ['phone-landing-trips-ptbr', 'pt-BR', VIEWPORTS.phone, `${base}/#trips`, null],
       ['phone-lists-ptbr', 'pt-BR', VIEWPORTS.phone, `${base}/app/lists`, null],
       ['laptop-home-pip', 'en', VIEWPORTS.laptop, `${pipBase}/app`, null],
@@ -1485,6 +1511,9 @@ try {
           (value) => document.documentElement.setAttribute('data-theme', value),
           theme,
         );
+        if (extra === 'stop') {
+          await page.locator('ol li').first().locator('button').first().click();
+        }
         if (extra === 'menu') {
           await page.getByRole('button', { name: /Account menu|Menu da conta/ }).click();
         }

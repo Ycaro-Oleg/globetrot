@@ -23,6 +23,8 @@ export function buildOpenApiDocument() {
       unitOfWork: { run: unreachable },
       clock: { now: unreachable },
       ids: { newId: unreachable },
+      geocoding: { search: unreachable, reverse: unreachable },
+      rateLimiter: { consume: unreachable },
     }),
     trustedOrigins: [],
   });

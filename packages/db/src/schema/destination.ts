@@ -1,5 +1,10 @@
 // A trip's route: its ordered stops. Conventions: docs/architecture/data-model.md.
-import { DESTINATION_NAME_MAX_LENGTH, MAX_NIGHTS_PER_DESTINATION } from '@globetrot/domain';
+import {
+  DESTINATION_NAME_MAX_LENGTH,
+  DESTINATION_NOTE_MAX_LENGTH,
+  LEG_MODES,
+  MAX_NIGHTS_PER_DESTINATION,
+} from '@globetrot/domain';
 import { sql } from 'drizzle-orm';
 import {
   char,
@@ -35,6 +40,10 @@ export const destination = pgTable(
     latitude: doublePrecision('latitude').notNull(),
     longitude: doublePrecision('longitude').notNull(),
     nights: integer('nights').notNull().default(0),
+    /** The person's note about this stop. Personal: never logged or audited. */
+    note: text('note'),
+    /** How they travel from this stop to the next (`LEG_MODES`); null when not set, and on the last stop. */
+    legMode: text('leg_mode'),
     createdAt: instant('created_at').defaultNow().notNull(),
     updatedAt: instant('updated_at').defaultNow().notNull(),
   },
@@ -49,6 +58,14 @@ export const destination = pgTable(
     check('destination_country_format', sql`${table.countryCode} ~ '^[A-Z]{2}$'`),
     check('destination_latitude_range', sql`${table.latitude} between -90 and 90`),
     check('destination_longitude_range', sql`${table.longitude} between -180 and 180`),
+    check(
+      'destination_note_length',
+      sql`char_length(${table.note}) between 1 and ${sql.raw(String(DESTINATION_NOTE_MAX_LENGTH))}`,
+    ),
+    check(
+      'destination_leg_mode_valid',
+      sql`${table.legMode} in (${sql.raw(LEG_MODES.map((mode) => `'${mode}'`).join(', '))})`,
+    ),
     check(
       'destination_nights_range',
       sql`${table.nights} between 0 and ${sql.raw(String(MAX_NIGHTS_PER_DESTINATION))}`,

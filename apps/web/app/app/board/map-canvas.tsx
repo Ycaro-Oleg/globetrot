@@ -1,9 +1,13 @@
 'use client';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
-import { useEffect, useRef, useState } from 'react';
+import type { LegMode } from '@globetrot/domain';
+import { useEffect, useRef, useState, type MutableRefObject } from 'react';
 import type { GeoJSONSource, Map as MapLibreMap, Marker as MapLibreMarker } from 'maplibre-gl';
 import styles from './world-map.module.css';
+
+/** One leg of the route: the stop it leaves, the next stop, and how it is travelled (null: not decided). */
+export type MapLeg = { from: MapPlace; to: MapPlace; mode: LegMode | null };
 
 export type MapPlace = {
   id: string;
@@ -17,18 +21,26 @@ export type MapPlace = {
 
 type MapCanvasProps = {
   route: MapPlace[];
+  legs: MapLeg[];
+  /** Icon per leg mode, shown at the middle of each leg (decoration: the stop list says the same in words). */
+  legIcons: Record<LegMode, string>;
+  /** Filled in once the map is ready: reads the centre of the map (for "Pin here"). */
+  centerRef?: MutableRefObject<(() => { longitude: number; latitude: number }) | null>;
+  labels: { map: string; loading: string; error: string };
   selectedId: string | null;
   apiKey: string;
-  locale: string;
   onPlaceClick: (id: string) => void;
   onMapPin: (longitude: number, latitude: number) => void;
 };
 
 export function MapCanvas({
   route,
+  legs,
+  legIcons,
+  centerRef,
+  labels,
   selectedId,
   apiKey,
-  locale,
   onPlaceClick,
   onMapPin,
 }: MapCanvasProps) {
@@ -36,6 +48,7 @@ export function MapCanvas({
   const mapRef = useRef<MapLibreMap | null>(null);
   const markerConstructor = useRef<typeof MapLibreMarker | null>(null);
   const markerRefs = useRef<MapLibreMarker[]>([]);
+  const legMarkerRefs = useRef<MapLibreMarker[]>([]);
   const placeClickRef = useRef(onPlaceClick);
   const mapPinRef = useRef(onMapPin);
   const [ready, setReady] = useState(false);
@@ -100,13 +113,29 @@ export function MapCanvas({
             layout: { 'line-cap': 'round', 'line-join': 'round' },
             paint: { 'line-color': '#FFF5E1', 'line-width': 7, 'line-opacity': 0.92 },
           });
-          map.addLayer({
-            id: 'trip-route-line',
-            type: 'line',
-            source: 'trip-route',
-            layout: { 'line-cap': 'round', 'line-join': 'round' },
-            paint: { 'line-color': '#E0401F', 'line-width': 3, 'line-dasharray': [2, 2] },
+          // One colour, a different pattern per kind of leg: the mode is never told by colour alone.
+          const leg = (id: string, modes: string[], paint: Record<string, unknown>) =>
+            map!.addLayer({
+              id,
+              type: 'line',
+              source: 'trip-route',
+              filter: ['in', ['get', 'mode'], ['literal', modes]],
+              layout: { 'line-cap': 'round', 'line-join': 'round' },
+              paint: { 'line-color': '#E0401F', ...paint },
+            });
+          leg('trip-leg-flight', ['flight'], { 'line-width': 2.5, 'line-dasharray': [4, 2.5] });
+          leg('trip-leg-ground', ['train', 'bus', 'car'], { 'line-width': 3.5 });
+          leg('trip-leg-water', ['boat'], { 'line-width': 3, 'line-dasharray': [0.6, 1.6] });
+          leg('trip-leg-other', ['walk', 'other', 'none'], {
+            'line-width': 3,
+            'line-dasharray': [2, 2],
           });
+          if (centerRef) {
+            centerRef.current = () => {
+              const center = map!.getCenter();
+              return { longitude: center.lng, latitude: center.lat };
+            };
+          }
           map.on('click', (event) => mapPinRef.current(event.lngLat.lng, event.lngLat.lat));
         };
         let loadTimeout = 0;
@@ -131,11 +160,14 @@ export function MapCanvas({
       disposed = true;
       markerRefs.current.forEach((marker) => marker.remove());
       markerRefs.current = [];
+      legMarkerRefs.current.forEach((marker) => marker.remove());
+      legMarkerRefs.current = [];
+      if (centerRef) centerRef.current = null;
       map?.remove();
       mapRef.current = null;
       markerConstructor.current = null;
     };
-  }, [apiKey]);
+  }, [apiKey, centerRef]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -144,21 +176,37 @@ export function MapCanvas({
     if (!source) return;
     source.setData({
       type: 'FeatureCollection',
-      features:
-        route.length > 1
-          ? [
-              {
-                type: 'Feature',
-                properties: {},
-                geometry: {
-                  type: 'LineString',
-                  coordinates: route.map((place) => [place.longitude, place.latitude]),
-                },
-              },
-            ]
-          : [],
+      features: legs.map((leg) => ({
+        type: 'Feature' as const,
+        properties: { mode: leg.mode ?? 'none' },
+        geometry: {
+          type: 'LineString' as const,
+          coordinates: [
+            [leg.from.longitude, leg.from.latitude],
+            [leg.to.longitude, leg.to.latitude],
+          ],
+        },
+      })),
     });
-  }, [ready, route]);
+    const Marker = markerConstructor.current;
+    legMarkerRefs.current.forEach((marker) => marker.remove());
+    legMarkerRefs.current = Marker
+      ? legs
+          .filter((leg) => leg.mode !== null)
+          .map((leg) => {
+            const badge = document.createElement('span');
+            badge.className = styles.legMarker ?? '';
+            badge.setAttribute('aria-hidden', 'true');
+            badge.textContent = legIcons[leg.mode!];
+            return new Marker({ element: badge })
+              .setLngLat([
+                (leg.from.longitude + leg.to.longitude) / 2,
+                (leg.from.latitude + leg.to.latitude) / 2,
+              ])
+              .addTo(map);
+          })
+      : [];
+  }, [ready, legs, legIcons]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -204,20 +252,10 @@ export function MapCanvas({
         ref={host}
         className={styles.maplibreCanvas}
         role="application"
-        aria-label={locale === 'pt-BR' ? 'Mapa interativo' : 'Interactive map'}
+        aria-label={labels.map}
       />
-      {!ready && !error ? (
-        <div className={styles.mapLoading}>
-          {locale === 'pt-BR' ? 'Carregando mapa…' : 'Loading map…'}
-        </div>
-      ) : null}
-      {error ? (
-        <div className={styles.mapError}>
-          {locale === 'pt-BR'
-            ? 'Não foi possível carregar o mapa. Confira a chave Geoapify.'
-            : 'The map could not load. Check the Geoapify key.'}
-        </div>
-      ) : null}
+      {!ready && !error ? <div className={styles.mapLoading}>{labels.loading}</div> : null}
+      {error ? <div className={styles.mapError}>{labels.error}</div> : null}
       <span className={styles.mapAttribution}>© OpenStreetMap contributors · Geoapify</span>
     </div>
   );

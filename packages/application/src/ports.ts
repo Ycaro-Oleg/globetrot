@@ -121,6 +121,8 @@ export interface DestinationRecord {
   readonly latitude: number;
   readonly longitude: number;
   readonly nights: number;
+  readonly note: string | null;
+  readonly legMode: string | null;
   readonly createdAt: Date;
   readonly updatedAt: Date;
 }
@@ -134,6 +136,8 @@ export interface NewDestination {
   readonly latitude: number;
   readonly longitude: number;
   readonly nights: number;
+  readonly note: string | null;
+  readonly legMode: string | null;
 }
 
 export interface DestinationReader {
@@ -235,6 +239,40 @@ export interface ChecklistWriter extends ChecklistReader {
   countByTrip(tripId: string): Promise<number>;
 }
 
+// --- Places (geocoding) -------------------------------------------------------------------------------
+
+/** A place a geocoder found. `key` is stable for the same place from the same provider. */
+export interface PlaceResult {
+  readonly key: string;
+  readonly name: string;
+  readonly countryCode: string | null;
+  readonly region: string | null;
+  readonly latitude: number;
+  readonly longitude: number;
+  /** Who the data is from, to show with it (licence attribution). */
+  readonly attribution: string;
+}
+
+/**
+ * Looks places up by name or by point. Adapters (Geoapify today) keep their keys on the server. `null` means the
+ * provider is not configured or did not answer; an empty list means it answered with nothing.
+ */
+export interface GeocodingPort {
+  search(
+    query: string,
+    options: { readonly language: string; readonly limit: number },
+  ): Promise<PlaceResult[] | null>;
+  reverse(
+    point: { readonly latitude: number; readonly longitude: number },
+    options: { readonly language: string },
+  ): Promise<PlaceResult | null | undefined>;
+}
+
+/** Counts requests per key in a short window. `true` when this one is allowed. */
+export interface RateLimiter {
+  consume(key: string, limitPerMinute: number): boolean;
+}
+
 // --- Audit ---------------------------------------------------------------------------------------------
 
 export type AuditMetadata = Readonly<Record<string, string | number | boolean | readonly string[]>>;
@@ -316,4 +354,6 @@ export interface Ports {
   readonly unitOfWork: UnitOfWork;
   readonly clock: Clock;
   readonly ids: IdGenerator;
+  readonly geocoding: GeocodingPort;
+  readonly rateLimiter: RateLimiter;
 }
