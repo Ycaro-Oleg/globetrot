@@ -74,4 +74,28 @@ describe('Globetrot landing page', () => {
       expect(html).toContain(copy.finalButton);
     }
   });
+
+  it('opens a copyable example trip from each postcard', () => {
+    const html = render('en');
+    for (const id of ['portugal', 'japan', 'rio-de-la-plata']) {
+      expect(html).toContain(`href="/app/trips?example=${id}"`);
+    }
+  });
+
+  it.each(SUPPORTED_LOCALES)(
+    'shows the mock plans in USD, labelled as placeholder pricing (%s)',
+    (locale) => {
+      const text = visibleText(render(locale));
+      const copy = catalogs[locale].landing;
+      expect(text).toContain(copy.pricingPlaceholder);
+      expect(text).toContain(copy.plans.explorer.name);
+      expect(text).toMatch(locale === 'en' ? /\$4\.99 \/ month/ : /US\$\s?4,99 \/ mês/);
+    },
+  );
+
+  it('never shows an amount in reais: examples are in USD, the default currency', () => {
+    for (const locale of SUPPORTED_LOCALES) {
+      expect(visibleText(render(locale))).not.toMatch(/R\$/);
+    }
+  });
 });

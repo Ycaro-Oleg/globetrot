@@ -9,7 +9,7 @@ Read this first. It says where the project is, what exists, what is open, what o
 - **Active milestone: M3 App Foundation.** 13 of 13 issues are done in code; #55 stays open for the owner's real-provider smoke run. M2 (engineering foundation) is complete. M0 (product foundation) is complete. **M1 (design system and spikes) is partly open** and its open items need the owner.
 - **What works end to end today** (checked against the real API, Postgres and Mailpit): a person can see the landing page, create an account in English or Portuguese, confirm the email through Mailpit, log in, create a trip, see it in the list and switcher, archive it and undo, open the world-map board, search places, pin a route, change language, currency, country, nationality, time zone, units, theme (day, red-eye or follow the device) and motion, recover a password and log out.
 - **The map board saves its route to the trip** (#75): MapLibre with Geoapify tiles, place search and an ordered route, stored as the trip's destinations and reloaded on the next visit (checked in the end-to-end journey). Nights per stop are edited here too (they feed the Days page). Still to do: the mobile bottom sheet, the stop panel (notes, costs), reorder and undo, a server-side geocoder, `PinConnection`.
-- **The landing page is a first version** (#74): no pricing section and no example trips yet.
+- **The landing page is complete in code** (#74): every section, mock pricing labelled as placeholder, example trips a visitor can copy into an account, metadata, social image, `robots.txt` and sitemap. Real prices, legal text and the owner's review remain.
 - **Checklists and the visa page work** (`/app/lists`): four lists per trip (add, check, remove, a suggested starter list) and the nine readiness stamps as they stand now. The budget (costs, conversion, savings answer) and the Days page work too.
 - **What does not exist yet:** Pip, the account passport, example trips, billing, deployment. The journey stage and the next steps are in the domain but not on a screen yet.
 - **Branches:** `main` has no release yet; `develop` is the integration branch. All work goes through `feature/*` or `docs/*` PRs into `develop`.
@@ -26,7 +26,7 @@ Read this first. It says where the project is, what exists, what is open, what o
 | M5 Itinerary & Checklists | **Started** (Days page, checklists) | — | Open: activities per day and drag and drop, storing stamps, the celebration |
 | M6 Budget & Savings | **Started** (budget v1, #83) | — | Open: a rates source, per-stop costs, editing a cost in place |
 | M7 Pip v1 | Not started | — | |
-| M8 Landing & MVP RC | **Started** (first landing, #74) | #74 | Pricing mock, example trips, SEO, performance and legal pages are open |
+| M8 Landing & MVP RC | **Started** (landing done in code, #74) | #74 | Pricing mock, example trips, SEO, performance and legal pages are open |
 | M9 and later | Not started | — | See the roadmap |
 
 ## What exists (by area)

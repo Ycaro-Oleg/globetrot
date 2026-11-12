@@ -1,5 +1,6 @@
 import {
   createTripFields,
+  createTripFromExampleFields,
   idempotencyKeySchema,
   tripIdSchema,
   tripSchema,
@@ -54,6 +55,31 @@ const createTripRoute = createRoute({
   },
   responses: {
     201: { description: 'The trip.', content: { 'application/json': { schema: tripSchema } } },
+    401: problemResponse('No valid session.'),
+    409: problemResponse('The Idempotency-Key was already used with a different request.'),
+    422: problemResponse('The body or the header is not valid.'),
+  },
+});
+
+const createFromExampleRoute = createRoute({
+  method: 'post',
+  path: '/v1/trips/from-example',
+  operationId: 'createTripFromExample',
+  tags: ['Trips'],
+  summary: 'Copy an example trip',
+  description:
+    'Creates a private trip in USD with the example’s route and nights. The copy is the person’s own. ' +
+    '`Idempotency-Key` works as for `createTrip`.',
+  security,
+  request: {
+    headers: z.object({ 'idempotency-key': idempotencyKeySchema.optional() }),
+    body: {
+      required: true,
+      content: { 'application/json': { schema: createTripFromExampleFields } },
+    },
+  },
+  responses: {
+    201: { description: 'The new trip.', content: { 'application/json': { schema: tripSchema } } },
     401: problemResponse('No valid session.'),
     409: problemResponse('The Idempotency-Key was already used with a different request.'),
     422: problemResponse('The body or the header is not valid.'),
@@ -131,6 +157,15 @@ export function registerTripRoutes(app: OpenAPIHono<Env>, application: Applicati
   app.openapi(createTripRoute, async (c) => {
     const key = c.req.valid('header')['idempotency-key'];
     const trip = await application.createTrip.execute(c.get('actor'), {
+      ...c.req.valid('json'),
+      ...(key === undefined ? {} : { idempotencyKey: key }),
+    });
+    return c.json(trip, 201);
+  });
+
+  app.openapi(createFromExampleRoute, async (c) => {
+    const key = c.req.valid('header')['idempotency-key'];
+    const trip = await application.createTripFromExample.execute(c.get('actor'), {
       ...c.req.valid('json'),
       ...(key === undefined ? {} : { idempotencyKey: key }),
     });

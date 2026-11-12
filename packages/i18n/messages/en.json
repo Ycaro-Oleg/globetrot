@@ -305,7 +305,20 @@
       "ariaEmpty": "Choose a trip or create one"
     },
     "boardAvailable": "Your world map is ready. Pin places to start building this trip route.",
-    "openMap": "Open the world map"
+    "openMap": "Open the world map",
+    "example": {
+      "title": "Start from an example",
+      "body": "Copy this example route into your trips. It becomes your own trip in USD with no dates: change anything you like.",
+      "stops": "{count, plural, one {# stop} other {# stops}} · {nights, plural, one {# night} other {# nights}}",
+      "copy": "Copy to my trips",
+      "copyError": "We could not copy the example. Try again.",
+      "dismiss": "Not now",
+      "trips": {
+        "japan": "Japan in two weeks",
+        "portugal": "Portugal by train",
+        "rio-de-la-plata": "Around the Río de la Plata"
+      }
+    }
   },
   "landing": {
     "eyebrow": "A travel plan that feels like yours",
@@ -395,7 +408,7 @@
     "pose4": "Deliver",
     "pose5": "Celebrate",
     "pipPromptLabel": "YOU WROTE",
-    "pipPrompt": "“I have R$15,000, want to visit Japan for 10 days, love food and historical places, and have never traveled internationally.”",
+    "pipPrompt": "“I have {budget}, want to visit Japan for 10 days, love food and historical places, and have never traveled internationally.”",
     "pipChanges": "PIP PENCILLED IN · TAP TO KEEP OR DROP",
     "estimateDisclaimer": "Estimates · not live prices",
     "pipChange1": "Flights from São Paulo",
@@ -424,19 +437,19 @@
     "markConfirmed": "✓ confirmed",
     "markPaid": "● paid",
     "markUnknown": "? not known yet",
-    "moneyExample": "Example: R$ 14,280 trip, R$ 6,400 already saved, leaving 3 April 2027.",
+    "moneyExample": "Example: a {total} trip, {saved} already saved, leaving 3 April 2027.",
     "examplesEyebrow": "BORROW A LITTLE INSPIRATION",
     "examplesTitle": "Steal a trip. <accent>Make it yours.</accent>",
     "allExamples": "All example trips",
     "trip1Length": "7 DAYS · PORTUGAL",
     "trip1Title": "Seven days in <accent>Portugal</accent>",
     "trip1Body": "Trains only. Port cellars, tiled stairways, a beach day at the end.",
-    "trip2Length": "10 DAYS · JAPAN",
-    "trip2Title": "Ten days in <accent>Japan</accent>",
+    "trip2Length": "14 DAYS · JAPAN",
+    "trip2Title": "Two weeks in <accent>Japan</accent>",
     "trip2Body": "A first time abroad, planned around food and very old wood.",
-    "trip3Length": "6 DAYS · RIVER PLATE",
+    "trip3Length": "8 DAYS · RIVER PLATE",
     "trip3Title": "A first trip <accent>across the river</accent>",
-    "trip3Body": "Buenos Aires, a ferry, Colonia and Montevideo. Six days, one border.",
+    "trip3Body": "Buenos Aires, a ferry, Colonia and Montevideo. Eight days, one border.",
     "tripUse": "Make this trip yours",
     "platformEyebrow": "A BOARD THAT TRAVELS WITH YOU",
     "platformTitle": "The same board, <accent>in your pocket.</accent>",
@@ -455,7 +468,42 @@
     "finalPlaceholder": "A place you’ve always wanted to see…",
     "finalButton": "Pin it",
     "finalNote": "Free to start. Works the same on your phone.",
-    "mapAttribution": "Map data: Natural Earth · Map lines are illustrative."
+    "mapAttribution": "Map data: Natural Earth · Map lines are illustrative.",
+    "stageLedgerStay": "Kyoto ryokan",
+    "stageLedgerTrains": "Trains",
+    "navPricing": "Pricing",
+    "pricingEyebrow": "PRICING",
+    "pricingTitle": "Start free. <accent>Upgrade</accent> if it helps.",
+    "pricingLead": "These plans are placeholders while we finish the beta. Nothing is charged and no card is asked for.",
+    "pricingPlaceholder": "Placeholder pricing · nothing is charged",
+    "pricingPerMonth": "{amount} / month",
+    "pricingCta": "Start free",
+    "plans": {
+      "free": {
+        "name": "Free",
+        "tagline": "Plan one trip at a time.",
+        "f1": "2 active trips",
+        "f2": "Board, days, budget and lists",
+        "f3": "English and Portuguese"
+      },
+      "explorer": {
+        "name": "Explorer",
+        "tagline": "For the trip you are saving for.",
+        "f1": "10 active trips",
+        "f2": "More Pip drafts each month",
+        "f3": "Offline trip pack (coming later)"
+      },
+      "voyager": {
+        "name": "Voyager",
+        "tagline": "For people always planning the next one.",
+        "f1": "Unlimited trips",
+        "f2": "The most Pip drafts",
+        "f3": "Passport extras"
+      }
+    },
+    "metaTitle": "Globetrot · Plan the trip you keep dreaming about",
+    "metaDescription": "Pin your route on a world map, see what it costs in your currency, and find out when you can afford it. Free to start, in English and Portuguese.",
+    "metaHeadline": "Your first stamp is closer than you think."
   },
   "mapBoard": {
     "eyebrow": "YOUR TRIP BOARD",

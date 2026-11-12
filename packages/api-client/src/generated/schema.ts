@@ -92,6 +92,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/trips/from-example": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Copy an example trip
+         * @description Creates a private trip in USD with the example’s route and nights. The copy is the person’s own. `Idempotency-Key` works as for `createTrip`.
+         */
+        post: operations["createTripFromExample"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/trips/{id}": {
         parameters: {
             query?: never;
@@ -701,6 +721,135 @@ export interface operations {
         };
         responses: {
             /** @description The trip. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * Format: uuid
+                         * @description Trip id (UUID).
+                         */
+                        id: string;
+                        title: string;
+                        /**
+                         * Format: date
+                         * @description Calendar date, no time zone.
+                         * @example 2027-04-03
+                         */
+                        startDate: string | null;
+                        currency: string;
+                        /** @enum {string} */
+                        status: "active" | "traveling" | "completed" | "archived";
+                        /** @enum {string} */
+                        visibility: "private";
+                        /** Format: date-time */
+                        createdAt: string;
+                        /** Format: date-time */
+                        updatedAt: string;
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description The Idempotency-Key was already used with a different request. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description The body or the header is not valid. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    createTripFromExample: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Client-chosen key that makes a retry safe. */
+                "idempotency-key"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /**
+                     * @description Which example to copy.
+                     * @enum {string}
+                     */
+                    exampleId: "japan" | "portugal" | "rio-de-la-plata";
+                    /**
+                     * @description The trip’s title in the person’s language. Defaults to the example’s English title.
+                     * @example Japan 2027
+                     */
+                    title?: string;
+                };
+            };
+        };
+        responses: {
+            /** @description The new trip. */
             201: {
                 headers: {
                     [name: string]: unknown;

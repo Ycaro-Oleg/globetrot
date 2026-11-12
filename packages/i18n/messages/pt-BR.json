@@ -305,7 +305,20 @@
       "ariaEmpty": "Escolha ou crie uma viagem"
     },
     "boardAvailable": "Seu mapa-múndi está pronto. Marque lugares para começar a montar a rota desta viagem.",
-    "openMap": "Abrir o mapa-múndi"
+    "openMap": "Abrir o mapa-múndi",
+    "example": {
+      "title": "Comece por um exemplo",
+      "body": "Copie este roteiro de exemplo para as suas viagens. Ele vira uma viagem sua, em USD e sem datas: mude o que quiser.",
+      "stops": "{count, plural, one {# parada} other {# paradas}} · {nights, plural, one {# noite} other {# noites}}",
+      "copy": "Copiar para as minhas viagens",
+      "copyError": "Não foi possível copiar o exemplo. Tente de novo.",
+      "dismiss": "Agora não",
+      "trips": {
+        "japan": "Japão em duas semanas",
+        "portugal": "Portugal de trem",
+        "rio-de-la-plata": "Pelo Rio da Prata"
+      }
+    }
   },
   "landing": {
     "eyebrow": "Um plano de viagem com a sua cara",
@@ -395,7 +408,7 @@
     "pose4": "Entrega",
     "pose5": "Comemora",
     "pipPromptLabel": "VOCÊ ESCREVEU",
-    "pipPrompt": "“Tenho R$ 15.000, quero passar 10 dias no Japão, adoro comida e história e nunca viajei para fora.”",
+    "pipPrompt": "“Tenho {budget}, quero passar 10 dias no Japão, adoro comida e história e nunca viajei para fora.”",
     "pipChanges": "RASCUNHADO PELO PIP · TOQUE PARA MANTER OU TIRAR",
     "estimateDisclaimer": "Estimativas · não são preços ao vivo",
     "pipChange1": "Passagens saindo de São Paulo",
@@ -424,19 +437,19 @@
     "markConfirmed": "✓ confirmado",
     "markPaid": "● pago",
     "markUnknown": "? não definido",
-    "moneyExample": "Exemplo: viagem de R$ 14.280, R$ 6.400 guardados, embarque em 3 de abril de 2027.",
+    "moneyExample": "Exemplo: viagem de {total}, {saved} guardados, embarque em 3 de abril de 2027.",
     "examplesEyebrow": "UM POUCO DE INSPIRAÇÃO",
     "examplesTitle": "Pegue uma ideia. <accent>Faça do seu jeito.</accent>",
     "allExamples": "Todas as viagens exemplo",
     "trip1Length": "7 DIAS · PORTUGAL",
     "trip1Title": "Sete dias em <accent>Portugal</accent>",
     "trip1Body": "Só de trem. Adegas do Porto, escadarias de azulejos e um dia de praia no final.",
-    "trip2Length": "10 DIAS · JAPÃO",
-    "trip2Title": "Dez dias no <accent>Japão</accent>",
+    "trip2Length": "14 DIAS · JAPÃO",
+    "trip2Title": "Duas semanas no <accent>Japão</accent>",
     "trip2Body": "Uma primeira viagem internacional com foco em comida e construções históricas.",
-    "trip3Length": "6 DIAS · RIO DA PRATA",
+    "trip3Length": "8 DIAS · RIO DA PRATA",
     "trip3Title": "Uma primeira viagem <accent>do outro lado do rio</accent>",
-    "trip3Body": "Buenos Aires, uma balsa, Colônia e Montevidéu. Seis dias, uma fronteira.",
+    "trip3Body": "Buenos Aires, uma balsa, Colônia e Montevidéu. Oito dias, uma fronteira.",
     "tripUse": "Quero planejar essa viagem",
     "platformEyebrow": "UM MAPA QUE VIAJA COM VOCÊ",
     "platformTitle": "O mesmo mapa, <accent>no seu bolso.</accent>",
@@ -455,7 +468,42 @@
     "finalPlaceholder": "Um lugar que você sempre quis conhecer…",
     "finalButton": "Marcar",
     "finalNote": "Comece grátis. Funciona do mesmo jeito no celular.",
-    "mapAttribution": "Mapa: Natural Earth · Rotas ilustrativas."
+    "mapAttribution": "Mapa: Natural Earth · Rotas ilustrativas.",
+    "stageLedgerStay": "Ryokan em Quioto",
+    "stageLedgerTrains": "Trens",
+    "navPricing": "Preços",
+    "pricingEyebrow": "PREÇOS",
+    "pricingTitle": "Comece de graça. <accent>Mude de plano</accent> se ajudar.",
+    "pricingLead": "Estes planos são provisórios enquanto terminamos o beta. Nada é cobrado e nenhum cartão é pedido.",
+    "pricingPlaceholder": "Preços provisórios · nada é cobrado",
+    "pricingPerMonth": "{amount} / mês",
+    "pricingCta": "Começar de graça",
+    "plans": {
+      "free": {
+        "name": "Grátis",
+        "tagline": "Planeje uma viagem por vez.",
+        "f1": "2 viagens ativas",
+        "f2": "Mapa, dias, orçamento e listas",
+        "f3": "Inglês e português"
+      },
+      "explorer": {
+        "name": "Explorador",
+        "tagline": "Para a viagem que você está juntando dinheiro.",
+        "f1": "10 viagens ativas",
+        "f2": "Mais rascunhos do Pip por mês",
+        "f3": "Pacote off-line da viagem (em breve)"
+      },
+      "voyager": {
+        "name": "Viajante",
+        "tagline": "Para quem está sempre planejando a próxima.",
+        "f1": "Viagens ilimitadas",
+        "f2": "O máximo de rascunhos do Pip",
+        "f3": "Extras do passaporte"
+      }
+    },
+    "metaTitle": "Globetrot · Planeje a viagem com que você sempre sonha",
+    "metaDescription": "Marque a rota num mapa-múndi, veja quanto custa na sua moeda e descubra quando você consegue pagar. Grátis para começar, em português e inglês.",
+    "metaHeadline": "Seu primeiro carimbo está mais perto do que você imagina."
   },
   "mapBoard": {
     "eyebrow": "O MAPA DA SUA VIAGEM",

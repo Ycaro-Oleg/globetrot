@@ -328,6 +328,29 @@ async function journey(browser, { width, height, locale }) {
       .click();
     await page.getByText(budgetCopy.expenseRemoved, { exact: true }).waitFor({ timeout: 15_000 });
 
+    // ---- an example trip from the landing: copy it, and its route is on the board
+    const exampleCopy = CATALOGS[locale].tripWorkspace.example;
+    await go('/app/trips?example=portugal');
+    await axe('trips (example)');
+    await page.getByRole('button', { name: exampleCopy.copy, exact: true }).click();
+    await page.waitForURL(/\/app\/board$/, { timeout: 15_000 });
+    await page.waitForLoadState('networkidle');
+    // the board renders after the client navigation settles: wait for the route rather than read it once
+    const copied = await page
+      .waitForFunction(() => document.querySelectorAll('ol li').length === 4, null, {
+        timeout: 15_000,
+      })
+      .then(() => true)
+      .catch(() => false);
+    expect(
+      copied,
+      `the copied example shows ${await page.locator('ol li').count()} stops on the board, not 4`,
+    );
+    expect(
+      (await page.getByText(exampleCopy.trips.portugal).count()) >= 1,
+      'the copied trip is not the current trip',
+    );
+
     // ---- checklists: start from the suggested list, check an item, see the stamp count move, remove one
     const listsCopy = CATALOGS[locale].listsPage;
     await go('/app/lists');

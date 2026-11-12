@@ -497,3 +497,41 @@
     transition: none;
   }
 }
+
+/* "Start from an example": arrives from a postcard on the landing page. */
+.exampleCard {
+  margin-block: var(--gt-primitive-space-16);
+  padding: var(--gt-primitive-space-20) var(--gt-primitive-space-24);
+  border: var(--gt-primitive-border-3) solid var(--gt-semantic-color-outline);
+  border-block-start: 10px solid var(--gt-semantic-color-airmail);
+  border-radius: var(--gt-primitive-radius-16);
+  background: var(--gt-semantic-color-surface-card);
+  box-shadow: var(--gt-primitive-shadow-small);
+}
+
+.exampleCard h2 {
+  margin: 0 0 var(--gt-primitive-space-8);
+  font-size: 1.4rem;
+}
+
+.exampleRoute {
+  font-weight: var(--gt-primitive-type-weight-bold);
+  overflow-wrap: anywhere;
+}
+
+.exampleRoute small {
+  color: var(--gt-semantic-color-text-secondary);
+  font-weight: var(--gt-primitive-type-weight-regular);
+}
+
+.exampleActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--gt-primitive-space-16);
+}
+
+.exampleActions a {
+  color: var(--gt-semantic-color-text);
+  font-weight: var(--gt-primitive-type-weight-bold);
+}
