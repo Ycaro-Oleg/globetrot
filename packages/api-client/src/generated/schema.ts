@@ -164,9 +164,29 @@ export interface paths {
         get: operations["listDestinations"];
         /**
          * Replace a trip’s whole route
-         * @description Sends the route as it should be, in order. The server assigns ids and positions, so sending the same route twice changes nothing. At most 100 stops. An empty list clears the route.
+         * @description Sends the route as it should be, in order. The server assigns ids and positions, so sending the same route twice changes nothing. At most 100 stops. An empty list clears the route. The first stop marked visited in a country stamps a commemorative visa (never an official document); the stamps this change gave are in `stampedVisas`.
          */
         put: operations["replaceDestinations"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/visas": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The session user’s commemorative visas
+         * @description One per country, stamped by the first stop marked visited there. Decorative: never an official document.
+         */
+        get: operations["listVisas"];
+        put?: never;
         post?: never;
         delete?: never;
         options?: never;
@@ -1389,6 +1409,17 @@ export interface operations {
                             note: string | null;
                             /** @enum {string|null} */
                             legMode: "flight" | "train" | "bus" | "car" | "boat" | "walk" | "other" | null;
+                            visited: boolean;
+                            spots: {
+                                name: string;
+                                latitude: number | null;
+                                longitude: number | null;
+                                done: boolean;
+                            }[];
+                            todos: {
+                                text: string;
+                                done: boolean;
+                            }[];
                         }[];
                     };
                 };
@@ -1509,12 +1540,41 @@ export interface operations {
                          * @enum {string|null}
                          */
                         legMode?: "flight" | "train" | "bus" | "car" | "boat" | "walk" | "other" | null;
+                        /**
+                         * @description The person marked it visited (their word, not a verification). The first visited stop in a country stamps a commemorative visa.
+                         * @default false
+                         */
+                        visited?: boolean;
+                        /**
+                         * @description Places to see here (at most 30).
+                         * @default []
+                         */
+                        spots?: {
+                            /** @example Fushimi Inari */
+                            name: string;
+                            /** @default null */
+                            latitude?: number | null;
+                            /** @default null */
+                            longitude?: number | null;
+                            /** @default false */
+                            done?: boolean;
+                        }[];
+                        /**
+                         * @description Things to do for this stop (at most 30).
+                         * @default []
+                         */
+                        todos?: {
+                            /** @example Book the ryokan */
+                            text: string;
+                            /** @default false */
+                            done?: boolean;
+                        }[];
                     }[];
                 };
             };
         };
         responses: {
-            /** @description The route as stored. */
+            /** @description The route as stored, and the visas it stamped. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -1535,6 +1595,28 @@ export interface operations {
                             note: string | null;
                             /** @enum {string|null} */
                             legMode: "flight" | "train" | "bus" | "car" | "boat" | "walk" | "other" | null;
+                            visited: boolean;
+                            spots: {
+                                name: string;
+                                latitude: number | null;
+                                longitude: number | null;
+                                done: boolean;
+                            }[];
+                            todos: {
+                                text: string;
+                                done: boolean;
+                            }[];
+                        }[];
+                        stampedVisas: {
+                            /** @example JP */
+                            countryCode: string;
+                            /**
+                             * @description The stop that stamped it.
+                             * @example Kyoto
+                             */
+                            city: string;
+                            /** Format: date-time */
+                            stampedAt: string;
                         }[];
                     };
                 };
@@ -1587,6 +1669,62 @@ export interface operations {
             };
             /** @description The id or the body is not valid. */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    listVisas: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The visas, newest first. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @description Commemorative Globetrot visas, newest first. Decorative: never an official document. */
+                        visas: {
+                            /** @example JP */
+                            countryCode: string;
+                            /**
+                             * @description The stop that stamped it.
+                             * @example Kyoto
+                             */
+                            city: string;
+                            /** Format: date-time */
+                            stampedAt: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
                 headers: {
                     [name: string]: unknown;
                 };

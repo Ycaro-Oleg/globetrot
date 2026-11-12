@@ -17,6 +17,9 @@ import {
   trip,
   tripSavings,
   userPreference,
+  visa,
+  type StopSpot,
+  type StopTodo,
 } from './schema';
 
 /**
@@ -309,6 +312,9 @@ export interface DestinationRow {
   readonly nights: number;
   readonly note: string | null;
   readonly legMode: string | null;
+  readonly visited: boolean;
+  readonly spots: StopSpot[];
+  readonly todos: StopTodo[];
   readonly createdAt: Date;
   readonly updatedAt: Date;
 }
@@ -324,6 +330,9 @@ export interface NewDestinationRow {
   readonly nights: number;
   readonly note: string | null;
   readonly legMode: string | null;
+  readonly visited: boolean;
+  readonly spots: readonly StopSpot[];
+  readonly todos: readonly StopTodo[];
 }
 
 /** A trip's route, in order. Replaced as a whole inside one transaction. */
@@ -350,6 +359,8 @@ export function createDestinationRepository(executor: Executor) {
         .values(
           items.map((item, position) => ({
             ...item,
+            spots: [...item.spots],
+            todos: [...item.todos],
             tripId,
             position,
             createdAt: now,
@@ -358,6 +369,39 @@ export function createDestinationRepository(executor: Executor) {
         )
         .returning();
       return rows.sort((a, b) => a.position - b.position);
+    },
+  };
+}
+
+export interface VisaRow {
+  readonly userId: string;
+  readonly countryCode: string;
+  readonly city: string;
+  readonly stampedAt: Date;
+}
+
+/** Commemorative visas, one per person and country. A stamp never moves once given. */
+export function createVisaRepository(executor: Executor) {
+  return {
+    async listByUser(userId: string): Promise<VisaRow[]> {
+      return executor
+        .select()
+        .from(visa)
+        .where(eq(visa.userId, userId))
+        .orderBy(desc(visa.stampedAt), visa.countryCode);
+    },
+    /** Stamps the countries the person has no visa for yet and returns only the new ones. */
+    async stampMissing(
+      userId: string,
+      entries: readonly { countryCode: string; city: string }[],
+      now: Date,
+    ): Promise<VisaRow[]> {
+      if (entries.length === 0) return [];
+      return executor
+        .insert(visa)
+        .values(entries.map((entry) => ({ ...entry, userId, stampedAt: now })))
+        .onConflictDoNothing()
+        .returning();
     },
   };
 }
@@ -535,6 +579,7 @@ export function createSavingsRepository(executor: Executor) {
 export type ExpenseRepository = ReturnType<typeof createExpenseRepository>;
 export type SavingsRepository = ReturnType<typeof createSavingsRepository>;
 export type DestinationRepository = ReturnType<typeof createDestinationRepository>;
+export type VisaRepository = ReturnType<typeof createVisaRepository>;
 export type TripRepository = ReturnType<typeof createTripRepository>;
 export type PreferencesRepository = ReturnType<typeof createPreferencesRepository>;
 export type Cooldown = ReturnType<typeof createCooldown>;
@@ -546,6 +591,7 @@ export interface Transaction {
   readonly destinations: DestinationRepository;
   readonly expenses: ExpenseRepository;
   readonly checklist: ChecklistRepository;
+  readonly visas: VisaRepository;
   readonly savings: SavingsRepository;
   readonly preferences: PreferencesRepository;
   readonly audit: AuditLog;
@@ -562,6 +608,7 @@ export function createUnitOfWork(db: Database) {
           destinations: createDestinationRepository(tx),
           expenses: createExpenseRepository(tx),
           checklist: createChecklistRepository(tx),
+          visas: createVisaRepository(tx),
           savings: createSavingsRepository(tx),
           preferences: createPreferencesRepository(tx),
           audit: createAuditLog(tx),

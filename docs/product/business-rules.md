@@ -96,6 +96,7 @@ Implementation: `packages/domain/src/trip/` (`tripDays`, `emptyDays`, `tripTotal
 - The passport belongs to the **account**. It is decorative and fictional, and must never look like or claim to be an official document.
 - Each trip gets a **visa page**. Readiness stamps land there.
 - **Place stamps** (country, city) are added when a trip is completed or when a user declares a past visit. They are labelled `self-declared` unless a real verification mechanism exists.
+- **Globetrot visas** (design handoff v2): marking a stop **visited** on the board is a self-declared visit. The first visited stop in a country stamps that country's commemorative visa, one per person and country, with the stop's name and the date. A visa is a souvenir: it is **never taken back**, even if the stop is un-visited, the stop is removed or the trip is archived. Wherever visas are shown, the UI says they are commemorative and not official documents.
 
 ## AI (Pip)
 

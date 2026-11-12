@@ -1,8 +1,13 @@
 import { cookies } from 'next/headers';
-import { getLocale, getTranslations } from 'next-intl/server';
+import { getTranslations } from 'next-intl/server';
 import { apiInternalUrl } from '../../../lib/api-proxy';
 import { sessionCookieHeader } from '../../../lib/stored-preferences';
-import { fetchDestinations, fetchTrips, SELECTED_TRIP_COOKIE } from '../../../lib/trips';
+import {
+  fetchDestinations,
+  fetchTrips,
+  fetchVisas,
+  SELECTED_TRIP_COOKIE,
+} from '../../../lib/trips';
 import { isLegMode, type RouteStop } from './board-route';
 import { WorldMapBoard } from './world-map';
 
@@ -16,19 +21,20 @@ export async function generateMetadata() {
  * stops, and the board saves every change back to the trip. Without a trip it still works, unsaved.
  */
 export default async function BoardPage() {
-  const [store, locale] = await Promise.all([cookies(), getLocale()]);
+  const store = await cookies();
   const cookieHeader = sessionCookieHeader(store.getAll());
   const options = cookieHeader ? { cookieHeader, apiUrl: apiInternalUrl() } : null;
   const trips = options ? ((await fetchTrips(options)) ?? []) : [];
   const savedId = store.get(SELECTED_TRIP_COOKIE)?.value;
   const trip = trips.find((candidate) => candidate.id === savedId) ?? trips[0] ?? null;
-  const destinations = options && trip ? ((await fetchDestinations(options, trip.id)) ?? []) : [];
+  const [destinations, visas] = await Promise.all([
+    options && trip ? fetchDestinations(options, trip.id) : Promise.resolve(null),
+    options ? fetchVisas(options) : Promise.resolve(null),
+  ]);
 
-  const countries = new Intl.DisplayNames([locale], { type: 'region' });
-  const route: RouteStop[] = destinations.map((stop) => ({
+  const route: RouteStop[] = (destinations ?? []).map((stop) => ({
     id: stop.placeKey,
     name: stop.name,
-    country: stop.countryCode ? (countries.of(stop.countryCode) ?? '') : '',
     countryCode: stop.countryCode ?? '',
     region: stop.region ?? '',
     longitude: stop.longitude,
@@ -36,7 +42,19 @@ export default async function BoardPage() {
     nights: stop.nights,
     note: stop.note ?? '',
     legMode: isLegMode(stop.legMode) ? stop.legMode : null,
+    visited: stop.visited ?? false,
+    spots: (stop.spots ?? []).map((spot) => ({ ...spot })),
+    todos: (stop.todos ?? []).map((todo) => ({ ...todo })),
   }));
 
-  return <WorldMapBoard key={trip?.id ?? 'none'} tripId={trip?.id ?? null} initialRoute={route} />;
+  return (
+    <WorldMapBoard
+      key={trip?.id ?? 'none'}
+      tripId={trip?.id ?? null}
+      tripTitle={trip?.title ?? null}
+      startDate={trip?.startDate ?? null}
+      initialRoute={route}
+      initialVisas={(visas ?? []).map((visa) => visa.countryCode)}
+    />
+  );
 }

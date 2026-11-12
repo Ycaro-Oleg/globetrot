@@ -104,10 +104,26 @@ Migration `0006_trip_destinations`. One row per stop in `destination`, `trip_id`
 | `nights` | 0 to 365, default 0 (day trips are 0) |
 | `note` | The person's note about the stop, 1 to 500 characters or null (blank is stored as null). Personal: never in logs or audit (migration `0009_stop_notes_and_legs`) |
 | `leg_mode` | How they travel to the **next** stop: `flight`, `train`, `bus`, `car`, `boat`, `walk`, `other` (`LEG_MODES`), or null. The application stores null on the last stop |
+| `visited` | `boolean`, default false. The person's own word that they went (migration `0010_stop_kit_and_visas`) |
+| `spots` | `jsonb` array (CHECKed to be an array) of `{ name, latitude, longitude, done }`: places to see at the stop, at most 30 (`STOP_SPOTS_MAX`), names 1 to 120 characters, coordinates optional. Personal: never in logs or audit |
+| `todos` | `jsonb` array of `{ text, done }`, at most 30 (`STOP_TODOS_MAX`), 1 to 120 characters. Personal: never in logs or audit |
 
 - **Replace, don't patch.** `replaceDestinations` deletes the trip's rows and inserts the list in order inside one transaction (with the audit entry), so a failed save leaves the old route intact and sending the same route twice changes nothing. At most 100 stops (`MAX_DESTINATIONS`).
 - **State** (`planned` or `draft`, for Pip proposals) and the link to a places table are added by the migrations of the features that need them.
 - The audit entry (`destination.replace`) holds the **number** of stops, never which places: where someone plans to go is personal.
+
+## Visas (commemorative passport stamps)
+
+Migration `0010_stop_kit_and_visas`. Table `visa`, primary key `(user_id, country_code)` so a person has one visa per country; `user_id` references `user` with `ON DELETE CASCADE`.
+
+| Column | Rule |
+|---|---|
+| `country_code` | ISO 3166-1 alpha-2, CHECKed upper case |
+| `city` | The name of the stop that stamped it, 1 to 200 characters. Personal: never in logs or audit |
+| `stamped_at` | When it was stamped |
+
+- Stamped inside `replaceDestinations`, in the same transaction: the first stop marked `visited` in each country gets `INSERT … ON CONFLICT DO NOTHING`, so an existing visa never moves or changes. Visas are never deleted by the board ([business rules](../product/business-rules.md#passport)).
+- The audit entry `visa.stamp` holds the **number** of new visas only, never countries or cities.
 
 ## Budget: expenses and savings
 

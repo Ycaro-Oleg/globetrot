@@ -2,6 +2,8 @@ import type {
   PlaceResult,
   ChecklistItemRecord,
   ChecklistWriter,
+  VisaRecord,
+  VisaWriter,
   AuditEventInput,
   DestinationRecord,
   DestinationWriter,
@@ -27,6 +29,8 @@ export interface FakeState {
   destinations: Map<string, DestinationRecord[]>;
   expenses: Map<string, ExpenseRecord>;
   checklist: Map<string, ChecklistItemRecord>;
+  /** Keyed by `${userId}\u0000${countryCode}`. */
+  visas: Map<string, VisaRecord>;
   savings: Map<string, SavingsRecord>;
   preferences: Map<string, PreferencesRecord>;
   audit: AuditEventInput[];
@@ -63,6 +67,7 @@ export function createFakePorts(options: FakeOptions = {}) {
     destinations: new Map(),
     expenses: new Map(),
     checklist: new Map(),
+    visas: new Map(),
     savings: new Map(),
     preferences: new Map(),
     audit: [],
@@ -207,6 +212,25 @@ export function createFakePorts(options: FakeOptions = {}) {
     },
   };
 
+  const visaWriter: VisaWriter = {
+    async listByUser(userId) {
+      return [...state.visas.values()]
+        .filter((record) => record.userId === userId)
+        .sort((a, b) => b.stampedAt.getTime() - a.stampedAt.getTime());
+    },
+    async stampMissing(userId, entries, now) {
+      const stamped: VisaRecord[] = [];
+      for (const entry of entries) {
+        const key = `${userId}\u0000${entry.countryCode}`;
+        if (state.visas.has(key)) continue;
+        const record: VisaRecord = { userId, ...entry, stampedAt: now };
+        state.visas.set(key, record);
+        stamped.push(record);
+      }
+      return stamped;
+    },
+  };
+
   const savingsWriter: SavingsWriter = {
     async find(tripId) {
       return state.savings.get(tripId) ?? null;
@@ -227,6 +251,7 @@ export function createFakePorts(options: FakeOptions = {}) {
     trips: tripWriter,
     expenses: expenseWriter,
     checklist: checklistWriter,
+    visas: visaWriter,
     savings: savingsWriter,
     destinations: destinationWriter,
     preferences: preferencesWriter,
@@ -264,6 +289,7 @@ export function createFakePorts(options: FakeOptions = {}) {
     destinations: destinationWriter,
     expenses: expenseWriter,
     checklist: checklistWriter,
+    visas: visaWriter,
     savings: savingsWriter,
     preferences: preferencesWriter,
     unitOfWork: {
@@ -274,6 +300,7 @@ export function createFakePorts(options: FakeOptions = {}) {
           destinations: new Map(state.destinations),
           expenses: new Map(state.expenses),
           checklist: new Map(state.checklist),
+          visas: new Map(state.visas),
           savings: new Map(state.savings),
           preferences: new Map(state.preferences),
           audit: [...state.audit],
@@ -288,6 +315,7 @@ export function createFakePorts(options: FakeOptions = {}) {
           state.destinations = before.destinations;
           state.expenses = before.expenses;
           state.checklist = before.checklist;
+          state.visas = before.visas;
           state.savings = before.savings;
           state.preferences = before.preferences;
           state.audit = before.audit;

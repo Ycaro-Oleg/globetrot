@@ -53,7 +53,11 @@ import {
 } from './checklists/operations';
 import { createCreateTripFromExample } from './examples/operations';
 import { createReversePlace, createSearchPlaces } from './places/operations';
-import { createListDestinations, createReplaceDestinations } from './destinations/operations';
+import {
+  createListDestinations,
+  createListVisas,
+  createReplaceDestinations,
+} from './destinations/operations';
 export { defineOperation, type Operation } from './operation';
 export type {
   GeocodingPort,
@@ -80,6 +84,11 @@ export type {
   SavingsRecord,
   SavingsWriter,
   NewDestination,
+  StopSpotRecord,
+  StopTodoRecord,
+  VisaReader,
+  VisaRecord,
+  VisaWriter,
   IdempotencyStart,
   IdempotencyStore,
   IdGenerator,
@@ -158,7 +167,13 @@ export {
   destinationListSchema,
   destinationSchema,
   replaceDestinationsBody,
+  replaceDestinationsResult,
+  stopSpotSchema,
+  stopTodoSchema,
+  visaListSchema,
+  visaSchema,
   type DestinationView,
+  type VisaView,
 } from './destinations/schemas';
 
 export {
@@ -197,6 +212,7 @@ export function createApplication(ports: Ports) {
     deleteExpense: createDeleteExpense(ports),
     updateSavings: createUpdateSavings(ports),
     replaceDestinations: createReplaceDestinations(ports),
+    listVisas: createListVisas(ports),
     getPreferences: createGetPreferences(ports),
     updatePreferences: createUpdatePreferences(ports),
   };

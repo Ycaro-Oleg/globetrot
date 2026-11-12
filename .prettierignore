@@ -15,3 +15,6 @@ packages/db/migrations/meta/
 # Generated API contract and client types (pnpm api:generate): never hand-formatted
 packages/api-client/openapi.json
 packages/api-client/src/generated/
+
+# Minified map data (Natural Earth, public domain)
+apps/web/public/geo/

@@ -123,8 +123,24 @@ export interface DestinationRecord {
   readonly nights: number;
   readonly note: string | null;
   readonly legMode: string | null;
+  readonly visited: boolean;
+  readonly spots: readonly StopSpotRecord[];
+  readonly todos: readonly StopTodoRecord[];
   readonly createdAt: Date;
   readonly updatedAt: Date;
+}
+
+/** A place to see at a stop. */
+export interface StopSpotRecord {
+  readonly name: string;
+  readonly latitude: number | null;
+  readonly longitude: number | null;
+  readonly done: boolean;
+}
+/** A thing to do for a stop. */
+export interface StopTodoRecord {
+  readonly text: string;
+  readonly done: boolean;
 }
 
 export interface NewDestination {
@@ -138,6 +154,9 @@ export interface NewDestination {
   readonly nights: number;
   readonly note: string | null;
   readonly legMode: string | null;
+  readonly visited: boolean;
+  readonly spots: readonly StopSpotRecord[];
+  readonly todos: readonly StopTodoRecord[];
 }
 
 export interface DestinationReader {
@@ -152,6 +171,29 @@ export interface DestinationWriter extends DestinationReader {
     items: readonly NewDestination[],
     now: Date,
   ): Promise<DestinationRecord[]>;
+}
+
+// --- Visas (commemorative passport stamps) -------------------------------------------------------------
+
+export interface VisaRecord {
+  readonly userId: string;
+  readonly countryCode: string;
+  readonly city: string;
+  readonly stampedAt: Date;
+}
+
+export interface VisaReader {
+  /** Newest first. */
+  listByUser(userId: string): Promise<VisaRecord[]>;
+}
+
+export interface VisaWriter extends VisaReader {
+  /** Stamps the countries the person has no visa for yet; returns only the new stamps. */
+  stampMissing(
+    userId: string,
+    entries: readonly { countryCode: string; city: string }[],
+    now: Date,
+  ): Promise<VisaRecord[]>;
 }
 
 // --- Budget (expenses and savings) ---------------------------------------------------------------------
@@ -323,6 +365,7 @@ export interface Transaction {
   readonly destinations: DestinationWriter;
   readonly expenses: ExpenseWriter;
   readonly checklist: ChecklistWriter;
+  readonly visas: VisaWriter;
   readonly savings: SavingsWriter;
   readonly preferences: PreferencesWriter;
   readonly audit: AuditLog;
@@ -349,6 +392,7 @@ export interface Ports {
   readonly destinations: DestinationReader;
   readonly expenses: ExpenseReader;
   readonly checklist: ChecklistReader;
+  readonly visas: VisaReader;
   readonly savings: SavingsReader;
   readonly preferences: PreferencesReader;
   readonly unitOfWork: UnitOfWork;

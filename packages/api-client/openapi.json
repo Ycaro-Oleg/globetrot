@@ -2414,6 +2414,59 @@
                               "other",
                               null
                             ]
+                          },
+                          "visited": {
+                            "type": "boolean"
+                          },
+                          "spots": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "name": {
+                                  "type": "string"
+                                },
+                                "latitude": {
+                                  "type": [
+                                    "number",
+                                    "null"
+                                  ]
+                                },
+                                "longitude": {
+                                  "type": [
+                                    "number",
+                                    "null"
+                                  ]
+                                },
+                                "done": {
+                                  "type": "boolean"
+                                }
+                              },
+                              "required": [
+                                "name",
+                                "latitude",
+                                "longitude",
+                                "done"
+                              ]
+                            }
+                          },
+                          "todos": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "text": {
+                                  "type": "string"
+                                },
+                                "done": {
+                                  "type": "boolean"
+                                }
+                              },
+                              "required": [
+                                "text",
+                                "done"
+                              ]
+                            }
                           }
                         },
                         "required": [
@@ -2427,7 +2480,10 @@
                           "longitude",
                           "nights",
                           "note",
-                          "legMode"
+                          "legMode",
+                          "visited",
+                          "spots",
+                          "todos"
                         ]
                       }
                     }
@@ -2621,7 +2677,7 @@
           "Trips"
         ],
         "summary": "Replace a trip’s whole route",
-        "description": "Sends the route as it should be, in order. The server assigns ids and positions, so sending the same route twice changes nothing. At most 100 stops. An empty list clears the route.",
+        "description": "Sends the route as it should be, in order. The server assigns ids and positions, so sending the same route twice changes nothing. At most 100 stops. An empty list clears the route. The first stop marked visited in a country stamps a commemorative visa (never an official document); the stamps this change gave are in `stampedVisas`.",
         "security": [
           {
             "cookieAuth": []
@@ -2724,6 +2780,77 @@
                             null
                           ],
                           "description": "How they travel from this stop to the next. Ignored on the last stop."
+                        },
+                        "visited": {
+                          "type": "boolean",
+                          "default": false,
+                          "description": "The person marked it visited (their word, not a verification). The first visited stop in a country stamps a commemorative visa."
+                        },
+                        "spots": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "name": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 120,
+                                "example": "Fushimi Inari"
+                              },
+                              "latitude": {
+                                "type": [
+                                  "number",
+                                  "null"
+                                ],
+                                "minimum": -90,
+                                "maximum": 90,
+                                "default": null
+                              },
+                              "longitude": {
+                                "type": [
+                                  "number",
+                                  "null"
+                                ],
+                                "minimum": -180,
+                                "maximum": 180,
+                                "default": null
+                              },
+                              "done": {
+                                "type": "boolean",
+                                "default": false
+                              }
+                            },
+                            "required": [
+                              "name"
+                            ]
+                          },
+                          "maxItems": 30,
+                          "default": [],
+                          "description": "Places to see here (at most 30)."
+                        },
+                        "todos": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "text": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 120,
+                                "example": "Book the ryokan"
+                              },
+                              "done": {
+                                "type": "boolean",
+                                "default": false
+                              }
+                            },
+                            "required": [
+                              "text"
+                            ]
+                          },
+                          "maxItems": 30,
+                          "default": [],
+                          "description": "Things to do for this stop (at most 30)."
                         }
                       },
                       "required": [
@@ -2746,7 +2873,7 @@
         },
         "responses": {
           "200": {
-            "description": "The route as stored.",
+            "description": "The route as stored, and the visas it stamped.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2812,6 +2939,59 @@
                               "other",
                               null
                             ]
+                          },
+                          "visited": {
+                            "type": "boolean"
+                          },
+                          "spots": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "name": {
+                                  "type": "string"
+                                },
+                                "latitude": {
+                                  "type": [
+                                    "number",
+                                    "null"
+                                  ]
+                                },
+                                "longitude": {
+                                  "type": [
+                                    "number",
+                                    "null"
+                                  ]
+                                },
+                                "done": {
+                                  "type": "boolean"
+                                }
+                              },
+                              "required": [
+                                "name",
+                                "latitude",
+                                "longitude",
+                                "done"
+                              ]
+                            }
+                          },
+                          "todos": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "text": {
+                                  "type": "string"
+                                },
+                                "done": {
+                                  "type": "boolean"
+                                }
+                              },
+                              "required": [
+                                "text",
+                                "done"
+                              ]
+                            }
                           }
                         },
                         "required": [
@@ -2825,13 +3005,43 @@
                           "longitude",
                           "nights",
                           "note",
-                          "legMode"
+                          "legMode",
+                          "visited",
+                          "spots",
+                          "todos"
+                        ]
+                      }
+                    },
+                    "stampedVisas": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "countryCode": {
+                            "type": "string",
+                            "example": "JP"
+                          },
+                          "city": {
+                            "type": "string",
+                            "description": "The stop that stamped it.",
+                            "example": "Kyoto"
+                          },
+                          "stampedAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          }
+                        },
+                        "required": [
+                          "countryCode",
+                          "city",
+                          "stampedAt"
                         ]
                       }
                     }
                   },
                   "required": [
-                    "destinations"
+                    "destinations",
+                    "stampedVisas"
                   ]
                 }
               }
@@ -2955,6 +3165,123 @@
           },
           "422": {
             "description": "The id or the body is not valid.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "description": "A URN identifying the kind of problem."
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "integer"
+                    },
+                    "code": {
+                      "type": "string",
+                      "description": "Stable machine-readable code. Clients switch on this."
+                    },
+                    "detail": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "field": {
+                            "type": "string"
+                          },
+                          "code": {
+                            "type": "string"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "field",
+                          "code",
+                          "message"
+                        ]
+                      },
+                      "description": "Per-field problems, present for VALIDATION_FAILED."
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "title",
+                    "status",
+                    "code"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/visas": {
+      "get": {
+        "operationId": "listVisas",
+        "tags": [
+          "Passport"
+        ],
+        "summary": "The session user’s commemorative visas",
+        "description": "One per country, stamped by the first stop marked visited there. Decorative: never an official document.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The visas, newest first.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "visas": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "countryCode": {
+                            "type": "string",
+                            "example": "JP"
+                          },
+                          "city": {
+                            "type": "string",
+                            "description": "The stop that stamped it.",
+                            "example": "Kyoto"
+                          },
+                          "stampedAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          }
+                        },
+                        "required": [
+                          "countryCode",
+                          "city",
+                          "stampedAt"
+                        ]
+                      },
+                      "description": "Commemorative Globetrot visas, newest first. Decorative: never an official document."
+                    }
+                  },
+                  "required": [
+                    "visas"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid session.",
             "content": {
               "application/problem+json": {
                 "schema": {

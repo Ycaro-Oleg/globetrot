@@ -4,9 +4,26 @@ import {
   LEG_MODES,
   MAX_DESTINATIONS,
   MAX_NIGHTS_PER_DESTINATION,
+  STOP_ITEM_TEXT_MAX_LENGTH,
+  STOP_SPOTS_MAX,
+  STOP_TODOS_MAX,
 } from '@globetrot/domain';
 import { z } from 'zod';
-import type { DestinationRecord } from '../ports';
+import type { DestinationRecord, VisaRecord } from '../ports';
+
+const itemText = z.string().trim().min(1).max(STOP_ITEM_TEXT_MAX_LENGTH);
+
+export const stopSpotSchema = z.object({
+  name: itemText.meta({ example: 'Fushimi Inari' }),
+  latitude: z.number().min(-90).max(90).nullable().default(null),
+  longitude: z.number().min(-180).max(180).nullable().default(null),
+  done: z.boolean().default(false),
+});
+
+export const stopTodoSchema = z.object({
+  text: itemText.meta({ example: 'Book the ryokan' }),
+  done: z.boolean().default(false),
+});
 
 /** What a client sends for one stop. The server decides ids and positions. */
 export const destinationFields = z.object({
@@ -51,6 +68,20 @@ export const destinationFields = z.object({
     .nullable()
     .optional()
     .meta({ description: 'How they travel from this stop to the next. Ignored on the last stop.' }),
+  visited: z.boolean().default(false).meta({
+    description:
+      'The person marked it visited (their word, not a verification). The first visited stop in a country stamps a commemorative visa.',
+  }),
+  spots: z
+    .array(stopSpotSchema)
+    .max(STOP_SPOTS_MAX)
+    .default([])
+    .meta({ description: `Places to see here (at most ${STOP_SPOTS_MAX}).` }),
+  todos: z
+    .array(stopTodoSchema)
+    .max(STOP_TODOS_MAX)
+    .default([])
+    .meta({ description: `Things to do for this stop (at most ${STOP_TODOS_MAX}).` }),
 });
 
 export const replaceDestinationsBody = z.object({
@@ -72,10 +103,44 @@ export const destinationSchema = z.object({
   nights: z.number().int(),
   note: z.string().nullable(),
   legMode: z.enum(LEG_MODES).nullable(),
+  visited: z.boolean(),
+  spots: z.array(
+    z.object({
+      name: z.string(),
+      latitude: z.number().nullable(),
+      longitude: z.number().nullable(),
+      done: z.boolean(),
+    }),
+  ),
+  todos: z.array(z.object({ text: z.string(), done: z.boolean() })),
 });
 export type DestinationView = z.infer<typeof destinationSchema>;
 
 export const destinationListSchema = z.object({ destinations: z.array(destinationSchema) });
+
+export const visaSchema = z.object({
+  countryCode: z.string().meta({ example: 'JP' }),
+  city: z.string().meta({ description: 'The stop that stamped it.', example: 'Kyoto' }),
+  stampedAt: z.iso.datetime(),
+});
+export type VisaView = z.infer<typeof visaSchema>;
+export const visaListSchema = z.object({
+  visas: z.array(visaSchema).meta({
+    description:
+      'Commemorative Globetrot visas, newest first. Decorative: never an official document.',
+  }),
+});
+
+/** The stored route, plus the visas this change stamped (empty when it stamped none). */
+export const replaceDestinationsResult = destinationListSchema.extend({
+  stampedVisas: z.array(visaSchema),
+});
+
+export const toVisaView = (record: VisaRecord): VisaView => ({
+  countryCode: record.countryCode,
+  city: record.city,
+  stampedAt: record.stampedAt.toISOString(),
+});
 
 export const toDestinationView = (record: DestinationRecord): DestinationView => ({
   id: record.id,
@@ -89,4 +154,7 @@ export const toDestinationView = (record: DestinationRecord): DestinationView =>
   nights: record.nights,
   note: record.note,
   legMode: (record.legMode as DestinationView['legMode']) ?? null,
+  visited: record.visited,
+  spots: record.spots.map((spot) => ({ ...spot })),
+  todos: record.todos.map((todo) => ({ ...todo })),
 });

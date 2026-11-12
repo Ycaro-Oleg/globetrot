@@ -1,18 +1,65 @@
-import { LEG_MODES, type LegMode } from '@globetrot/domain';
-import type { MapPlace } from './map-canvas';
+import {
+  LEG_MODES,
+  STOP_ITEM_TEXT_MAX_LENGTH,
+  STOP_SPOTS_MAX,
+  STOP_TODOS_MAX,
+  type LegMode,
+} from '@globetrot/domain';
 
-/** A stop on the board: the place, the nights, the person's note and how they reach the next stop. */
-export type RouteStop = MapPlace & { nights: number; note: string; legMode: LegMode | null };
+/** A place on the map, as the board shows it. */
+export type MapPlace = {
+  id: string;
+  name: string;
+  countryCode: string;
+  region: string;
+  longitude: number;
+  latitude: number;
+};
+
+export type StopSpot = {
+  name: string;
+  latitude: number | null;
+  longitude: number | null;
+  done: boolean;
+};
+export type StopTodo = { text: string; done: boolean };
+
+/** A stop on the board: the place, the nights, the person's own notes and lists, and how they reach the next. */
+export type RouteStop = MapPlace & {
+  nights: number;
+  note: string;
+  legMode: LegMode | null;
+  visited: boolean;
+  spots: StopSpot[];
+  todos: StopTodo[];
+};
+
+/** The pin card's tabs, in petal order. */
+export const KIT_TABS = ['photos', 'spots', 'notes', 'todos'] as const;
+export type KitTab = (typeof KIT_TABS)[number];
 
 export const MAX_NIGHTS = 365;
 export const NOTE_MAX = 500;
+export const ITEM_MAX = STOP_ITEM_TEXT_MAX_LENGTH;
+export const SPOTS_MAX = STOP_SPOTS_MAX;
+export const TODOS_MAX = STOP_TODOS_MAX;
 /** How many changes Undo remembers. */
 export const HISTORY_LIMIT = 50;
 
 export const isLegMode = (value: unknown): value is LegMode =>
   typeof value === 'string' && (LEG_MODES as readonly string[]).includes(value);
 
-/** Moves the stop at `from` to `to` (both clamped). Returns the same array when nothing moves. */
+export const newStop = (place: MapPlace): RouteStop => ({
+  ...place,
+  nights: 1,
+  note: '',
+  legMode: null,
+  visited: false,
+  spots: [],
+  todos: [],
+});
+
+/** Moves the stop at `from` to `to` (both clamped). Returns a copy, unchanged when nothing moves. */
 export function moveStop<T>(stops: readonly T[], from: number, to: number): T[] {
   const target = Math.max(0, Math.min(stops.length - 1, to));
   if (from === target || from < 0 || from >= stops.length) return [...stops];
@@ -22,34 +69,125 @@ export function moveStop<T>(stops: readonly T[], from: number, to: number): T[] 
   return next;
 }
 
+const clip = (text: string, max: number) => text.trim().slice(0, max);
+
 /** What the API stores for one stop. The last stop has no leg (there is no next stop to reach). */
 export function toDestination(stop: RouteStop, isLast: boolean) {
   return {
     placeKey: stop.id.slice(0, 200),
-    name: stop.name.trim().slice(0, 200) || stop.id.slice(0, 200),
+    name: clip(stop.name, 200) || stop.id.slice(0, 200),
     countryCode: /^[A-Z]{2}$/.test(stop.countryCode) ? stop.countryCode : null,
-    region: stop.region.trim().slice(0, 200) || null,
+    region: clip(stop.region, 200) || null,
     latitude: stop.latitude,
     longitude: stop.longitude,
     nights: stop.nights,
-    note: stop.note.trim().slice(0, NOTE_MAX) || null,
+    note: clip(stop.note, NOTE_MAX) || null,
     legMode: isLast ? null : stop.legMode,
+    visited: stop.visited,
+    spots: stop.spots
+      .map((spot) => ({ ...spot, name: clip(spot.name, ITEM_MAX) }))
+      .filter((spot) => spot.name)
+      .slice(0, SPOTS_MAX),
+    todos: stop.todos
+      .map((todo) => ({ ...todo, text: clip(todo.text, ITEM_MAX) }))
+      .filter((todo) => todo.text)
+      .slice(0, TODOS_MAX),
   };
 }
 
 export const routeBody = (stops: readonly RouteStop[]) =>
   JSON.stringify(stops.map((stop, index) => toDestination(stop, index === stops.length - 1)));
 
-/** The legs between consecutive stops, for the map. */
-export function legsOf(stops: readonly RouteStop[]) {
-  return stops.slice(0, -1).map((stop, index) => ({
-    from: stop,
-    to: stops[index + 1]!,
-    mode: stop.legMode,
-  }));
+/** Great-circle distance in kilometres ("as the crow flies"). */
+export function distanceKm(
+  a: { latitude: number; longitude: number },
+  b: { latitude: number; longitude: number },
+) {
+  const rad = Math.PI / 180;
+  const dLat = (b.latitude - a.latitude) * rad;
+  const dLng = (b.longitude - a.longitude) * rad;
+  const h =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(a.latitude * rad) * Math.cos(b.latitude * rad) * Math.sin(dLng / 2) ** 2;
+  return 2 * 6371 * Math.asin(Math.sqrt(h));
 }
 
-/** A keyboard shortcut should not steal Ctrl+Z from a field being typed in. */
+const toMercator = (lng: number, lat: number) => {
+  const clamped = Math.max(-85.0511, Math.min(85.0511, lat));
+  const s = Math.sin((clamped * Math.PI) / 180);
+  return [(lng + 180) / 360, 0.5 - Math.log((1 + s) / (1 - s)) / (4 * Math.PI)] as const;
+};
+const fromMercator = (x: number, y: number) =>
+  [x * 360 - 180, (Math.atan(Math.sinh(Math.PI * (1 - 2 * y))) * 180) / Math.PI] as const;
+
+/**
+ * A gentle arc between two places, drawn as a quadratic curve in Mercator space (so it looks the same at every
+ * zoom). It always bows "up" on the map. Returns `steps + 1` [lng, lat] points, from `a` to `b`.
+ */
+export function arcBetween(
+  a: { latitude: number; longitude: number },
+  b: { latitude: number; longitude: number },
+  steps = 64,
+): [number, number][] {
+  const [ax, ay] = toMercator(a.longitude, a.latitude);
+  const [bx, by] = toMercator(b.longitude, b.latitude);
+  const dx = bx - ax;
+  const dy = by - ay;
+  const length = Math.hypot(dx, dy) || 1e-9;
+  let nx = -dy / length;
+  let ny = dx / length;
+  if (ny > 0) {
+    nx = -nx;
+    ny = -ny;
+  }
+  const cx = (ax + bx) / 2 + nx * length * 0.2;
+  const cy = (ay + by) / 2 + ny * length * 0.2;
+  const points: [number, number][] = [];
+  for (let i = 0; i <= steps; i++) {
+    const t = i / steps;
+    const u = 1 - t;
+    const [lng, lat] = fromMercator(
+      u * u * ax + 2 * u * t * cx + t * t * bx,
+      u * u * ay + 2 * u * t * cy + t * t * by,
+    );
+    points.push([lng, lat]);
+  }
+  return points;
+}
+
+/** The first `share` (0..1) of a line, cut at an interpolated point: how a new leg "draws in". */
+export function partialLine(
+  points: readonly [number, number][],
+  share: number,
+): [number, number][] {
+  const f = Math.max(0, Math.min(1, share)) * (points.length - 1);
+  const whole = Math.floor(f);
+  const out = points.slice(0, whole + 1) as [number, number][];
+  if (whole < points.length - 1) {
+    const t = f - whole;
+    const p = points[whole]!;
+    const q = points[whole + 1]!;
+    out.push([p[0] + (q[0] - p[0]) * t, p[1] + (q[1] - p[1]) * t]);
+  }
+  if (out.length < 2) out.push(out[0]!);
+  return out;
+}
+
+/** What the legend says the map shows at a zoom level (0 countries … 4 places). */
+export const zoomLevel = (zoom: number) =>
+  zoom < 3.2 ? 0 : zoom < 5.8 ? 1 : zoom < 10 ? 2 : zoom < 14.5 ? 3 : 4;
+
+/** The first and last day at stop `index`, counted from the trip's start date (`YYYY-MM-DD`). */
+export function stopDays(stops: readonly RouteStop[], index: number, startDate: string | null) {
+  if (!startDate || !/^\d{4}-\d{2}-\d{2}$/.test(startDate)) return null;
+  const offset = stops.slice(0, index).reduce((sum, stop) => sum + stop.nights, 0);
+  const [y, m, d] = startDate.split('-').map(Number) as [number, number, number];
+  const start = new Date(Date.UTC(y, m - 1, d + offset));
+  const end = new Date(Date.UTC(y, m - 1, d + offset + (stops[index]?.nights ?? 0)));
+  return { start, end };
+}
+
+/** A keyboard shortcut should not steal keys from a field being typed in. */
 export function isEditable(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) return false;
   return target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName);

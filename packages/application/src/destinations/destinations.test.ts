@@ -67,7 +67,9 @@ describe('replaceDestinations and listDestinations', () => {
     });
     expect(saved.destinations[0]?.region).toBeNull();
     for (const stop of saved.destinations) expect(stop.id).toMatch(/^[0-9a-f-]{36}$/);
-    expect(await app.listDestinations.execute(as(ana), { tripId: trip.id })).toEqual(saved);
+    expect(await app.listDestinations.execute(as(ana), { tripId: trip.id })).toEqual({
+      destinations: saved.destinations,
+    });
   });
 
   it('replaces the whole route: reordering, removing and clearing', async () => {
