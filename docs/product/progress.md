@@ -31,7 +31,7 @@ One row per feature of the [PRD](prd.md), with where it stands, the issues, and 
 
 | Feature | Milestone | Status | Notes |
 |---|---|---|---|
-| Account passport and self-declared place stamps, basic profile | M9 | **Partial** | **Commemorative visas**: marking a stop visited stamps one visa per country, stored on the account (`visa` table, `GET /v1/visas`), never taken back, celebrated on the board with Pip | The passport screen listing visas, the profile, privacy of visas | — | [business rules](business-rules.md#passport), [data-model](../architecture/data-model.md#visas-commemorative-passport-stamps) |
+| Account passport and self-declared place stamps, basic profile | M9 | **Partial** | **Commemorative visas**: marking a stop visited stamps one visa per country, stored on the account (`visa` table, `GET /v1/visas`), never taken back, celebrated on the board with Pip; the **passport screen** (`/app/passport`) lists them newest first with country, city and date, and an empty state that leads to the board | The profile, privacy of visas, self-declared place stamps | — | [business rules](business-rules.md#passport), [data-model](../architecture/data-model.md#visas-commemorative-passport-stamps) |
 | Stripe subscriptions and entitlements | M10 | Not started | Test mode only; pricing is the owner's decision. [stripe](../integrations/stripe.md) |
 | PWA offline trip pack | After M8 | Not started | Needs map tiles |
 | Production deployment (Hetzner and Coolify), backups, monitoring | M11 | Not started | Dockerfiles exist; nothing is deployed |

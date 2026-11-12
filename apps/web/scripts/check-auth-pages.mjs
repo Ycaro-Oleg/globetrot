@@ -645,6 +645,7 @@ try {
       entries.push([`shell-${section}-phone`, true, ...at(`/app/${section}`, VIEWPORTS.phone)]);
     }
     entries.push(['shell-budget-desktop', true, ...at('/app/budget', VIEWPORTS.desktop)]);
+    entries.push(['shell-passport-desktop', true, ...at('/app/passport', VIEWPORTS.desktop)]);
     entries.push([
       'shell-pip-off-404',
       true,

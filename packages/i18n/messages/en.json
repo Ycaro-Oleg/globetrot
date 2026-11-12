@@ -235,8 +235,7 @@
     "comingSoon": {
       "label": "Not available yet",
       "backHome": "Back to home",
-      "board": "The map board, where you pin stops and draw your route, is not built yet.",
-      "passport": "Your passport and stamps are not built yet."
+      "board": "The map board, where you pin stops and draw your route, is not built yet."
     },
     "loading": "Loading…",
     "error": {
@@ -704,6 +703,21 @@
       "paid": "paid",
       "unknown": "unknown"
     }
+  },
+  "passportPage": {
+    "title": "Passport",
+    "eyebrow": "Commemorative passport",
+    "lead": "{count, plural, =0 {No visas yet.} one {# country visited.} other {# countries visited.}}",
+    "since": "First stamp on {date}.",
+    "disclaimer": "Globetrot visas are souvenirs of your trips. They are not official documents and are not proof of entry.",
+    "emptyTitle": "Your first visa is one tap away",
+    "emptyBody": "On the map board, open a stop you have been to and choose “Mark as visited”. The first visited stop in a country stamps its visa here.",
+    "goBoard": "Open the map board",
+    "loadError": "Your passport could not be loaded. Try again in a moment.",
+    "listLabel": "Visas",
+    "entry": "ENTRY",
+    "stampedIn": "Stamped in {city} on {date}",
+    "country": "{country} ({code})"
   },
   "listsPage": {
     "title": "Lists",
