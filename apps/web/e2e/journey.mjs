@@ -244,76 +244,90 @@ async function journey(browser, { width, height, locale }) {
       'the trip was lost when the language changed',
     );
 
-    // ---- the board opens
+    // ---- the board opens: the route panel is headed by the trip
+    const board = CATALOGS[locale].mapBoard;
+    const stopsList = page.locator('section ol li');
     await go('/app/board');
     await axe('board');
     expect(
-      (await page
-        .getByRole('heading', { name: CATALOGS[locale].mapBoard.title, level: 1 })
-        .count()) === 1,
-      'the board has no heading',
+      (await page.getByRole('heading', { name: 'Japan 2027', level: 1 }).count()) === 1,
+      'the board is not headed by the trip',
     );
 
     // ---- the route on the board is saved to the trip and is still there after a reload
-    const board = CATALOGS[locale].mapBoard;
-    await go('/app/board');
-    expect((await page.locator('ol li').count()) === 0, 'the board of a new trip is not empty');
+    expect((await stopsList.count()) === 0, 'the board of a new trip is not empty');
     await page.getByRole('button', { name: board.japanRoute, exact: true }).click();
     await page.getByText(board.saved, { exact: true }).waitFor({ timeout: 15_000 });
-    const stops = await page.locator('ol li').count();
+    const stops = await stopsList.count();
     expect(stops > 1, 'the sample route did not put stops on the board');
-    // two nights at the first stop, saved, and the Days page shows them
-    const moreNights = new RegExp(board.nightsMore.replace('{place}', '.*'));
-    await page.locator('ol li').first().getByRole('button', { name: moreNights }).click();
-    await page.locator('ol li').first().getByRole('button', { name: moreNights }).click();
-    await page.getByText(board.saved, { exact: true }).waitFor({ timeout: 15_000 });
-    // reorder with the keyboard path, undo it, then a note on the first stop survives a reload
-    const firstName = async () =>
-      (await page.locator('ol li').first().locator('strong').innerText()).trim();
+    // reorder with the keyboard path, then undo it
+    const firstName = async () => (await stopsList.first().locator('strong').innerText()).trim();
     const before = await firstName();
-    await page
-      .locator('ol li')
+    await stopsList
       .first()
       .getByRole('button', { name: new RegExp(board.moveDown.replace('{place}', '.*')) })
       .click();
     expect((await firstName()) !== before, 'moving the first stop down did not reorder the route');
     await page.getByRole('button', { name: board.undo, exact: true }).first().click();
     expect((await firstName()) === before, 'undo did not restore the order');
-    await page.locator('ol li').first().locator('button').nth(0).click();
-    await page.getByLabel(board.note, { exact: true }).fill('Ramen in Shinjuku');
-    await page.getByLabel(board.note, { exact: true }).press('Tab');
     await page.getByText(board.saved, { exact: true }).waitFor({ timeout: 15_000 });
+    // the first stop: one more night (the sample has 4 there), then a note and a to-do in its card
+    await stopsList.first().getByRole('button').nth(1).click();
+    const moreNights = new RegExp(board.nightsMore.replace('{place}', '.*'));
+    await page.getByRole('button', { name: moreNights }).click();
+    const kit = page.getByRole('group', { name: board.kitGroup, exact: true });
+    await kit.getByRole('button', { name: new RegExp(board.card.tabs.notes) }).click();
+    await page.getByLabel(board.card.notesLabel, { exact: true }).fill('Ramen in Shinjuku');
+    await page.getByLabel(board.card.notesLabel, { exact: true }).press('Tab');
+    await page.getByRole('tab', { name: new RegExp(board.card.tabs.todos) }).click();
+    await page.getByPlaceholder(board.card.addTodo).fill('Buy a Suica card');
+    await page.getByPlaceholder(board.card.addTodo).press('Enter');
+    await axe('board (pin card)');
+    await page.keyboard.press('Escape');
+    await page.getByText(board.saved, { exact: true }).waitFor({ timeout: 15_000 });
+    // marking it visited stamps the commemorative visa of Japan, celebrated once
+    await page.getByRole('button', { name: board.markVisited, exact: true }).click();
+    const visaDialog = page.getByRole('dialog', { name: board.visa.title });
+    await visaDialog.waitFor({ timeout: 15_000 });
+    await axe('board (visa stamped)');
+    await visaDialog.getByRole('button', { name: board.visa.continue, exact: true }).click();
     await page.reload();
     await page.waitForLoadState('networkidle');
-    await page.locator('ol li').first().locator('button').nth(0).click();
+    await stopsList.first().getByRole('button').nth(1).click();
     expect(
-      (await page.getByLabel(board.note, { exact: true }).inputValue()) === 'Ramen in Shinjuku',
+      (await page.getByRole('button', { name: board.visitedUndo, exact: true }).count()) === 1,
+      'the visited stop is not saved',
+    );
+    await page
+      .getByRole('group', { name: board.kitGroup, exact: true })
+      .getByRole('button', { name: new RegExp(board.card.tabs.notes) })
+      .click();
+    expect(
+      (await page.getByLabel(board.card.notesLabel, { exact: true }).inputValue()) ===
+        'Ramen in Shinjuku',
       'the note on the stop is not saved',
     );
-    await axe('board (stop panel)');
+    await page.getByRole('tab', { name: new RegExp(board.card.tabs.todos) }).click();
+    expect(
+      (await page.getByText('Buy a Suica card', { exact: true }).count()) === 1,
+      'the to-do on the stop is not saved',
+    );
+    await page.keyboard.press('Escape');
     await go('/app/days');
     await axe('days');
     expect(
       (await page
-        .getByText(CATALOGS[locale].daysPage.day.replace('{index}', '2'), { exact: true })
+        .getByText(CATALOGS[locale].daysPage.day.replace('{index}', '5'), { exact: true })
         .count()) === 1,
-      'the two nights are not two days on the Days page',
+      'the five nights at the first stop are not five days on the Days page',
     );
     await go('/app/board');
-    await page.reload();
-    await page.waitForLoadState('networkidle');
-    expect(
-      (await page.locator('ol li').count()) === stops,
-      'the saved route is not the same after a reload',
-    );
+    expect((await stopsList.count()) === stops, 'the saved route is not the same after a reload');
     await page.getByRole('button', { name: board.clearRoute, exact: true }).click();
     await page.getByText(board.saved, { exact: true }).waitFor({ timeout: 15_000 });
     await page.reload();
     await page.waitForLoadState('networkidle');
-    expect(
-      (await page.locator('ol li').count()) === 0,
-      'clearing the route did not stick after a reload',
-    );
+    expect((await stopsList.count()) === 0, 'clearing the route did not stick after a reload');
 
     // ---- a cost and savings: the budget answers "can I afford it, and when?" and keeps it after a reload
     const budgetCopy = CATALOGS[locale].budgetPage;
@@ -361,14 +375,14 @@ async function journey(browser, { width, height, locale }) {
     await page.waitForLoadState('networkidle');
     // the board renders after the client navigation settles: wait for the route rather than read it once
     const copied = await page
-      .waitForFunction(() => document.querySelectorAll('ol li').length === 4, null, {
+      .waitForFunction(() => document.querySelectorAll('section ol li').length === 4, null, {
         timeout: 15_000,
       })
       .then(() => true)
       .catch(() => false);
     expect(
       copied,
-      `the copied example shows ${await page.locator('ol li').count()} stops on the board, not 4`,
+      `the copied example shows ${await page.locator('section ol li').count()} stops on the board, not 4`,
     );
     expect(
       (await page.getByText(exampleCopy.trips.portugal).count()) >= 1,

@@ -159,8 +159,16 @@ const DESTINATIONS = {
     nights,
     note,
     legMode,
+    visited: position === 0,
+    spots:
+      position === 0
+        ? [{ name: 'Senso-ji', latitude: 35.7148, longitude: 139.7967, done: false }]
+        : [],
+    todos: position === 0 ? [{ text: 'Buy a Suica card', done: true }] : [],
   })),
 };
+
+const VISAS = { visas: [{ countryCode: 'JP', city: 'Tokyo', stampedAt: NOW }] };
 
 const CHECKLIST = {
   items: [
@@ -240,6 +248,10 @@ const stub = createServer(async (request, response) => {
     return reply(response, 200, PREFERENCES);
   }
   const budgetRoute = /^\/v1\/trips\/([^/]+)\/(budget|expenses)$/.exec(url.pathname);
+  if (url.pathname === '/v1/visas' && request.method === 'GET') {
+    if (!signedIn) return reply(response, 401, { code: 'UNAUTHENTICATED' });
+    return reply(response, 200, VISAS);
+  }
   if (/^\/v1\/trips\/[^/]+\/destinations$/.test(url.pathname) && request.method === 'GET') {
     if (!signedIn) return reply(response, 401, { code: 'UNAUTHENTICATED' });
     return reply(response, 200, DESTINATIONS);
@@ -760,7 +772,8 @@ try {
       page.url() === `${base}/app/board`,
       `keyboard-only login did not land on the board (at ${page.url()})`,
     );
-    const boardHeading = page.getByRole('heading', { name: CATALOGS.en.mapBoard.title, level: 1 });
+    // The board's route panel is headed by the current trip.
+    const boardHeading = page.getByRole('heading', { name: TRIPS[0].title, level: 1 });
     await boardHeading.waitFor({ timeout: 10_000 }).catch(() => {});
     check(await boardHeading.isVisible(), 'the board page has no heading');
     await context.close();

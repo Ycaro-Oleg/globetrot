@@ -162,6 +162,7 @@ export function WorldMapBoard({
   const stage = useRef<HTMLDivElement>(null);
   const controller = useRef<BoardMapController | null>(null);
   const nearbyTimer = useRef(0);
+  const selectedRef = useRef<string | null>(null);
 
   const selectedIndex = stops.findIndex((stop) => stop.id === selected);
   const active = selectedIndex >= 0 ? stops[selectedIndex]! : null;
@@ -316,6 +317,7 @@ export function WorldMapBoard({
 
   const select = useCallback(
     (id: string | null) => {
+      selectedRef.current = id;
       setSelected(id);
       setNearby(null);
       window.clearTimeout(nearbyTimer.current);
@@ -325,19 +327,15 @@ export function WorldMapBoard({
       if (phone && sheet === 'peek') setSheet('half');
       controller.current?.flyTo(stop.longitude, stop.latitude);
       // "Nearby" reads the points of interest drawn once the map has settled there.
-      const read = () => {
-        setNearby((current) =>
-          current?.id === id
-            ? current
-            : {
-                id,
-                places: controller.current?.nearby(stop.longitude, stop.latitude, locale) ?? [],
-              },
-        );
+      // The settled read always wins; the fallback timer only fills in when nothing was read yet.
+      const read = (settled: boolean) => {
+        if (selectedRef.current !== id) return;
+        const places = controller.current?.nearby(stop.longitude, stop.latitude, locale) ?? [];
+        setNearby((current) => (!settled && current?.id === id ? current : { id, places }));
       };
-      controller.current?.onceIdle(read);
+      controller.current?.onceIdle(() => read(true));
       // A fly to where the map already is fires no "moveend": read after a while anyway.
-      nearbyTimer.current = window.setTimeout(read, 3500);
+      nearbyTimer.current = window.setTimeout(() => read(false), 4000);
     },
     [stops, phone, sheet, locale],
   );
@@ -910,7 +908,8 @@ export function WorldMapBoard({
                 aria-pressed={active.visited}
                 onClick={() => toggleVisited(active)}
               >
-                ✓ {active.visited ? t('visitedUndo') : t('markVisited')}
+                <span aria-hidden="true">✓ </span>
+                {active.visited ? t('visitedUndo') : t('markVisited')}
               </button>
               <small className={styles.muted}>{t('visitHelp')}</small>
             </div>
