@@ -46,7 +46,7 @@ export function RailNav() {
 export function TabBar() {
   const t = useTranslations('shell.nav');
   return (
-    <nav aria-label={t('label')} className={styles.tabBar}>
+    <nav aria-label={t('label')} className={styles.tabBar} data-shell-tabbar="">
       <Links items={TAB_ITEMS} variant="tab" />
     </nav>
   );

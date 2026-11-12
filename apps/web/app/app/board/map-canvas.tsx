@@ -1,65 +1,415 @@
 'use client';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
-import type { LegMode } from '@globetrot/domain';
-import { useEffect, useRef, useState, type MutableRefObject } from 'react';
-import type { GeoJSONSource, Map as MapLibreMap, Marker as MapLibreMarker } from 'maplibre-gl';
+import { useEffect, useLayoutEffect, useRef, useState, type MutableRefObject } from 'react';
+import type {
+  GeoJSONSource,
+  Map as MapLibreMap,
+  MapGeoJSONFeature,
+  Marker as MapLibreMarker,
+} from 'maplibre-gl';
+import {
+  arcBetween,
+  KIT_TABS,
+  LEG_ICONS,
+  partialLine,
+  type KitTab,
+  type RouteStop,
+} from './board-route';
+import { PIN, relabel, restyle, styleCountries, type MapStyleName } from './map-styles';
 import styles from './world-map.module.css';
 
-/** One leg of the route: the stop it leaves, the next stop, and how it is travelled (null: not decided). */
-export type MapLeg = { from: MapPlace; to: MapPlace; mode: LegMode | null };
+export type Inset = { top: number; right: number; bottom: number; left: number };
+export type NearbyPlace = { name: string; kind: string; longitude: number; latitude: number };
 
-export type MapPlace = {
-  id: string;
-  name: string;
-  country: string;
-  countryCode: string;
-  region: string;
-  longitude: number;
-  latitude: number;
+/** What the board can ask of the map once it is ready. */
+export type BoardMapController = {
+  flyTo(longitude: number, latitude: number, zoom?: number): void;
+  fitStops(animate: boolean): void;
+  fitWorld(): void;
+  zoomBy(delta: 1 | -1): void;
+  center(): { longitude: number; latitude: number };
+  /** Screen position of a place inside the map box, or null when the map is not ready. */
+  project(longitude: number, latitude: number): { x: number; y: number } | null;
+  /** Named points of interest drawn near a stop (from the tiles already on screen). */
+  nearby(longitude: number, latitude: number, locale: string): NearbyPlace[];
+  zoom(): number;
+  /** Calls back once the map has stopped moving and drawn every tile. */
+  onceIdle(callback: () => void): void;
 };
 
-type MapCanvasProps = {
-  route: MapPlace[];
-  legs: MapLeg[];
-  /** Icon per leg mode, shown at the middle of each leg (decoration: the stop list says the same in words). */
-  legIcons: Record<LegMode, string>;
-  /** Filled in once the map is ready: reads the centre of the map (for "Pin here"). */
-  centerRef?: MutableRefObject<(() => { longitude: number; latitude: number }) | null>;
-  labels: { map: string; loading: string; error: string };
+/** A stop as the map draws it: its name already in the reader's language, and the counts on its petals. */
+export type MapStop = RouteStop & { label: string; counts: Record<KitTab, string> };
+
+type Props = {
+  stops: MapStop[];
   selectedId: string | null;
+  styleName: MapStyleName;
+  locale: string;
+  tool: 'select' | 'pin';
+  visitedCountries: readonly string[];
+  /** Room the floating panels take over the map, so fits and labels avoid them. */
+  inset: Inset;
+  phone: boolean;
   apiKey: string;
-  onPlaceClick: (id: string) => void;
-  onMapPin: (longitude: number, latitude: number) => void;
+  text: {
+    map: string;
+    loading: string;
+    error: string;
+    petal: Record<KitTab, string>;
+    stop: (name: string, index: number) => string;
+  };
+  controllerRef: MutableRefObject<BoardMapController | null>;
+  onSelect: (id: string) => void;
+  onOpenCard: (id: string, tab: KitTab | null) => void;
+  onPin: (longitude: number, latitude: number, name: string | null) => void;
+  onZoom: (zoom: number) => void;
+  onMove: () => void;
 };
 
-export function MapCanvas({
-  route,
-  legs,
-  legIcons,
-  centerRef,
-  labels,
-  selectedId,
-  apiKey,
-  onPlaceClick,
-  onMapPin,
-}: MapCanvasProps) {
+type PinMarker = {
+  marker: MapLibreMarker;
+  el: HTMLDivElement;
+  drop: HTMLSpanElement;
+  head: HTMLSpanElement;
+  num: HTMLSpanElement;
+  ring: HTMLSpanElement;
+  label: HTMLSpanElement;
+  button: HTMLButtonElement;
+  petals: HTMLDivElement;
+  petalButtons: { button: HTMLButtonElement; badge: HTMLSpanElement; x: number; y: number }[];
+  hideTimer?: number;
+  name: string;
+};
+
+const PETAL_GLYPHS: Record<KitTab, string> = { photos: '▣', spots: '⌖', notes: '✎', todos: '✓' };
+const PETAL_ANGLES = [158, 114, 66, 22];
+const DRAW_MS = 1100;
+const COMET_MS = 2800;
+
+function reducedMotion() {
+  if (typeof window === 'undefined') return true;
+  if (document.documentElement.dataset.motion === 'reduced') return true;
+  return window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+}
+
+/** The moving cyan "comet": a gradient over the line's progress, its head at `p` (0..1 of the loop). */
+function cometGradient(p: number) {
+  const [r, g, b] = PIN.comet;
+  const head = p * 1.5 - 0.25;
+  const tail = head - 0.32;
+  const alpha = (x: number) => (x >= tail && x <= head ? ((x - tail) / (head - tail)) ** 2.2 : 0);
+  let stops = [
+    0,
+    tail,
+    tail + (head - tail) * 0.5,
+    tail + (head - tail) * 0.8,
+    head,
+    head + 0.004,
+    1,
+  ]
+    .filter((x) => x >= 0 && x <= 1)
+    .sort((a, c) => a - c);
+  stops = stops.filter((x, i) => i === 0 || x - stops[i - 1]! > 1e-4);
+  const expression: unknown[] = ['interpolate', ['linear'], ['line-progress']];
+  for (const x of stops) expression.push(x, `rgba(${r},${g},${b},${alpha(x).toFixed(3)})`);
+  if (stops.length < 2) expression.push(1, `rgba(${r},${g},${b},0)`);
+  return expression;
+}
+
+export function MapCanvas(props: Props) {
   const host = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MapLibreMap | null>(null);
-  const markerConstructor = useRef<typeof MapLibreMarker | null>(null);
-  const markerRefs = useRef<MapLibreMarker[]>([]);
-  const legMarkerRefs = useRef<MapLibreMarker[]>([]);
-  const placeClickRef = useRef(onPlaceClick);
-  const mapPinRef = useRef(onMapPin);
+  const markerClass = useRef<typeof MapLibreMarker | null>(null);
+  const pins = useRef(new Map<string, PinMarker>());
+  const legBadges = useRef<MapLibreMarker[]>([]);
+  const segments = useRef(new Map<string, { coords: [number, number][]; born: number }>());
+  const routeDirty = useRef(false);
+  const poiLayers = useRef<string[]>([]);
+  const firstSync = useRef(true);
+  const latest = useRef(props);
+  useLayoutEffect(() => {
+    latest.current = props;
+  });
   const [ready, setReady] = useState(false);
   const [error, setError] = useState(false);
+  const { apiKey } = props;
 
-  useEffect(() => {
-    placeClickRef.current = onPlaceClick;
-  }, [onPlaceClick]);
-  useEffect(() => {
-    mapPinRef.current = onMapPin;
-  }, [onMapPin]);
+  // Labels: shown from z4 (always for the selected stop); one that would collide or slide under the panel hides
+  // or flips to the left. The selected stop wins.
+  const updateLabels = () => {
+    const map = mapRef.current;
+    if (!map || !host.current) return;
+    const { selectedId, inset } = latest.current;
+    const zoom = map.getZoom();
+    const right = host.current.getBoundingClientRect().right - inset.right;
+    const boxes: DOMRect[] = [];
+    const order = [...pins.current.entries()].sort(
+      (a, b) => Number(b[0] === selectedId) - Number(a[0] === selectedId),
+    );
+    for (const [id, pin] of order) {
+      if (zoom < 4 && id !== selectedId) {
+        pin.label.style.display = 'none';
+        continue;
+      }
+      pin.label.style.display = 'block';
+      pin.label.style.left = '38px';
+      pin.label.style.right = 'auto';
+      let box = pin.label.getBoundingClientRect();
+      if (box.right > right) {
+        pin.label.style.left = 'auto';
+        pin.label.style.right = '38px';
+        box = pin.label.getBoundingClientRect();
+      }
+      const hit = boxes.some(
+        (other) =>
+          box.left < other.right + 4 &&
+          box.right > other.left - 4 &&
+          box.top < other.bottom + 2 &&
+          box.bottom > other.top - 2,
+      );
+      if (hit && id !== selectedId) {
+        pin.label.style.display = 'none';
+        continue;
+      }
+      boxes.push(box);
+    }
+  };
+
+  const showPetals = (pin: PinMarker) => {
+    pin.petals.dataset.open = 'true';
+    pin.el.style.zIndex = '5';
+  };
+  const hidePetals = (pin: PinMarker, id: string) => {
+    delete pin.petals.dataset.open;
+    pin.el.style.zIndex = latest.current.selectedId === id ? '3' : '1';
+  };
+
+  const makePin = (stop: MapStop): PinMarker => {
+    const Marker = markerClass.current!;
+    const el = document.createElement('div');
+    el.className = styles.pin ?? '';
+    el.setAttribute('role', 'group');
+    const drop = document.createElement('span');
+    drop.className = styles.pinDrop ?? '';
+    const head = document.createElement('span');
+    head.className = styles.pinHead ?? '';
+    const num = document.createElement('span');
+    num.className = styles.pinNum ?? '';
+    head.append(num);
+    drop.append(head);
+    const ground = document.createElement('span');
+    ground.className = styles.pinGround ?? '';
+    const ring = document.createElement('span');
+    ring.className = styles.pinRing ?? '';
+    const label = document.createElement('span');
+    label.className = styles.pinLabel ?? '';
+    label.setAttribute('aria-hidden', 'true');
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = styles.pinButton ?? '';
+    const petals = document.createElement('div');
+    petals.className = styles.petals ?? '';
+    const pin: PinMarker = {
+      marker: null as unknown as MapLibreMarker,
+      el,
+      drop,
+      head,
+      num,
+      ring,
+      label,
+      button,
+      petals,
+      petalButtons: [],
+      name: stop.label,
+    };
+    KIT_TABS.forEach((tab, i) => {
+      const angle = (PETAL_ANGLES[i]! * Math.PI) / 180;
+      const x = Math.cos(angle) * 62;
+      const y = -Math.sin(angle) * 62;
+      const petal = document.createElement('button');
+      petal.type = 'button';
+      petal.className = styles.petal ?? '';
+      petal.style.setProperty('--x', `${x}px`);
+      petal.style.setProperty('--y', `${y}px`);
+      petal.style.setProperty('--delay', `${i * 35}ms`);
+      const glyph = document.createElement('span');
+      glyph.setAttribute('aria-hidden', 'true');
+      glyph.textContent = PETAL_GLYPHS[tab];
+      const badge = document.createElement('span');
+      badge.className = styles.petalBadge ?? '';
+      badge.setAttribute('aria-hidden', 'true');
+      petal.append(glyph, badge);
+      petal.addEventListener('mouseenter', () => {
+        label.textContent = latest.current.text.petal[tab];
+        label.style.display = 'block';
+      });
+      petal.addEventListener('mouseleave', () => {
+        label.textContent = pin.name;
+        updateLabels();
+      });
+      petal.addEventListener('click', (event) => {
+        event.stopPropagation();
+        latest.current.onOpenCard(stop.id, tab);
+        hidePetals(pin, stop.id);
+      });
+      petals.append(petal);
+      pin.petalButtons.push({ button: petal, badge, x, y });
+    });
+    el.append(ground, ring, drop, label, button, petals);
+    const show = () => {
+      window.clearTimeout(pin.hideTimer);
+      if (!latest.current.phone) showPetals(pin);
+    };
+    const hide = () => {
+      window.clearTimeout(pin.hideTimer);
+      pin.hideTimer = window.setTimeout(() => hidePetals(pin, stop.id), 220);
+    };
+    el.addEventListener('mouseenter', show);
+    el.addEventListener('mouseleave', hide);
+    el.addEventListener('focusin', show);
+    el.addEventListener('focusout', hide);
+    button.addEventListener('click', (event) => {
+      event.stopPropagation();
+      latest.current.onOpenCard(stop.id, null);
+    });
+    pin.marker = new Marker({ element: el, anchor: 'bottom' })
+      .setLngLat([stop.longitude, stop.latitude])
+      .addTo(mapRef.current!);
+    return pin;
+  };
+
+  const dropIn = (pin: PinMarker, delay: number) => {
+    if (reducedMotion() || !pin.drop.animate) return;
+    pin.drop.animate(
+      [
+        { transform: 'translateY(-80px) scale(.9)', opacity: 0 },
+        { transform: 'translateY(0) scale(1,1)', opacity: 1, offset: 0.62 },
+        { transform: 'translateY(0) scale(1.08,.9)', offset: 0.74 },
+        { transform: 'translateY(-7px) scale(.98,1.03)', offset: 0.86 },
+        { transform: 'translateY(0) scale(1)' },
+      ],
+      { duration: 820, delay, easing: 'cubic-bezier(.3,.6,.4,1)', fill: 'backwards' },
+    );
+    pin.ring.animate(
+      [
+        { transform: 'scale(.4)', opacity: 0.95 },
+        { transform: 'scale(4.2)', opacity: 0 },
+      ],
+      { duration: 760, delay: delay + 500, easing: 'cubic-bezier(.2,.7,.3,1)' },
+    );
+  };
+
+  const syncPins = () => {
+    const map = mapRef.current;
+    if (!map || !markerClass.current) return;
+    const { stops, selectedId, text } = latest.current;
+    const initial = firstSync.current;
+    firstSync.current = false;
+    const ids = new Set(stops.map((stop) => stop.id));
+    for (const [id, pin] of pins.current) {
+      if (!ids.has(id)) {
+        pin.marker.remove();
+        pins.current.delete(id);
+      }
+    }
+    stops.forEach((stop, index) => {
+      let pin = pins.current.get(stop.id);
+      if (!pin) {
+        pin = makePin(stop);
+        pins.current.set(stop.id, pin);
+        dropIn(pin, initial ? 300 + index * 160 : 0);
+      }
+      const selected = stop.id === selectedId;
+      pin.name = stop.label;
+      pin.head.dataset.state = selected ? 'selected' : stop.visited ? 'visited' : 'planned';
+      pin.num.textContent = stop.visited && !selected ? '✓' : String(index + 1);
+      pin.label.textContent = stop.label;
+      pin.button.setAttribute('aria-label', text.stop(stop.label, index + 1));
+      pin.button.setAttribute('aria-pressed', String(selected));
+      pin.el.setAttribute('aria-label', stop.label);
+      pin.el.style.zIndex = selected ? '3' : '1';
+      KIT_TABS.forEach((tab, j) => {
+        const petal = pin.petalButtons[j]!;
+        petal.badge.textContent = stop.counts[tab];
+        petal.badge.style.display = stop.counts[tab] ? 'flex' : 'none';
+        petal.button.setAttribute('aria-label', `${text.petal[tab]} · ${stop.label}`);
+      });
+      pin.marker.setLngLat([stop.longitude, stop.latitude]);
+    });
+    updateLabels();
+  };
+
+  const rebuildRoute = (initial: boolean) => {
+    const map = mapRef.current;
+    if (!map) return;
+    const { stops } = latest.current;
+    const now = performance.now();
+    const reduced = reducedMotion();
+    const previous = segments.current;
+    const next = new Map<string, { coords: [number, number][]; born: number }>();
+    for (let i = 0; i < stops.length - 1; i++) {
+      const a = stops[i]!;
+      const b = stops[i + 1]!;
+      const key = `${a.id}>${b.id}`;
+      const old = previous.get(key);
+      next.set(key, {
+        coords: arcBetween(a, b, 120),
+        born: reduced ? now - 2 * DRAW_MS : (old?.born ?? now + (initial ? 900 + i * 420 : 150)),
+      });
+    }
+    segments.current = next;
+    routeDirty.current = true;
+    // Mode badges at the middle of each leg (decoration: the route list says the same in words).
+    const Marker = markerClass.current;
+    legBadges.current.forEach((marker) => marker.remove());
+    legBadges.current = [];
+    if (!Marker) return;
+    stops.slice(0, -1).forEach((stop, i) => {
+      if (!stop.legMode) return;
+      const arc = next.get(`${stop.id}>${stops[i + 1]!.id}`)!.coords;
+      const badge = document.createElement('span');
+      badge.className = styles.legBadge ?? '';
+      badge.setAttribute('aria-hidden', 'true');
+      badge.textContent = LEG_ICONS[stop.legMode];
+      legBadges.current.push(
+        new Marker({ element: badge }).setLngLat(arc[Math.floor(arc.length / 2)]!).addTo(map),
+      );
+    });
+  };
+
+  const updateSpots = () => {
+    const map = mapRef.current;
+    const source = map?.getSource('gt-spots') as GeoJSONSource | undefined;
+    if (!source) return;
+    const stop = latest.current.stops.find(
+      (candidate) => candidate.id === latest.current.selectedId,
+    );
+    source.setData({
+      type: 'FeatureCollection',
+      features: (stop?.spots ?? [])
+        .filter((spot) => spot.latitude !== null && spot.longitude !== null)
+        .map((spot) => ({
+          type: 'Feature' as const,
+          properties: { name: spot.name, done: spot.done },
+          geometry: { type: 'Point' as const, coordinates: [spot.longitude!, spot.latitude!] },
+        })),
+    });
+  };
+
+  const tripCountries = () => [
+    ...new Set(latest.current.stops.map((stop) => stop.countryCode).filter(Boolean)),
+  ];
+
+  const padding = () => {
+    const { inset } = latest.current;
+    return {
+      top: inset.top + 30,
+      right: inset.right + 30,
+      bottom: inset.bottom + 30,
+      left: inset.left + 30,
+    };
+  };
 
   useEffect(() => {
     if (!host.current || !apiKey) {
@@ -68,76 +418,200 @@ export function MapCanvas({
     }
     let disposed = false;
     let map: MapLibreMap | null = null;
+    let frame = 0;
+    let moveFrame = 0;
     void import('maplibre-gl')
-      .then(({ Map, Marker, NavigationControl, setWorkerUrl }) => {
+      .then(({ Map, Marker, setWorkerUrl }) => {
         if (disposed || !host.current) return;
         setWorkerUrl(
           new URL('maplibre-gl/dist/maplibre-gl-worker.mjs', import.meta.url).toString(),
         );
-        markerConstructor.current = Marker;
+        markerClass.current = Marker;
         map = new Map({
           container: host.current,
           style: `https://maps.geoapify.com/v1/styles/osm-bright/style.json?apiKey=${encodeURIComponent(apiKey)}`,
-          center: [12, 20],
-          zoom: 1.45,
-          minZoom: 1.1,
-          maxZoom: 18,
+          center: [40, 22],
+          zoom: 1.4,
+          minZoom: 0.6,
+          maxZoom: 19,
+          renderWorldCopies: false,
+          dragRotate: false,
+          pitchWithRotate: false,
           attributionControl: { compact: true },
-          cooperativeGestures: true,
         });
+        map.touchZoomRotate.disableRotation();
         mapRef.current = map;
-        map.addControl(
-          new NavigationControl({ showCompass: true, visualizePitch: true }),
-          'top-right',
-        );
+
         let setupDone = false;
         const finishSetup = () => {
-          if (disposed || !map || setupDone) return;
+          if (disposed || !map || setupDone || !map.getStyle()?.layers) return;
           setupDone = true;
           window.clearTimeout(loadTimeout);
-          setError(false);
-          setReady(true);
-          try {
-            map.setProjection({ type: 'mercator' });
-          } catch {
-            /* Keep the default Mercator projection if it cannot be set. */
-          }
-          map.addSource('trip-route', {
-            type: 'geojson',
-            data: { type: 'FeatureCollection', features: [] },
+          const empty = { type: 'FeatureCollection' as const, features: [] };
+          const firstSymbol = map.getStyle().layers.find((layer) => layer.type === 'symbol')?.id;
+          const width = (a: number, b: number, c: number) => [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            1,
+            a,
+            6,
+            b,
+            13,
+            c,
+          ];
+          map.addSource('gt-route', { type: 'geojson', lineMetrics: true, data: empty });
+          map.addLayer(
+            {
+              id: 'gt-route-casing',
+              type: 'line',
+              source: 'gt-route',
+              layout: { 'line-cap': 'round', 'line-join': 'round' },
+              paint: { 'line-width': width(4.5, 7, 11) as never, 'line-color': '#F8F9FA' },
+            },
+            firstSymbol,
+          );
+          map.addLayer(
+            {
+              id: 'gt-route-core',
+              type: 'line',
+              source: 'gt-route',
+              layout: { 'line-cap': 'round', 'line-join': 'round' },
+              paint: { 'line-width': width(1.8, 3, 4.5) as never, 'line-color': PIN.route },
+            },
+            firstSymbol,
+          );
+          map.addLayer(
+            {
+              id: 'gt-route-comet',
+              type: 'line',
+              source: 'gt-route',
+              layout: { 'line-cap': 'round', 'line-join': 'round' },
+              paint: {
+                'line-width': width(3.5, 6, 9) as never,
+                'line-blur': 0.6,
+                'line-gradient': cometGradient(0) as never,
+                'line-opacity': reducedMotion() ? 0 : 1,
+              },
+            },
+            firstSymbol,
+          );
+          map.addSource('gt-spots', { type: 'geojson', data: empty });
+          map.addLayer({
+            id: 'gt-spots-dot',
+            type: 'circle',
+            source: 'gt-spots',
+            minzoom: 9,
+            paint: {
+              'circle-radius': ['interpolate', ['linear'], ['zoom'], 9, 3, 14, 7],
+              'circle-color': ['case', ['get', 'done'], '#10B981', '#FFFFFF'],
+              'circle-stroke-color': '#0F172A',
+              'circle-stroke-width': 2,
+            },
           });
           map.addLayer({
-            id: 'trip-route-shadow',
-            type: 'line',
-            source: 'trip-route',
-            layout: { 'line-cap': 'round', 'line-join': 'round' },
-            paint: { 'line-color': '#FFF5E1', 'line-width': 7, 'line-opacity': 0.92 },
+            id: 'gt-spots-label',
+            type: 'symbol',
+            source: 'gt-spots',
+            minzoom: 10.5,
+            layout: {
+              'text-field': ['get', 'name'],
+              'text-font': ['Noto Sans Bold'],
+              'text-size': 12,
+              'text-offset': [0, 1.1],
+              'text-anchor': 'top',
+              'text-optional': true,
+            },
+            paint: {
+              'text-color': '#0F172A',
+              'text-halo-color': '#FFFFFF',
+              'text-halo-width': 1.6,
+            },
           });
-          // One colour, a different pattern per kind of leg: the mode is never told by colour alone.
-          const leg = (id: string, modes: string[], paint: Record<string, unknown>) =>
-            map!.addLayer({
-              id,
-              type: 'line',
-              source: 'trip-route',
-              filter: ['in', ['get', 'mode'], ['literal', modes]],
-              layout: { 'line-cap': 'round', 'line-join': 'round' },
-              paint: { 'line-color': '#E0401F', ...paint },
-            });
-          leg('trip-leg-flight', ['flight'], { 'line-width': 2.5, 'line-dasharray': [4, 2.5] });
-          leg('trip-leg-ground', ['train', 'bus', 'car'], { 'line-width': 3.5 });
-          leg('trip-leg-water', ['boat'], { 'line-width': 3, 'line-dasharray': [0.6, 1.6] });
-          leg('trip-leg-other', ['walk', 'other', 'none'], {
-            'line-width': 3,
-            'line-dasharray': [2, 2],
-          });
-          if (centerRef) {
-            centerRef.current = () => {
-              const center = map!.getCenter();
-              return { longitude: center.lng, latitude: center.lat };
-            };
-          }
-          map.on('click', (event) => mapPinRef.current(event.lngLat.lng, event.lngLat.lat));
+          poiLayers.current = restyle(map, latest.current.styleName);
+          relabel(map, latest.current.locale);
+          // Country fills come from a small Natural Earth file served by the app (public domain).
+          void fetch('/geo/countries-110m.json')
+            .then((response) => (response.ok ? response.json() : null))
+            .then((data) => {
+              if (!data || disposed || !map || map.getSource('gt-countries')) return;
+              map.addSource('gt-countries', { type: 'geojson', data });
+              const water = map
+                .getStyle()
+                .layers.find((layer) => layer.type === 'fill' && /water|ocean/.test(layer.id))?.id;
+              map.addLayer(
+                {
+                  id: 'gt-countries-fill',
+                  type: 'fill',
+                  source: 'gt-countries',
+                  paint: { 'fill-color': '#000', 'fill-opacity': 0 },
+                },
+                water,
+              );
+              styleCountries(
+                map,
+                latest.current.styleName,
+                tripCountries(),
+                latest.current.visitedCountries,
+              );
+            })
+            .catch(() => undefined);
+
+          setError(false);
+          setReady(true);
+          syncPins();
+          rebuildRoute(true);
+          updateSpots();
+          map.fitBounds(
+            [
+              [-170, -50],
+              [170, 70],
+            ],
+            { duration: 0, padding: padding() },
+          );
+          if (latest.current.stops.length) controller.fitStops(false);
+          frame = requestAnimationFrame(tick);
         };
+
+        const tick = (now: number) => {
+          const current = mapRef.current;
+          const source = current?.getSource('gt-route') as GeoJSONSource | undefined;
+          if (current && source) {
+            try {
+              let animating = false;
+              const features = [];
+              for (const segment of segments.current.values()) {
+                const p = Math.min(1, Math.max(0, (now - segment.born) / DRAW_MS));
+                if (p < 1) animating = true;
+                if (p <= 0) continue;
+                const eased = p < 0.5 ? 4 * p * p * p : 1 - (-2 * p + 2) ** 3 / 2;
+                features.push({
+                  type: 'Feature' as const,
+                  properties: {},
+                  geometry: {
+                    type: 'LineString' as const,
+                    coordinates: partialLine(segment.coords, eased),
+                  },
+                });
+              }
+              if (animating || routeDirty.current) {
+                source.setData({ type: 'FeatureCollection', features });
+                routeDirty.current = animating;
+              }
+              if (!reducedMotion()) {
+                current.setPaintProperty(
+                  'gt-route-comet',
+                  'line-gradient',
+                  cometGradient((now % COMET_MS) / COMET_MS) as never,
+                );
+              }
+            } catch {
+              /* A frame can race the style being replaced; the next one catches up. */
+            }
+          }
+          frame = requestAnimationFrame(tick);
+        };
+
         let loadTimeout = 0;
         map.on('load', finishSetup);
         map.on('style.load', finishSetup);
@@ -145,6 +619,39 @@ export function MapCanvas({
         map.on('error', (event) => {
           const name = (event.error as { name?: string } | undefined)?.name;
           if (!disposed && name === 'WebGLNotSupportedError') setError(true);
+        });
+        map.on('click', (event) => {
+          if (latest.current.tool !== 'pin' || latest.current.phone) return;
+          const point = event.point;
+          const feature = map!
+            .queryRenderedFeatures([
+              [point.x - 8, point.y - 8],
+              [point.x + 8, point.y + 8],
+            ])
+            .find(
+              (candidate) =>
+                candidate.layer.type === 'symbol' &&
+                candidate.properties?.name &&
+                !/shield|housenumber/.test(candidate.layer.id) &&
+                !candidate.layer.id.startsWith('gt-'),
+            );
+          latest.current.onPin(
+            event.lngLat.lng,
+            event.lngLat.lat,
+            nameOf(feature, latest.current.locale),
+          );
+        });
+        map.on('moveend', updateLabels);
+        map.on('zoom', () => {
+          latest.current.onZoom(map!.getZoom());
+          updateLabels();
+        });
+        map.on('move', () => {
+          if (moveFrame) return;
+          moveFrame = requestAnimationFrame(() => {
+            moveFrame = 0;
+            latest.current.onMove();
+          });
         });
         loadTimeout = window.setTimeout(() => {
           if (map?.loaded()) finishSetup();
@@ -156,107 +663,182 @@ export function MapCanvas({
         if (!disposed) setError(true);
       });
 
+    const controller: BoardMapController = {
+      flyTo(longitude, latitude, zoom) {
+        mapRef.current?.flyTo({
+          center: [longitude, latitude],
+          zoom: zoom ?? Math.max(mapRef.current.getZoom(), 15),
+          speed: 0.85,
+          curve: 1.45,
+          padding: padding(),
+          essential: true,
+        });
+      },
+      fitStops(animate) {
+        const current = mapRef.current;
+        const stops = latest.current.stops;
+        if (!current || !stops.length) return;
+        const lngs = stops.map((stop) => stop.longitude);
+        const lats = stops.map((stop) => stop.latitude);
+        const sw: [number, number] = [Math.min(...lngs), Math.min(...lats)];
+        const ne: [number, number] = [Math.max(...lngs), Math.max(...lats)];
+        if (sw[0] === ne[0] && sw[1] === ne[1]) {
+          current.jumpTo({ center: sw, zoom: 11 });
+          return;
+        }
+        current.fitBounds([sw, ne], {
+          padding: padding(),
+          maxZoom: 9,
+          duration: animate && !reducedMotion() ? 1600 : 0,
+          essential: true,
+        });
+      },
+      fitWorld() {
+        mapRef.current?.fitBounds(
+          [
+            [-170, -50],
+            [170, 70],
+          ],
+          { padding: padding(), duration: reducedMotion() ? 0 : 1200, essential: true },
+        );
+      },
+      zoomBy(delta) {
+        const current = mapRef.current;
+        if (!current) return;
+        if (delta > 0) current.zoomIn({ duration: 400 });
+        else current.zoomOut({ duration: 400 });
+      },
+      center() {
+        const center = mapRef.current?.getCenter();
+        return { longitude: center?.lng ?? 0, latitude: center?.lat ?? 0 };
+      },
+      project(longitude, latitude) {
+        const point = mapRef.current?.project([longitude, latitude]);
+        return point ? { x: point.x, y: point.y } : null;
+      },
+      nearby(longitude, latitude, locale) {
+        const current = mapRef.current;
+        if (!current) return [];
+        const layers = poiLayers.current.filter((id) => current.getLayer(id));
+        const features = layers.length ? current.queryRenderedFeatures({ layers }) : [];
+        const distance = (feature: MapGeoJSONFeature) => {
+          const [x, y] = (feature.geometry as { coordinates: number[] }).coordinates as [
+            number,
+            number,
+          ];
+          return (x - longitude) ** 2 + (y - latitude) ** 2;
+        };
+        const seen = new Set<string>();
+        const list: NearbyPlace[] = [];
+        features
+          .filter((feature) => feature.properties?.name && feature.geometry.type === 'Point')
+          .sort((a, b) => distance(a) - distance(b))
+          .forEach((feature) => {
+            const name = nameOf(feature, locale)!;
+            if (seen.has(name) || list.length >= 7) return;
+            seen.add(name);
+            const [x, y] = (feature.geometry as { coordinates: number[] }).coordinates as [
+              number,
+              number,
+            ];
+            list.push({
+              name,
+              kind: String(feature.properties.subclass ?? feature.properties.class ?? ''),
+              longitude: x,
+              latitude: y,
+            });
+          });
+        return list;
+      },
+      zoom() {
+        return mapRef.current?.getZoom() ?? 1.4;
+      },
+      onceIdle(callback) {
+        const current = mapRef.current;
+        if (!current) return;
+        // Wait for the fly to finish first: an "idle" before it starts would be too early.
+        current.once('moveend', () => current.once('idle', callback));
+      },
+    };
+    latest.current.controllerRef.current = controller;
+
+    const resize = new ResizeObserver(() => mapRef.current?.resize());
+    resize.observe(host.current);
+    const allPins = pins.current;
     return () => {
       disposed = true;
-      markerRefs.current.forEach((marker) => marker.remove());
-      markerRefs.current = [];
-      legMarkerRefs.current.forEach((marker) => marker.remove());
-      legMarkerRefs.current = [];
-      if (centerRef) centerRef.current = null;
+      cancelAnimationFrame(frame);
+      cancelAnimationFrame(moveFrame);
+      resize.disconnect();
+      allPins.forEach((pin) => pin.marker.remove());
+      allPins.clear();
+      legBadges.current.forEach((marker) => marker.remove());
+      legBadges.current = [];
+      latest.current.controllerRef.current = null;
       map?.remove();
       mapRef.current = null;
-      markerConstructor.current = null;
+      markerClass.current = null;
+      firstSync.current = true;
     };
-  }, [apiKey, centerRef]);
+    // The map is built once per key; every other prop is read through `latest`.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [apiKey]);
+
+  const { stops, selectedId, styleName, locale, tool, visitedCountries, inset } = props;
+
+  useEffect(() => {
+    if (!ready) return;
+    syncPins();
+    rebuildRoute(false);
+    updateSpots();
+    if (mapRef.current) {
+      styleCountries(mapRef.current, latest.current.styleName, tripCountries(), visitedCountries);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready, stops, visitedCountries]);
+
+  useEffect(() => {
+    if (!ready) return;
+    syncPins();
+    updateSpots();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready, selectedId]);
 
   useEffect(() => {
     const map = mapRef.current;
     if (!ready || !map) return;
-    const source = map.getSource('trip-route') as GeoJSONSource | undefined;
-    if (!source) return;
-    source.setData({
-      type: 'FeatureCollection',
-      features: legs.map((leg) => ({
-        type: 'Feature' as const,
-        properties: { mode: leg.mode ?? 'none' },
-        geometry: {
-          type: 'LineString' as const,
-          coordinates: [
-            [leg.from.longitude, leg.from.latitude],
-            [leg.to.longitude, leg.to.latitude],
-          ],
-        },
-      })),
-    });
-    const Marker = markerConstructor.current;
-    legMarkerRefs.current.forEach((marker) => marker.remove());
-    legMarkerRefs.current = Marker
-      ? legs
-          .filter((leg) => leg.mode !== null)
-          .map((leg) => {
-            const badge = document.createElement('span');
-            badge.className = styles.legMarker ?? '';
-            badge.setAttribute('aria-hidden', 'true');
-            badge.textContent = legIcons[leg.mode!];
-            return new Marker({ element: badge })
-              .setLngLat([
-                (leg.from.longitude + leg.to.longitude) / 2,
-                (leg.from.latitude + leg.to.latitude) / 2,
-              ])
-              .addTo(map);
-          })
-      : [];
-  }, [ready, legs, legIcons]);
+    poiLayers.current = restyle(map, styleName);
+    styleCountries(map, styleName, tripCountries(), latest.current.visitedCountries);
+  }, [ready, styleName]);
 
   useEffect(() => {
-    const map = mapRef.current;
-    const Marker = markerConstructor.current;
-    if (!ready || !map || !Marker) return;
-    markerRefs.current.forEach((marker) => marker.remove());
-    markerRefs.current = route.map((place, index) => {
-      const button = document.createElement('button');
-      button.type = 'button';
-      button.className = styles.geoMarker ?? '';
-      button.setAttribute('aria-label', `${index + 1}. ${place.name}`);
-      button.setAttribute('aria-pressed', String(place.id === selectedId));
-      button.title = place.name;
-      const head = document.createElement('span');
-      head.className = `${styles.pinHead} ${place.id === selectedId ? styles.pinHeadActive : ''}`;
-      head.textContent = String(index + 1);
-      button.append(head);
-      button.addEventListener('click', (event) => {
-        event.stopPropagation();
-        placeClickRef.current(place.id);
-      });
-      return new Marker({ element: button, anchor: 'bottom' })
-        .setLngLat([place.longitude, place.latitude])
-        .addTo(map);
-    });
-  }, [ready, route, selectedId]);
+    if (ready && mapRef.current) relabel(mapRef.current, locale);
+  }, [ready, locale]);
 
   useEffect(() => {
-    const map = mapRef.current;
-    const selected = route.find((place) => place.id === selectedId);
-    if (ready && map && selected) {
-      map.flyTo({
-        center: [selected.longitude, selected.latitude],
-        zoom: Math.max(map.getZoom(), 4.5),
-        duration: 700,
-      });
-    }
-  }, [ready, route, selectedId]);
+    const canvas = mapRef.current?.getCanvas();
+    if (ready && canvas) canvas.style.cursor = tool === 'pin' ? 'crosshair' : '';
+  }, [ready, tool]);
+
+  useEffect(() => {
+    if (ready) updateLabels();
+  }, [ready, inset.right]);
 
   return (
-    <div className={styles.maplibreHost}>
-      <div
-        ref={host}
-        className={styles.maplibreCanvas}
-        role="application"
-        aria-label={labels.map}
-      />
-      {!ready && !error ? <div className={styles.mapLoading}>{labels.loading}</div> : null}
-      {error ? <div className={styles.mapError}>{labels.error}</div> : null}
-      <span className={styles.mapAttribution}>© OpenStreetMap contributors · Geoapify</span>
+    <div className={styles.mapHost}>
+      <div ref={host} className={styles.mapCanvas} role="region" aria-label={props.text.map} />
+      {!ready && !error ? <div className={styles.mapLoading}>{props.text.loading}</div> : null}
+      {error ? <div className={styles.mapError}>{props.text.error}</div> : null}
     </div>
   );
+}
+
+function nameOf(feature: MapGeoJSONFeature | undefined, locale: string): string | null {
+  if (!feature?.properties) return null;
+  const lang = locale.split('-')[0];
+  const value =
+    feature.properties[`name:${lang}`] ??
+    feature.properties['name:latin'] ??
+    feature.properties.name;
+  return typeof value === 'string' && value.trim() ? value.trim() : null;
 }

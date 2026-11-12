@@ -101,3 +101,16 @@ export async function fetchChecklist(
     return null;
   }
 }
+
+export type VisaData =
+  paths['/v1/visas']['get']['responses'][200]['content']['application/json']['visas'][number];
+
+/** The signed-in person's commemorative visas, or `null` when they cannot be read. */
+export async function fetchVisas(options: FetchOptions): Promise<VisaData[] | null> {
+  try {
+    const { data } = await createServerApiClient(options).GET('/v1/visas');
+    return data?.visas ?? null;
+  } catch {
+    return null;
+  }
+}
