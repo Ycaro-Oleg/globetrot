@@ -56,7 +56,14 @@ export function createCreateTripFromExample(deps: Pick<Ports, 'unitOfWork' | 'cl
         });
         await tx.destinations.replaceForTrip(
           trip.id,
-          example.stops.map((stop) => ({ id: deps.ids.newId(), ...stop, note: null })),
+          example.stops.map((stop) => ({
+            id: deps.ids.newId(),
+            ...stop,
+            note: null,
+            visited: false,
+            spots: [],
+            todos: [],
+          })),
           now,
         );
         await tx.audit.record({

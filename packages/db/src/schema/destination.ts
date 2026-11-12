@@ -7,17 +7,32 @@ import {
 } from '@globetrot/domain';
 import { sql } from 'drizzle-orm';
 import {
+  boolean,
   char,
   check,
   doublePrecision,
   index,
   integer,
+  jsonb,
   pgTable,
   text,
   timestamp,
   uuid,
 } from 'drizzle-orm/pg-core';
 import { trip } from './trip';
+
+/** One place to see at a stop. Coordinates are optional: a spot can be just a name. */
+export interface StopSpot {
+  readonly name: string;
+  readonly latitude: number | null;
+  readonly longitude: number | null;
+  readonly done: boolean;
+}
+/** One thing to do for a stop. */
+export interface StopTodo {
+  readonly text: string;
+  readonly done: boolean;
+}
 
 const instant = (name: string) => timestamp(name, { withTimezone: true });
 
@@ -44,6 +59,12 @@ export const destination = pgTable(
     note: text('note'),
     /** How they travel from this stop to the next (`LEG_MODES`); null when not set, and on the last stop. */
     legMode: text('leg_mode'),
+    /** Marked visited by the person (their word, not a verification). The first one in a country stamps a visa. */
+    visited: boolean('visited').notNull().default(false),
+    /** Places to see at this stop, `StopSpot[]`. Personal: never logged or audited. */
+    spots: jsonb('spots').$type<StopSpot[]>().notNull().default([]),
+    /** Things to do for this stop, `StopTodo[]`. Personal: never logged or audited. */
+    todos: jsonb('todos').$type<StopTodo[]>().notNull().default([]),
     createdAt: instant('created_at').defaultNow().notNull(),
     updatedAt: instant('updated_at').defaultNow().notNull(),
   },
@@ -66,6 +87,8 @@ export const destination = pgTable(
       'destination_leg_mode_valid',
       sql`${table.legMode} in (${sql.raw(LEG_MODES.map((mode) => `'${mode}'`).join(', '))})`,
     ),
+    check('destination_spots_array', sql`jsonb_typeof(${table.spots}) = 'array'`),
+    check('destination_todos_array', sql`jsonb_typeof(${table.todos}) = 'array'`),
     check(
       'destination_nights_range',
       sql`${table.nights} between 0 and ${sql.raw(String(MAX_NIGHTS_PER_DESTINATION))}`,

@@ -131,4 +131,51 @@ describe('the board against a real database', () => {
       503,
     );
   });
+
+  it('stores spots, todos and visited, stamps one visa per country and lists only the caller’s visas', async () => {
+    const { signUp, call, tripFor } = await harness();
+    const ana = await signUp('Ana', 'ana@example.com');
+    const leo = await signUp('Leo', 'leo@example.com');
+    const id = await tripFor(ana.cookie);
+    const stop = (name: string, extra: Record<string, unknown>) => ({
+      placeKey: `test:${name}`,
+      name,
+      countryCode: 'JP',
+      latitude: 35,
+      longitude: 135,
+      ...extra,
+    });
+    const route = (visited: boolean) => ({
+      destinations: [
+        stop('Tokyo', {
+          visited,
+          spots: [{ name: 'Senso-ji', latitude: 35.7148, longitude: 139.7967, done: true }],
+          todos: [{ text: 'Buy a Suica card' }],
+        }),
+        stop('Kyoto', { visited }),
+      ],
+    });
+
+    const first = await call(ana.cookie, 'PUT', `/v1/trips/${id}/destinations`, route(true));
+    expect(first.response.status).toBe(200);
+    expect(first.json.stampedVisas).toMatchObject([{ countryCode: 'JP', city: 'Tokyo' }]);
+    const again = await call(ana.cookie, 'PUT', `/v1/trips/${id}/destinations`, route(true));
+    expect(again.json.stampedVisas).toEqual([]);
+
+    const listed = await call(ana.cookie, 'GET', `/v1/trips/${id}/destinations`);
+    expect((listed.json.destinations as unknown[])[0]).toMatchObject({
+      visited: true,
+      spots: [{ name: 'Senso-ji', latitude: 35.7148, longitude: 139.7967, done: true }],
+      todos: [{ text: 'Buy a Suica card', done: false }],
+    });
+
+    // A visa is a souvenir: un-visiting the stops keeps it.
+    await call(ana.cookie, 'PUT', `/v1/trips/${id}/destinations`, route(false));
+    const mine = await call(ana.cookie, 'GET', '/v1/visas');
+    expect((mine.json.visas as { countryCode: string }[]).map((v) => v.countryCode)).toEqual([
+      'JP',
+    ]);
+    expect((await call(leo.cookie, 'GET', '/v1/visas')).json.visas).toEqual([]);
+    expect((await call(null, 'GET', '/v1/visas')).response.status).toBe(401);
+  });
 });
