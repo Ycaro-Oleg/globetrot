@@ -236,7 +236,6 @@
       "label": "Not available yet",
       "backHome": "Back to home",
       "board": "The map board, where you pin stops and draw your route, is not built yet.",
-      "lists": "Checklists for documents, money, bookings and packing are not built yet.",
       "passport": "Your passport and stamps are not built yet."
     },
     "loading": "Loading…",
@@ -611,6 +610,62 @@
       "confirmed": "confirmed",
       "paid": "paid",
       "unknown": "unknown"
+    }
+  },
+  "listsPage": {
+    "title": "Lists",
+    "noTrip": "Create a trip to start its lists.",
+    "goTrips": "Go to your trips",
+    "loadError": "We could not load the lists. Try again in a moment.",
+    "visaTitle": "Visa page",
+    "visaNote": "Stamps are worked out from what the trip has today, so one can come off again. They are decoration, not an official document. Two stamps (a bed for every night, a plan for every day) need costs per stop and activities per day, which are not built yet.",
+    "stampsToGo": "{count, plural, one {# stamp to go} other {# stamps to go}}",
+    "allEarned": "Every stamp earned. Have a good trip.",
+    "stampEarned": "earned",
+    "stampNotYet": "not yet",
+    "groupsTitle": "Checklists",
+    "groups": {
+      "documents": "Documents",
+      "money": "Money",
+      "bookings": "Bookings",
+      "packing": "Packing"
+    },
+    "progress": "{done, number} of {total, number} done",
+    "emptyGroup": "Nothing here yet.",
+    "addLabel": "Add to {group}",
+    "addPlaceholder": "For example: Travel insurance",
+    "add": "Add",
+    "removeItem": "Remove {label}",
+    "startTitle": "Start with a suggested list",
+    "startBody": "A few common items for most trips. Change them as you like. We cannot confirm entry rules: check the official site of the country you are visiting.",
+    "startButton": "Add suggested items",
+    "suggestions": {
+      "documents": {
+        "s1": "Passport: check how long it must stay valid",
+        "s2": "Visa or entry authorisation, if the country asks for one",
+        "s3": "Travel insurance papers",
+        "s4": "Copies of your documents, saved offline"
+      },
+      "money": {
+        "s1": "Tell your bank you are travelling",
+        "s2": "Check your card fees abroad",
+        "s3": "Some cash for the first day"
+      },
+      "bookings": {
+        "s1": "Flights",
+        "s2": "The first night’s stay",
+        "s3": "Getting from the airport"
+      },
+      "packing": {
+        "s1": "Plug adapter and charger",
+        "s2": "Medicines and a small first-aid kit",
+        "s3": "Clothes for the weather",
+        "s4": "Comfortable walking shoes"
+      }
+    },
+    "flash": {
+      "suggested": "Suggested items added.",
+      "error": "We could not save that. The lists may be full (100 items) or the text empty."
     }
   }
 }

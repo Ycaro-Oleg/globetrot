@@ -1,6 +1,7 @@
 import { createApplication, type EmailPort, type UserReader } from '@globetrot/application';
 import {
   createDestinationRepository,
+  createChecklistRepository,
   createExpenseRepository,
   createSavingsRepository,
   createPreferencesRepository,
@@ -64,6 +65,7 @@ export function createServices(
       trips: createTripRepository(db),
       destinations: createDestinationRepository(db),
       expenses: createExpenseRepository(db),
+      checklist: createChecklistRepository(db),
       savings: createSavingsRepository(db),
       preferences: createPreferencesRepository(db),
       unitOfWork: createUnitOfWork(db),

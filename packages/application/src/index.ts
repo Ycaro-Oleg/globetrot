@@ -43,9 +43,20 @@ import {
   createUpdateExpense,
   createUpdateSavings,
 } from './budget/operations';
+import {
+  createAddChecklistItems,
+  createDeleteChecklistItem,
+  createGetChecklist,
+  createUpdateChecklistItem,
+} from './checklists/operations';
 import { createListDestinations, createReplaceDestinations } from './destinations/operations';
 export { defineOperation, type Operation } from './operation';
 export type {
+  ChecklistItemPatch,
+  ChecklistItemRecord,
+  ChecklistReader,
+  ChecklistWriter,
+  NewChecklistItem,
   AuditEventInput,
   AuditLog,
   AuditMetadata,
@@ -109,6 +120,16 @@ export {
 } from './budget/schemas';
 
 export {
+  addChecklistItemsFields,
+  CHECKLIST_MAX_ITEMS,
+  checklistItemSchema,
+  checklistSchema,
+  updateChecklistItemFields,
+  type ChecklistItemView,
+  type ChecklistView,
+} from './checklists/schemas';
+
+export {
   destinationFields,
   destinationListSchema,
   destinationSchema,
@@ -138,6 +159,10 @@ export function createApplication(ports: Ports) {
     updateTrip: createUpdateTrip(ports),
     archiveTrip: createArchiveTrip(ports),
     listDestinations: createListDestinations(ports),
+    getChecklist: createGetChecklist(ports),
+    addChecklistItems: createAddChecklistItems(ports),
+    updateChecklistItem: createUpdateChecklistItem(ports),
+    deleteChecklistItem: createDeleteChecklistItem(ports),
     getBudget: createGetBudget(ports),
     listExpenses: createListExpenses(ports),
     createExpense: createCreateExpense(ports),

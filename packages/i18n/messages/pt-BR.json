@@ -236,7 +236,6 @@
       "label": "Ainda não disponível",
       "backHome": "Voltar para o início",
       "board": "O mapa, onde você marca paradas e desenha sua rota, ainda não foi construído.",
-      "lists": "As listas de documentos, dinheiro, reservas e bagagem ainda não foram construídas.",
       "passport": "O seu passaporte e os carimbos ainda não foram construídos."
     },
     "loading": "Carregando…",
@@ -611,6 +610,62 @@
       "confirmed": "confirmado",
       "paid": "pago",
       "unknown": "desconhecido"
+    }
+  },
+  "listsPage": {
+    "title": "Listas",
+    "noTrip": "Crie uma viagem para começar as listas dela.",
+    "goTrips": "Ir para as suas viagens",
+    "loadError": "Não foi possível carregar as listas. Tente de novo em instantes.",
+    "visaTitle": "Página de vistos",
+    "visaNote": "Os carimbos são calculados com o que a viagem tem hoje, então um pode sair de novo. São decoração, não um documento oficial. Dois carimbos (cama para toda noite, plano para todo dia) precisam de custos por parada e atividades por dia, que ainda não foram construídos.",
+    "stampsToGo": "{count, plural, one {falta # carimbo} other {faltam # carimbos}}",
+    "allEarned": "Todos os carimbos conquistados. Boa viagem.",
+    "stampEarned": "conquistado",
+    "stampNotYet": "ainda não",
+    "groupsTitle": "Listas de tarefas",
+    "groups": {
+      "documents": "Documentos",
+      "money": "Dinheiro",
+      "bookings": "Reservas",
+      "packing": "Bagagem"
+    },
+    "progress": "{done, number} de {total, number} feitos",
+    "emptyGroup": "Nada aqui ainda.",
+    "addLabel": "Adicionar em {group}",
+    "addPlaceholder": "Por exemplo: Seguro viagem",
+    "add": "Adicionar",
+    "removeItem": "Remover {label}",
+    "startTitle": "Comece com uma lista sugerida",
+    "startBody": "Alguns itens comuns para a maioria das viagens. Mude como quiser. Não confirmamos regras de entrada: veja o site oficial do país que você vai visitar.",
+    "startButton": "Adicionar itens sugeridos",
+    "suggestions": {
+      "documents": {
+        "s1": "Passaporte: confira por quanto tempo ele precisa ser válido",
+        "s2": "Visto ou autorização de entrada, se o país exigir",
+        "s3": "Documentos do seguro viagem",
+        "s4": "Cópias dos documentos, salvas off-line"
+      },
+      "money": {
+        "s1": "Avisar o banco que você vai viajar",
+        "s2": "Conferir as taxas do cartão no exterior",
+        "s3": "Um pouco de dinheiro vivo para o primeiro dia"
+      },
+      "bookings": {
+        "s1": "Passagens",
+        "s2": "A hospedagem da primeira noite",
+        "s3": "Como sair do aeroporto"
+      },
+      "packing": {
+        "s1": "Adaptador de tomada e carregador",
+        "s2": "Remédios e um kit básico de primeiros socorros",
+        "s3": "Roupas para o clima",
+        "s4": "Calçado confortável para caminhar"
+      }
+    },
+    "flash": {
+      "suggested": "Itens sugeridos adicionados.",
+      "error": "Não foi possível salvar. As listas podem estar cheias (100 itens) ou o texto vazio."
     }
   }
 }

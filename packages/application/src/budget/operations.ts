@@ -110,15 +110,17 @@ function priceExpense(fields: z.output<typeof expenseFields>, tripCurrency: stri
   };
 }
 
-function planOf(
+/** The domain's view of a trip. The budget needs only costs and savings; readiness also reads stops and lists. */
+export function planOf(
   trip: TripRecord,
   expenses: readonly ExpenseRecord[],
   savings: SavingsRecord | null,
+  extra: { stops?: TripPlan['stops']; checklist?: TripPlan['checklist'] } = {},
 ): TripPlan {
   return {
     currency: toCurrency(trip.currency),
     startDate: trip.startDate === null ? null : toLocalDate(trip.startDate),
-    stops: [],
+    stops: extra.stops ?? [],
     expenses: expenses.map((record) => ({
       id: record.id,
       category: record.category as ExpenseCategory,
@@ -126,7 +128,7 @@ function planOf(
       status: record.status as ExpenseStatus,
       amount: money(record.tripAmountMinor, trip.currency),
     })),
-    checklist: [],
+    checklist: extra.checklist ?? [],
     savings: {
       saved: money(savings?.savedMinor ?? 0n, trip.currency),
       monthly: money(savings?.monthlyMinor ?? 0n, trip.currency),

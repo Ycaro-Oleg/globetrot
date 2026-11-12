@@ -207,6 +207,34 @@ export interface SavingsWriter extends SavingsReader {
   ): Promise<SavingsRecord>;
 }
 
+// --- Checklists ----------------------------------------------------------------------------------------
+
+export interface ChecklistItemRecord {
+  readonly id: string;
+  readonly tripId: string;
+  readonly group: string;
+  readonly label: string;
+  readonly done: boolean;
+  readonly createdAt: Date;
+  readonly updatedAt: Date;
+}
+
+export type NewChecklistItem = Omit<ChecklistItemRecord, 'updatedAt'>;
+export type ChecklistItemPatch = Partial<Pick<ChecklistItemRecord, 'label' | 'done'>>;
+
+export interface ChecklistReader {
+  /** In the order the items were added. */
+  listByTrip(tripId: string): Promise<ChecklistItemRecord[]>;
+  findById(id: string): Promise<ChecklistItemRecord | null>;
+}
+
+export interface ChecklistWriter extends ChecklistReader {
+  insertMany(items: readonly NewChecklistItem[]): Promise<ChecklistItemRecord[]>;
+  update(id: string, patch: ChecklistItemPatch, updatedAt: Date): Promise<ChecklistItemRecord>;
+  delete(id: string): Promise<void>;
+  countByTrip(tripId: string): Promise<number>;
+}
+
 // --- Audit ---------------------------------------------------------------------------------------------
 
 export type AuditMetadata = Readonly<Record<string, string | number | boolean | readonly string[]>>;
@@ -256,6 +284,7 @@ export interface Transaction {
   readonly trips: TripWriter;
   readonly destinations: DestinationWriter;
   readonly expenses: ExpenseWriter;
+  readonly checklist: ChecklistWriter;
   readonly savings: SavingsWriter;
   readonly preferences: PreferencesWriter;
   readonly audit: AuditLog;
@@ -281,6 +310,7 @@ export interface Ports {
   readonly trips: TripReader;
   readonly destinations: DestinationReader;
   readonly expenses: ExpenseReader;
+  readonly checklist: ChecklistReader;
   readonly savings: SavingsReader;
   readonly preferences: PreferencesReader;
   readonly unitOfWork: UnitOfWork;

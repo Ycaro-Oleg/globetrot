@@ -5,10 +5,11 @@ import type {
   TripVisibility,
   UnitSystem,
 } from '@globetrot/domain';
-import { and, desc, eq, ne, sql, type SQL } from 'drizzle-orm';
+import { and, asc, desc, eq, ne, sql, type SQL } from 'drizzle-orm';
 import type { Database } from './client';
 import {
   auditEvent,
+  checklistItem,
   destination,
   expense,
   idempotencyKey,
@@ -422,6 +423,71 @@ export function createExpenseRepository(executor: Executor) {
   };
 }
 
+export interface ChecklistItemRow {
+  readonly id: string;
+  readonly tripId: string;
+  readonly group: string;
+  readonly label: string;
+  readonly done: boolean;
+  readonly createdAt: Date;
+  readonly updatedAt: Date;
+}
+
+export type NewChecklistItemRow = Omit<ChecklistItemRow, 'updatedAt'>;
+export type ChecklistItemPatchRow = Partial<Pick<ChecklistItemRow, 'label' | 'done'>>;
+
+export function createChecklistRepository(executor: Executor) {
+  return {
+    /** In the order they were added. */
+    async listByTrip(tripId: string): Promise<ChecklistItemRow[]> {
+      return executor
+        .select()
+        .from(checklistItem)
+        .where(eq(checklistItem.tripId, tripId))
+        .orderBy(asc(checklistItem.createdAt), asc(checklistItem.id));
+    },
+    async findById(id: string): Promise<ChecklistItemRow | null> {
+      const [row] = await executor
+        .select()
+        .from(checklistItem)
+        .where(eq(checklistItem.id, id))
+        .limit(1);
+      return row ?? null;
+    },
+    async insertMany(items: readonly NewChecklistItemRow[]): Promise<ChecklistItemRow[]> {
+      if (items.length === 0) return [];
+      return executor
+        .insert(checklistItem)
+        .values(items.map((item) => ({ ...item, updatedAt: item.createdAt })))
+        .returning();
+    },
+    async update(
+      id: string,
+      patch: ChecklistItemPatchRow,
+      updatedAt: Date,
+    ): Promise<ChecklistItemRow> {
+      const [row] = await executor
+        .update(checklistItem)
+        .set({ ...patch, updatedAt })
+        .where(eq(checklistItem.id, id))
+        .returning();
+      if (!row) throw new Error('checklist item to update does not exist');
+      return row;
+    },
+    async delete(id: string): Promise<void> {
+      await executor.delete(checklistItem).where(eq(checklistItem.id, id));
+    },
+    async countByTrip(tripId: string): Promise<number> {
+      const [row] = await executor
+        .select({ count: sql<number>`count(*)::int` })
+        .from(checklistItem)
+        .where(eq(checklistItem.tripId, tripId));
+      return row?.count ?? 0;
+    },
+  };
+}
+export type ChecklistRepository = ReturnType<typeof createChecklistRepository>;
+
 export interface SavingsRow {
   readonly tripId: string;
   readonly savedMinor: bigint;
@@ -475,6 +541,7 @@ export interface Transaction {
   readonly trips: TripRepository;
   readonly destinations: DestinationRepository;
   readonly expenses: ExpenseRepository;
+  readonly checklist: ChecklistRepository;
   readonly savings: SavingsRepository;
   readonly preferences: PreferencesRepository;
   readonly audit: AuditLog;
@@ -490,6 +557,7 @@ export function createUnitOfWork(db: Database) {
           trips: createTripRepository(tx),
           destinations: createDestinationRepository(tx),
           expenses: createExpenseRepository(tx),
+          checklist: createChecklistRepository(tx),
           savings: createSavingsRepository(tx),
           preferences: createPreferencesRepository(tx),
           audit: createAuditLog(tx),

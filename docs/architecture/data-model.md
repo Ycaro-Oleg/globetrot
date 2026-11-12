@@ -45,6 +45,7 @@ Every table, in the order it was introduced. `pnpm --filter @globetrot/db genera
 | `audit_event` | `0002_trips`, `0003_audit_event_append_only` | `schema/trip.ts` | Append-only history of mutations | the actor (no foreign key) | [below](#trips-idempotency-and-audit) |
 | `user_preference` | `0004_user_preferences`, `0005_theme_and_motion_preferences` | `schema/preference.ts` | One row of settings per user | `user_id` | [below](#user-preferences) |
 | `expense`, `trip_savings` | `0007_budget_and_savings` | `schema/budget.ts` | A trip's costs (with the conversion provenance) and what it has set aside | the trip's owner (through `trip_id`) | [below](#budget-expenses-and-savings) |
+| `checklist_item` | `0008_checklists` | `schema/checklist.ts` | A trip's checklist items in four groups, each done or not | the trip's owner (through `trip_id`) | [below](#checklists) |
 | `destination` | `0006_trip_destinations` | `schema/destination.ts` | The ordered stops of a trip's route | the trip's owner (through `trip_id`) | [below](#destinations-a-trips-route) |
 
 `0000_extensions` enables `postgis`, `pg_trgm` and `unaccent` and creates no table. Planned, not built: pins and their connections (M4), itinerary and checklists (M5), expenses, exchange rates and savings (M6), stamps and the passport (M5 and M9), proposals (M7), billing (M10).
@@ -122,6 +123,16 @@ Migration `0007_budget_and_savings`. Both tables reference `trip` with `ON DELET
 - `trip_savings` is one row per trip: `saved_minor` and `monthly_minor` in the trip's currency, never negative.
 - **The trip's currency is locked once there is money in it.** `PATCH /v1/trips/{id}` with another currency answers `422` (`currency_locked`) while the trip has a cost or non-zero savings, because every stored amount is in that currency. It can change freely before that.
 - Audit entries (`expense.create`, `.update`, `.delete`, `savings.update`) hold the category and status, never an amount or a description.
+
+## Checklists
+
+Migration `0008_checklists`. `checklist_item` references `trip` with `ON DELETE CASCADE`.
+
+- `group` is CHECKed against the domain list (`CHECKLIST_GROUPS`: documents, money, bookings, packing). `label` is trimmed, 1 to 120 characters. `done` defaults to false.
+- Items keep the order they were added (`created_at`, then `id`). A batch add spaces its items one millisecond apart so they keep their order.
+- A trip keeps at most 100 items (enforced by the application, `CHECKLIST_MAX_ITEMS`).
+- **The readiness stamps are not stored.** `getChecklist` evaluates the domain's `milestones` from the route, costs, savings and items every time, so a stamp can come back off. Recording first-time stamps with their date (`recordStamps`), the visa page history and the celebration are still to do. `stays` and `itin` cannot be earned yet: they need costs per stop and activities per day.
+- Audit entries (`checklist.add`, `.update`, `.delete`) hold groups, the changed field names and a count, never a label (a label can be a passport number or a booking code).
 
 ## Extensions
 

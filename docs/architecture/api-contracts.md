@@ -80,6 +80,10 @@ Today:
 | `updateExpense` | `PUT /v1/trips/{id}/expenses/{expenseId}` | Replaces the cost and reprices it. A cost of another trip is the same `404` |
 | `deleteExpense` | `DELETE /v1/trips/{id}/expenses/{expenseId}` | Removes it |
 | `updateSavings` | `PUT /v1/trips/{id}/savings` | `saved` and/or `monthly`, in the trip's currency, zero allowed. Answers with the new budget |
+| `getChecklist` | `GET /v1/trips/{id}/checklist` | The items in the order they were added (`group`: documents, money, bookings, packing; `label`; `done`) and the nine readiness stamps as they stand now. Stamps are computed from what the trip has today (route, costs, savings, lists), never stored |
+| `addChecklistItems` | `POST /v1/trips/{id}/checklist` | `201`. One to 30 `{ group, label }` at once (a single add or the suggested starter list). A trip keeps at most 100 items (`422`, `checklist_full`). Audited (groups and count only, never labels). Answers with the new lists |
+| `updateChecklistItem` | `PATCH /v1/trips/{id}/checklist/{itemId}` | `done` and/or `label`; at least one. An item of another trip is the same `404` |
+| `deleteChecklistItem` | `DELETE /v1/trips/{id}/checklist/{itemId}` | Removes it. Answers with the new lists |
 | `archiveTrip` | `POST /v1/trips/{id}/archive` | Hides the trip from the default list. **There is no delete** (retention is specified separately), so there is deliberately no `DELETE`. Archiving twice is a no-op |
 
 Trip rules: the title is trimmed and has 1 to 120 characters; `startDate` is a real calendar date or null; `currency` is an active ISO 4217 code (`VALIDATION_FAILED`, field `currency`, code `custom` when unknown); `status` is one of `active`, `traveling`, `completed`, `archived`. Status is set by the user and never derived. `visibility` is always `private` for now. The response never includes the owner. Field error codes are Zod's issue codes (`too_small`, `too_big`, `invalid_format`, `invalid_value`, `custom`).
