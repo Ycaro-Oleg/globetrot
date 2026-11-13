@@ -66,7 +66,7 @@ The inventory covers the handoff's token-level values, not every one-off prototy
 - **Resolution rules** (pure, in `@globetrot/domain`): `resolveTheme(choice, systemPrefersDark)` and `resolveMotion(choice, systemPrefersReduced)`: an explicit theme beats the OS; the OS asking for reduced motion **always** wins over `full`.
 - **Reduced motion in CSS.** One rule in `apps/web/app/globals.css` removes animation and transition durations under both `@media (prefers-reduced-motion: reduce)` and `[data-motion='reduced']`. Because the media query applies whatever the setting says, the OS always wins.
 - **The control** is the "Appearance" part of `/settings`: two segmented controls (radio groups, arrow keys), saved with the rest of the form.
-- **The landing page has its own day/night switch** and does not follow this setting yet (its night palette was never wired to the global theme); unifying them is part of #74.
+- **The landing page and the account screens have one look in both themes** (design handoff v2): a dark hero over the halftone world (`/world-halftone-blue.svg`) and a light slate page or panel. Their colours are the v2 palette written out in their CSS, so they read the same whatever the theme; axe runs them in both themes.
 
 ## Typography and fonts
 
