@@ -248,8 +248,7 @@
     },
     "pip": {
       "ask": "Ask Pip",
-      "title": "Pip",
-      "notBuilt": "Pip, the travel companion, is not available yet. This entry point is only shown while the Pip flag is on."
+      "title": "Pip"
     },
     "comingSoon": {
       "label": "Not available yet",
@@ -1165,5 +1164,72 @@
     "ofStop": "Photo of {stop}",
     "open": "Open photo {n} of {total}",
     "close": "Close photo"
+  },
+  "pipPage": {
+    "title": "Pip",
+    "eyebrow": "Trip: {trip}",
+    "lead": "Ask in your own words. Pip drafts a change list; nothing changes until you pick what you want and apply it.",
+    "noTrip": "Pip helps with a trip. Create or open one first.",
+    "openTrips": "Open my trips",
+    "askLabel": "What should Pip help with?",
+    "placeholder": "e.g. Make this trip ten days and add must-see places in Kyoto",
+    "suggestionsLabel": "Ideas",
+    "suggestions": {
+      "slower": "Give this trip a calmer pace",
+      "places": "Add must-see places for each stop",
+      "packing": "Suggest a packing list",
+      "costs": "Estimate the main costs"
+    },
+    "privacy": "Pip sends this trip’s plan (stops, nights, places, lists and cost totals) to DeepSeek, an AI provider, to draft suggestions. Never your name, email, home or other trips.",
+    "ask": "Ask Pip",
+    "asking": "Pip is thinking…",
+    "steps": {
+      "read": "Reading your trip",
+      "draft": "Drafting changes",
+      "check": "Checking them"
+    },
+    "ready": "{count, plural, =0 {Pip has no changes to suggest.} one {Pip suggests # change.} other {Pip suggests # changes.}}",
+    "youAsked": "You asked:",
+    "noSummary": "Pip’s suggestions",
+    "noChanges": "Nothing to change this time. Try asking another way.",
+    "estimate": "estimate",
+    "disclaimer": "Amounts are rough estimates for planning, not live prices. Pip never books anything. For visa and entry rules, always check the official government site.",
+    "discard": "Discard",
+    "apply": "{count, plural, =0 {Pick a change} one {Apply # change} other {Apply # changes}}",
+    "applied": "{count, plural, one {# change stamped onto your trip.} other {# changes stamped onto your trip.}}",
+    "undone": "Undone: your trip is back as it was.",
+    "discarded": "Discarded. Nothing changed.",
+    "undo": "Undo",
+    "seeMap": "See it on the map",
+    "history": "Earlier",
+    "statuses": {
+      "proposed": "Waiting",
+      "applied": "Applied",
+      "discarded": "Discarded",
+      "undone": "Undone"
+    },
+    "noDay": "“No day”",
+    "newStop": "a new stop",
+    "groups": {
+      "documents": "Documents",
+      "money": "Money",
+      "bookings": "Bookings",
+      "packing": "Packing"
+    },
+    "change": {
+      "addStop": "Add {name} ({nights, plural, =0 {day trip} one {# night} other {# nights}})",
+      "removeStop": "Remove {stop}",
+      "setNights": "{stop}: {nights, plural, =0 {day trip} one {# night} other {# nights}}",
+      "reorder": "New order: {order}",
+      "addPlace": "{name} → {stop}",
+      "addChecklistItem": "{group}: {label}",
+      "addExpense": "Cost: {description}",
+      "setMonthly": "Set aside {amount} a month"
+    },
+    "errors": {
+      "RATE_LIMITED": "Pip needs a rest: you asked a lot today. Try again tomorrow.",
+      "SERVICE_UNAVAILABLE": "Pip is not available right now. Everything works without Pip; try again later.",
+      "UNKNOWN": "That did not work. Try again."
+    }
   }
 }

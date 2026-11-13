@@ -288,6 +288,47 @@ const PERSON = {
   mine: false,
 };
 
+const PROPOSAL = {
+  id: '0193c0a8-7b1e-7c4a-9e2f-3d5a6b7c9d01',
+  tripId: TRIP_ID,
+  request: 'Give this trip a calmer pace',
+  summary: 'A calmer pace with one more night in Kyoto.',
+  currency: 'USD',
+  changes: [
+    { kind: 'setNights', stopId: 'unknown', nights: 4, reason: 'More time to explore.' },
+    {
+      kind: 'addStop',
+      name: 'Nara',
+      countryCode: 'JP',
+      latitude: 34.68,
+      longitude: 135.8,
+      nights: 0,
+      afterStopId: null,
+      reason: 'An easy day trip.',
+    },
+    { kind: 'addPlace', stopId: null, name: 'Fushimi Inari', minutes: 120, reason: 'Go early.' },
+    {
+      kind: 'addChecklistItem',
+      group: 'documents',
+      label: 'Check entry rules on the official site',
+      reason: '',
+    },
+    {
+      kind: 'addExpense',
+      category: 'food',
+      description: 'Meals',
+      amount: '300',
+      reason: 'A rough estimate.',
+    },
+    { kind: 'setMonthly', amount: '250', reason: '' },
+  ],
+  status: 'proposed',
+  applied: [],
+  undoable: false,
+  createdAt: NOW,
+  decidedAt: null,
+};
+
 const ONE_PIXEL_PNG = Buffer.from(
   'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
   'base64',
@@ -373,6 +414,10 @@ const stub = createServer(async (request, response) => {
     return reply(response, 200, PREFERENCES);
   }
   const budgetRoute = /^\/v1\/trips\/([^/]+)\/(budget|expenses)$/.exec(url.pathname);
+  if (/^\/v1\/trips\/[^/]+\/pip\/proposals$/.test(url.pathname) && request.method === 'GET') {
+    if (!signedIn) return reply(response, 401, { code: 'UNAUTHENTICATED' });
+    return reply(response, 200, { proposals: [PROPOSAL] });
+  }
   if (/^\/v1\/media\/[^/]+$/.test(url.pathname) && request.method === 'GET') {
     if (!signedIn) return reply(response, 401, { code: 'UNAUTHENTICATED' });
     response.writeHead(200, { 'content-type': 'image/png' });
@@ -1503,7 +1548,7 @@ try {
 
     {
       // Pip is off by default: no entry point anywhere and no page. With the flag on it appears and leads to
-      // an honest "not built yet".
+      // the Pip page.
       for (const viewport of [VIEWPORTS.phone, VIEWPORTS.desktop]) {
         const off = await open('en', { signedIn: true, viewport });
         await go(off.page, `${base}/app/budget`);
@@ -1528,13 +1573,14 @@ try {
         await entry.click();
         await on.page.waitForURL(`${pipBase}/app/pip`);
         // The URL changes before the page streams in behind the loading state: wait for the text itself.
+        const pipCopy = CATALOGS.en.pipPage;
         await on.page
-          .getByText(shell.pip.notBuilt)
+          .getByText(pipCopy.askLabel)
           .waitFor({ timeout: 10_000 })
           .catch(() => {});
         check(
-          await on.page.getByText(shell.pip.notBuilt).isVisible(),
-          'the Pip page does not say it is not built',
+          await on.page.getByText(pipCopy.askLabel).isVisible(),
+          'the Pip page does not offer to ask Pip',
         );
         await on.context.close();
       }

@@ -12,3 +12,4 @@ export * from './preferences';
 export * from './pip';
 export * from './community';
 export * from './media';
+export * from './assistant';

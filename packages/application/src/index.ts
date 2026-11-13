@@ -86,6 +86,13 @@ import {
 } from './community/operations';
 import { createGetMedia, createUploadMedia } from './media/operations';
 import { createDeleteAccount, createDeleteTrip, createExportAccount } from './account/operations';
+import {
+  createApplyProposal,
+  createAskPip,
+  createDiscardProposal,
+  createListProposals,
+  createUndoProposal,
+} from './assistant/operations';
 export { defineOperation, type Operation } from './operation';
 export type {
   GeocodingPort,
@@ -99,6 +106,10 @@ export type {
   CommunityWriter,
   AccountReader,
   AccountWriter,
+  AiPort,
+  AssistantReader,
+  AssistantWriter,
+  ProposalRecord,
   FeedScope,
   MediaReader,
   MediaRecord,
@@ -280,6 +291,16 @@ export {
 } from './media/schemas';
 export { mediaKey } from './media/operations';
 export {
+  applyProposalFields,
+  askPipFields,
+  pipChangeSchema,
+  proposalListSchema,
+  proposalSchema,
+  type PipChange,
+  type ProposalView,
+} from './assistant/schemas';
+export { systemPrompt, userPrompt, type PipContext } from './assistant/prompt';
+export {
   ACCOUNT_EXPORT_VERSION,
   accountExportSchema,
   deleteAccountFields,
@@ -341,6 +362,11 @@ export function createApplication(ports: Ports) {
     exportAccount: createExportAccount(ports),
     deleteAccount: createDeleteAccount(ports),
     deleteTrip: createDeleteTrip(ports),
+    askPip: createAskPip(ports),
+    listProposals: createListProposals(ports),
+    applyProposal: createApplyProposal(ports),
+    discardProposal: createDiscardProposal(ports),
+    undoProposal: createUndoProposal(ports),
   };
 }
 export type Application = ReturnType<typeof createApplication>;

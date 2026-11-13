@@ -43,6 +43,12 @@ export function buildOpenApiDocument() {
       media: { findById: unreachable, findMany: unreachable },
       storage: { put: unreachable, get: unreachable, delete: unreachable },
       account: { exportFor: unreachable },
+      assistant: {
+        findProposal: unreachable,
+        listProposals: unreachable,
+        countRequestsSince: unreachable,
+      },
+      ai: { completeJson: unreachable },
       unitOfWork: { run: unreachable },
       clock: { now: unreachable },
       ids: { newId: unreachable },

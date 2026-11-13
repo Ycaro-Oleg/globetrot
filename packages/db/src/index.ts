@@ -47,6 +47,11 @@ export {
 } from './repositories';
 export { createAccountRepository, type AccountRepository } from './account-repository';
 export {
+  createAssistantRepository,
+  type AssistantRepository,
+  type ProposalRow,
+} from './assistant-repository';
+export {
   createCommunityRepository,
   type CommentRow,
   type CommunityRepository,

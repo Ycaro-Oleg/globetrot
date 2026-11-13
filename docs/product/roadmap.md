@@ -11,7 +11,7 @@ Each milestone maps to a GitHub milestone. Issues for a milestone are created wh
 | M4 | Travel Workspace & Map | **Started** (starter board, #75) | Full board, stop panel, mobile sheet, city search | M3 |
 | M5 | Itinerary & Checklists | **Started** (days page, checklists) | Days, accessible drag-and-drop, checklists, readiness stamps | M4 |
 | M6 | Budget & Savings | **Started** (budget page, savings answer) | Expenses, FX, savings plan, answer sentence | M3 (in parallel with M5) |
-| M7 | Pip v1 | Not started | AIProposal, change list, apply/undo, cost limits, feature flag | M4–M6 |
+| M7 | Pip v1 | **Done in code** (behind the flag, [ADR-0016](../architecture/adr/0016-pip-on-deepseek.md)) | AIProposal, change list, apply/undo, cost limits, feature flag | M4–M6 |
 | M8 | Landing & MVP RC | **Started** (landing done in code, example trips, #74) | Landing (i18n, mock pricing), example trips, accessibility and performance QA, closed beta | M3–M7 |
 | M9 | Passport & Identity | Not started | Account passport, place stamps, profile | M8 |
 | M10 | Commercial | Not started | Approved pricing, Stripe sandbox, entitlements, customer portal, NFS-e integration | Pricing decision |

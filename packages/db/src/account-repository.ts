@@ -2,6 +2,7 @@ import { and, asc, desc, eq, inArray } from 'drizzle-orm';
 import type { Database } from './client';
 import {
   account,
+  aiProposal,
   auditEvent,
   checklistItem,
   commentLike,
@@ -83,6 +84,7 @@ export function createAccountRepository(executor: Executor) {
         reports,
         media,
         history,
+        proposals,
       ] = await Promise.all([
         executor
           .select({ provider: account.providerId, createdAt: account.createdAt })
@@ -178,6 +180,18 @@ export function createAccountRepository(executor: Executor) {
           .where(and(eq(auditEvent.actorKind, 'user'), eq(auditEvent.actorId, userId)))
           .orderBy(desc(auditEvent.occurredAt))
           .limit(10000),
+        executor
+          .select({
+            tripId: aiProposal.tripId,
+            request: aiProposal.request,
+            summary: aiProposal.summary,
+            changes: aiProposal.changes,
+            status: aiProposal.status,
+            createdAt: aiProposal.createdAt,
+          })
+          .from(aiProposal)
+          .where(eq(aiProposal.ownerId, userId))
+          .orderBy(asc(aiProposal.createdAt)),
       ]);
       const pref = preferences[0];
       const strip = <T extends Record<string, unknown>>(row: T, ...keys: (keyof T)[]) => {
@@ -213,6 +227,7 @@ export function createAccountRepository(executor: Executor) {
           reports,
         },
         media: media.map((row) => strip(row, 'ownerId')),
+        pipProposals: proposals,
         history,
       }) as Record<string, unknown>;
     },
