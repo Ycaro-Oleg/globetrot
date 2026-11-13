@@ -29,6 +29,8 @@ const DEFAULTS = {
   motion: 'full',
   homeCity: null,
   pipOptIn: false,
+  pipLook: { hat: 'straw', outfit: 'none', bag: 'trolley', bagColor: 'amber' },
+  pipName: null,
 };
 
 async function harness() {
@@ -128,6 +130,8 @@ describe('preferences against a real database', () => {
       motion: 'reduced',
       homeCity: 'São Paulo',
       pipOptIn: true,
+      pipLook: { hat: 'cap', outfit: 'vest', bag: 'backpack', bagColor: 'cyan' },
+      pipName: 'Pipoca',
     };
     expect((await call(ana.cookie, 'PATCH', full)).json).toEqual(full);
 
@@ -142,6 +146,8 @@ describe('preferences against a real database', () => {
       ['motion', 'full'],
       ['homeCity', 'Lisbon'],
       ['pipOptIn', false],
+      ['pipName', 'Globinho'],
+      ['pipLook', { hat: 'none', outfit: 'scarf', bag: 'vintage', bagColor: 'pink' }],
     ] as const) {
       const before = (await call(ana.cookie, 'GET')).json;
       const { json } = await call(ana.cookie, 'PATCH', { [field]: value });

@@ -91,7 +91,7 @@ describe.each(SUPPORTED_LOCALES)('app shell (%s)', (locale) => {
       copy.nav.trip,
       copy.nav.trips,
       copy.nav.passport,
-      copy.nav.settings,
+      copy.nav.profile,
     ]);
   });
 

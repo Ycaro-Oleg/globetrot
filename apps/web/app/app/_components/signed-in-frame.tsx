@@ -5,7 +5,7 @@ import { apiInternalUrl } from '../../../lib/api-proxy';
 import { loginRedirect } from '../../../lib/app-gate';
 import { fetchCurrentUser } from '../../../lib/current-user';
 import { isPipEnabled } from '../../../lib/flags';
-import { sessionCookieHeader } from '../../../lib/stored-preferences';
+import { fetchStoredPreferences, sessionCookieHeader } from '../../../lib/stored-preferences';
 import { fetchTrips, SELECTED_TRIP_COOKIE } from '../../../lib/trips';
 import { AppShell } from './app-shell';
 
@@ -23,9 +23,10 @@ export async function SignedInFrame({
   const store = await cookies();
   const cookieHeader = sessionCookieHeader(store.getAll());
   const options = cookieHeader ? { cookieHeader, apiUrl: apiInternalUrl() } : null;
-  const [user, fetchedTrips] = await Promise.all([
+  const [user, fetchedTrips, preferences] = await Promise.all([
     options ? fetchCurrentUser(options) : Promise.resolve(null),
     options ? fetchTrips(options) : Promise.resolve(null),
+    options ? fetchStoredPreferences(options) : Promise.resolve(null),
   ]);
   if (!user) redirect(loginRedirect(returnTo));
 
@@ -39,6 +40,8 @@ export async function SignedInFrame({
       pipEnabled={isPipEnabled()}
       trips={trips}
       activeTripId={activeTrip?.id ?? null}
+      pipLook={preferences?.pipLook ?? null}
+      pipName={preferences?.pipName ?? null}
     >
       {children}
     </AppShell>

@@ -74,6 +74,9 @@ export function AccountMenu({ name }: { name: string }) {
           </span>
           {name}
         </p>
+        <Link href="/app/profile" className={styles.menuItem}>
+          {t('nav.profileMenu')}
+        </Link>
         <Link href="/app/trips" className={styles.menuItem}>
           {t('nav.trips')}
         </Link>

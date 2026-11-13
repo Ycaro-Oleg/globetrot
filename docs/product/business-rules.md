@@ -110,6 +110,11 @@ Implementation: `packages/domain/src/trip/` (`tripDays`, `emptyDays`, `tripTotal
 - **Place stamps** (country, city) are added when a trip is completed or when a user declares a past visit. They are labelled `self-declared` unless a real verification mechanism exists.
 - **Globetrot visas** (design handoff v2): marking a stop **visited** on the board is a self-declared visit. The first visited stop in a country stamps that country's commemorative visa, one per person and country, with the stop's name and the date. A visa is a souvenir: it is **never taken back**, even if the stop is un-visited, the stop is removed or the trip is archived. Wherever visas are shown, the UI says they are commemorative and not official documents.
 
+## Profile and My Pip
+
+- **The profile** (`/app/profile`) is the person's own page: their name, home city, Pip, a few numbers (countries and continents with a visa, trips) and their visas grouped by year, newest first, with a continent filter. Continents follow the UN M49 grouping (`continentOf` in `@globetrot/domain`): Africa, the Americas split into North and South (Central America and the Caribbean count as North), Asia, Europe, Oceania; Antarctica has its own entry. Following, sharing and visa privacy arrive with the community.
+- **My Pip.** Each person dresses their own Pip (hat, outfit, bag, bag colour) and may name it (1 to 16 characters; empty brings back "Pip"). Nothing changes until **Save**; Undo returns to the saved look and Shuffle picks a random one. The saved look is drawn on **every** Pip the person sees in the app. It is cosmetic only: no option is paid or locked today.
+
 ## AI (Pip)
 
 - Output is a structured **change list**, never free prose that edits data.

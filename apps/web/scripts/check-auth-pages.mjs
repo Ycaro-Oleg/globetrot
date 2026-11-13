@@ -53,6 +53,8 @@ const PREFERENCES = {
   motion: 'full',
   homeCity: null,
   pipOptIn: false,
+  pipLook: { hat: 'straw', outfit: 'none', bag: 'trolley', bagColor: 'amber' },
+  pipName: null,
 };
 
 const NOW = '2026-11-08T12:00:00.000Z';
@@ -675,6 +677,18 @@ try {
       entries.push([`shell-home-${layout}`, true, ...at('/app', VIEWPORTS[layout])]);
     }
     entries.push(['shell-days-desktop', true, ...at('/app/days', VIEWPORTS.desktop)]);
+    entries.push(['profile-desktop', true, ...at('/app/profile', VIEWPORTS.desktop)]);
+    entries.push(['profile-phone', true, ...at('/app/profile', VIEWPORTS.phone)]);
+    entries.push([
+      'profile-pip-bag-tab',
+      true,
+      async (page) => {
+        await go(page, `${base}/app/profile`);
+        await page.locator('#pip-tab-bag').click();
+        await page.locator('#pip-tab-bag[aria-selected="true"]').waitFor();
+      },
+      VIEWPORTS.desktop,
+    ]);
     for (const layout of ['desktop', 'phone']) {
       entries.push([`onboarding-welcome-${layout}`, true, ...at('/onboarding', VIEWPORTS[layout])]);
       entries.push([
@@ -1094,7 +1108,7 @@ try {
           if (!onMap) {
             check(
               JSON.stringify(await names(bottom)) ===
-                JSON.stringify([nav.trip, nav.trips, nav.passport, nav.settings]),
+                JSON.stringify([nav.trip, nav.trips, nav.passport, nav.profile]),
               `${where}: the bottom bar is ${JSON.stringify(await names(bottom))}`,
             );
           }

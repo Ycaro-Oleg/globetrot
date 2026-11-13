@@ -20,6 +20,13 @@ export interface StoredPreferences {
   /** The city the person usually leaves from, or null. */
   readonly homeCity: string | null;
   readonly pipOptIn: boolean;
+  readonly pipLook: {
+    readonly hat: 'straw' | 'helmet' | 'cap' | 'none';
+    readonly outfit: 'none' | 'scarf' | 'aloha' | 'vest';
+    readonly bag: 'trolley' | 'backpack' | 'vintage';
+    readonly bagColor: 'amber' | 'cyan' | 'pink';
+  };
+  readonly pipName: string | null;
 }
 
 /**

@@ -15,6 +15,8 @@ export interface SettingsViewProps {
     readonly timeZone: string | null;
     readonly homeCity?: string | null;
     readonly pipOptIn?: boolean;
+    readonly pipLook?: unknown;
+    readonly pipName?: string | null;
     readonly units: string;
     readonly theme: string;
     readonly motion: string;

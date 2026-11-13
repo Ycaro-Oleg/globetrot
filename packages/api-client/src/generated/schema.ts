@@ -543,6 +543,17 @@ export interface operations {
                         motion: "full" | "reduced";
                         homeCity: string | null;
                         pipOptIn: boolean;
+                        pipLook: {
+                            /** @enum {string} */
+                            hat: "straw" | "helmet" | "cap" | "none";
+                            /** @enum {string} */
+                            outfit: "none" | "scarf" | "aloha" | "vest";
+                            /** @enum {string} */
+                            bag: "trolley" | "backpack" | "vintage";
+                            /** @enum {string} */
+                            bagColor: "amber" | "cyan" | "pink";
+                        };
+                        pipName: string | null;
                     };
                 };
             };
@@ -627,6 +638,22 @@ export interface operations {
                     homeCity?: string | null;
                     /** @description Whether the person wants Pip’s suggestions. */
                     pipOptIn?: boolean;
+                    /** @description The person’s Pip: hat, outfit, bag and bag colour. */
+                    pipLook?: {
+                        /** @enum {string} */
+                        hat: "straw" | "helmet" | "cap" | "none";
+                        /** @enum {string} */
+                        outfit: "none" | "scarf" | "aloha" | "vest";
+                        /** @enum {string} */
+                        bag: "trolley" | "backpack" | "vintage";
+                        /** @enum {string} */
+                        bagColor: "amber" | "cyan" | "pink";
+                    };
+                    /**
+                     * @description Pip’s name, 1 to 16 characters; null brings back “Pip”.
+                     * @example Pipoca
+                     */
+                    pipName?: string | null;
                 };
             };
         };
@@ -659,6 +686,17 @@ export interface operations {
                         motion: "full" | "reduced";
                         homeCity: string | null;
                         pipOptIn: boolean;
+                        pipLook: {
+                            /** @enum {string} */
+                            hat: "straw" | "helmet" | "cap" | "none";
+                            /** @enum {string} */
+                            outfit: "none" | "scarf" | "aloha" | "vest";
+                            /** @enum {string} */
+                            bag: "trolley" | "backpack" | "vintage";
+                            /** @enum {string} */
+                            bagColor: "amber" | "cyan" | "pink";
+                        };
+                        pipName: string | null;
                     };
                 };
             };
