@@ -24,6 +24,7 @@ const stop = (id: string, extra: Partial<RouteStop> = {}): RouteStop => ({
   visited: false,
   spots: [],
   todos: [],
+  photos: [],
   ...extra,
 });
 

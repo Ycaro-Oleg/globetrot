@@ -536,7 +536,6 @@
         "notes": "Notas",
         "todos": "A fazer"
       },
-      "photosSoon": "Fotos do lugar chegam com os envios de arquivos, que ainda não estão ligados. Pontos, notas e tarefas já ficam salvos na viagem.",
       "visited": "Visitado",
       "showSpot": "Ver no mapa: {name}",
       "removeItem": "Remover: {name}",
@@ -548,7 +547,8 @@
       "autosave": "Salvo automaticamente",
       "progress": "Tarefas feitas",
       "noTodos": "Nada a fazer ainda.",
-      "addTodo": "Adicionar tarefa…"
+      "addTodo": "Adicionar tarefa…",
+      "photosLabel": "Fotos de {stop}"
     },
     "visa": {
       "kicker": "VISTO GLOBETROT",
@@ -1005,16 +1005,16 @@
       "publish": "Publicar",
       "publishing": "Publicando…",
       "cancel": "Cancelar",
-      "photosSoon": "Fotos chegam numa próxima atualização.",
       "errors": {
-        "empty": "Escreva algo antes de publicar.",
+        "empty": "Escreva algo ou adicione uma foto antes de publicar.",
         "trip": "Escolha uma viagem para compartilhar.",
         "visa": "Escolha um visto para compartilhar.",
         "RATE_LIMITED": "Você publicou bastante hoje. Tente de novo amanhã.",
         "NOT_FOUND": "Essa viagem não existe mais. Escolha outra.",
         "VALIDATION_ERROR": "Ainda não dá para compartilhar: um roteiro precisa de paradas, uma meta precisa de custos e poupança em dia.",
         "UNKNOWN": "Não publicou. Tente de novo."
-      }
+      },
+      "photos": "Fotos"
     },
     "post": {
       "follow": "Seguir",
@@ -1122,5 +1122,24 @@
       "title": "Post",
       "back": "Voltar para a comunidade"
     }
+  },
+  "photos": {
+    "add": "Adicionar fotos",
+    "left": "{count, plural, one {resta #} other {restam #}}",
+    "alt": "Descreva a foto {n}",
+    "altPlaceholder": "O que ela mostra (opcional)",
+    "remove": "Remover foto {n}",
+    "uploading": "{count, plural, one {Enviando # foto…} other {Enviando # fotos…}}",
+    "full": "No máximo {max} fotos.",
+    "privacy": "Dados de localização e da câmera são removidos das fotos antes de salvar.",
+    "errors": {
+      "unsupported": "Esse arquivo não é uma foto que conseguimos ler. Tente JPEG, PNG ou WebP.",
+      "tooMany": "Você enviou muitas fotos hoje. Tente de novo amanhã.",
+      "failed": "A foto não foi enviada. Tente de novo."
+    },
+    "byName": "Foto de {name}",
+    "ofStop": "Foto em {stop}",
+    "open": "Abrir foto {n} de {total}",
+    "close": "Fechar foto"
   }
 }

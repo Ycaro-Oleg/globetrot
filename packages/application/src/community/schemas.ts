@@ -1,6 +1,7 @@
 import {
   COMMENT_BODY_MAX,
   isHandle,
+  POST_PHOTOS_MAX,
   POST_AUDIENCES,
   POST_BODY_MAX,
   POST_KINDS,
@@ -8,6 +9,7 @@ import {
 } from '@globetrot/domain';
 import { z } from 'zod';
 import { moneySchema } from '../budget/schemas';
+import { photoFields, photoSchema } from '../media/schemas';
 import { pipLookSchema } from '../preferences/schemas';
 
 export const handleSchema = z
@@ -65,6 +67,8 @@ export const postSchema = z.object({
   place: z.object({ name: z.string(), countryCode: z.string().nullable() }).nullable(),
   audience: z.enum(POST_AUDIENCES),
   attachment: attachmentSchema.nullable(),
+  /** Up to four photos (moments and tips); `GET /v1/media/{mediaId}` serves each to whoever may see the post. */
+  photos: z.array(photoSchema),
   createdAt: z.iso.datetime(),
   editedAt: z.iso.datetime().nullable(),
   author: personSchema,
@@ -156,6 +160,8 @@ export const createPostFields = z.object({
   tripId: z.uuid().optional(),
   /** Route posts: show the planned total (off unless asked). */
   showAmounts: z.boolean().default(false),
+  /** Moments and tips: up to four images the caller uploaded (`POST /v1/media`). */
+  photos: z.array(photoFields).max(POST_PHOTOS_MAX).default([]),
   /** Visa posts: which of the person's visas. */
   visaCountry: z
     .string()

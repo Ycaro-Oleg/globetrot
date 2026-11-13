@@ -15,6 +15,7 @@ import {
   uuid,
 } from 'drizzle-orm/pg-core';
 import { user } from './auth';
+import type { PhotoRef } from './media';
 
 const instant = (name: string) => timestamp(name, { withTimezone: true });
 const oneOf = (column: AnyColumn, values: readonly string[]): SQL =>
@@ -89,6 +90,8 @@ export const post = pgTable(
     placeCountry: char('place_country', { length: 2 }),
     audience: text('audience').notNull(),
     attachment: jsonb('attachment').$type<PostAttachment>(),
+    /** Up to four photos, `PhotoRef[]`. */
+    photos: jsonb('photos').$type<PhotoRef[]>().notNull().default([]),
     createdAt: instant('created_at').defaultNow().notNull(),
     editedAt: instant('edited_at'),
     /** Deleted by the author (restorable). */
@@ -100,6 +103,7 @@ export const post = pgTable(
     index('post_author_id_idx').on(table.authorId, table.id),
     index('post_created_at_idx').on(table.createdAt),
     check('post_kind_valid', oneOf(table.kind, POST_KINDS)),
+    check('post_photos_array', sql`jsonb_typeof(${table.photos}) = 'array'`),
     check('post_audience_valid', oneOf(table.audience, POST_AUDIENCES)),
     check(
       'post_body_length',

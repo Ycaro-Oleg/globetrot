@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import { useEffect, useId, useRef, useState, useTransition, type FormEvent } from 'react';
 import type { CommentData, PostData } from '../../../lib/community';
+import { mediaUrl } from '../../../lib/upload';
 import { PipAvatar } from '../_components/pip-avatar';
 import {
   addComment,
@@ -77,6 +78,7 @@ export function PostCard({
   startOpen?: boolean;
 }) {
   const t = useTranslations('communityPage');
+  const tPhotos = useTranslations('photos');
   const locale = useLocale();
   const { toast, currentTrip } = useCommunity();
   const when = useRelativeTime();
@@ -345,6 +347,22 @@ export function PostCard({
           </form>
         ) : post.body ? (
           <p className={styles.postBody}>{post.body}</p>
+        ) : null}
+
+        {post.photos.length > 0 ? (
+          <ul className={styles.photos} data-count={Math.min(post.photos.length, 4)}>
+            {post.photos.map((photo) => (
+              <li key={photo.mediaId}>
+                {/* eslint-disable-next-line @next/next/no-img-element -- a private image behind the API's access check */}
+                <img
+                  src={mediaUrl(photo.mediaId)}
+                  alt={photo.alt || tPhotos('byName', { name: post.author.name })}
+                  loading="lazy"
+                  decoding="async"
+                />
+              </li>
+            ))}
+          </ul>
         ) : null}
 
         {attachment?.kind === 'route' ? (

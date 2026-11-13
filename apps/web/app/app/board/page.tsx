@@ -45,6 +45,7 @@ export default async function BoardPage() {
     visited: stop.visited ?? false,
     spots: (stop.spots ?? []).map((spot) => ({ ...spot })),
     todos: (stop.todos ?? []).map((todo) => ({ ...todo })),
+    photos: (stop.photos ?? []).map((photo) => ({ ...photo })),
   }));
 
   return (

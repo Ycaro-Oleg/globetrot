@@ -1,5 +1,7 @@
 import {
   LEG_MODES,
+  MEDIA_ALT_MAX,
+  STOP_PHOTOS_MAX,
   STOP_ITEM_TEXT_MAX_LENGTH,
   STOP_SPOTS_MAX,
   STOP_TODOS_MAX,
@@ -23,6 +25,8 @@ export type StopSpot = {
   done: boolean;
 };
 export type StopTodo = { text: string; done: boolean };
+/** A photo of the stop: an image the person uploaded and the words that describe it. */
+export type StopPhoto = { mediaId: string; alt: string };
 
 /** A stop on the board: the place, the nights, the person's own notes and lists, and how they reach the next. */
 export type RouteStop = MapPlace & {
@@ -32,6 +36,7 @@ export type RouteStop = MapPlace & {
   visited: boolean;
   spots: StopSpot[];
   todos: StopTodo[];
+  photos: StopPhoto[];
 };
 
 /** The pin card's tabs, in petal order. */
@@ -43,6 +48,7 @@ export const NOTE_MAX = 500;
 export const ITEM_MAX = STOP_ITEM_TEXT_MAX_LENGTH;
 export const SPOTS_MAX = STOP_SPOTS_MAX;
 export const TODOS_MAX = STOP_TODOS_MAX;
+export const PHOTOS_MAX = STOP_PHOTOS_MAX;
 /** How many changes Undo remembers. */
 export const HISTORY_LIMIT = 50;
 
@@ -57,6 +63,7 @@ export const newStop = (place: MapPlace): RouteStop => ({
   visited: false,
   spots: [],
   todos: [],
+  photos: [],
 });
 
 /** Moves the stop at `from` to `to` (both clamped). Returns a copy, unchanged when nothing moves. */
@@ -92,6 +99,9 @@ export function toDestination(stop: RouteStop, isLast: boolean) {
       .map((todo) => ({ ...todo, text: clip(todo.text, ITEM_MAX) }))
       .filter((todo) => todo.text)
       .slice(0, TODOS_MAX),
+    photos: stop.photos
+      .slice(0, PHOTOS_MAX)
+      .map((photo) => ({ mediaId: photo.mediaId, alt: clip(photo.alt, MEDIA_ALT_MAX) })),
   };
 }
 

@@ -7,11 +7,13 @@ import {
   KIT_TABS,
   NOTE_MAX,
   SPOTS_MAX,
+  PHOTOS_MAX,
   TODOS_MAX,
   type KitTab,
   type RouteStop,
   type StopSpot,
 } from './board-route';
+import { PhotoPicker } from '../_components/photo-picker';
 import styles from './world-map.module.css';
 
 const GLYPHS: Record<KitTab, string> = { photos: '▣', spots: '⌖', notes: '✎', todos: '✓' };
@@ -20,7 +22,7 @@ const GLYPHS: Record<KitTab, string> = { photos: '▣', spots: '⌖', notes: '�
 export function kitCounts(stop: RouteStop): Record<KitTab, string> {
   const done = stop.todos.filter((todo) => todo.done).length;
   return {
-    photos: '',
+    photos: stop.photos.length ? String(stop.photos.length) : '',
     spots: stop.spots.length ? String(stop.spots.length) : '',
     notes: stop.note.trim() ? '•' : '',
     todos: stop.todos.length ? `${done}/${stop.todos.length}` : '',
@@ -151,10 +153,12 @@ export function PinCard({
         aria-labelledby={`pin-tab-${tab}`}
       >
         {tab === 'photos' ? (
-          <div className={styles.photosSoon}>
-            <span aria-hidden="true">▣</span>
-            <p>{t('photosSoon')}</p>
-          </div>
+          <PhotoPicker
+            photos={stop.photos}
+            max={PHOTOS_MAX}
+            label={t('photosLabel', { stop: name })}
+            onChange={(photos) => onChange({ photos })}
+          />
         ) : null}
 
         {tab === 'spots' ? (

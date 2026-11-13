@@ -21,6 +21,7 @@
     "@globetrot/i18n": "workspace:*",
     "@hono/node-server": "2.1.6",
     "@hono/zod-openapi": "1.6.3",
+    "aws4fetch": "1.0.20",
     "better-auth": "1.7.18",
     "hono": "4.13.17",
     "nodemailer": "10.3.1",

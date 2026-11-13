@@ -84,6 +84,7 @@ import {
   createUpdateHandle,
   createUpdatePost,
 } from './community/operations';
+import { createGetMedia, createUploadMedia } from './media/operations';
 export { defineOperation, type Operation } from './operation';
 export type {
   GeocodingPort,
@@ -96,6 +97,11 @@ export type {
   CommunityReader,
   CommunityWriter,
   FeedScope,
+  MediaReader,
+  MediaRecord,
+  MediaWriter,
+  PhotoRecord,
+  StoragePort,
   NewPost,
   PersonRecord,
   PostAttachmentRecord,
@@ -262,6 +268,15 @@ export {
   type PostView,
 } from './community/schemas';
 
+export {
+  mediaSchema,
+  photoFields,
+  photoSchema,
+  type MediaView,
+  type PhotoView,
+} from './media/schemas';
+export { mediaKey } from './media/operations';
+
 /** Composition root: every operation, wired to the given ports. */
 export function createApplication(ports: Ports) {
   return {
@@ -313,6 +328,8 @@ export function createApplication(ports: Ports) {
     reportPost: createReportPost(ports),
     copyRoute: createCopyRoute(ports),
     updateHandle: createUpdateHandle(ports),
+    uploadMedia: createUploadMedia(ports),
+    getMedia: createGetMedia(ports),
   };
 }
 export type Application = ReturnType<typeof createApplication>;

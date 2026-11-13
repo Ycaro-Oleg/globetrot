@@ -63,6 +63,7 @@ export function createCreateTripFromExample(deps: Pick<Ports, 'unitOfWork' | 'cl
             visited: false,
             spots: [],
             todos: [],
+            photos: [],
           })),
           now,
         );

@@ -19,6 +19,7 @@ import {
   timestamp,
   uuid,
 } from 'drizzle-orm/pg-core';
+import type { PhotoRef } from './media';
 import { trip } from './trip';
 
 /** One place to see at a stop. Coordinates are optional: a spot can be just a name. */
@@ -65,6 +66,8 @@ export const destination = pgTable(
     spots: jsonb('spots').$type<StopSpot[]>().notNull().default([]),
     /** Things to do for this stop, `StopTodo[]`. Personal: never logged or audited. */
     todos: jsonb('todos').$type<StopTodo[]>().notNull().default([]),
+    /** The stop's own photos, `PhotoRef[]` (media the trip's owner uploaded). */
+    photos: jsonb('photos').$type<PhotoRef[]>().notNull().default([]),
     createdAt: instant('created_at').defaultNow().notNull(),
     updatedAt: instant('updated_at').defaultNow().notNull(),
   },
@@ -89,6 +92,7 @@ export const destination = pgTable(
     ),
     check('destination_spots_array', sql`jsonb_typeof(${table.spots}) = 'array'`),
     check('destination_todos_array', sql`jsonb_typeof(${table.todos}) = 'array'`),
+    check('destination_photos_array', sql`jsonb_typeof(${table.photos}) = 'array'`),
     check(
       'destination_nights_range',
       sql`${table.nights} between 0 and ${sql.raw(String(MAX_NIGHTS_PER_DESTINATION))}`,

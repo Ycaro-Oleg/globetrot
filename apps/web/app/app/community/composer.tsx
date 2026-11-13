@@ -1,10 +1,11 @@
 'use client';
 
-import { POST_BODY_MAX } from '@globetrot/domain';
+import { POST_BODY_MAX, POST_PHOTOS_MAX } from '@globetrot/domain';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { forwardRef, useId, useState, useTransition, type FormEvent } from 'react';
 import type { PostData } from '../../../lib/community';
+import { PhotoPicker, type PickedPhoto } from '../_components/photo-picker';
 import { PipAvatar } from '../_components/pip-avatar';
 import { publishPost } from './actions';
 import { useCommunity } from './community-context';
@@ -54,6 +55,7 @@ export const Composer = forwardRef<
   const [kind, setKind] = useState<Kind>('moment');
   const [body, setBody] = useState('');
   const [place, setPlace] = useState('');
+  const [photos, setPhotos] = useState<PickedPhoto[]>([]);
   const [tripId, setTripId] = useState(currentTrip?.id ?? trips[0]?.id ?? '');
   const [visaCountry, setVisaCountry] = useState(visas[0]?.countryCode ?? '');
   const [hideAmounts, setHideAmounts] = useState(true);
@@ -69,6 +71,7 @@ export const Composer = forwardRef<
     setKind('moment');
     setBody('');
     setPlace('');
+    setPhotos([]);
     setAudience('everyone');
     setHideAmounts(true);
     setError(null);
@@ -76,7 +79,7 @@ export const Composer = forwardRef<
 
   function submit(event: FormEvent) {
     event.preventDefault();
-    if (needsWords && !body.trim()) return setError(t('errors.empty'));
+    if (needsWords && !body.trim() && photos.length === 0) return setError(t('errors.empty'));
     if (usesTrip && !tripId) return setError(t('errors.trip'));
     if (kind === 'visa' && !visaCountry) return setError(t('errors.visa'));
     const name = place.trim();
@@ -90,6 +93,9 @@ export const Composer = forwardRef<
         ...(usesTrip ? { tripId } : {}),
         ...(kind === 'route' ? { showAmounts: !hideAmounts } : {}),
         ...(kind === 'visa' ? { visaCountry } : {}),
+        ...(needsWords && photos.length > 0
+          ? { photos: photos.map((photo) => ({ mediaId: photo.mediaId, alt: photo.alt.trim() })) }
+          : {}),
       });
       if ('error' in result) {
         const code = ERRORS.find((known) => known === result.error);
@@ -128,7 +134,7 @@ export const Composer = forwardRef<
             maxLength={POST_BODY_MAX}
             placeholder={open ? t(`placeholders.${kind}`) : t('prompt')}
             aria-describedby={error ? `${id}-error` : undefined}
-            aria-invalid={error && needsWords && !body.trim() ? true : undefined}
+            aria-invalid={error && needsWords && !body.trim() && !photos.length ? true : undefined}
             onFocus={() => setOpen(true)}
             onChange={(event) => {
               setBody(event.target.value);
@@ -165,6 +171,15 @@ export const Composer = forwardRef<
               </button>
             ))}
           </fieldset>
+
+          {needsWords ? (
+            <PhotoPicker
+              photos={photos}
+              max={POST_PHOTOS_MAX}
+              onChange={setPhotos}
+              label={t('photos')}
+            />
+          ) : null}
 
           {usesTrip ? (
             <div className={styles.field}>
@@ -262,7 +277,6 @@ export const Composer = forwardRef<
               </button>
             </div>
           </div>
-          <p className={styles.note}>{t('photosSoon')}</p>
           {error ? (
             <p id={`${id}-error`} role="alert" className={styles.error}>
               {error}

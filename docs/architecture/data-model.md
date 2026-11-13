@@ -187,6 +187,18 @@ Migration `0015_community`. Rules: [business rules](../product/business-rules.md
 - Post ids are UUIDv7, so the feed pages by id (`before`). The feed applies `canSeePost` in SQL; see the ADR.
 - Post bodies, comments, place names and handles are personal: audit entries (`post.create`, `post.update`, `post.delete`, `post.restore`, `post.like`, `post.save`, `post.report`, `comment.create`, `comment.delete`, `comment.restore`, `comment.like`, `person.follow`, `person.mute`, `person.handle`) keep the kind, audience, reason or on/off only.
 
+## Media (uploaded photos)
+
+Migration `0016_photos`. Rules: [business rules](../product/business-rules.md#photos), [ADR-0014](adr/0014-photos-and-storage.md).
+
+| Table / column | Rule |
+|---|---|
+| `media_asset` | One row per upload: `owner_id` (`user`, `ON DELETE CASCADE`), `content_type` (`IMAGE_TYPES`), `byte_size`, `width`, `height`. The bytes, already without metadata, are in object storage under `media/<id>` |
+| `post.photos`, `destination.photos` | jsonb arrays of `{ mediaId, alt }` (CHECK: an array). At most 4 on a post, 12 on a stop, checked in the application along with ownership |
+
+- Audit: `media.upload` with the content type only. Descriptions are personal and never logged.
+- Uploads that are never placed are not cleaned up yet (no job runner).
+
 ## Extensions
 
 The first migration (`0000_extensions.sql`) enables `postgis`, `pg_trgm` and `unaccent`, using `IF NOT EXISTS`. The local Docker init script (`infra/postgres/init/`) enables the same ones as a convenience, and production relies on the migration.

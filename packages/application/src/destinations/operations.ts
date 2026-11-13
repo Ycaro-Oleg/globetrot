@@ -1,3 +1,4 @@
+import { ownedPhotos } from '../media/operations';
 import { z } from 'zod';
 import { defineOperation } from '../operation';
 import type { Ports } from '../ports';
@@ -41,6 +42,11 @@ export function createReplaceDestinations(deps: Pick<Ports, 'unitOfWork' | 'cloc
       const now = deps.clock.now();
       return deps.unitOfWork.run(async (tx) => {
         await loadOwnedTrip(tx.trips, actor, input.tripId);
+        const photos = await Promise.all(
+          input.destinations.map((item, index) =>
+            ownedPhotos(tx.media, actor, item.photos, `destinations.${index}.photos`),
+          ),
+        );
         // A stop keeps its id across saves (matched by its place key), so what points at it (the day plan's
         // places) survives the route being saved as a whole.
         const existing = new Map<string, string[]>();
@@ -65,6 +71,7 @@ export function createReplaceDestinations(deps: Pick<Ports, 'unitOfWork' | 'cloc
             visited: item.visited,
             spots: item.spots,
             todos: item.todos,
+            photos: photos[index]!,
           })),
           now,
         );

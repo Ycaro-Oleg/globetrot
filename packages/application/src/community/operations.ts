@@ -13,6 +13,7 @@ import {
 import { z } from 'zod';
 import type { Actor } from '../actor';
 import { budgetOf } from '../budget/operations';
+import { ownedPhotos } from '../media/operations';
 import { canonicalJson } from '../canonical-json';
 import {
   IdempotencyKeyReusedError,
@@ -121,6 +122,7 @@ async function postViews(
         place: post.placeName ? { name: post.placeName, countryCode: post.placeCountry } : null,
         audience: post.audience,
         attachment: attachmentView(post.attachment),
+        photos: post.photos.map((photo) => ({ mediaId: photo.mediaId, alt: photo.alt })),
         createdAt: post.createdAt.toISOString(),
         editedAt: post.editedAt?.toISOString() ?? null,
         author: personView(author),
@@ -474,8 +476,11 @@ export function createCreatePost(deps: Writes) {
     input: createPostFields.extend({ idempotencyKey: idempotencyKeySchema.optional() }),
     output: postSchema,
     async handler(actor, input) {
-      if (needsBody(input.kind) && input.body === '') {
-        invalid('body', 'required', 'Write something before posting');
+      if (needsBody(input.kind) && input.body === '' && input.photos.length === 0) {
+        invalid('body', 'required', 'Write something or add a photo before posting');
+      }
+      if (input.photos.length > 0 && !needsBody(input.kind)) {
+        invalid('photos', 'photos_not_allowed', 'Only moments and tips carry photos');
       }
       const now = deps.clock.now();
       const key = input.idempotencyKey;
@@ -497,6 +502,7 @@ export function createCreatePost(deps: Writes) {
         );
         if (recent >= POSTS_PER_DAY) throw new RateLimitedError('Too many posts today');
         await ensureProfile(tx, deps, actor, now);
+        const photos = await ownedPhotos(tx.media, actor, input.photos, 'photos');
         const attachment = await attachmentFor(tx, actor, input, now);
         const place =
           input.place ??
@@ -513,6 +519,7 @@ export function createCreatePost(deps: Writes) {
           placeCountry: place?.countryCode ?? null,
           audience: input.audience,
           attachment,
+          photos,
           createdAt: now,
         });
         await record(tx, deps, actor, now, 'post.create', 'post', id, {
@@ -540,7 +547,7 @@ export function createUpdatePost(deps: Writes) {
       return deps.unitOfWork.run(async (tx) => {
         const post = await loadOwnPost(tx.community, actor, input.postId);
         if (post.deletedAt) throw new NotFoundError();
-        if (needsBody(post.kind) && input.body === '') {
+        if (needsBody(post.kind) && input.body === '' && post.photos.length === 0) {
           invalid('body', 'required', 'A post of this kind needs words');
         }
         await tx.community.updatePost(post.id, { body: input.body, editedAt: now });
@@ -809,6 +816,7 @@ export function createCopyRoute(deps: Writes) {
             visited: false,
             spots: [],
             todos: [],
+            photos: [],
           })),
           now,
         );

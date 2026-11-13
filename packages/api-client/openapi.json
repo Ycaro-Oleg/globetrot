@@ -2665,6 +2665,25 @@
                                 "done"
                               ]
                             }
+                          },
+                          "photos": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "mediaId": {
+                                  "type": "string",
+                                  "format": "uuid"
+                                },
+                                "alt": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "mediaId",
+                                "alt"
+                              ]
+                            }
                           }
                         },
                         "required": [
@@ -2681,7 +2700,8 @@
                           "legMode",
                           "visited",
                           "spots",
-                          "todos"
+                          "todos",
+                          "photos"
                         ]
                       }
                     }
@@ -3049,6 +3069,30 @@
                           "maxItems": 30,
                           "default": [],
                           "description": "Things to do for this stop (at most 30)."
+                        },
+                        "photos": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "mediaId": {
+                                "type": "string",
+                                "format": "uuid"
+                              },
+                              "alt": {
+                                "type": "string",
+                                "maxLength": 200,
+                                "default": "",
+                                "description": "What the photo shows, for people who cannot see it. Blank is allowed."
+                              }
+                            },
+                            "required": [
+                              "mediaId"
+                            ]
+                          },
+                          "maxItems": 12,
+                          "default": [],
+                          "description": "The stop's photos (at most 12): images the caller uploaded (`POST /v1/media`)."
                         }
                       },
                       "required": [
@@ -3190,6 +3234,25 @@
                                 "done"
                               ]
                             }
+                          },
+                          "photos": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "mediaId": {
+                                  "type": "string",
+                                  "format": "uuid"
+                                },
+                                "alt": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "mediaId",
+                                "alt"
+                              ]
+                            }
                           }
                         },
                         "required": [
@@ -3206,7 +3269,8 @@
                           "legMode",
                           "visited",
                           "spots",
-                          "todos"
+                          "todos",
+                          "photos"
                         ]
                       }
                     },
@@ -9187,6 +9251,25 @@
                               }
                             ]
                           },
+                          "photos": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "mediaId": {
+                                  "type": "string",
+                                  "format": "uuid"
+                                },
+                                "alt": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "mediaId",
+                                "alt"
+                              ]
+                            }
+                          },
                           "createdAt": {
                             "type": "string",
                             "format": "date-time"
@@ -9349,6 +9432,7 @@
                           "place",
                           "audience",
                           "attachment",
+                          "photos",
                           "createdAt",
                           "editedAt",
                           "author",
@@ -10068,6 +10152,29 @@
                     "type": "boolean",
                     "default": false
                   },
+                  "photos": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "mediaId": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "alt": {
+                          "type": "string",
+                          "maxLength": 200,
+                          "default": "",
+                          "description": "What the photo shows, for people who cannot see it. Blank is allowed."
+                        }
+                      },
+                      "required": [
+                        "mediaId"
+                      ]
+                    },
+                    "maxItems": 4,
+                    "default": []
+                  },
                   "visaCountry": {
                     "type": "string",
                     "pattern": "^[A-Z]{2}$"
@@ -10266,6 +10373,25 @@
                         }
                       ]
                     },
+                    "photos": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "mediaId": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "alt": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "mediaId",
+                          "alt"
+                        ]
+                      }
+                    },
                     "createdAt": {
                       "type": "string",
                       "format": "date-time"
@@ -10428,6 +10554,7 @@
                     "place",
                     "audience",
                     "attachment",
+                    "photos",
                     "createdAt",
                     "editedAt",
                     "author",
@@ -10945,6 +11072,25 @@
                         }
                       ]
                     },
+                    "photos": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "mediaId": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "alt": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "mediaId",
+                          "alt"
+                        ]
+                      }
+                    },
                     "createdAt": {
                       "type": "string",
                       "format": "date-time"
@@ -11107,6 +11253,7 @@
                     "place",
                     "audience",
                     "attachment",
+                    "photos",
                     "createdAt",
                     "editedAt",
                     "author",
@@ -11525,6 +11672,25 @@
                         }
                       ]
                     },
+                    "photos": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "mediaId": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "alt": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "mediaId",
+                          "alt"
+                        ]
+                      }
+                    },
                     "createdAt": {
                       "type": "string",
                       "format": "date-time"
@@ -11687,6 +11853,7 @@
                     "place",
                     "audience",
                     "attachment",
+                    "photos",
                     "createdAt",
                     "editedAt",
                     "author",
@@ -12531,6 +12698,25 @@
                         }
                       ]
                     },
+                    "photos": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "mediaId": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "alt": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "mediaId",
+                          "alt"
+                        ]
+                      }
+                    },
                     "createdAt": {
                       "type": "string",
                       "format": "date-time"
@@ -12693,6 +12879,7 @@
                     "place",
                     "audience",
                     "attachment",
+                    "photos",
                     "createdAt",
                     "editedAt",
                     "author",
@@ -13092,6 +13279,25 @@
                         }
                       ]
                     },
+                    "photos": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "mediaId": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "alt": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "mediaId",
+                          "alt"
+                        ]
+                      }
+                    },
                     "createdAt": {
                       "type": "string",
                       "format": "date-time"
@@ -13254,6 +13460,7 @@
                     "place",
                     "audience",
                     "attachment",
+                    "photos",
                     "createdAt",
                     "editedAt",
                     "author",
@@ -13656,6 +13863,25 @@
                         }
                       ]
                     },
+                    "photos": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "mediaId": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "alt": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "mediaId",
+                          "alt"
+                        ]
+                      }
+                    },
                     "createdAt": {
                       "type": "string",
                       "format": "date-time"
@@ -13818,6 +14044,7 @@
                     "place",
                     "audience",
                     "attachment",
+                    "photos",
                     "createdAt",
                     "editedAt",
                     "author",
@@ -14218,6 +14445,25 @@
                         }
                       ]
                     },
+                    "photos": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "mediaId": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "alt": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "mediaId",
+                          "alt"
+                        ]
+                      }
+                    },
                     "createdAt": {
                       "type": "string",
                       "format": "date-time"
@@ -14380,6 +14626,7 @@
                     "place",
                     "audience",
                     "attachment",
+                    "photos",
                     "createdAt",
                     "editedAt",
                     "author",
@@ -17193,6 +17440,25 @@
                               }
                             ]
                           },
+                          "photos": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "mediaId": {
+                                  "type": "string",
+                                  "format": "uuid"
+                                },
+                                "alt": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "mediaId",
+                                "alt"
+                              ]
+                            }
+                          },
                           "createdAt": {
                             "type": "string",
                             "format": "date-time"
@@ -17355,6 +17621,7 @@
                           "place",
                           "audience",
                           "attachment",
+                          "photos",
                           "createdAt",
                           "editedAt",
                           "author",
@@ -18706,6 +18973,534 @@
           },
           "422": {
             "description": "The ids or the body are not valid.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "description": "A URN identifying the kind of problem."
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "integer"
+                    },
+                    "code": {
+                      "type": "string",
+                      "description": "Stable machine-readable code. Clients switch on this."
+                    },
+                    "detail": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "field": {
+                            "type": "string"
+                          },
+                          "code": {
+                            "type": "string"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "field",
+                          "code",
+                          "message"
+                        ]
+                      },
+                      "description": "Per-field problems, present for VALIDATION_FAILED."
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "title",
+                    "status",
+                    "code"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/media": {
+      "post": {
+        "operationId": "uploadMedia",
+        "tags": [
+          "Media"
+        ],
+        "summary": "Upload an image",
+        "description": "The raw bytes of a JPEG, PNG or WebP (up to 8 MB and 8192 px a side) as the body. The type is read from the bytes, not from `Content-Type`. EXIF (including GPS), XMP, IPTC, comments and text chunks are removed before the image is stored. The image is private until it is placed on a post or a stop. At most 100 uploads a day.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "image/jpeg": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            },
+            "image/png": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            },
+            "image/webp": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The stored image.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "contentType": {
+                      "type": "string"
+                    },
+                    "width": {
+                      "type": "integer"
+                    },
+                    "height": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "contentType",
+                    "width",
+                    "height"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid session.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "description": "A URN identifying the kind of problem."
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "integer"
+                    },
+                    "code": {
+                      "type": "string",
+                      "description": "Stable machine-readable code. Clients switch on this."
+                    },
+                    "detail": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "field": {
+                            "type": "string"
+                          },
+                          "code": {
+                            "type": "string"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "field",
+                          "code",
+                          "message"
+                        ]
+                      },
+                      "description": "Per-field problems, present for VALIDATION_FAILED."
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "title",
+                    "status",
+                    "code"
+                  ]
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "The body is larger than 8 MB.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "description": "A URN identifying the kind of problem."
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "integer"
+                    },
+                    "code": {
+                      "type": "string",
+                      "description": "Stable machine-readable code. Clients switch on this."
+                    },
+                    "detail": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "field": {
+                            "type": "string"
+                          },
+                          "code": {
+                            "type": "string"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "field",
+                          "code",
+                          "message"
+                        ]
+                      },
+                      "description": "Per-field problems, present for VALIDATION_FAILED."
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "title",
+                    "status",
+                    "code"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Not a JPEG, PNG or WebP within the limits (`unsupported_image`).",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "description": "A URN identifying the kind of problem."
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "integer"
+                    },
+                    "code": {
+                      "type": "string",
+                      "description": "Stable machine-readable code. Clients switch on this."
+                    },
+                    "detail": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "field": {
+                            "type": "string"
+                          },
+                          "code": {
+                            "type": "string"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "field",
+                          "code",
+                          "message"
+                        ]
+                      },
+                      "description": "Per-field problems, present for VALIDATION_FAILED."
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "title",
+                    "status",
+                    "code"
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many uploads today.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "description": "A URN identifying the kind of problem."
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "integer"
+                    },
+                    "code": {
+                      "type": "string",
+                      "description": "Stable machine-readable code. Clients switch on this."
+                    },
+                    "detail": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "field": {
+                            "type": "string"
+                          },
+                          "code": {
+                            "type": "string"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "field",
+                          "code",
+                          "message"
+                        ]
+                      },
+                      "description": "Per-field problems, present for VALIDATION_FAILED."
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "title",
+                    "status",
+                    "code"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/media/{mediaId}": {
+      "get": {
+        "operationId": "getMedia",
+        "tags": [
+          "Media"
+        ],
+        "summary": "An image",
+        "description": "For its owner, or for someone who may see a post that shows it. Stop photos stay with the trip’s owner. Anything else is `404`.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true,
+            "name": "mediaId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The image bytes.",
+            "content": {
+              "image/jpeg": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              },
+              "image/png": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              },
+              "image/webp": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid session.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "description": "A URN identifying the kind of problem."
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "integer"
+                    },
+                    "code": {
+                      "type": "string",
+                      "description": "Stable machine-readable code. Clients switch on this."
+                    },
+                    "detail": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "field": {
+                            "type": "string"
+                          },
+                          "code": {
+                            "type": "string"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "field",
+                          "code",
+                          "message"
+                        ]
+                      },
+                      "description": "Per-field problems, present for VALIDATION_FAILED."
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "title",
+                    "status",
+                    "code"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such image, or the session may not see it.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "description": "A URN identifying the kind of problem."
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "integer"
+                    },
+                    "code": {
+                      "type": "string",
+                      "description": "Stable machine-readable code. Clients switch on this."
+                    },
+                    "detail": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "field": {
+                            "type": "string"
+                          },
+                          "code": {
+                            "type": "string"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "field",
+                          "code",
+                          "message"
+                        ]
+                      },
+                      "description": "Per-field problems, present for VALIDATION_FAILED."
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "title",
+                    "status",
+                    "code"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The id is not valid.",
             "content": {
               "application/problem+json": {
                 "schema": {

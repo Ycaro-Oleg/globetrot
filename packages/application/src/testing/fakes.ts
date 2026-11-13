@@ -22,6 +22,8 @@ import type {
   UserRecord,
   DayPlaceRecord,
   DayPlaceWriter,
+  MediaRecord,
+  MediaWriter,
 } from '../ports';
 import {
   createFakeCommunity,
@@ -42,6 +44,7 @@ export interface FakeState {
   savings: Map<string, SavingsRecord>;
   preferences: Map<string, PreferencesRecord>;
   community: FakeCommunityState;
+  media: Map<string, MediaRecord>;
   audit: AuditEventInput[];
   idempotency: Map<string, { fingerprint: string; response: unknown }>;
 }
@@ -81,6 +84,7 @@ export function createFakePorts(options: FakeOptions = {}) {
     savings: new Map(),
     preferences: new Map(),
     community: emptyCommunityState(),
+    media: new Map(),
     audit: [],
     idempotency: new Map(),
   };
@@ -303,6 +307,23 @@ export function createFakePorts(options: FakeOptions = {}) {
     () => state.preferences,
   );
 
+  const storage = new Map<string, { bytes: Uint8Array; contentType: string }>();
+  const mediaWriter: MediaWriter = {
+    async findById(id) {
+      return state.media.get(id) ?? null;
+    },
+    async findMany(ids) {
+      return ids.flatMap((id) => (state.media.has(id) ? [state.media.get(id)!] : []));
+    },
+    async insert(record) {
+      state.media.set(record.id, record);
+    },
+    async countSince(ownerId, since) {
+      return [...state.media.values()].filter((m) => m.ownerId === ownerId && m.createdAt >= since)
+        .length;
+    },
+  };
+
   const transaction: Transaction = {
     trips: tripWriter,
     expenses: expenseWriter,
@@ -313,6 +334,7 @@ export function createFakePorts(options: FakeOptions = {}) {
     destinations: destinationWriter,
     preferences: preferencesWriter,
     community,
+    media: mediaWriter,
     audit: {
       async record(event) {
         if (faults.auditFails) throw new Error('audit store is down');
@@ -352,6 +374,15 @@ export function createFakePorts(options: FakeOptions = {}) {
     savings: savingsWriter,
     preferences: preferencesWriter,
     community,
+    media: mediaWriter,
+    storage: {
+      async put(key, bytes, contentType) {
+        storage.set(key, { bytes, contentType });
+      },
+      async get(key) {
+        return storage.get(key)?.bytes ?? null;
+      },
+    },
     unitOfWork: {
       // Commit or roll back as one, like a database transaction.
       async run(work) {
@@ -365,6 +396,7 @@ export function createFakePorts(options: FakeOptions = {}) {
           savings: new Map(state.savings),
           preferences: new Map(state.preferences),
           community: structuredClone(state.community),
+          media: new Map(state.media),
           audit: [...state.audit],
           idempotency: new Map(
             [...state.idempotency].map(([key, value]) => [key, { ...value }] as const),
@@ -382,6 +414,7 @@ export function createFakePorts(options: FakeOptions = {}) {
           state.savings = before.savings;
           state.preferences = before.preferences;
           state.community = before.community;
+          state.media = before.media;
           state.audit = before.audit;
           state.idempotency = before.idempotency;
           throw error;
