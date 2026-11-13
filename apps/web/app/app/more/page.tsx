@@ -6,10 +6,10 @@ import { SITE_NAME } from '../../site';
 import {
   MORE_ITEMS,
   PIP_HREF,
-  PIP_ICON as PipIcon,
   SETTINGS_HREF,
   SETTINGS_ICON as SettingsIcon,
 } from '../_components/nav-model';
+import { PipAvatar } from '../_components/pip-avatar';
 import styles from '../_components/shell.module.css';
 
 export async function generateMetadata() {
@@ -44,7 +44,7 @@ export default function MorePage() {
         {isPipEnabled() ? (
           <li>
             <Link href={PIP_HREF} className={styles.moreLink}>
-              <PipIcon aria-hidden="true" strokeWidth={1.6} size={22} />
+              <PipAvatar size={28} still />
               <span>{shell('pip.ask')}</span>
             </Link>
           </li>

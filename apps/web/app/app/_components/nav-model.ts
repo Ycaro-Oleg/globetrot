@@ -6,7 +6,6 @@ import {
   Menu,
   Plane,
   Settings,
-  Sparkles,
   Wallet,
   CalendarDays,
   House,
@@ -56,7 +55,6 @@ export const PIP_HREF = '/app/pip';
 
 /** Icons shared by the shell's other parts. */
 export const BRAND_ICON: LucideIcon = Compass;
-export const PIP_ICON: LucideIcon = Sparkles;
 export const SETTINGS_ICON: LucideIcon = Settings;
 
 /** Paths that the More tab stands for: when one of them is open, More is the tab that is current. */

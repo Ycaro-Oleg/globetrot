@@ -2,6 +2,14 @@
 
 **Status: draft for product-owner approval.** This is a commissioning brief and a proposed engineering contract, not a signed agreement or an approved asset. Issue #9 remains open until the owner approves it and the final asset/contract are verified.
 
+## The avatar in the app today
+
+At the owner's request, Pip appears in the app as an [open-bot-avatar](https://github.com/DominikScholz/open-bot-avatar) (MIT, no dependencies, pinned to an exact version in `apps/web`): one silhouette (a round globe with a tourist hat) and two eyes, in airmail blue with cream eyes. The definition and the component are `PIP_AVATAR` and `PipAvatar` in `apps/web/app/app/_components/pip-avatar.tsx`.
+
+- **Where:** the visa celebration on the board (mood `happy`), the Pip page (follows the pointer), and the "Ask Pip" button, floating button and More entry (still frames).
+- **Behaviour:** the server renders a still SVG; the browser mounts the live avatar (blinks, idle motion, mood, gaze) over it. Reduced motion (the app's Motion setting or the system's) keeps it calm. It is always decorative (`aria-hidden`): the text next to it carries the meaning.
+- **Moods map to the brief's states** for now: `idle` for idle, `thinking` for research and draft, `happy` for deliver and celebrate. The six commissioned Rive poses below remain the plan for the final art; whether they replace this avatar is the owner's decision (#9).
+
 ## The character
 
 Pip is Globetrot's optional travel-planning companion: a friendly little globe with a tourist hat and suitcase. Pip should feel curious, capable and reassuring, with expressive eyes and a simple silhouette legible at small sizes. The reference in [the handoff](../../design/reference/claude-design-v1/README.md#pip-ai-companion) and [placeholder poses](../../design/reference/claude-design-v1/atlas/pip.js) establish the visual direction; the SVG is a placeholder, not final art.

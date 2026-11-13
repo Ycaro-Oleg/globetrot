@@ -1,0 +1,24 @@
+.pip {
+  position: relative;
+  display: inline-block;
+  flex: none;
+  max-width: 100%;
+  aspect-ratio: 1;
+}
+
+.live,
+.still {
+  position: absolute;
+  inset: 0;
+}
+
+.still svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Once the live avatar is mounted, the server's still frame steps aside. */
+.live[data-live] + .still {
+  visibility: hidden;
+}

@@ -3,7 +3,7 @@
 import { useLocale, useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useEffect, useRef } from 'react';
-import { PipMascot } from '../_components/pip-mascot';
+import { PipAvatar } from '../_components/pip-avatar';
 import styles from './world-map.module.css';
 
 export type StampedVisa = { countryCode: string; city: string; stampedAt: string };
@@ -70,7 +70,7 @@ export function VisaOverlay({ visa, onClose }: { visa: StampedVisa; onClose: () 
           <strong>{country}</strong>
           <span>{date}</span>
         </div>
-        <PipMascot size={96} />
+        <PipAvatar size={112} mood="happy" />
         <h2 id="visa-title">{t('title')}</h2>
         <p id="visa-body">
           {t('body', { country, city: visa.city })} <small>{t('disclaimer')}</small>
