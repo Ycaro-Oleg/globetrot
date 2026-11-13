@@ -77,6 +77,8 @@ describe('/v1/me/preferences', () => {
       units: 'metric',
       theme: 'system',
       motion: 'full',
+      homeCity: null,
+      pipOptIn: false,
     });
   });
 
@@ -93,6 +95,8 @@ describe('/v1/me/preferences', () => {
       units: 'metric',
       theme: 'system',
       motion: 'full',
+      homeCity: null,
+      pipOptIn: false,
     });
     expect((await call(ana, 'PATCH', { homeCountry: null })).json).toMatchObject({
       homeCountry: null,

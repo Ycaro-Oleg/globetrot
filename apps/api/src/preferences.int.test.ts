@@ -27,6 +27,8 @@ const DEFAULTS = {
   units: 'metric',
   theme: 'system',
   motion: 'full',
+  homeCity: null,
+  pipOptIn: false,
 };
 
 async function harness() {
@@ -124,6 +126,8 @@ describe('preferences against a real database', () => {
       units: 'imperial',
       theme: 'red-eye',
       motion: 'reduced',
+      homeCity: 'São Paulo',
+      pipOptIn: true,
     };
     expect((await call(ana.cookie, 'PATCH', full)).json).toEqual(full);
 
@@ -136,6 +140,8 @@ describe('preferences against a real database', () => {
       ['units', 'metric'],
       ['theme', 'day'],
       ['motion', 'full'],
+      ['homeCity', 'Lisbon'],
+      ['pipOptIn', false],
     ] as const) {
       const before = (await call(ana.cookie, 'GET')).json;
       const { json } = await call(ana.cookie, 'PATCH', { [field]: value });

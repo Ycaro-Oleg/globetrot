@@ -256,9 +256,14 @@ export default async function TripsPage({
                   {t('clearFilters')}
                 </Link>
               ) : (
-                <a href="#create-trip-form" className={styles.primaryAction}>
-                  {t('create')}
-                </a>
+                <>
+                  <Link href="/onboarding" className={styles.primaryAction}>
+                    {t('planFirst')}
+                  </Link>
+                  <a href="#create-trip-form" className={styles.secondaryAction}>
+                    {t('create')}
+                  </a>
+                </>
               )}
             </div>
           )}

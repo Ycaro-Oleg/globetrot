@@ -18,6 +18,8 @@ const VALUES: SettingsViewProps['values'] = {
   units: 'metric',
   theme: 'system',
   motion: 'full',
+  homeCity: null,
+  pipOptIn: false,
 };
 
 function render(locale: SupportedLocale, status?: string, values = VALUES): string {

@@ -92,6 +92,13 @@
       "when": 1794579855147,
       "tag": "0012_day_places",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1794594797629,
+      "tag": "0013_home_city_and_pip",
+      "breakpoints": true
     }
   ]
 }

@@ -17,6 +17,9 @@ export interface StoredPreferences {
   readonly units: 'metric' | 'imperial';
   readonly theme: ThemeChoice;
   readonly motion: MotionChoice;
+  /** The city the person usually leaves from, or null. */
+  readonly homeCity: string | null;
+  readonly pipOptIn: boolean;
 }
 
 /**

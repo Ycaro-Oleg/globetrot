@@ -1,6 +1,6 @@
 'use client';
 
-import { Banner, Button, SegmentedControl, SelectField } from '@globetrot/ui';
+import { Banner, Button, SegmentedControl, SelectField, TextField } from '@globetrot/ui';
 import { useTranslations } from 'next-intl';
 import { savePreferences } from '../actions';
 import { NOT_SET, type Option } from './options';
@@ -13,6 +13,8 @@ export interface SettingsViewProps {
     readonly homeCountry: string | null;
     readonly nationality: string | null;
     readonly timeZone: string | null;
+    readonly homeCity?: string | null;
+    readonly pipOptIn?: boolean;
     readonly units: string;
     readonly theme: string;
     readonly motion: string;
@@ -100,6 +102,14 @@ export function SettingsView({
             description={t('optionalHelp')}
             options={optional(countries)}
             defaultSelectedKey={values.homeCountry ?? NOT_SET}
+          />
+          <TextField
+            name="homeCity"
+            label={t('homeCity')}
+            description={t('homeCityHelp')}
+            maxLength={120}
+            autoComplete="address-level2"
+            defaultValue={values.homeCity ?? ''}
           />
           <SelectField
             name="nationality"

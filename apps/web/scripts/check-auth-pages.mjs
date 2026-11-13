@@ -51,6 +51,8 @@ const PREFERENCES = {
   units: 'metric',
   theme: 'system',
   motion: 'full',
+  homeCity: null,
+  pipOptIn: false,
 };
 
 const NOW = '2026-11-08T12:00:00.000Z';
@@ -673,6 +675,19 @@ try {
       entries.push([`shell-home-${layout}`, true, ...at('/app', VIEWPORTS[layout])]);
     }
     entries.push(['shell-days-desktop', true, ...at('/app/days', VIEWPORTS.desktop)]);
+    for (const layout of ['desktop', 'phone']) {
+      entries.push([`onboarding-welcome-${layout}`, true, ...at('/onboarding', VIEWPORTS[layout])]);
+      entries.push([
+        `onboarding-home-city-${layout}`,
+        true,
+        async (page) => {
+          await go(page, `${base}/onboarding`);
+          await page.locator('form button[type=submit]').click();
+          await page.locator('#onboarding-home').waitFor();
+        },
+        VIEWPORTS[layout],
+      ]);
+    }
     entries.push([
       'days-add-place',
       true,
