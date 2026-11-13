@@ -1,4 +1,7 @@
 import type {
+  PostAudience,
+  PostKind,
+  ReportReason,
   MotionChoice,
   ThemeChoice,
   TripStatus,
@@ -337,6 +340,164 @@ export interface DayPlaceWriter extends DayPlaceReader {
   delete(id: string): Promise<void>;
 }
 
+// --- Community -----------------------------------------------------------------------------------------
+
+/** What a route, visa or goal post shows: copied when it was published, never a live link to a trip. */
+export type PostAttachmentRecord =
+  | {
+      readonly kind: 'route';
+      readonly title: string;
+      readonly nights: number;
+      readonly stops: readonly {
+        readonly placeKey: string;
+        readonly name: string;
+        readonly countryCode: string | null;
+        readonly region: string | null;
+        readonly latitude: number;
+        readonly longitude: number;
+        readonly nights: number;
+      }[];
+      /** The planned total (major units, exact), only when the author chose to show it. */
+      readonly total: { readonly amount: string; readonly currency: string } | null;
+    }
+  | {
+      readonly kind: 'visa';
+      readonly countryCode: string;
+      readonly city: string;
+      readonly stampedAt: string;
+      readonly ordinal: number;
+    }
+  | {
+      readonly kind: 'goal';
+      readonly tripTitle: string;
+      readonly readyMonth: string;
+      readonly reached: boolean;
+    };
+
+export interface CommunityProfileRecord {
+  readonly userId: string;
+  readonly handle: string;
+}
+
+/** A person as the community shows them. */
+export interface PersonRecord {
+  readonly userId: string;
+  readonly handle: string;
+  readonly name: string;
+  readonly pipLook: { hat: string; outfit: string; bag: string; bagColor: string } | null;
+}
+
+export interface PostRecord {
+  readonly id: string;
+  readonly authorId: string;
+  readonly kind: PostKind;
+  readonly body: string;
+  readonly placeName: string | null;
+  readonly placeCountry: string | null;
+  readonly audience: PostAudience;
+  readonly attachment: PostAttachmentRecord | null;
+  readonly createdAt: Date;
+  readonly editedAt: Date | null;
+  readonly deletedAt: Date | null;
+  readonly hiddenAt: Date | null;
+}
+
+export type NewPost = Omit<PostRecord, 'editedAt' | 'deletedAt' | 'hiddenAt'>;
+
+export interface PostPatch {
+  readonly body?: string;
+  readonly editedAt?: Date;
+  readonly deletedAt?: Date | null;
+  readonly hiddenAt?: Date | null;
+}
+
+/** What one viewer sees about a post besides its content. */
+export interface PostStatsRecord {
+  readonly likes: number;
+  readonly liked: boolean;
+  readonly saved: boolean;
+  readonly comments: number;
+  /** Someone the viewer follows who liked it, or null. */
+  readonly likedBy: string | null;
+}
+
+export interface CommentRecord {
+  readonly id: string;
+  readonly postId: string;
+  readonly authorId: string;
+  readonly body: string;
+  readonly createdAt: Date;
+  readonly deletedAt: Date | null;
+}
+
+export interface CommentWithStats extends CommentRecord {
+  readonly likes: number;
+  readonly liked: boolean;
+}
+
+/** Which feed: everything the viewer may see, only people they follow (and themselves), or one author. */
+export type FeedScope =
+  | { readonly kind: 'all' }
+  | { readonly kind: 'following' }
+  | { readonly kind: 'author'; readonly authorId: string };
+
+export interface CommunityReader {
+  findProfile(userId: string): Promise<CommunityProfileRecord | null>;
+  findProfileByHandle(handle: string): Promise<CommunityProfileRecord | null>;
+  /** Name, handle and Pip of each listed person who has a community profile. */
+  people(userIds: readonly string[]): Promise<PersonRecord[]>;
+  /**
+   * Newest first, at most `limit`, older than `before` (a post id: ids are time-ordered) when given. Applies the
+   * visibility rule (`canSeePost`) for `viewerId`.
+   */
+  feed(input: {
+    readonly viewerId: string;
+    readonly scope: FeedScope;
+    readonly before?: string | undefined;
+    readonly limit: number;
+  }): Promise<PostRecord[]>;
+  findPost(id: string): Promise<PostRecord | null>;
+  /** How `viewerId` relates to each listed person. */
+  relations(
+    viewerId: string,
+    userIds: readonly string[],
+  ): Promise<{ following: Set<string>; muted: Set<string> }>;
+  hasReported(viewerId: string, postId: string): Promise<boolean>;
+  stats(viewerId: string, postIds: readonly string[]): Promise<Map<string, PostStatsRecord>>;
+  /** A post's comments in order, without deleted ones or those by people the viewer muted. */
+  comments(viewerId: string, postId: string): Promise<CommentWithStats[]>;
+  findComment(id: string): Promise<CommentRecord | null>;
+  /** People with recent public posts whom the viewer neither follows nor muted, most active first. */
+  suggestions(
+    viewerId: string,
+    since: Date,
+    limit: number,
+  ): Promise<{ userId: string; posts: number }[]>;
+  /** Countries most tagged on recent public posts. */
+  trending(since: Date, limit: number): Promise<{ countryCode: string; posts: number }[]>;
+  personStats(userId: string): Promise<{ posts: number; followers: number; following: number }>;
+  countPostsSince(authorId: string, since: Date): Promise<number>;
+  countCommentsSince(authorId: string, since: Date): Promise<number>;
+}
+
+export interface CommunityWriter extends CommunityReader {
+  /** `false` when the handle is taken. */
+  createProfile(userId: string, handle: string, now: Date): Promise<boolean>;
+  /** `false` when the handle is taken. */
+  updateHandle(userId: string, handle: string): Promise<boolean>;
+  insertPost(post: NewPost): Promise<void>;
+  updatePost(id: string, patch: PostPatch): Promise<void>;
+  setLike(postId: string, userId: string, on: boolean, now: Date): Promise<void>;
+  setSave(postId: string, userId: string, on: boolean, now: Date): Promise<void>;
+  setCommentLike(commentId: string, userId: string, on: boolean, now: Date): Promise<void>;
+  insertComment(comment: Omit<CommentRecord, 'deletedAt'>): Promise<void>;
+  setCommentDeleted(id: string, deletedAt: Date | null): Promise<void>;
+  setFollow(followerId: string, followeeId: string, on: boolean, now: Date): Promise<void>;
+  setMute(userId: string, mutedId: string, on: boolean, now: Date): Promise<void>;
+  /** Records the report once per person; answers how many people reported the post. */
+  report(postId: string, reporterId: string, reason: ReportReason, now: Date): Promise<number>;
+}
+
 // --- Places (geocoding) -------------------------------------------------------------------------------
 
 /** A place a geocoder found. `key` is stable for the same place from the same provider. */
@@ -425,6 +586,7 @@ export interface Transaction {
   readonly visas: VisaWriter;
   readonly savings: SavingsWriter;
   readonly preferences: PreferencesWriter;
+  readonly community: CommunityWriter;
   readonly audit: AuditLog;
   readonly idempotency: IdempotencyStore;
 }
@@ -453,6 +615,7 @@ export interface Ports {
   readonly visas: VisaReader;
   readonly savings: SavingsReader;
   readonly preferences: PreferencesReader;
+  readonly community: CommunityReader;
   readonly unitOfWork: UnitOfWork;
   readonly clock: Clock;
   readonly ids: IdGenerator;

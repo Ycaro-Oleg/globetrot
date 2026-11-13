@@ -5,6 +5,7 @@ import {
   type UserReader,
 } from '@globetrot/application';
 import {
+  createCommunityRepository,
   createDestinationRepository,
   createChecklistRepository,
   createDayPlaceRepository,
@@ -78,6 +79,7 @@ export function createServices(
       visas: createVisaRepository(db),
       savings: createSavingsRepository(db),
       preferences: createPreferencesRepository(db),
+      community: createCommunityRepository(db),
       unitOfWork: createUnitOfWork(db),
       clock: { now: () => new Date() },
       ids: { newId: () => uuidV7(Date.now(), crypto.getRandomValues(new Uint8Array(10))) },

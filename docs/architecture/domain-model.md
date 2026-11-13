@@ -28,7 +28,7 @@ flowchart TB
 | **Finance** | Budget, Expense, ExchangeRate, SavingsGoal, SavingsEntry | See [`money.md`](money.md) |
 | **Assistant** | AIProposal, ProposalChange, AIUsage | A change list with status `proposed / applied / discarded / undone` |
 | **Progression** | Passport, VisaPage, Stamp, Milestone, Achievement, XPEvent, Rank | XPEvent is an immutable ledger. Ranks come later |
-| **Social** (later) | SocialPost, Comment, Reaction, Follow, Block, Report, Collection | Private by default |
+| **Social** (community, v2) | CommunityProfile (handle), Post (moment, tip, route, visa, goal), Comment, Like, Save, Follow, Mute, Report. Block and Collection later | `canSeePost` decides visibility; shared trips are snapshots ([ADR-0013](adr/0013-community.md)). Physical shape: [`data-model.md`](data-model.md#community) |
 | **Media** | MediaAsset | EXIF location stripped by default |
 | **Billing** | Customer, Subscription, Entitlement, PlanConfig | Prices live in data, never in code |
 | **Notification** | Notification, NotificationPreference | — |

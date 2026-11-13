@@ -400,6 +400,369 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/community/feed": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The community feed, newest first
+         * @description `all` is everything the session may see (public posts, followers-only posts of people it follows, its own); `following` keeps the people it follows and itself. Muted people, reported posts and posts hidden by reports are left out. Page with `before` (the `nextBefore` of the previous page).
+         */
+        get: operations["listFeed"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/community/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The session’s own handle and counts
+         * @description The handle is null until the person first posts, comments, likes or follows.
+         */
+        get: operations["getCommunityMe"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Change the session’s handle */
+        patch: operations["updateHandle"];
+        trace?: never;
+    };
+    "/v1/community/discover": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Who to follow and trending destinations
+         * @description People with public posts in the last 30 days whom the session neither follows nor muted, and the countries most tagged on public posts in that time.
+         */
+        get: operations["getDiscover"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/community/posts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Publish a post
+         * @description Moments and tips need words. A route or goal post names one of the session’s trips (`tripId`) and a visa post one of its visas (`visaCountry`): the post carries a copy made now, never a live link to the trip. Route amounts are left out unless `showAmounts`; goal posts never carry amounts. At most 30 posts a day.
+         */
+        post: operations["createPost"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/community/posts/{postId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** One post */
+        get: operations["getPost"];
+        put?: never;
+        post?: never;
+        /**
+         * Delete one’s own post
+         * @description It disappears at once; `restore` brings it back.
+         */
+        delete: operations["deletePost"];
+        options?: never;
+        head?: never;
+        /** Edit the words of one’s own post */
+        patch: operations["updatePost"];
+        trace?: never;
+    };
+    "/v1/community/posts/{postId}/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Undo deleting one’s own post */
+        post: operations["restorePost"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/community/posts/{postId}/like": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Like a post */
+        put: operations["addLike"];
+        post?: never;
+        /** Unlike a post */
+        delete: operations["removeLike"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/community/posts/{postId}/save": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Save a post
+         * @description Saves are private: only the session knows.
+         */
+        put: operations["addSave"];
+        post?: never;
+        /**
+         * Unsave a post
+         * @description Saves are private: only the session knows.
+         */
+        delete: operations["removeSave"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/community/posts/{postId}/comments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * A post’s comments, oldest first
+         * @description Without deleted comments or comments by people the session muted. At most 200.
+         */
+        get: operations["listComments"];
+        put?: never;
+        /**
+         * Comment on a post
+         * @description At most 200 comments a day.
+         */
+        post: operations["addComment"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/community/posts/{postId}/report": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Report a post
+         * @description Kept for review, once per person. The post is hidden from the reporter at once, and from everyone but its author after 3 distinct reports.
+         */
+        post: operations["reportPost"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/community/posts/{postId}/copy-route": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Copy a shared route into a new trip
+         * @description A new private trip in USD with the route’s stops and nights. `Idempotency-Key` works as for `createTrip`.
+         */
+        post: operations["copyRoute"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/community/comments/{commentId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Remove a comment
+         * @description Its author or the post’s author may remove it; `restore` brings it back.
+         */
+        delete: operations["deleteComment"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/community/comments/{commentId}/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Undo removing a comment */
+        post: operations["restoreComment"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/community/comments/{commentId}/like": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Like a comment */
+        put: operations["addCommentLike"];
+        post?: never;
+        /** Unlike a comment */
+        delete: operations["removeCommentLike"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/community/people/{handle}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** A person’s community page */
+        get: operations["getPerson"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/community/people/{handle}/posts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** A person’s posts the session may see */
+        get: operations["listPersonPosts"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/community/people/{handle}/follow": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Follow a person
+         * @description Following is open: no request to accept. Following oneself is refused (422).
+         */
+        put: operations["followPerson"];
+        post?: never;
+        /**
+         * Unfollow a person
+         * @description Following is open: no request to accept. Following oneself is refused (422).
+         */
+        delete: operations["unfollowPerson"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/community/people/{handle}/mute": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Mute a person
+         * @description Muting is private: the muted person is not told, and their posts and comments disappear for the session.
+         */
+        put: operations["mutePerson"];
+        post?: never;
+        /**
+         * Unmute a person
+         * @description Muting is private: the muted person is not told, and their posts and comments disappear for the session.
+         */
+        delete: operations["unmutePerson"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -3903,6 +4266,3435 @@ export interface operations {
             };
             /** @description Place search is not configured or the provider is not answering. */
             503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    listFeed: {
+        parameters: {
+            query?: {
+                feed?: "all" | "following";
+                before?: string;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description A page of posts. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        posts: {
+                            /** Format: uuid */
+                            id: string;
+                            /** @enum {string} */
+                            kind: "moment" | "tip" | "route" | "visa" | "goal";
+                            body: string;
+                            place: {
+                                name: string;
+                                countryCode: string | null;
+                            } | null;
+                            /** @enum {string} */
+                            audience: "everyone" | "followers";
+                            attachment: {
+                                /** @enum {string} */
+                                kind: "route";
+                                title: string;
+                                nights: number;
+                                stops: {
+                                    name: string;
+                                    countryCode: string | null;
+                                    nights: number;
+                                }[];
+                                total: {
+                                    /**
+                                     * @description Major units, exact.
+                                     * @example 1250.00
+                                     */
+                                    amount: string;
+                                    currency: string;
+                                } | null;
+                            } | {
+                                /** @enum {string} */
+                                kind: "visa";
+                                countryCode: string;
+                                city: string;
+                                /** Format: date-time */
+                                stampedAt: string;
+                                ordinal: number;
+                            } | {
+                                /** @enum {string} */
+                                kind: "goal";
+                                tripTitle: string;
+                                readyMonth: string;
+                                reached: boolean;
+                            } | null;
+                            /** Format: date-time */
+                            createdAt: string;
+                            /** Format: date-time */
+                            editedAt: string | null;
+                            author: {
+                                handle: string;
+                                name: string;
+                                pipLook: {
+                                    /** @enum {string} */
+                                    hat: "straw" | "helmet" | "cap" | "none";
+                                    /** @enum {string} */
+                                    outfit: "none" | "scarf" | "aloha" | "vest";
+                                    /** @enum {string} */
+                                    bag: "trolley" | "backpack" | "vintage";
+                                    /** @enum {string} */
+                                    bagColor: "amber" | "cyan" | "pink";
+                                };
+                            };
+                            mine: boolean;
+                            following: boolean;
+                            likes: number;
+                            liked: boolean;
+                            saved: boolean;
+                            comments: number;
+                            likedBy: {
+                                handle: string;
+                                name: string;
+                                pipLook: {
+                                    /** @enum {string} */
+                                    hat: "straw" | "helmet" | "cap" | "none";
+                                    /** @enum {string} */
+                                    outfit: "none" | "scarf" | "aloha" | "vest";
+                                    /** @enum {string} */
+                                    bag: "trolley" | "backpack" | "vintage";
+                                    /** @enum {string} */
+                                    bagColor: "amber" | "cyan" | "pink";
+                                };
+                            } | null;
+                        }[];
+                        /** Format: uuid */
+                        nextBefore: string | null;
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description The ids or the body are not valid. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    getCommunityMe: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Handle and counts. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        handle: string | null;
+                        suggestedHandle: string;
+                        posts: number;
+                        followers: number;
+                        following: number;
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    updateHandle: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @example ana.mochila */
+                    handle: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Handle and counts. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        handle: string | null;
+                        suggestedHandle: string;
+                        posts: number;
+                        followers: number;
+                        following: number;
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description The handle is not valid or is taken (`handle_taken`). */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    getDiscover: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Suggestions. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        suggestions: {
+                            person: {
+                                handle: string;
+                                name: string;
+                                pipLook: {
+                                    /** @enum {string} */
+                                    hat: "straw" | "helmet" | "cap" | "none";
+                                    /** @enum {string} */
+                                    outfit: "none" | "scarf" | "aloha" | "vest";
+                                    /** @enum {string} */
+                                    bag: "trolley" | "backpack" | "vintage";
+                                    /** @enum {string} */
+                                    bagColor: "amber" | "cyan" | "pink";
+                                };
+                            };
+                            posts: number;
+                        }[];
+                        trending: {
+                            countryCode: string;
+                            posts: number;
+                        }[];
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    createPost: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Client-chosen key that makes a retry safe. */
+                "idempotency-key"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @enum {string} */
+                    kind: "moment" | "tip" | "route" | "visa" | "goal";
+                    /** @default  */
+                    body?: string;
+                    place?: {
+                        name: string;
+                        countryCode?: string | null;
+                    } | null;
+                    /**
+                     * @default everyone
+                     * @enum {string}
+                     */
+                    audience?: "everyone" | "followers";
+                    /** Format: uuid */
+                    tripId?: string;
+                    /** @default false */
+                    showAmounts?: boolean;
+                    visaCountry?: string;
+                };
+            };
+        };
+        responses: {
+            /** @description The post as others will read it. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                        /** @enum {string} */
+                        kind: "moment" | "tip" | "route" | "visa" | "goal";
+                        body: string;
+                        place: {
+                            name: string;
+                            countryCode: string | null;
+                        } | null;
+                        /** @enum {string} */
+                        audience: "everyone" | "followers";
+                        attachment: {
+                            /** @enum {string} */
+                            kind: "route";
+                            title: string;
+                            nights: number;
+                            stops: {
+                                name: string;
+                                countryCode: string | null;
+                                nights: number;
+                            }[];
+                            total: {
+                                /**
+                                 * @description Major units, exact.
+                                 * @example 1250.00
+                                 */
+                                amount: string;
+                                currency: string;
+                            } | null;
+                        } | {
+                            /** @enum {string} */
+                            kind: "visa";
+                            countryCode: string;
+                            city: string;
+                            /** Format: date-time */
+                            stampedAt: string;
+                            ordinal: number;
+                        } | {
+                            /** @enum {string} */
+                            kind: "goal";
+                            tripTitle: string;
+                            readyMonth: string;
+                            reached: boolean;
+                        } | null;
+                        /** Format: date-time */
+                        createdAt: string;
+                        /** Format: date-time */
+                        editedAt: string | null;
+                        author: {
+                            handle: string;
+                            name: string;
+                            pipLook: {
+                                /** @enum {string} */
+                                hat: "straw" | "helmet" | "cap" | "none";
+                                /** @enum {string} */
+                                outfit: "none" | "scarf" | "aloha" | "vest";
+                                /** @enum {string} */
+                                bag: "trolley" | "backpack" | "vintage";
+                                /** @enum {string} */
+                                bagColor: "amber" | "cyan" | "pink";
+                            };
+                        };
+                        mine: boolean;
+                        following: boolean;
+                        likes: number;
+                        liked: boolean;
+                        saved: boolean;
+                        comments: number;
+                        likedBy: {
+                            handle: string;
+                            name: string;
+                            pipLook: {
+                                /** @enum {string} */
+                                hat: "straw" | "helmet" | "cap" | "none";
+                                /** @enum {string} */
+                                outfit: "none" | "scarf" | "aloha" | "vest";
+                                /** @enum {string} */
+                                bag: "trolley" | "backpack" | "vintage";
+                                /** @enum {string} */
+                                bagColor: "amber" | "cyan" | "pink";
+                            };
+                        } | null;
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description No such trip, or it belongs to someone else. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description The Idempotency-Key was already used with a different request. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description The ids or the body are not valid. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description Too many posts today. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    getPost: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                postId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The post. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                        /** @enum {string} */
+                        kind: "moment" | "tip" | "route" | "visa" | "goal";
+                        body: string;
+                        place: {
+                            name: string;
+                            countryCode: string | null;
+                        } | null;
+                        /** @enum {string} */
+                        audience: "everyone" | "followers";
+                        attachment: {
+                            /** @enum {string} */
+                            kind: "route";
+                            title: string;
+                            nights: number;
+                            stops: {
+                                name: string;
+                                countryCode: string | null;
+                                nights: number;
+                            }[];
+                            total: {
+                                /**
+                                 * @description Major units, exact.
+                                 * @example 1250.00
+                                 */
+                                amount: string;
+                                currency: string;
+                            } | null;
+                        } | {
+                            /** @enum {string} */
+                            kind: "visa";
+                            countryCode: string;
+                            city: string;
+                            /** Format: date-time */
+                            stampedAt: string;
+                            ordinal: number;
+                        } | {
+                            /** @enum {string} */
+                            kind: "goal";
+                            tripTitle: string;
+                            readyMonth: string;
+                            reached: boolean;
+                        } | null;
+                        /** Format: date-time */
+                        createdAt: string;
+                        /** Format: date-time */
+                        editedAt: string | null;
+                        author: {
+                            handle: string;
+                            name: string;
+                            pipLook: {
+                                /** @enum {string} */
+                                hat: "straw" | "helmet" | "cap" | "none";
+                                /** @enum {string} */
+                                outfit: "none" | "scarf" | "aloha" | "vest";
+                                /** @enum {string} */
+                                bag: "trolley" | "backpack" | "vintage";
+                                /** @enum {string} */
+                                bagColor: "amber" | "cyan" | "pink";
+                            };
+                        };
+                        mine: boolean;
+                        following: boolean;
+                        likes: number;
+                        liked: boolean;
+                        saved: boolean;
+                        comments: number;
+                        likedBy: {
+                            handle: string;
+                            name: string;
+                            pipLook: {
+                                /** @enum {string} */
+                                hat: "straw" | "helmet" | "cap" | "none";
+                                /** @enum {string} */
+                                outfit: "none" | "scarf" | "aloha" | "vest";
+                                /** @enum {string} */
+                                bag: "trolley" | "backpack" | "vintage";
+                                /** @enum {string} */
+                                bagColor: "amber" | "cyan" | "pink";
+                            };
+                        } | null;
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description No such post, comment or person, or the session may not see it (answered the same way). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description The ids or the body are not valid. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    deletePost: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                postId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Done. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {boolean} */
+                        ok: true;
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description No such post, comment or person, or the session may not see it (answered the same way). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description The ids or the body are not valid. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    updatePost: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                postId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    body: string;
+                };
+            };
+        };
+        responses: {
+            /** @description The post. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                        /** @enum {string} */
+                        kind: "moment" | "tip" | "route" | "visa" | "goal";
+                        body: string;
+                        place: {
+                            name: string;
+                            countryCode: string | null;
+                        } | null;
+                        /** @enum {string} */
+                        audience: "everyone" | "followers";
+                        attachment: {
+                            /** @enum {string} */
+                            kind: "route";
+                            title: string;
+                            nights: number;
+                            stops: {
+                                name: string;
+                                countryCode: string | null;
+                                nights: number;
+                            }[];
+                            total: {
+                                /**
+                                 * @description Major units, exact.
+                                 * @example 1250.00
+                                 */
+                                amount: string;
+                                currency: string;
+                            } | null;
+                        } | {
+                            /** @enum {string} */
+                            kind: "visa";
+                            countryCode: string;
+                            city: string;
+                            /** Format: date-time */
+                            stampedAt: string;
+                            ordinal: number;
+                        } | {
+                            /** @enum {string} */
+                            kind: "goal";
+                            tripTitle: string;
+                            readyMonth: string;
+                            reached: boolean;
+                        } | null;
+                        /** Format: date-time */
+                        createdAt: string;
+                        /** Format: date-time */
+                        editedAt: string | null;
+                        author: {
+                            handle: string;
+                            name: string;
+                            pipLook: {
+                                /** @enum {string} */
+                                hat: "straw" | "helmet" | "cap" | "none";
+                                /** @enum {string} */
+                                outfit: "none" | "scarf" | "aloha" | "vest";
+                                /** @enum {string} */
+                                bag: "trolley" | "backpack" | "vintage";
+                                /** @enum {string} */
+                                bagColor: "amber" | "cyan" | "pink";
+                            };
+                        };
+                        mine: boolean;
+                        following: boolean;
+                        likes: number;
+                        liked: boolean;
+                        saved: boolean;
+                        comments: number;
+                        likedBy: {
+                            handle: string;
+                            name: string;
+                            pipLook: {
+                                /** @enum {string} */
+                                hat: "straw" | "helmet" | "cap" | "none";
+                                /** @enum {string} */
+                                outfit: "none" | "scarf" | "aloha" | "vest";
+                                /** @enum {string} */
+                                bag: "trolley" | "backpack" | "vintage";
+                                /** @enum {string} */
+                                bagColor: "amber" | "cyan" | "pink";
+                            };
+                        } | null;
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description No such post, comment or person, or the session may not see it (answered the same way). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description The ids or the body are not valid. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    restorePost: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                postId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Done. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {boolean} */
+                        ok: true;
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description No such post, comment or person, or the session may not see it (answered the same way). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description The ids or the body are not valid. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    addLike: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                postId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The post after the change. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                        /** @enum {string} */
+                        kind: "moment" | "tip" | "route" | "visa" | "goal";
+                        body: string;
+                        place: {
+                            name: string;
+                            countryCode: string | null;
+                        } | null;
+                        /** @enum {string} */
+                        audience: "everyone" | "followers";
+                        attachment: {
+                            /** @enum {string} */
+                            kind: "route";
+                            title: string;
+                            nights: number;
+                            stops: {
+                                name: string;
+                                countryCode: string | null;
+                                nights: number;
+                            }[];
+                            total: {
+                                /**
+                                 * @description Major units, exact.
+                                 * @example 1250.00
+                                 */
+                                amount: string;
+                                currency: string;
+                            } | null;
+                        } | {
+                            /** @enum {string} */
+                            kind: "visa";
+                            countryCode: string;
+                            city: string;
+                            /** Format: date-time */
+                            stampedAt: string;
+                            ordinal: number;
+                        } | {
+                            /** @enum {string} */
+                            kind: "goal";
+                            tripTitle: string;
+                            readyMonth: string;
+                            reached: boolean;
+                        } | null;
+                        /** Format: date-time */
+                        createdAt: string;
+                        /** Format: date-time */
+                        editedAt: string | null;
+                        author: {
+                            handle: string;
+                            name: string;
+                            pipLook: {
+                                /** @enum {string} */
+                                hat: "straw" | "helmet" | "cap" | "none";
+                                /** @enum {string} */
+                                outfit: "none" | "scarf" | "aloha" | "vest";
+                                /** @enum {string} */
+                                bag: "trolley" | "backpack" | "vintage";
+                                /** @enum {string} */
+                                bagColor: "amber" | "cyan" | "pink";
+                            };
+                        };
+                        mine: boolean;
+                        following: boolean;
+                        likes: number;
+                        liked: boolean;
+                        saved: boolean;
+                        comments: number;
+                        likedBy: {
+                            handle: string;
+                            name: string;
+                            pipLook: {
+                                /** @enum {string} */
+                                hat: "straw" | "helmet" | "cap" | "none";
+                                /** @enum {string} */
+                                outfit: "none" | "scarf" | "aloha" | "vest";
+                                /** @enum {string} */
+                                bag: "trolley" | "backpack" | "vintage";
+                                /** @enum {string} */
+                                bagColor: "amber" | "cyan" | "pink";
+                            };
+                        } | null;
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description No such post, comment or person, or the session may not see it (answered the same way). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description The ids or the body are not valid. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    removeLike: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                postId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The post after the change. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                        /** @enum {string} */
+                        kind: "moment" | "tip" | "route" | "visa" | "goal";
+                        body: string;
+                        place: {
+                            name: string;
+                            countryCode: string | null;
+                        } | null;
+                        /** @enum {string} */
+                        audience: "everyone" | "followers";
+                        attachment: {
+                            /** @enum {string} */
+                            kind: "route";
+                            title: string;
+                            nights: number;
+                            stops: {
+                                name: string;
+                                countryCode: string | null;
+                                nights: number;
+                            }[];
+                            total: {
+                                /**
+                                 * @description Major units, exact.
+                                 * @example 1250.00
+                                 */
+                                amount: string;
+                                currency: string;
+                            } | null;
+                        } | {
+                            /** @enum {string} */
+                            kind: "visa";
+                            countryCode: string;
+                            city: string;
+                            /** Format: date-time */
+                            stampedAt: string;
+                            ordinal: number;
+                        } | {
+                            /** @enum {string} */
+                            kind: "goal";
+                            tripTitle: string;
+                            readyMonth: string;
+                            reached: boolean;
+                        } | null;
+                        /** Format: date-time */
+                        createdAt: string;
+                        /** Format: date-time */
+                        editedAt: string | null;
+                        author: {
+                            handle: string;
+                            name: string;
+                            pipLook: {
+                                /** @enum {string} */
+                                hat: "straw" | "helmet" | "cap" | "none";
+                                /** @enum {string} */
+                                outfit: "none" | "scarf" | "aloha" | "vest";
+                                /** @enum {string} */
+                                bag: "trolley" | "backpack" | "vintage";
+                                /** @enum {string} */
+                                bagColor: "amber" | "cyan" | "pink";
+                            };
+                        };
+                        mine: boolean;
+                        following: boolean;
+                        likes: number;
+                        liked: boolean;
+                        saved: boolean;
+                        comments: number;
+                        likedBy: {
+                            handle: string;
+                            name: string;
+                            pipLook: {
+                                /** @enum {string} */
+                                hat: "straw" | "helmet" | "cap" | "none";
+                                /** @enum {string} */
+                                outfit: "none" | "scarf" | "aloha" | "vest";
+                                /** @enum {string} */
+                                bag: "trolley" | "backpack" | "vintage";
+                                /** @enum {string} */
+                                bagColor: "amber" | "cyan" | "pink";
+                            };
+                        } | null;
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description No such post, comment or person, or the session may not see it (answered the same way). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description The ids or the body are not valid. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    addSave: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                postId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The post after the change. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                        /** @enum {string} */
+                        kind: "moment" | "tip" | "route" | "visa" | "goal";
+                        body: string;
+                        place: {
+                            name: string;
+                            countryCode: string | null;
+                        } | null;
+                        /** @enum {string} */
+                        audience: "everyone" | "followers";
+                        attachment: {
+                            /** @enum {string} */
+                            kind: "route";
+                            title: string;
+                            nights: number;
+                            stops: {
+                                name: string;
+                                countryCode: string | null;
+                                nights: number;
+                            }[];
+                            total: {
+                                /**
+                                 * @description Major units, exact.
+                                 * @example 1250.00
+                                 */
+                                amount: string;
+                                currency: string;
+                            } | null;
+                        } | {
+                            /** @enum {string} */
+                            kind: "visa";
+                            countryCode: string;
+                            city: string;
+                            /** Format: date-time */
+                            stampedAt: string;
+                            ordinal: number;
+                        } | {
+                            /** @enum {string} */
+                            kind: "goal";
+                            tripTitle: string;
+                            readyMonth: string;
+                            reached: boolean;
+                        } | null;
+                        /** Format: date-time */
+                        createdAt: string;
+                        /** Format: date-time */
+                        editedAt: string | null;
+                        author: {
+                            handle: string;
+                            name: string;
+                            pipLook: {
+                                /** @enum {string} */
+                                hat: "straw" | "helmet" | "cap" | "none";
+                                /** @enum {string} */
+                                outfit: "none" | "scarf" | "aloha" | "vest";
+                                /** @enum {string} */
+                                bag: "trolley" | "backpack" | "vintage";
+                                /** @enum {string} */
+                                bagColor: "amber" | "cyan" | "pink";
+                            };
+                        };
+                        mine: boolean;
+                        following: boolean;
+                        likes: number;
+                        liked: boolean;
+                        saved: boolean;
+                        comments: number;
+                        likedBy: {
+                            handle: string;
+                            name: string;
+                            pipLook: {
+                                /** @enum {string} */
+                                hat: "straw" | "helmet" | "cap" | "none";
+                                /** @enum {string} */
+                                outfit: "none" | "scarf" | "aloha" | "vest";
+                                /** @enum {string} */
+                                bag: "trolley" | "backpack" | "vintage";
+                                /** @enum {string} */
+                                bagColor: "amber" | "cyan" | "pink";
+                            };
+                        } | null;
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description No such post, comment or person, or the session may not see it (answered the same way). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description The ids or the body are not valid. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    removeSave: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                postId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The post after the change. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                        /** @enum {string} */
+                        kind: "moment" | "tip" | "route" | "visa" | "goal";
+                        body: string;
+                        place: {
+                            name: string;
+                            countryCode: string | null;
+                        } | null;
+                        /** @enum {string} */
+                        audience: "everyone" | "followers";
+                        attachment: {
+                            /** @enum {string} */
+                            kind: "route";
+                            title: string;
+                            nights: number;
+                            stops: {
+                                name: string;
+                                countryCode: string | null;
+                                nights: number;
+                            }[];
+                            total: {
+                                /**
+                                 * @description Major units, exact.
+                                 * @example 1250.00
+                                 */
+                                amount: string;
+                                currency: string;
+                            } | null;
+                        } | {
+                            /** @enum {string} */
+                            kind: "visa";
+                            countryCode: string;
+                            city: string;
+                            /** Format: date-time */
+                            stampedAt: string;
+                            ordinal: number;
+                        } | {
+                            /** @enum {string} */
+                            kind: "goal";
+                            tripTitle: string;
+                            readyMonth: string;
+                            reached: boolean;
+                        } | null;
+                        /** Format: date-time */
+                        createdAt: string;
+                        /** Format: date-time */
+                        editedAt: string | null;
+                        author: {
+                            handle: string;
+                            name: string;
+                            pipLook: {
+                                /** @enum {string} */
+                                hat: "straw" | "helmet" | "cap" | "none";
+                                /** @enum {string} */
+                                outfit: "none" | "scarf" | "aloha" | "vest";
+                                /** @enum {string} */
+                                bag: "trolley" | "backpack" | "vintage";
+                                /** @enum {string} */
+                                bagColor: "amber" | "cyan" | "pink";
+                            };
+                        };
+                        mine: boolean;
+                        following: boolean;
+                        likes: number;
+                        liked: boolean;
+                        saved: boolean;
+                        comments: number;
+                        likedBy: {
+                            handle: string;
+                            name: string;
+                            pipLook: {
+                                /** @enum {string} */
+                                hat: "straw" | "helmet" | "cap" | "none";
+                                /** @enum {string} */
+                                outfit: "none" | "scarf" | "aloha" | "vest";
+                                /** @enum {string} */
+                                bag: "trolley" | "backpack" | "vintage";
+                                /** @enum {string} */
+                                bagColor: "amber" | "cyan" | "pink";
+                            };
+                        } | null;
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description No such post, comment or person, or the session may not see it (answered the same way). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description The ids or the body are not valid. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    listComments: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                postId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The comments. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        comments: {
+                            /** Format: uuid */
+                            id: string;
+                            body: string;
+                            /** Format: date-time */
+                            createdAt: string;
+                            author: {
+                                handle: string;
+                                name: string;
+                                pipLook: {
+                                    /** @enum {string} */
+                                    hat: "straw" | "helmet" | "cap" | "none";
+                                    /** @enum {string} */
+                                    outfit: "none" | "scarf" | "aloha" | "vest";
+                                    /** @enum {string} */
+                                    bag: "trolley" | "backpack" | "vintage";
+                                    /** @enum {string} */
+                                    bagColor: "amber" | "cyan" | "pink";
+                                };
+                            };
+                            mine: boolean;
+                            canDelete: boolean;
+                            likes: number;
+                            liked: boolean;
+                        }[];
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description No such post, comment or person, or the session may not see it (answered the same way). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description The ids or the body are not valid. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    addComment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                postId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    body: string;
+                };
+            };
+        };
+        responses: {
+            /** @description The new comment’s id. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description No such post, comment or person, or the session may not see it (answered the same way). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description The ids or the body are not valid. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description Too many comments today. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    reportPost: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                postId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @enum {string} */
+                    reason: "spam" | "abuse" | "unsafe" | "other";
+                };
+            };
+        };
+        responses: {
+            /** @description Done. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {boolean} */
+                        ok: true;
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description No such post, comment or person, or the session may not see it (answered the same way). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description The ids or the body are not valid. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    copyRoute: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Client-chosen key that makes a retry safe. */
+                "idempotency-key"?: string;
+            };
+            path: {
+                postId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The new trip. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * Format: uuid
+                         * @description Trip id (UUID).
+                         */
+                        id: string;
+                        title: string;
+                        /**
+                         * Format: date
+                         * @description Calendar date, no time zone.
+                         * @example 2027-04-03
+                         */
+                        startDate: string | null;
+                        currency: string;
+                        /** @enum {string} */
+                        status: "active" | "traveling" | "completed" | "archived";
+                        /** @enum {string} */
+                        visibility: "private";
+                        /** Format: date-time */
+                        createdAt: string;
+                        /** Format: date-time */
+                        updatedAt: string;
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description No such route post, or the session may not see it. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description The Idempotency-Key was already used with a different request. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description The ids or the body are not valid. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    deleteComment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                commentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Done. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {boolean} */
+                        ok: true;
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description No such post, comment or person, or the session may not see it (answered the same way). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description The ids or the body are not valid. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    restoreComment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                commentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Done. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {boolean} */
+                        ok: true;
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description No such post, comment or person, or the session may not see it (answered the same way). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description The ids or the body are not valid. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    addCommentLike: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                commentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Done. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {boolean} */
+                        ok: true;
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description No such post, comment or person, or the session may not see it (answered the same way). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description The ids or the body are not valid. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    removeCommentLike: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                commentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Done. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {boolean} */
+                        ok: true;
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description No such post, comment or person, or the session may not see it (answered the same way). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description The ids or the body are not valid. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    getPerson: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                handle: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The person and their counts. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        person: {
+                            handle: string;
+                            name: string;
+                            pipLook: {
+                                /** @enum {string} */
+                                hat: "straw" | "helmet" | "cap" | "none";
+                                /** @enum {string} */
+                                outfit: "none" | "scarf" | "aloha" | "vest";
+                                /** @enum {string} */
+                                bag: "trolley" | "backpack" | "vintage";
+                                /** @enum {string} */
+                                bagColor: "amber" | "cyan" | "pink";
+                            };
+                        };
+                        posts: number;
+                        followers: number;
+                        following: number;
+                        followed: boolean;
+                        muted: boolean;
+                        mine: boolean;
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description No such post, comment or person, or the session may not see it (answered the same way). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description The ids or the body are not valid. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    listPersonPosts: {
+        parameters: {
+            query?: {
+                before?: string;
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                handle: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description A page of posts. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        posts: {
+                            /** Format: uuid */
+                            id: string;
+                            /** @enum {string} */
+                            kind: "moment" | "tip" | "route" | "visa" | "goal";
+                            body: string;
+                            place: {
+                                name: string;
+                                countryCode: string | null;
+                            } | null;
+                            /** @enum {string} */
+                            audience: "everyone" | "followers";
+                            attachment: {
+                                /** @enum {string} */
+                                kind: "route";
+                                title: string;
+                                nights: number;
+                                stops: {
+                                    name: string;
+                                    countryCode: string | null;
+                                    nights: number;
+                                }[];
+                                total: {
+                                    /**
+                                     * @description Major units, exact.
+                                     * @example 1250.00
+                                     */
+                                    amount: string;
+                                    currency: string;
+                                } | null;
+                            } | {
+                                /** @enum {string} */
+                                kind: "visa";
+                                countryCode: string;
+                                city: string;
+                                /** Format: date-time */
+                                stampedAt: string;
+                                ordinal: number;
+                            } | {
+                                /** @enum {string} */
+                                kind: "goal";
+                                tripTitle: string;
+                                readyMonth: string;
+                                reached: boolean;
+                            } | null;
+                            /** Format: date-time */
+                            createdAt: string;
+                            /** Format: date-time */
+                            editedAt: string | null;
+                            author: {
+                                handle: string;
+                                name: string;
+                                pipLook: {
+                                    /** @enum {string} */
+                                    hat: "straw" | "helmet" | "cap" | "none";
+                                    /** @enum {string} */
+                                    outfit: "none" | "scarf" | "aloha" | "vest";
+                                    /** @enum {string} */
+                                    bag: "trolley" | "backpack" | "vintage";
+                                    /** @enum {string} */
+                                    bagColor: "amber" | "cyan" | "pink";
+                                };
+                            };
+                            mine: boolean;
+                            following: boolean;
+                            likes: number;
+                            liked: boolean;
+                            saved: boolean;
+                            comments: number;
+                            likedBy: {
+                                handle: string;
+                                name: string;
+                                pipLook: {
+                                    /** @enum {string} */
+                                    hat: "straw" | "helmet" | "cap" | "none";
+                                    /** @enum {string} */
+                                    outfit: "none" | "scarf" | "aloha" | "vest";
+                                    /** @enum {string} */
+                                    bag: "trolley" | "backpack" | "vintage";
+                                    /** @enum {string} */
+                                    bagColor: "amber" | "cyan" | "pink";
+                                };
+                            } | null;
+                        }[];
+                        /** Format: uuid */
+                        nextBefore: string | null;
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description No such post, comment or person, or the session may not see it (answered the same way). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description The ids or the body are not valid. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    followPerson: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                handle: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The person after the change. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        person: {
+                            handle: string;
+                            name: string;
+                            pipLook: {
+                                /** @enum {string} */
+                                hat: "straw" | "helmet" | "cap" | "none";
+                                /** @enum {string} */
+                                outfit: "none" | "scarf" | "aloha" | "vest";
+                                /** @enum {string} */
+                                bag: "trolley" | "backpack" | "vintage";
+                                /** @enum {string} */
+                                bagColor: "amber" | "cyan" | "pink";
+                            };
+                        };
+                        posts: number;
+                        followers: number;
+                        following: number;
+                        followed: boolean;
+                        muted: boolean;
+                        mine: boolean;
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description No such post, comment or person, or the session may not see it (answered the same way). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description The ids or the body are not valid. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    unfollowPerson: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                handle: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The person after the change. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        person: {
+                            handle: string;
+                            name: string;
+                            pipLook: {
+                                /** @enum {string} */
+                                hat: "straw" | "helmet" | "cap" | "none";
+                                /** @enum {string} */
+                                outfit: "none" | "scarf" | "aloha" | "vest";
+                                /** @enum {string} */
+                                bag: "trolley" | "backpack" | "vintage";
+                                /** @enum {string} */
+                                bagColor: "amber" | "cyan" | "pink";
+                            };
+                        };
+                        posts: number;
+                        followers: number;
+                        following: number;
+                        followed: boolean;
+                        muted: boolean;
+                        mine: boolean;
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description No such post, comment or person, or the session may not see it (answered the same way). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description The ids or the body are not valid. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    mutePerson: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                handle: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The person after the change. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        person: {
+                            handle: string;
+                            name: string;
+                            pipLook: {
+                                /** @enum {string} */
+                                hat: "straw" | "helmet" | "cap" | "none";
+                                /** @enum {string} */
+                                outfit: "none" | "scarf" | "aloha" | "vest";
+                                /** @enum {string} */
+                                bag: "trolley" | "backpack" | "vintage";
+                                /** @enum {string} */
+                                bagColor: "amber" | "cyan" | "pink";
+                            };
+                        };
+                        posts: number;
+                        followers: number;
+                        following: number;
+                        followed: boolean;
+                        muted: boolean;
+                        mine: boolean;
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description No such post, comment or person, or the session may not see it (answered the same way). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description The ids or the body are not valid. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    unmutePerson: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                handle: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The person after the change. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        person: {
+                            handle: string;
+                            name: string;
+                            pipLook: {
+                                /** @enum {string} */
+                                hat: "straw" | "helmet" | "cap" | "none";
+                                /** @enum {string} */
+                                outfit: "none" | "scarf" | "aloha" | "vest";
+                                /** @enum {string} */
+                                bag: "trolley" | "backpack" | "vintage";
+                                /** @enum {string} */
+                                bagColor: "amber" | "cyan" | "pink";
+                            };
+                        };
+                        posts: number;
+                        followers: number;
+                        following: number;
+                        followed: boolean;
+                        muted: boolean;
+                        mine: boolean;
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description No such post, comment or person, or the session may not see it (answered the same way). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description The ids or the body are not valid. */
+            422: {
                 headers: {
                     [name: string]: unknown;
                 };

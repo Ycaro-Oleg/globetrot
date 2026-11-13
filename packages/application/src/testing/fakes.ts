@@ -23,6 +23,11 @@ import type {
   DayPlaceRecord,
   DayPlaceWriter,
 } from '../ports';
+import {
+  createFakeCommunity,
+  emptyCommunityState,
+  type FakeCommunityState,
+} from './fake-community';
 
 /** In-memory ports for unit tests (here and in apps/api). Real adapters are tested against PostgreSQL. */
 export interface FakeState {
@@ -36,6 +41,7 @@ export interface FakeState {
   visas: Map<string, VisaRecord>;
   savings: Map<string, SavingsRecord>;
   preferences: Map<string, PreferencesRecord>;
+  community: FakeCommunityState;
   audit: AuditEventInput[];
   idempotency: Map<string, { fingerprint: string; response: unknown }>;
 }
@@ -74,6 +80,7 @@ export function createFakePorts(options: FakeOptions = {}) {
     visas: new Map(),
     savings: new Map(),
     preferences: new Map(),
+    community: emptyCommunityState(),
     audit: [],
     idempotency: new Map(),
   };
@@ -290,6 +297,12 @@ export function createFakePorts(options: FakeOptions = {}) {
     },
   };
 
+  const community = createFakeCommunity(
+    () => state.community,
+    () => users,
+    () => state.preferences,
+  );
+
   const transaction: Transaction = {
     trips: tripWriter,
     expenses: expenseWriter,
@@ -299,6 +312,7 @@ export function createFakePorts(options: FakeOptions = {}) {
     savings: savingsWriter,
     destinations: destinationWriter,
     preferences: preferencesWriter,
+    community,
     audit: {
       async record(event) {
         if (faults.auditFails) throw new Error('audit store is down');
@@ -337,6 +351,7 @@ export function createFakePorts(options: FakeOptions = {}) {
     visas: visaWriter,
     savings: savingsWriter,
     preferences: preferencesWriter,
+    community,
     unitOfWork: {
       // Commit or roll back as one, like a database transaction.
       async run(work) {
@@ -349,6 +364,7 @@ export function createFakePorts(options: FakeOptions = {}) {
           visas: new Map(state.visas),
           savings: new Map(state.savings),
           preferences: new Map(state.preferences),
+          community: structuredClone(state.community),
           audit: [...state.audit],
           idempotency: new Map(
             [...state.idempotency].map(([key, value]) => [key, { ...value }] as const),
@@ -365,6 +381,7 @@ export function createFakePorts(options: FakeOptions = {}) {
           state.visas = before.visas;
           state.savings = before.savings;
           state.preferences = before.preferences;
+          state.community = before.community;
           state.audit = before.audit;
           state.idempotency = before.idempotency;
           throw error;

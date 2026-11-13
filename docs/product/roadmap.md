@@ -16,7 +16,7 @@ Each milestone maps to a GitHub milestone. Issues for a milestone are created wh
 | M9 | Passport & Identity | Not started | Account passport, place stamps, profile | M8 |
 | M10 | Commercial | Not started | Approved pricing, Stripe sandbox, entitlements, customer portal, NFS-e integration | Pricing decision |
 | M11 | Production Readiness | Not started | Hetzner + Coolify, backups and restore test, monitoring, security review, account data export and deletion | M8 |
-| M12+ | Social → Ranks → Native apps (Expo) → MCP | Not started | Each scoped when started | M9–M11 |
+| M12+ | Social → Ranks → Native apps (Expo) → MCP | **Social started early** (the v2 community, at the owner's request, [ADR-0013](../architecture/adr/0013-community.md)); the rest not started | Each scoped when started | M9–M11 |
 
 ## What each active milestone contains
 

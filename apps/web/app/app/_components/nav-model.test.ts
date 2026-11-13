@@ -4,6 +4,7 @@ import {
   GLOBAL_LINKS,
   isCurrent,
   isTripPage,
+  MENU_HREFS,
   TRIP_TABS,
   tripCode,
   type NavItem,
@@ -21,7 +22,10 @@ describe('navigation model', () => {
   });
 
   it('puts every destination somewhere on the phone', () => {
-    const reachable = new Set([...TRIP_TABS, ...BOTTOM_ITEMS].map((entry) => entry.href));
+    const reachable = new Set([
+      ...[...TRIP_TABS, ...BOTTOM_ITEMS].map((entry) => entry.href),
+      ...MENU_HREFS,
+    ]);
     for (const entry of GLOBAL_LINKS) expect(reachable.has(entry.href)).toBe(true);
   });
 

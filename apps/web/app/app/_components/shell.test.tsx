@@ -85,11 +85,15 @@ describe.each(SUPPORTED_LOCALES)('app shell (%s)', (locale) => {
     ).toHaveLength(2);
     const tools = [copy.nav.board, copy.nav.days, copy.nav.budget, copy.nav.lists];
     expect(linkLabels(found[0] ?? '')).toEqual(tools);
-    expect(linkLabels(found[1] ?? '')).toEqual([copy.nav.trips, copy.nav.passport]);
+    expect(linkLabels(found[1] ?? '')).toEqual([
+      copy.nav.trips,
+      copy.nav.community,
+      copy.nav.passport,
+    ]);
     expect(linkLabels(found[2] ?? '')).toEqual(tools);
     expect(linkLabels(found[3] ?? '')).toEqual([
       copy.nav.trip,
-      copy.nav.trips,
+      copy.nav.community,
       copy.nav.passport,
       copy.nav.profile,
     ]);
