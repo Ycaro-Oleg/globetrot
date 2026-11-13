@@ -812,28 +812,6 @@
   padding: 12px 14px 14px;
 }
 
-.photosSoon {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 14px;
-  border: 1.5px dashed #94a3b8;
-  border-radius: 14px;
-  color: var(--text-2);
-}
-
-.photosSoon span {
-  font-size: 22px;
-}
-
-.photosSoon p,
-.cardEmpty {
-  margin: 0;
-  color: var(--text-2);
-  font-size: 12px;
-  line-height: 1.5;
-}
-
 .checkList {
   display: flex;
   flex-direction: column;

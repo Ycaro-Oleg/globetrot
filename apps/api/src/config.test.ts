@@ -10,6 +10,10 @@ const production = (extra: Record<string, string> = {}) => ({
   BETTER_AUTH_SECRET: STRONG_SECRET,
   SMTP_HOST: 'smtp.example.test',
   EMAIL_FROM: 'Globetrot <hello@example.test>',
+  S3_ENDPOINT: 'https://s3.example.test',
+  S3_BUCKET: 'globetrot-photos',
+  S3_ACCESS_KEY_ID: 'production-key',
+  S3_SECRET_ACCESS_KEY: 'production-secret',
   ...extra,
 });
 
@@ -243,6 +247,21 @@ describe('email and verification settings', () => {
     );
     expect(() => loadApiConfig({ ...production(), SMTP_HOST: '' })).toThrow(/SMTP_HOST/);
     expect(loadApiConfig(production()).email.host).toBe('smtp.example.test');
+  });
+
+  it('requires real object storage in production, never the local credentials', () => {
+    for (const name of ['S3_ENDPOINT', 'S3_BUCKET', 'S3_ACCESS_KEY_ID', 'S3_SECRET_ACCESS_KEY']) {
+      const env: Record<string, string | undefined> = production();
+      delete env[name];
+      expect(() => loadApiConfig(env)).toThrow(new RegExp(`${name} is required in production`));
+    }
+    expect(() => loadApiConfig(production({ S3_ACCESS_KEY_ID: 'globetrot-dev' }))).toThrow(
+      /local development ones/,
+    );
+    expect(loadApiConfig(production()).storage).toMatchObject({
+      endpoint: 'https://s3.example.test',
+      bucket: 'globetrot-photos',
+    });
   });
 });
 

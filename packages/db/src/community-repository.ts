@@ -13,6 +13,7 @@ import {
   postSave,
   user,
   userPreference,
+  type PhotoRef,
   type PostAttachment,
 } from './schema';
 
@@ -32,6 +33,7 @@ export interface PostRow {
   readonly placeCountry: string | null;
   readonly audience: PostAudience;
   readonly attachment: PostAttachment | null;
+  readonly photos: readonly PhotoRef[];
   readonly createdAt: Date;
   readonly editedAt: Date | null;
   readonly deletedAt: Date | null;
@@ -140,6 +142,20 @@ export function createCommunityRepository(executor: Executor) {
         .where(and(...conditions))
         .orderBy(desc(post.id))
         .limit(input.limit);
+      return rows.map(asPost);
+    },
+    /** Live posts that show this image (deleted ones do not count). */
+    async postsWithMedia(mediaId: string): Promise<PostRow[]> {
+      const rows = await executor
+        .select()
+        .from(post)
+        .where(
+          and(
+            isNull(post.deletedAt),
+            sql`${post.photos} @> ${JSON.stringify([{ mediaId }])}::jsonb`,
+          ),
+        )
+        .limit(20);
       return rows.map(asPost);
     },
     async findPost(id: string) {
@@ -324,7 +340,7 @@ export function createCommunityRepository(executor: Executor) {
       return true;
     },
     async insertPost(row: Omit<PostRow, 'editedAt' | 'deletedAt' | 'hiddenAt'>) {
-      await executor.insert(post).values(row);
+      await executor.insert(post).values({ ...row, photos: [...row.photos] });
     },
     async updatePost(
       id: string,

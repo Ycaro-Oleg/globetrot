@@ -24,6 +24,7 @@ const TITLES: Readonly<Record<number, string>> = {
   403: 'Forbidden',
   404: 'Not found',
   409: 'Conflict',
+  413: 'Payload too large',
   422: 'Validation failed',
   429: 'Too many requests',
   500: 'Internal server error',
@@ -32,7 +33,7 @@ const TITLES: Readonly<Record<number, string>> = {
 
 /** Builds a problem+json response. Never pass stack traces, SQL, tokens or other users' data in `detail`. */
 export function problem(
-  status: 400 | 401 | 403 | 404 | 409 | 422 | 429 | 500 | 503,
+  status: 400 | 401 | 403 | 404 | 409 | 413 | 422 | 429 | 500 | 503,
   code: string,
   extra: { detail?: string; errors?: readonly FieldIssue[] } = {},
 ): Response {

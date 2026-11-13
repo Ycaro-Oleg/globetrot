@@ -7,5 +7,6 @@ export * from './destination';
 export * from './budget';
 export * from './checklist';
 export * from './visa';
+export * from './media';
 export * from './day-plan';
 export * from './community';

@@ -477,6 +477,34 @@
   gap: 8px;
 }
 
+/* Photos: one wide, or a square grid of two to four. */
+.photos {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  border-radius: 16px;
+  list-style: none;
+}
+
+.photos:not([data-count='1']) {
+  grid-template-columns: 1fr 1fr;
+}
+
+.photos img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  background: var(--gt-semantic-color-track);
+  object-fit: cover;
+}
+
+.photos:not([data-count='1']) img {
+  aspect-ratio: 1;
+}
+
 /* Route: a dark card with numbered stops. */
 .routeCard {
   display: flex;

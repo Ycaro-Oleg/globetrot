@@ -35,6 +35,7 @@ export interface NewPost {
   tripId?: string;
   showAmounts?: boolean;
   visaCountry?: string;
+  photos?: { mediaId: string; alt: string }[];
 }
 
 export async function publishPost(input: NewPost): Promise<PostData | Failure> {
@@ -50,6 +51,7 @@ export async function publishPost(input: NewPost): Promise<PostData | Failure> {
       ...(input.tripId ? { tripId: input.tripId } : {}),
       ...(input.showAmounts ? { showAmounts: true } : {}),
       ...(input.visaCountry ? { visaCountry: input.visaCountry } : {}),
+      ...(input.photos?.length ? { photos: input.photos } : {}),
     },
   });
   return data ?? failure(error);

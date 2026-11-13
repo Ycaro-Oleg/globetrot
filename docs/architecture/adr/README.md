@@ -23,3 +23,4 @@ ADRs 0010 to 0012 were written after the work they describe (#53 to #61), which 
 | [0011](0011-idempotency-audit-and-units-of-work.md) | Mutations are one transaction with their audit event and idempotency record | Accepted |
 | [0012](0012-email-delivery-and-verified-sign-in.md) | Email through a port and SMTP, and a verified address for password sign-in | Accepted (the verified-email policy awaits the owner's confirmation) |
 | [0013](0013-community.md) | The community: snapshots, a visibility rule shared by domain and SQL, and moderation by reports | Accepted |
+| [0014](0014-photos-and-storage.md) | Photos: S3-compatible storage, metadata cut out without decoding, served behind the API | Accepted |

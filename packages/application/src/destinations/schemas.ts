@@ -1,3 +1,5 @@
+import { STOP_PHOTOS_MAX } from '@globetrot/domain';
+import { photoFields, photoSchema } from '../media/schemas';
 import {
   DESTINATION_NAME_MAX_LENGTH,
   DESTINATION_NOTE_MAX_LENGTH,
@@ -82,6 +84,13 @@ export const destinationFields = z.object({
     .max(STOP_TODOS_MAX)
     .default([])
     .meta({ description: `Things to do for this stop (at most ${STOP_TODOS_MAX}).` }),
+  photos: z
+    .array(photoFields)
+    .max(STOP_PHOTOS_MAX)
+    .default([])
+    .meta({
+      description: `The stop's photos (at most ${STOP_PHOTOS_MAX}): images the caller uploaded (\`POST /v1/media\`).`,
+    }),
 });
 
 export const replaceDestinationsBody = z.object({
@@ -113,6 +122,7 @@ export const destinationSchema = z.object({
     }),
   ),
   todos: z.array(z.object({ text: z.string(), done: z.boolean() })),
+  photos: z.array(photoSchema),
 });
 export type DestinationView = z.infer<typeof destinationSchema>;
 
@@ -157,4 +167,5 @@ export const toDestinationView = (record: DestinationRecord): DestinationView =>
   visited: record.visited,
   spots: record.spots.map((spot) => ({ ...spot })),
   todos: record.todos.map((todo) => ({ ...todo })),
+  photos: record.photos.map((photo) => ({ ...photo })),
 });

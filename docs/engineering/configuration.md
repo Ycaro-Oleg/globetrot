@@ -26,6 +26,9 @@ Every environment variable the project reads, in one place. [`.env.example`](../
 | `AUTH_SIGN_IN_ATTEMPTS_PER_MINUTE` | `5` | optional | Per client address |
 | `AUTH_SIGN_UP_ATTEMPTS_PER_MINUTE` | `5` | optional | Per client address |
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | unset | set both, in Coolify (secret) | Google sign-in. **Both or neither**: with one the API refuses to start (the message names the settings, never a value); with neither the provider is off, `GET /v1/auth/providers` is empty and the button is hidden. The redirect URI to allow in the Google console is `<BETTER_AUTH_URL>/api/auth/callback/google` and the authorized JavaScript origin is `<BETTER_AUTH_URL>` ([authentication](../architecture/authentication.md#google-sign-in-55)) |
+| `S3_ENDPOINT`, `S3_REGION`, `S3_BUCKET` | `http://localhost:8333`, `us-east-1`, `globetrot-media` | **required** (endpoint and bucket) | S3-compatible storage for uploaded photos (`StoragePort`, [ADR-0014](../architecture/adr/0014-photos-and-storage.md)) |
+| `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY` | the local development pair | **required**, never the local pair (secret) | Storage credentials, used to sign requests (SigV4) |
+| `S3_FORCE_PATH_STYLE` | `true` | as the provider needs | `true` puts the bucket in the path (SeaweedFS, most self-hosted S3); `false` in the host name |
 | `GEOAPIFY_API_KEY` | unset | a **server** Geoapify key, in Coolify (secret) | Place search and reverse lookup for the board (`/v1/places/*`, `GeocodingPort`). Unset: those answer `503` and the board says search is unavailable; routes still work from the list and the map. Not the web's public tile key (`NEXT_PUBLIC_GEOAPIFY_API_KEY`), which can be restricted to tiles |
 | `REQUIRE_VERIFIED_EMAIL` | `true` | `true` | A password sign-in needs a verified email ([ADR-0012](../architecture/adr/0012-email-delivery-and-verified-sign-in.md)). `false` lets unverified accounts in, and sign-up then opens a session |
 | `VERIFICATION_EXPIRES_IN_SECONDS` | `86400` (24 hours) | optional | Lifetime of a verification link. Minimum 1 |
@@ -59,7 +62,7 @@ Semantics, error codes and the trust model for the client address: [`authenticat
 
 ## Local services (`compose.yaml`, `.env`)
 
-Used by Docker Compose and the services check, not by the apps (the S3 settings have no application reader yet).
+Used by Docker Compose and the services check. The API also reads the `S3_*` settings (see the API table).
 
 | Variable | Default | What it does |
 |---|---|---|

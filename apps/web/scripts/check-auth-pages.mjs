@@ -185,6 +185,10 @@ const DESTINATIONS = {
         ? [{ name: 'Senso-ji', latitude: 35.7148, longitude: 139.7967, done: false }]
         : [],
     todos: position === 0 ? [{ text: 'Buy a Suica card', done: true }] : [],
+    photos:
+      position === 0
+        ? [{ mediaId: '0193c0a8-7b1e-7c4a-9e2f-3d5a6b7c9f03', alt: 'Senso-ji gate' }]
+        : [],
   })),
 };
 
@@ -197,6 +201,7 @@ const post = (id, extra) => ({
   place: null,
   audience: 'everyone',
   attachment: null,
+  photos: [],
   createdAt: NOW,
   editedAt: null,
   author: ANA,
@@ -219,6 +224,10 @@ const COMMUNITY_POSTS = [
     saved: true,
     comments: 1,
     likedBy: ME_PERSON,
+    photos: [
+      { mediaId: '0193c0a8-7b1e-7c4a-9e2f-3d5a6b7c9f01', alt: 'Torii gates at dawn' },
+      { mediaId: '0193c0a8-7b1e-7c4a-9e2f-3d5a6b7c9f02', alt: '' },
+    ],
   }),
   post(2, {
     kind: 'route',
@@ -278,6 +287,11 @@ const PERSON = {
   muted: false,
   mine: false,
 };
+
+const ONE_PIXEL_PNG = Buffer.from(
+  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+  'base64',
+);
 
 const VISAS = { visas: [{ countryCode: 'JP', city: 'Tokyo', stampedAt: NOW }] };
 
@@ -359,6 +373,11 @@ const stub = createServer(async (request, response) => {
     return reply(response, 200, PREFERENCES);
   }
   const budgetRoute = /^\/v1\/trips\/([^/]+)\/(budget|expenses)$/.exec(url.pathname);
+  if (/^\/v1\/media\/[^/]+$/.test(url.pathname) && request.method === 'GET') {
+    if (!signedIn) return reply(response, 401, { code: 'UNAUTHENTICATED' });
+    response.writeHead(200, { 'content-type': 'image/png' });
+    return response.end(ONE_PIXEL_PNG);
+  }
   if (url.pathname.startsWith('/v1/community/')) {
     if (!signedIn) return reply(response, 401, { code: 'UNAUTHENTICATED' });
     const path = url.pathname.slice('/v1/community/'.length);

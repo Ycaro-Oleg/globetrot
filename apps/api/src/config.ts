@@ -42,6 +42,12 @@ const envSchema = z.object({
   GOOGLE_CLIENT_ID: z.string().optional(),
   GOOGLE_CLIENT_SECRET: z.string().optional(),
   GEOAPIFY_API_KEY: z.string().optional(),
+  S3_ENDPOINT: z.url().default('http://localhost:8333'),
+  S3_REGION: z.string().default('us-east-1'),
+  S3_BUCKET: z.string().default('globetrot-media'),
+  S3_ACCESS_KEY_ID: z.string().optional(),
+  S3_SECRET_ACCESS_KEY: z.string().optional(),
+  S3_FORCE_PATH_STYLE: z.enum(['true', 'false']).default('true'),
   PORT: number(4000, 1, 65535),
 });
 
@@ -80,6 +86,20 @@ export interface EmailConfig {
   readonly password: string | undefined;
 }
 
+export interface StorageConfig {
+  readonly endpoint: string;
+  readonly region: string;
+  readonly bucket: string;
+  readonly accessKeyId: string;
+  readonly secretAccessKey: string;
+  /** `bucket` in the path (SeaweedFS, most self-hosted S3) rather than in the host name. */
+  readonly forcePathStyle: boolean;
+}
+
+/** The local storage's credentials from `.env.example`. Production refuses them. */
+const DEV_STORAGE_KEY = 'globetrot-dev';
+const DEV_STORAGE_SECRET = 'globetrot-dev-secret';
+
 export interface ApiConfig {
   readonly nodeEnv: 'production' | 'test' | 'development';
   readonly isProduction: boolean;
@@ -89,6 +109,8 @@ export interface ApiConfig {
   readonly geoapifyKey: string | null;
   readonly auth: AuthConfig;
   readonly email: EmailConfig;
+  /** S3-compatible storage for uploaded images (SeaweedFS locally). */
+  readonly storage: StorageConfig;
   /** True when no secret was provided and the public development one is in use (never in production). */
   readonly usingInsecureSecret: boolean;
 }
@@ -168,6 +190,19 @@ export function loadApiConfig(
       throw new ApiConfigError('SMTP_HOST is required in production');
     if (present.EMAIL_FROM === undefined)
       throw new ApiConfigError('EMAIL_FROM is required in production');
+    // Photos must not land in a local bucket or use the published development credentials.
+    for (const name of ['S3_ENDPOINT', 'S3_BUCKET', 'S3_ACCESS_KEY_ID', 'S3_SECRET_ACCESS_KEY']) {
+      if (present[name] === undefined)
+        throw new ApiConfigError(`${name} is required in production`);
+    }
+    if (
+      present.S3_ACCESS_KEY_ID === DEV_STORAGE_KEY ||
+      present.S3_SECRET_ACCESS_KEY === DEV_STORAGE_SECRET
+    ) {
+      throw new ApiConfigError(
+        'S3 credentials must not be the local development ones in production',
+      );
+    }
   }
 
   // Google is on only with both values; one without the other is a mistake worth stopping for.
@@ -188,6 +223,14 @@ export function loadApiConfig(
     port: values.PORT,
     databaseUrl,
     geoapifyKey: values.GEOAPIFY_API_KEY ?? null,
+    storage: {
+      endpoint: values.S3_ENDPOINT,
+      region: values.S3_REGION,
+      bucket: values.S3_BUCKET,
+      accessKeyId: values.S3_ACCESS_KEY_ID ?? DEV_STORAGE_KEY,
+      secretAccessKey: values.S3_SECRET_ACCESS_KEY ?? DEV_STORAGE_SECRET,
+      forcePathStyle: values.S3_FORCE_PATH_STYLE === 'true',
+    },
     usingInsecureSecret: secret === INSECURE_DEV_SECRET,
     auth: {
       secret,

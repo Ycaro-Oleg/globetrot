@@ -101,6 +101,11 @@ export function createFakeCommunity(
         .sort((a, b) => (a.id < b.id ? 1 : -1))
         .slice(0, limit);
     },
+    async postsWithMedia(mediaId) {
+      return [...get().posts.values()].filter(
+        (post) => !post.deletedAt && post.photos.some((photo) => photo.mediaId === mediaId),
+      );
+    },
     async findPost(id) {
       return get().posts.get(id) ?? null;
     },

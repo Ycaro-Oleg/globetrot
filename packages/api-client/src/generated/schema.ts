@@ -763,6 +763,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/media": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Upload an image
+         * @description The raw bytes of a JPEG, PNG or WebP (up to 8 MB and 8192 px a side) as the body. The type is read from the bytes, not from `Content-Type`. EXIF (including GPS), XMP, IPTC, comments and text chunks are removed before the image is stored. The image is private until it is placed on a post or a stop. At most 100 uploads a day.
+         */
+        post: operations["uploadMedia"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/media/{mediaId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * An image
+         * @description For its owner, or for someone who may see a post that shows it. Stop photos stay with the trip’s owner. Anything else is `404`.
+         */
+        get: operations["getMedia"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1877,6 +1917,11 @@ export interface operations {
                                 text: string;
                                 done: boolean;
                             }[];
+                            photos: {
+                                /** Format: uuid */
+                                mediaId: string;
+                                alt: string;
+                            }[];
                         }[];
                     };
                 };
@@ -2026,6 +2071,19 @@ export interface operations {
                             /** @default false */
                             done?: boolean;
                         }[];
+                        /**
+                         * @description The stop's photos (at most 12): images the caller uploaded (`POST /v1/media`).
+                         * @default []
+                         */
+                        photos?: {
+                            /** Format: uuid */
+                            mediaId: string;
+                            /**
+                             * @description What the photo shows, for people who cannot see it. Blank is allowed.
+                             * @default
+                             */
+                            alt?: string;
+                        }[];
                     }[];
                 };
             };
@@ -2062,6 +2120,11 @@ export interface operations {
                             todos: {
                                 text: string;
                                 done: boolean;
+                            }[];
+                            photos: {
+                                /** Format: uuid */
+                                mediaId: string;
+                                alt: string;
                             }[];
                         }[];
                         stampedVisas: {
@@ -4354,6 +4417,11 @@ export interface operations {
                                 readyMonth: string;
                                 reached: boolean;
                             } | null;
+                            photos: {
+                                /** Format: uuid */
+                                mediaId: string;
+                                alt: string;
+                            }[];
                             /** Format: date-time */
                             createdAt: string;
                             /** Format: date-time */
@@ -4669,6 +4737,16 @@ export interface operations {
                     tripId?: string;
                     /** @default false */
                     showAmounts?: boolean;
+                    /** @default [] */
+                    photos?: {
+                        /** Format: uuid */
+                        mediaId: string;
+                        /**
+                         * @description What the photo shows, for people who cannot see it. Blank is allowed.
+                         * @default
+                         */
+                        alt?: string;
+                    }[];
                     visaCountry?: string;
                 };
             };
@@ -4725,6 +4803,11 @@ export interface operations {
                             readyMonth: string;
                             reached: boolean;
                         } | null;
+                        photos: {
+                            /** Format: uuid */
+                            mediaId: string;
+                            alt: string;
+                        }[];
                         /** Format: date-time */
                         createdAt: string;
                         /** Format: date-time */
@@ -4945,6 +5028,11 @@ export interface operations {
                             readyMonth: string;
                             reached: boolean;
                         } | null;
+                        photos: {
+                            /** Format: uuid */
+                            mediaId: string;
+                            alt: string;
+                        }[];
                         /** Format: date-time */
                         createdAt: string;
                         /** Format: date-time */
@@ -5219,6 +5307,11 @@ export interface operations {
                             readyMonth: string;
                             reached: boolean;
                         } | null;
+                        photos: {
+                            /** Format: uuid */
+                            mediaId: string;
+                            alt: string;
+                        }[];
                         /** Format: date-time */
                         createdAt: string;
                         /** Format: date-time */
@@ -5487,6 +5580,11 @@ export interface operations {
                             readyMonth: string;
                             reached: boolean;
                         } | null;
+                        photos: {
+                            /** Format: uuid */
+                            mediaId: string;
+                            alt: string;
+                        }[];
                         /** Format: date-time */
                         createdAt: string;
                         /** Format: date-time */
@@ -5661,6 +5759,11 @@ export interface operations {
                             readyMonth: string;
                             reached: boolean;
                         } | null;
+                        photos: {
+                            /** Format: uuid */
+                            mediaId: string;
+                            alt: string;
+                        }[];
                         /** Format: date-time */
                         createdAt: string;
                         /** Format: date-time */
@@ -5835,6 +5938,11 @@ export interface operations {
                             readyMonth: string;
                             reached: boolean;
                         } | null;
+                        photos: {
+                            /** Format: uuid */
+                            mediaId: string;
+                            alt: string;
+                        }[];
                         /** Format: date-time */
                         createdAt: string;
                         /** Format: date-time */
@@ -6009,6 +6117,11 @@ export interface operations {
                             readyMonth: string;
                             reached: boolean;
                         } | null;
+                        photos: {
+                            /** Format: uuid */
+                            mediaId: string;
+                            alt: string;
+                        }[];
                         /** Format: date-time */
                         createdAt: string;
                         /** Format: date-time */
@@ -7155,6 +7268,11 @@ export interface operations {
                                 readyMonth: string;
                                 reached: boolean;
                             } | null;
+                            photos: {
+                                /** Format: uuid */
+                                mediaId: string;
+                                alt: string;
+                            }[];
                             /** Format: date-time */
                             createdAt: string;
                             /** Format: date-time */
@@ -7694,6 +7812,223 @@ export interface operations {
                 };
             };
             /** @description The ids or the body are not valid. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    uploadMedia: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "image/jpeg": string;
+                "image/png": string;
+                "image/webp": string;
+            };
+        };
+        responses: {
+            /** @description The stored image. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                        contentType: string;
+                        width: number;
+                        height: number;
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description The body is larger than 8 MB. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description Not a JPEG, PNG or WebP within the limits (`unsupported_image`). */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description Too many uploads today. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    getMedia: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                mediaId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The image bytes. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "image/jpeg": string;
+                    "image/png": string;
+                    "image/webp": string;
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description No such image, or the session may not see it. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description The id is not valid. */
             422: {
                 headers: {
                     [name: string]: unknown;

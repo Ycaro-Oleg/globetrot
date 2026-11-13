@@ -115,11 +115,21 @@ Implementation: `packages/domain/src/trip/` (`tripDays`, `emptyDays`, `tripTotal
 - **The profile** (`/app/profile`) is the person's own page: their name, home city, Pip, a few numbers (countries and continents with a visa, trips) and their visas grouped by year, newest first, with a continent filter. Continents follow the UN M49 grouping (`continentOf` in `@globetrot/domain`): Africa, the Americas split into North and South (Central America and the Caribbean count as North), Asia, Europe, Oceania; Antarctica has its own entry. Following, sharing and visa privacy arrive with the community.
 - **My Pip.** Each person dresses their own Pip (hat, outfit, bag, bag colour) and may name it (1 to 16 characters; empty brings back "Pip"). Nothing changes until **Save**; Undo returns to the saved look and Shuffle picks a random one. The saved look is drawn on **every** Pip the person sees in the app. It is cosmetic only: no option is paid or locked today.
 
+## Photos
+
+Decision record: [ADR-0014](../architecture/adr/0014-photos-and-storage.md).
+
+- Photos can be added to **moments and tips** (up to 4) and to **a stop's pin card** (up to 12). JPEG, PNG or WebP, up to 8 MB; the web app resizes them to at most 2048 px first. At most 100 uploads a day.
+- **Location and camera data are always removed** before a photo is stored, and the screens say so.
+- Every photo has a description for people who cannot see it (optional; a post photo without one reads "Photo by {name}").
+- A photo is private to its owner until it is placed on a post; then whoever may see the post may see the photo. Stop photos stay private with the trip, and a shared route never carries them.
+- Only one's own uploads can be placed.
+
 ## Community
 
 Decision record: [ADR-0013](../architecture/adr/0013-community.md).
 
-- **Posts** are a moment, a tip, a route, a visa or a goal. Moments and tips need words (up to 500 characters); the others may add words. A place can be tagged by name (the current trip's stops are suggested). Photos come later, with EXIF stripping.
+- **Posts** are a moment, a tip, a route, a visa or a goal. Moments and tips need words (up to 500 characters) or photos; the others may add words. A place can be tagged by name (the current trip's stops are suggested). See "Photos" above.
 - **Shared data is a snapshot, made from the author's own data when they post.** A route shows the stops and nights as they were, never a link to the private trip, and its planned total only if the author unticks "Hide budget amounts" (labelled an estimate). A goal shows the trip and the month the savings plan says it is ready, **never amounts**. A visa shows the country, the city and which country it was in the passport, and says it is commemorative.
 - **Who sees a post:** its author always; everyone else when it is public (or they follow the author for "Followers only"), it is not deleted, they did not mute the author or report it, and reports did not hide it. Anything else answers "not found".
 - **People appear only when they act.** The first post, comment, like or follow gives the person a handle made from their name (with a number when taken; they can change it). Until then nobody sees them. "Who to follow" lists only people with public posts in the last 30 days; "Trending destinations" counts countries tagged on public posts in that time.

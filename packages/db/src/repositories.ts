@@ -5,7 +5,7 @@ import type {
   TripVisibility,
   UnitSystem,
 } from '@globetrot/domain';
-import { and, asc, desc, eq, ne, sql, type SQL } from 'drizzle-orm';
+import { and, asc, count, desc, eq, gte, inArray, ne, sql, type SQL } from 'drizzle-orm';
 import { createCommunityRepository, type CommunityRepository } from './community-repository';
 import type { Database } from './client';
 import {
@@ -20,6 +20,8 @@ import {
   tripSavings,
   userPreference,
   visa,
+  mediaAsset,
+  type PhotoRef,
   type StopSpot,
   type StopTodo,
 } from './schema';
@@ -341,6 +343,7 @@ export interface DestinationRow {
   readonly visited: boolean;
   readonly spots: StopSpot[];
   readonly todos: StopTodo[];
+  readonly photos: PhotoRef[];
   readonly createdAt: Date;
   readonly updatedAt: Date;
 }
@@ -359,6 +362,7 @@ export interface NewDestinationRow {
   readonly visited: boolean;
   readonly spots: readonly StopSpot[];
   readonly todos: readonly StopTodo[];
+  readonly photos: readonly PhotoRef[];
 }
 
 /** A trip's route, in order. Replaced as a whole inside one transaction. */
@@ -387,6 +391,7 @@ export function createDestinationRepository(executor: Executor) {
             ...item,
             spots: [...item.spots],
             todos: [...item.todos],
+            photos: [...item.photos],
             tripId,
             position,
             createdAt: now,
@@ -676,6 +681,45 @@ export type Cooldown = ReturnType<typeof createCooldown>;
 export type AuditLog = ReturnType<typeof createAuditLog>;
 export type IdempotencyStore = ReturnType<typeof createIdempotencyStore>;
 
+export interface MediaRow {
+  readonly id: string;
+  readonly ownerId: string;
+  readonly contentType: string;
+  readonly byteSize: number;
+  readonly width: number;
+  readonly height: number;
+  readonly createdAt: Date;
+}
+
+/** Who owns which uploaded image. The bytes are in object storage. */
+export function createMediaRepository(executor: Executor) {
+  return {
+    async findById(id: string): Promise<MediaRow | null> {
+      const [row] = await executor.select().from(mediaAsset).where(eq(mediaAsset.id, id));
+      return row ?? null;
+    },
+    async findMany(ids: readonly string[]): Promise<MediaRow[]> {
+      if (ids.length === 0) return [];
+      return executor
+        .select()
+        .from(mediaAsset)
+        .where(inArray(mediaAsset.id, [...ids]));
+    },
+    async insert(row: MediaRow): Promise<void> {
+      await executor.insert(mediaAsset).values(row);
+    },
+    async countSince(ownerId: string, since: Date): Promise<number> {
+      const [row] = await executor
+        .select({ n: count() })
+        .from(mediaAsset)
+        .where(and(eq(mediaAsset.ownerId, ownerId), gte(mediaAsset.createdAt, since)));
+      return row?.n ?? 0;
+    },
+  };
+}
+
+export type MediaRepository = ReturnType<typeof createMediaRepository>;
+
 export interface Transaction {
   readonly trips: TripRepository;
   readonly destinations: DestinationRepository;
@@ -686,6 +730,7 @@ export interface Transaction {
   readonly savings: SavingsRepository;
   readonly preferences: PreferencesRepository;
   readonly community: CommunityRepository;
+  readonly media: MediaRepository;
   readonly audit: AuditLog;
   readonly idempotency: IdempotencyStore;
 }
@@ -705,6 +750,7 @@ export function createUnitOfWork(db: Database) {
           savings: createSavingsRepository(tx),
           preferences: createPreferencesRepository(tx),
           community: createCommunityRepository(tx),
+          media: createMediaRepository(tx),
           audit: createAuditLog(tx),
           idempotency: createIdempotencyStore(tx),
         }),

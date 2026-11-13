@@ -254,6 +254,11 @@ describe('session cookie', () => {
       // Production insists on a real mail server and sender; nothing is sent in this test.
       SMTP_HOST: 'smtp.example.test',
       EMAIL_FROM: 'Globetrot <hello@example.test>',
+      // And real object storage; nothing is uploaded in this test.
+      S3_ENDPOINT: 'https://s3.example.test',
+      S3_BUCKET: 'globetrot-photos',
+      S3_ACCESS_KEY_ID: 'production-key',
+      S3_SECRET_ACCESS_KEY: 'production-secret',
     });
     const cookies = (await signUp()).headers.getSetCookie();
     const sessionCookie = cookies.find((cookie) =>

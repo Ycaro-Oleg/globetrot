@@ -536,7 +536,6 @@
         "notes": "Notes",
         "todos": "To do"
       },
-      "photosSoon": "Photos of the place come with uploads, which are not switched on yet. Spots, notes and to-dos already save with your trip.",
       "visited": "Visited",
       "showSpot": "Show on the map: {name}",
       "removeItem": "Remove: {name}",
@@ -548,7 +547,8 @@
       "autosave": "Saved automatically",
       "progress": "To-dos done",
       "noTodos": "Nothing to do yet.",
-      "addTodo": "Add a task…"
+      "addTodo": "Add a task…",
+      "photosLabel": "Photos of {stop}"
     },
     "visa": {
       "kicker": "GLOBETROT VISA",
@@ -1005,16 +1005,16 @@
       "publish": "Post",
       "publishing": "Posting…",
       "cancel": "Cancel",
-      "photosSoon": "Photos arrive in a later update.",
       "errors": {
-        "empty": "Write something before posting.",
+        "empty": "Write something or add a photo before posting.",
         "trip": "Choose a trip to share.",
         "visa": "Choose a visa to share.",
         "RATE_LIMITED": "You’ve posted a lot today. Try again tomorrow.",
         "NOT_FOUND": "That trip is gone. Choose another.",
         "VALIDATION_ERROR": "That can’t be shared yet: a route needs stops, a goal needs costs and savings on track.",
         "UNKNOWN": "That did not post. Try again."
-      }
+      },
+      "photos": "Photos"
     },
     "post": {
       "follow": "Follow",
@@ -1122,5 +1122,24 @@
       "title": "Post",
       "back": "Back to the community"
     }
+  },
+  "photos": {
+    "add": "Add photos",
+    "left": "{count, plural, one {# left} other {# left}}",
+    "alt": "Describe photo {n}",
+    "altPlaceholder": "What it shows (optional)",
+    "remove": "Remove photo {n}",
+    "uploading": "{count, plural, one {Uploading # photo…} other {Uploading # photos…}}",
+    "full": "{max} photos at most.",
+    "privacy": "Location and camera data are removed from photos before they are saved.",
+    "errors": {
+      "unsupported": "That file isn’t a photo we can read. Try a JPEG, PNG or WebP.",
+      "tooMany": "You’ve uploaded a lot of photos today. Try again tomorrow.",
+      "failed": "The photo did not upload. Try again."
+    },
+    "byName": "Photo by {name}",
+    "ofStop": "Photo of {stop}",
+    "open": "Open photo {n} of {total}",
+    "close": "Close photo"
   }
 }

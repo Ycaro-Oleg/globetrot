@@ -1,19 +1,19 @@
 # Current state
 
-_Last updated: 2026-11-13, v2 Community. Code state: `develop` includes #83 to #97; the Community is in an open PR._
+_Last updated: 2026-11-13, photos. Code state: `develop` includes #83 to #98; photos (uploads) are in an open PR._
 
 Read this first. It says where the project is, what exists, what is open, what only the owner can unblock and what to do next. Procedure for working: [`playbook.md`](playbook.md). Feature-by-feature progress: [`../product/progress.md`](../product/progress.md). Milestones and exit criteria: [`../product/roadmap.md`](../product/roadmap.md).
 
 ## Snapshot
 
-- **Design handoff v2 is the visual direction** (slate, blue and coral; Plus Jakarta Sans; one TopBar on every screen). The tokens, fonts and the shell are v2; every screen picks up the v2 palette, hairlines and pills through the tokens. **The Budget screen is rebuilt** (answer card with a live monthly slider and a six-month chart, totals by status, a trip ceiling, the expense drawer). **The Days screen is rebuilt** (a stored day plan: places on days, drag and drop and "Move to", undo). **The Lists screen is rebuilt** (stamp celebration, passport tab). **The Landing and the account screens are v2.** **The Onboarding is built** (`/onboarding`, first trip in seven steps). **The Profile and My Pip are built** (`/app/profile`: the stored Pip look and name, worn by every Pip; visas by year and continent). **The Community is built** (`/app/community`: feed, composer, comments, likes, follows, mute and report, person and post pages; ADR-0013). Every screen of the handoff now exists; photos in posts and the pin card wait for uploads.
+- **Design handoff v2 is the visual direction** (slate, blue and coral; Plus Jakarta Sans; one TopBar on every screen). The tokens, fonts and the shell are v2; every screen picks up the v2 palette, hairlines and pills through the tokens. **The Budget screen is rebuilt** (answer card with a live monthly slider and a six-month chart, totals by status, a trip ceiling, the expense drawer). **The Days screen is rebuilt** (a stored day plan: places on days, drag and drop and "Move to", undo). **The Lists screen is rebuilt** (stamp celebration, passport tab). **The Landing and the account screens are v2.** **The Onboarding is built** (`/onboarding`, first trip in seven steps). **The Profile and My Pip are built** (`/app/profile`: the stored Pip look and name, worn by every Pip; visas by year and continent). **The Community is built** (`/app/community`: feed, composer, comments, likes, follows, mute and report, person and post pages; ADR-0013). Every screen of the handoff now exists. **Photos work** (uploads to S3-compatible storage with metadata removed, on posts and the pin card; ADR-0014).
 - **Active milestone: M3 App Foundation.** 13 of 13 issues are done in code; #55 stays open for the owner's real-provider smoke run. M2 (engineering foundation) is complete. M0 (product foundation) is complete. **M1 (design system and spikes) is partly open**: the owner reviewed and approved the remaining screen studies (#7 closed on 2026-11-13); the other open items need the owner.
 - **What works end to end today** (checked against the real API, Postgres and Mailpit): a person can see the landing page, create an account in English or Portuguese, confirm the email through Mailpit, log in, create a trip, see it in the list and switcher, archive it and undo, open the world-map board, search places, pin a route, change language, currency, country, nationality, time zone, units, theme (day, red-eye or follow the device) and motion, recover a password and log out.
 - **The map board follows the design handoff v2** (#75, map board v2): a full-bleed map with Atlas, Terrain and Slate styles and country fills, teardrop pins with petals and a pin card (spots, notes, to-dos), arcs with a comet, a slate route panel (reorder, undo, nights, dates, distances), a stop detail (nearby places, leg, mark visited, remove), place search on the server, a phone bottom sheet with "Pin here". Marking the first stop in a country visited stamps a **commemorative visa** (`GET /v1/visas`). Still to do: photos on the pin card (uploads), state outlines (own boundaries), the v2 tokens, type and TopBar shell (a separate change), costs per stop.
 - **The landing page is complete in code** (#74): every section, mock pricing labelled as placeholder, example trips a visitor can copy into an account, metadata, social image, `robots.txt` and sitemap. Real prices, legal text and the owner's review remain.
 - **Checklists and the visa page work** (`/app/lists`): four lists per trip (add, check, remove, a suggested starter list) and the nine readiness stamps as they stand now. The budget (costs, conversion, savings answer) and the Days page work too.
 - **The passport screen works** (`/app/passport`): the account's commemorative visas, newest first, with country, city and date, an empty state that leads to the board, and the "not an official document" note.
-- **What does not exist yet:** Pip's suggestions, photos (uploads), a staff review queue for community reports, blocking, visa privacy, billing, deployment. The journey stage and the next steps are in the domain but not on a screen yet.
+- **What does not exist yet:** Pip's suggestions, a staff review queue for community reports, blocking, visa privacy, billing, deployment. The journey stage and the next steps are in the domain but not on a screen yet.
 - **Branches:** `main` has no release yet; `develop` is the integration branch. All work goes through `feature/*` or `docs/*` PRs into `develop`.
 
 ## Milestone board
@@ -64,6 +64,7 @@ These cannot be finished by an agent. Do not work around them, and do not mark t
 | **Production email provider** | Choose Resend or Postmark, then provide settings and a verified sending domain | Production (M11). SMTP settings are the only change |
 | **Pricing, plan limits, regional pricing** | A business decision | M10 |
 | **Imagery licensing source** | Choose where destination images come from | Imagery in the board and landing |
+| **Production object storage** ([ADR-0014](../architecture/adr/0014-photos-and-storage.md)) | Choose an S3-compatible provider (or self-host on the Hetzner box) and provide `S3_*` settings as secrets | Photos in production (M11) |
 | **Community before a public launch** ([ADR-0013](../architecture/adr/0013-community.md)) | Decide who reviews reported posts (and with what tool), whether to add blocking and private accounts, and the community rules text | A public release with the community on |
 | **Close the M0 milestone** | A GitHub setting, so it is the owner's call | Housekeeping only |
 
@@ -72,7 +73,8 @@ These cannot be finished by an agent. Do not work around them, and do not mark t
 Honest list of what is missing or deliberately simple, so nobody assumes otherwise.
 
 - **Account and data deletion and export** (LGPD/GDPR) are not built and not designed. `audit_event` is append-only and permanent, and `trip.owner_id` is `ON DELETE RESTRICT`, so the design must reconcile both. Required before a public release.
-- **Community:** no photos (needs uploads and EXIF stripping), no staff review queue for `post_report` (three reports hide a post until then), no blocking, no notifications or unread badge, no search. Handles are created on first action; nobody is listed before that.
+- **Photos:** no thumbnails, no cleanup of uploads never placed (no job runner), no production storage provider chosen (owner).
+- **Community:** no staff review queue for `post_report` (three reports hide a post until then), no blocking, no notifications or unread badge, no search. Handles are created on first action; nobody is listed before that.
 - **Terms acceptance is not stored** (needs the final legal text and a version).
 - **Trips: no pagination** (a list returns at most 200), **no delete**, and visibility is always `private`.
 - **Idempotency keys are never cleaned up**, and there is no job runner yet (`apps/worker` is a placeholder).

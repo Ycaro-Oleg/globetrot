@@ -18,6 +18,7 @@ const post = (n: number, extra: Partial<PostData>): PostData => ({
   place: null,
   audience: 'everyone',
   attachment: null,
+  photos: [],
   createdAt: '2026-11-13T10:00:00.000Z',
   editedAt: null,
   author: ANA,
@@ -39,6 +40,7 @@ const FEED: FeedData = {
       place: { name: 'Fushimi Inari', countryCode: 'JP' },
       likes: 3,
       liked: true,
+      photos: [{ mediaId: '0193c0a8-7b1e-7c4a-9e2f-3d5a6b7c9f01', alt: 'Torii gates at dawn' }],
     }),
     post(2, {
       kind: 'route',
@@ -124,6 +126,8 @@ describe.each(SUPPORTED_LOCALES)('community (%s)', (locale) => {
     expect(plain).toContain(copy.post.visaNote);
     expect(plain).toContain(copy.post.goalNote);
     expect(html).toMatch(/aria-pressed="true"[^>]*><span aria-hidden="true"[^>]*>♥/);
+    expect(html).toContain('src="/v1/media/0193c0a8-7b1e-7c4a-9e2f-3d5a6b7c9f01"');
+    expect(html).toContain('alt="Torii gates at dawn"');
     // A place on someone else's tip can be saved to the trip.
     expect(plain).toContain(copy.post.savePlace);
   });

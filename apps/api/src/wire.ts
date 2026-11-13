@@ -2,11 +2,13 @@ import {
   createApplication,
   type EmailPort,
   type GeocodingPort,
+  type StoragePort,
   type UserReader,
 } from '@globetrot/application';
 import {
   createCommunityRepository,
   createDestinationRepository,
+  createMediaRepository,
   createChecklistRepository,
   createDayPlaceRepository,
   createVisaRepository,
@@ -25,6 +27,7 @@ import { createAuth, type Auth } from './auth';
 import type { ApiConfig } from './config';
 import { createSmtpEmail } from './email';
 import { createGeoapifyGeocoder, createMemoryRateLimiter } from './places';
+import { createS3Storage } from './storage';
 
 /** Adapter: the application's `UserReader` port over the `user` table. Selects only what the port names. */
 export function createUserReader(db: Database): UserReader {
@@ -63,7 +66,11 @@ export function toAuthService(auth: Auth): AuthService {
 export function createServices(
   db: Database,
   config: ApiConfig,
-  overrides: { readonly email?: EmailPort; readonly geocoding?: GeocodingPort } = {},
+  overrides: {
+    readonly email?: EmailPort;
+    readonly geocoding?: GeocodingPort;
+    readonly storage?: StoragePort;
+  } = {},
 ) {
   const email = overrides.email ?? createSmtpEmail(config.email);
   const auth = createAuth(db, config.auth, { email });
@@ -80,6 +87,8 @@ export function createServices(
       savings: createSavingsRepository(db),
       preferences: createPreferencesRepository(db),
       community: createCommunityRepository(db),
+      media: createMediaRepository(db),
+      storage: overrides.storage ?? createS3Storage(config.storage),
       unitOfWork: createUnitOfWork(db),
       clock: { now: () => new Date() },
       ids: { newId: () => uuidV7(Date.now(), crypto.getRandomValues(new Uint8Array(10))) },

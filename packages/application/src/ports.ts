@@ -140,8 +140,15 @@ export interface DestinationRecord {
   readonly visited: boolean;
   readonly spots: readonly StopSpotRecord[];
   readonly todos: readonly StopTodoRecord[];
+  readonly photos: readonly PhotoRecord[];
   readonly createdAt: Date;
   readonly updatedAt: Date;
+}
+
+/** A photo placed on a stop or a post: an uploaded image and the words that describe it. */
+export interface PhotoRecord {
+  readonly mediaId: string;
+  readonly alt: string;
 }
 
 /** A place to see at a stop. */
@@ -171,6 +178,7 @@ export interface NewDestination {
   readonly visited: boolean;
   readonly spots: readonly StopSpotRecord[];
   readonly todos: readonly StopTodoRecord[];
+  readonly photos: readonly PhotoRecord[];
 }
 
 export interface DestinationReader {
@@ -396,6 +404,7 @@ export interface PostRecord {
   readonly placeCountry: string | null;
   readonly audience: PostAudience;
   readonly attachment: PostAttachmentRecord | null;
+  readonly photos: readonly PhotoRecord[];
   readonly createdAt: Date;
   readonly editedAt: Date | null;
   readonly deletedAt: Date | null;
@@ -457,6 +466,8 @@ export interface CommunityReader {
     readonly limit: number;
   }): Promise<PostRecord[]>;
   findPost(id: string): Promise<PostRecord | null>;
+  /** Live posts that show this image. */
+  postsWithMedia(mediaId: string): Promise<PostRecord[]>;
   /** How `viewerId` relates to each listed person. */
   relations(
     viewerId: string,
@@ -496,6 +507,35 @@ export interface CommunityWriter extends CommunityReader {
   setMute(userId: string, mutedId: string, on: boolean, now: Date): Promise<void>;
   /** Records the report once per person; answers how many people reported the post. */
   report(postId: string, reporterId: string, reason: ReportReason, now: Date): Promise<number>;
+}
+
+// --- Media (uploaded images) ---------------------------------------------------------------------------
+
+export interface MediaRecord {
+  readonly id: string;
+  readonly ownerId: string;
+  readonly contentType: string;
+  readonly byteSize: number;
+  readonly width: number;
+  readonly height: number;
+  readonly createdAt: Date;
+}
+
+export interface MediaReader {
+  findById(id: string): Promise<MediaRecord | null>;
+  findMany(ids: readonly string[]): Promise<MediaRecord[]>;
+}
+
+export interface MediaWriter extends MediaReader {
+  insert(record: MediaRecord): Promise<void>;
+  countSince(ownerId: string, since: Date): Promise<number>;
+}
+
+/** Object storage for the bytes (S3-compatible). Keys are chosen by the application, never by a client. */
+export interface StoragePort {
+  put(key: string, bytes: Uint8Array, contentType: string): Promise<void>;
+  /** `null` when there is no such object. */
+  get(key: string): Promise<Uint8Array | null>;
 }
 
 // --- Places (geocoding) -------------------------------------------------------------------------------
@@ -587,6 +627,7 @@ export interface Transaction {
   readonly savings: SavingsWriter;
   readonly preferences: PreferencesWriter;
   readonly community: CommunityWriter;
+  readonly media: MediaWriter;
   readonly audit: AuditLog;
   readonly idempotency: IdempotencyStore;
 }
@@ -616,6 +657,8 @@ export interface Ports {
   readonly savings: SavingsReader;
   readonly preferences: PreferencesReader;
   readonly community: CommunityReader;
+  readonly media: MediaReader;
+  readonly storage: StoragePort;
   readonly unitOfWork: UnitOfWork;
   readonly clock: Clock;
   readonly ids: IdGenerator;
