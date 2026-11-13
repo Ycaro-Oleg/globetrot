@@ -8,10 +8,27 @@
   overflow: hidden;
 }
 
+/* Back to front: the bag, the body (live or still), then the outfit and hat. */
 .live,
-.still {
+.still,
+.layer {
   position: absolute;
   inset: 0;
+}
+
+.layer {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.layer:last-child {
+  z-index: 2;
+}
+
+.live,
+.still {
+  z-index: 1;
 }
 
 .still svg {
