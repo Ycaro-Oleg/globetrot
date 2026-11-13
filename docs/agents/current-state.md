@@ -1,6 +1,6 @@
 # Current state
 
-_Last updated: 2026-11-13, photos. Code state: `develop` includes #83 to #98; photos (uploads) are in an open PR._
+_Last updated: 2026-11-13, account data. Code state: `develop` includes #83 to #99; account export and deletion are in an open PR._
 
 Read this first. It says where the project is, what exists, what is open, what only the owner can unblock and what to do next. Procedure for working: [`playbook.md`](playbook.md). Feature-by-feature progress: [`../product/progress.md`](../product/progress.md). Milestones and exit criteria: [`../product/roadmap.md`](../product/roadmap.md).
 
@@ -72,11 +72,11 @@ These cannot be finished by an agent. Do not work around them, and do not mark t
 
 Honest list of what is missing or deliberately simple, so nobody assumes otherwise.
 
-- **Account and data deletion and export** (LGPD/GDPR) are not built and not designed. `audit_event` is append-only and permanent, and `trip.owner_id` is `ON DELETE RESTRICT`, so the design must reconcile both. Required before a public release.
+- **Account export and deletion** exist (ADR-0015). Open points: legal review of keeping the audit log, a fresh-session check before deleting, a cleanup job for stored images whose deletion failed.
 - **Photos:** no thumbnails, no cleanup of uploads never placed (no job runner), no production storage provider chosen (owner).
 - **Community:** no staff review queue for `post_report` (three reports hide a post until then), no blocking, no notifications or unread badge, no search. Handles are created on first action; nobody is listed before that.
 - **Terms acceptance is not stored** (needs the final legal text and a version).
-- **Trips: no pagination** (a list returns at most 200), **no delete**, and visibility is always `private`.
+- **Trips: no pagination** (a list returns at most 200), delete only after archiving, and visibility is always `private`.
 - **Idempotency keys are never cleaned up**, and there is no job runner yet (`apps/worker` is a placeholder).
 - **No production migration step.** Nothing in the API image runs migrations or ships the `migrations` folder; locally `pnpm --filter @globetrot/db migrate` does it. How migrations run on deploy (app start or a release step) is decided in M11 ([`data-model.md`](../architecture/data-model.md#migrations)).
 - **`/health` is shallow:** it answers `ok` without checking the database or the mail server. Add readiness checks with the deployment work (M11).
@@ -121,7 +121,7 @@ In parallel, and owner-driven: the M1 items above. A docs-only PR may fix gaps a
 - Managed geocoding provider (#4).
 - Pip illustrator and asset timeline.
 - Imagery licensing source.
-- Account and data deletion design and retention (before a public release).
+- Legal review of the retention position: the audit log is kept after account deletion ([ADR-0015](../architecture/adr/0015-account-export-and-deletion.md)).
 - Whether to keep `audit_event` metadata to field names only, or add values with a retention policy ([ADR-0011](../architecture/adr/0011-idempotency-audit-and-units-of-work.md)).
 
 ## Blockers

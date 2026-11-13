@@ -2,6 +2,7 @@ import { getLocale, getTranslations } from 'next-intl/server';
 import { cookies } from 'next/headers';
 import { Banner } from '@globetrot/ui/banner';
 import { apiInternalUrl } from '../../lib/api-proxy';
+import { fetchCurrentUser } from '../../lib/current-user';
 import { fetchStoredPreferences, sessionCookieHeader } from '../../lib/stored-preferences';
 import { countryOptions, currencyOptions, timeZoneOptions } from './options';
 import { SettingsView } from './settings-view';
@@ -22,9 +23,10 @@ export default async function SettingsPage({
   ]);
 
   const cookieHeader = sessionCookieHeader(store.getAll());
-  const stored = cookieHeader
-    ? await fetchStoredPreferences({ cookieHeader, apiUrl: apiInternalUrl() })
-    : null;
+  const options = cookieHeader ? { cookieHeader, apiUrl: apiInternalUrl() } : null;
+  const [stored, user] = options
+    ? await Promise.all([fetchStoredPreferences(options), fetchCurrentUser(options)])
+    : [null, null];
 
   // Settings belong to an account. The sign-in screens arrive with #57.
   if (!stored) {
@@ -45,6 +47,7 @@ export default async function SettingsPage({
       countries={countryOptions(locale)}
       timeZones={timeZoneOptions(locale, stored.timeZone)}
       status={typeof query.status === 'string' ? query.status : undefined}
+      email={user?.email ?? null}
     />
   );
 }

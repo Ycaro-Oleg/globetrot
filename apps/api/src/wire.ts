@@ -6,6 +6,7 @@ import {
   type UserReader,
 } from '@globetrot/application';
 import {
+  createAccountRepository,
   createCommunityRepository,
   createDestinationRepository,
   createMediaRepository,
@@ -88,6 +89,7 @@ export function createServices(
       preferences: createPreferencesRepository(db),
       community: createCommunityRepository(db),
       media: createMediaRepository(db),
+      account: createAccountRepository(db),
       storage: overrides.storage ?? createS3Storage(config.storage),
       unitOfWork: createUnitOfWork(db),
       clock: { now: () => new Date() },

@@ -7,7 +7,14 @@ import { createServerApiClient, sessionCookieHeader } from '../../../lib/stored-
 import { fetchTrips, SELECTED_TRIP_COOKIE } from '../../../lib/trips';
 import { currencyOptions } from '../../settings/options';
 import { findExampleTrip } from '@globetrot/application';
-import { archiveTrip, copyExampleTrip, createTrip, openTrip, undoArchiveTrip } from './actions';
+import {
+  archiveTrip,
+  copyExampleTrip,
+  createTrip,
+  deleteTrip,
+  openTrip,
+  undoArchiveTrip,
+} from './actions';
 import styles from './trips.module.css';
 
 const FILTERS = ['all', 'active', 'traveling', 'completed', 'archived'] as const;
@@ -32,7 +39,13 @@ export async function generateMetadata() {
 export default async function TripsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ filter?: string; archived?: string; status?: string; example?: string }>;
+  searchParams: Promise<{
+    filter?: string;
+    archived?: string;
+    status?: string;
+    example?: string;
+    confirmDelete?: string;
+  }>;
 }) {
   const [locale, t, store, query] = await Promise.all([
     getLocale(),
@@ -77,6 +90,9 @@ export default async function TripsPage({
             : null;
   const example = query.example ? findExampleTrip(query.example) : undefined;
   const archivedTrip = query.archived ? trips.find((trip) => trip.id === query.archived) : null;
+  const deleting = query.confirmDelete
+    ? trips.find((trip) => trip.id === query.confirmDelete && trip.status === 'archived')
+    : undefined;
 
   return (
     <section className={styles.page}>
@@ -163,6 +179,32 @@ export default async function TripsPage({
           {statusMessage}
         </p>
       ) : null}
+      {query.status === 'deleted' ? (
+        <p className={styles.banner} role="status">
+          {t('deletedMessage')}
+        </p>
+      ) : null}
+      {deleting ? (
+        <section className={styles.banner} aria-labelledby="delete-trip-title" role="alertdialog">
+          <div>
+            <h2 id="delete-trip-title" className={styles.dangerTitle}>
+              {t('deleteTitle', { title: deleting.title })}
+            </h2>
+            <p>{t('deleteBody')}</p>
+          </div>
+          <div className={styles.cardActions}>
+            <Link href="/app/trips?filter=archived" className={styles.secondaryAction}>
+              {t('deleteCancel')}
+            </Link>
+            <form action={deleteTrip}>
+              <input type="hidden" name="tripId" value={deleting.id} />
+              <button className={styles.dangerAction} type="submit">
+                {t('deleteConfirm')}
+              </button>
+            </form>
+          </div>
+        </section>
+      ) : null}
       {archivedTrip ? (
         <div className={styles.banner} role="status" aria-live="polite">
           <span>{t('archivedMessage', { title: archivedTrip.title })}</span>
@@ -242,7 +284,14 @@ export default async function TripsPage({
                           {t('archive')}
                         </button>
                       </form>
-                    ) : null}
+                    ) : (
+                      <Link
+                        href={`/app/trips?filter=archived&confirmDelete=${encodeURIComponent(trip.id)}`}
+                        className={styles.secondaryAction}
+                      >
+                        {t('deleteForever')}
+                      </Link>
+                    )}
                   </div>
                 </article>
               ))}

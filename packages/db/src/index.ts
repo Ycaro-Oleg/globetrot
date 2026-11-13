@@ -45,6 +45,7 @@ export {
   type TripRepository,
   type TripRow,
 } from './repositories';
+export { createAccountRepository, type AccountRepository } from './account-repository';
 export {
   createCommunityRepository,
   type CommentRow,

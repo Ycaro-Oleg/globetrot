@@ -85,6 +85,17 @@ export async function undoArchiveTrip(formData: FormData): Promise<void> {
   redirect(`/app/trips/${data.id}`);
 }
 
+/** Deletes an archived trip for good (the page asked to confirm first). */
+export async function deleteTrip(formData: FormData): Promise<void> {
+  const id = formData.get('tripId');
+  if (typeof id !== 'string' || !id) redirect('/app/trips?filter=archived&status=error');
+  const { store, client } = await apiClient();
+  const { data } = await client.DELETE('/v1/trips/{id}', { params: { path: { id } } });
+  if (!data) redirect('/app/trips?filter=archived&status=error');
+  if (store.get(SELECTED_TRIP_COOKIE)?.value === id) store.delete(SELECTED_TRIP_COOKIE);
+  redirect('/app/trips?filter=archived&status=deleted');
+}
+
 /** Copies a public example trip into the person's account and opens it on the board. */
 export async function copyExampleTrip(formData: FormData): Promise<void> {
   const exampleId = EXAMPLE_TRIP_IDS.find((id) => id === formData.get('exampleId'));

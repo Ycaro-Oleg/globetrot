@@ -84,7 +84,24 @@
     "motionReduced": "Reduzido",
     "appearanceHelp": "“Seguir o dispositivo” usa o modo claro ou escuro do seu aparelho. Se o aparelho pedir menos movimento, o app sempre respeita.",
     "homeCity": "Cidade de casa",
-    "homeCityHelp": "A cidade de onde você costuma sair. Opcional; mostra de onde a viagem começa."
+    "homeCityHelp": "A cidade de onde você costuma sair. Opcional; mostra de onde a viagem começa.",
+    "data": {
+      "title": "Seus dados",
+      "exportTitle": "Baixar seus dados",
+      "exportBody": "Um arquivo JSON com sua conta, configurações, viagens (paradas, custos, poupança, listas, roteiros por dia), vistos, posts e comentários da comunidade, a lista das suas fotos e o seu próprio histórico. Nunca inclui sua senha.",
+      "exportAction": "Baixar (JSON)",
+      "deleteTitle": "Excluir sua conta",
+      "deleteBody": "Exclui sua conta e tudo o que há nela, para sempre. Não dá para desfazer.",
+      "deleteStart": "Excluir conta…",
+      "deleteList1": "Suas viagens, com paradas, custos, poupança, listas e roteiros por dia.",
+      "deleteList2": "Seus vistos, seu perfil na comunidade, posts, comentários, curtidas e quem você segue.",
+      "deleteList3": "Suas fotos, suas configurações e todos os aparelhos conectados.",
+      "confirmLabel": "Para confirmar, digite seu e-mail: {email}",
+      "mismatch": "Esse não é o e-mail da sua conta.",
+      "cancel": "Manter minha conta",
+      "deleteConfirm": "Excluir minha conta para sempre",
+      "deleting": "Excluindo…"
+    }
   },
   "email": {
     "greeting": "Olá, {name},",
@@ -123,7 +140,8 @@
       "pending": "Entrando…",
       "forgot": "Esqueceu?",
       "noAccount": "Novo no Globetrot?",
-      "toSignup": "Criar uma conta"
+      "toSignup": "Criar uma conta",
+      "accountDeleted": "Sua conta foi excluída. Tudo o que havia nela foi apagado."
     },
     "signup": {
       "title": "Comece seu mapa.",
@@ -319,7 +337,13 @@
         "rio-de-la-plata": "Pelo Rio da Prata"
       }
     },
-    "planFirst": "Planejar passo a passo"
+    "planFirst": "Planejar passo a passo",
+    "deleteForever": "Excluir para sempre",
+    "deleteTitle": "Excluir “{title}” para sempre?",
+    "deleteBody": "As paradas, custos, poupança, listas e o roteiro por dia vão junto. Não dá para desfazer.",
+    "deleteCancel": "Cancelar",
+    "deleteConfirm": "Excluir para sempre",
+    "deletedMessage": "Viagem excluída."
   },
   "landing": {
     "metaTitle": "Globetrot · Planeje a viagem com que você sempre sonha",
