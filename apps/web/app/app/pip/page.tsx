@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl';
 import { getTranslations } from 'next-intl/server';
 import { isPipEnabled } from '../../../lib/flags';
 import { SITE_NAME } from '../../site';
+import { PipAvatar } from '../_components/pip-avatar';
 import styles from '../_components/shell.module.css';
 
 export async function generateMetadata() {
@@ -21,6 +22,7 @@ export default function PipPage() {
   if (!isPipEnabled()) notFound();
   return (
     <section className={styles.card}>
+      <PipAvatar size={160} followPointer />
       <p className={styles.eyebrow}>{soon('label')}</p>
       <h1 className={styles.pageTitle}>{t('title')}</h1>
       <p className={styles.lead}>{t('notBuilt')}</p>

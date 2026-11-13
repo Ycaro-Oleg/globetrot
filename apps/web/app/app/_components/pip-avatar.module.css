@@ -1,0 +1,43 @@
+.pip {
+  position: relative;
+  display: inline-block;
+  flex: none;
+  max-width: 100%;
+  aspect-ratio: 1;
+  /* The live canvas may reach a little past the box for motion; keep it off neighbouring text and controls. */
+  overflow: hidden;
+}
+
+/* Back to front: the bag, the body (live or still), then the outfit and hat. */
+.live,
+.still,
+.layer {
+  position: absolute;
+  inset: 0;
+}
+
+.layer {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.layer:last-child {
+  z-index: 2;
+}
+
+.live,
+.still {
+  z-index: 1;
+}
+
+.still svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Once the live avatar is mounted, the server's still frame steps aside. */
+.live[data-live] + .still {
+  visibility: hidden;
+}

@@ -392,6 +392,11 @@ try {
    */
   async function go(page, url) {
     await page.goto(url);
+    // `/app` redirects (to the board, or to log-in when signed out); after the shell's loading boundary has
+    // streamed, Next does that redirect in the browser, so wait for it instead of racing it.
+    if (new URL(url).pathname === '/app') {
+      await page.waitForURL((next) => next.pathname !== '/app');
+    }
     await page.waitForLoadState('networkidle');
   }
 

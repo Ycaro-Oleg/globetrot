@@ -5,7 +5,8 @@ import type { TripView } from '../../../lib/trips';
 import { SITE_NAME } from '../../site';
 import { AccountMenu } from './account-menu';
 import { RailNav, TabBar } from './nav-links';
-import { BRAND_ICON as BrandIcon, PIP_HREF, PIP_ICON as PipIcon } from './nav-model';
+import { BRAND_ICON as BrandIcon, PIP_HREF } from './nav-model';
+import { PipAvatar } from './pip-avatar';
 import { TripSwitcher } from './trip-switcher';
 import styles from './shell.module.css';
 
@@ -57,7 +58,7 @@ export function AppShell({
         </div>
         {pipEnabled ? (
           <Link href={PIP_HREF} className={styles.desktopPip}>
-            <PipIcon aria-hidden="true" size={18} />
+            <PipAvatar size={26} still />
             <span>{t('pip.ask')}</span>
           </Link>
         ) : null}
@@ -80,7 +81,7 @@ export function AppShell({
 
       {pipEnabled ? (
         <Link href={PIP_HREF} className={styles.pipFab} aria-label={t('pip.ask')}>
-          <PipIcon aria-hidden="true" strokeWidth={1.6} size={26} />
+          <PipAvatar size={40} still />
         </Link>
       ) : null}
       <TabBar />

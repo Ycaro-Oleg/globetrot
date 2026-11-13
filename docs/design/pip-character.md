@@ -2,6 +2,15 @@
 
 **Status: draft for product-owner approval.** This is a commissioning brief and a proposed engineering contract, not a signed agreement or an approved asset. Issue #9 remains open until the owner approves it and the final asset/contract are verified.
 
+## The avatar in the app today
+
+At the owner's request, Pip appears in the app as an [open-bot-avatar](https://github.com/DominikScholz/open-bot-avatar) (MIT, no dependencies, pinned to an exact version in `apps/web`): a round globe body with two eyes, in airmail blue with cream eyes, which the runtime animates (volume, blinking, moods, gaze). The definition and the component are `PIP_AVATAR` and `PipAvatar` in `apps/web/app/app/_components/pip-avatar.tsx`.
+
+- **The look (the handoff v2 "Meu Pip").** Each person dresses their own Pip: `hat` (straw, helmet, cap, none), `outfit` (scarf, floral shirt, explorer vest, none), `bag` (trolley, backpack, vintage) and `bagColor` (amber, cyan, pink). The options and the default (straw hat, no outfit, amber trolley) live in `@globetrot/domain` (`PIP_HATS`, `DEFAULT_PIP_LOOK`, `toPipLook`); the artwork comes from the handoff's `Pip.dc.html`. The look is drawn in two SVG layers around the live avatar (bag behind, outfit and hat in front) and moves with it every frame: the bag with the body's motion, the outfit and hat with the face, so they tilt, hop and turn together. Below 40 px the bag is left out. Storing the look on the profile and the editor are not built yet.
+- **Where:** the visa celebration on the board (mood `happy`), the Pip page (follows the pointer), and the "Ask Pip" button, floating button and More entry (still frames).
+- **Behaviour:** the server renders a still frame; the browser mounts the live avatar over it. Reduced motion (the app's Motion setting or the system's) keeps it calm. It is always decorative (`aria-hidden`): the text next to it carries the meaning.
+- **Moods map to the brief's states** for now: `idle` for idle, `thinking` for research and draft, `happy` for deliver and celebrate. The six commissioned Rive poses below remain the plan for the final art; whether they replace this avatar is the owner's decision (#9).
+
 ## The character
 
 Pip is Globetrot's optional travel-planning companion: a friendly little globe with a tourist hat and suitcase. Pip should feel curious, capable and reassuring, with expressive eyes and a simple silhouette legible at small sizes. The reference in [the handoff](../../design/reference/claude-design-v1/README.md#pip-ai-companion) and [placeholder poses](../../design/reference/claude-design-v1/atlas/pip.js) establish the visual direction; the SVG is a placeholder, not final art.

@@ -54,7 +54,7 @@ The inventory covers the handoff's token-level values, not every one-off prototy
 
 ## Motion
 
-- `motion/react` for UI transitions, CSS for the marching route stripes, Rive for Pip.
+- `motion/react` for UI transitions, CSS for the marching route stripes. Pip is drawn today by `open-bot-avatar` (`PipAvatar`, see [the Pip brief](pip-character.md#the-avatar-in-the-app-today)); Rive remains the plan for the commissioned poses.
 - Timings and easings follow the handoff's "Interactions & motion" table.
 - Every animation has a reduced-motion equivalent, triggered by **both** `prefers-reduced-motion` and the in-app Motion setting.
 
