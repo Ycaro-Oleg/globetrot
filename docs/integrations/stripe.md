@@ -28,4 +28,4 @@ Status: **planned for M10.** No live payments, and no real prices, before pricin
 
 ## Landing pricing (before M10)
 
-The pricing section renders mock tiers (provisional names: Free / Explorer / Voyager) from config, shown in USD and clearly labelled as placeholder pricing. Nothing on it is actually charged. The config is `apps/web/lib/plan-config.ts` (`MOCK_PLANS`: id, monthly price in minor units, `placeholder: true`); names, taglines and features are in the `landing.plans` catalog. Moving it to the real `PlanConfig` is part of M10.
+The pricing section renders mock tiers (provisional names: Free / Explorer / Voyager) from config, shown in USD and clearly labelled as placeholder pricing. Nothing on it is actually charged. The config is `apps/web/lib/plan-config.ts` (`MOCK_PLANS`: id, monthly and annual price in minor units, `placeholder: true`; the landing has a monthly / annual switch, annual being two months free, all placeholder); names, taglines and features are in the `landing.plans` catalog. Moving it to the real `PlanConfig` is part of M10.

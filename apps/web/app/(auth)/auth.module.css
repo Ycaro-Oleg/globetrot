@@ -1,22 +1,24 @@
-/* Airmail auth shell: the signed-in traveler sees the same illustrated world and stamp language. */
+/* The account screens (design handoff v2): the dark halftone world of the landing beside a light slate panel. */
 .shell {
-  --auth-sea: #2b45c4;
-  --auth-ink: #1d1a35;
-  --auth-paper: #fff5e1;
-  --auth-red: #c0301a; /* the danger token: 5:1 on the cream paper, where #e0401f was 3.9:1 */
+  --auth-sea: #0f172a;
+  --auth-ink: #1e293b;
+  --auth-paper: #f8f9fa;
+  --auth-blue: #2563eb;
+  --auth-coral: #f97316;
+  --auth-red: #b91c1c; /* the strong expense red: 6:1 on the light panel */
   display: grid;
   min-height: 100dvh;
   grid-template-columns: minmax(0, 1.08fr) minmax(25rem, 0.92fr);
   overflow: hidden;
   background: var(--auth-paper);
   color: var(--auth-ink);
-  /* The paper is cream in both themes, so the text, error and focus colours inside it must be the light-theme ones
+  /* The panel is light in both themes, so the text, error and focus colours inside it must be the light-theme ones
      (the red-eye theme's would be cream on cream). */
   --gt-semantic-color-text: var(--gt-semantic-color-always-light-text);
   --gt-semantic-color-text-secondary: var(--gt-semantic-color-always-light-text-secondary);
   --gt-semantic-color-text-tertiary: var(--gt-semantic-color-always-light-text-tertiary);
-  --gt-semantic-color-danger: #c0301a;
-  --gt-semantic-color-focus: #2b45c4;
+  --gt-semantic-color-danger: #b91c1c;
+  --gt-semantic-color-focus: #2563eb;
   --gt-semantic-color-surface-card: var(--gt-semantic-color-always-light-surface);
 }
 
@@ -25,8 +27,7 @@
   min-width: 0;
   min-height: 44rem;
   overflow: hidden;
-  border-inline-end: 3px solid var(--auth-ink);
-  background: var(--auth-sea);
+  background: radial-gradient(ellipse 80% 60% at 40% 0%, #1e3a8a 0%, var(--auth-sea) 70%);
 }
 
 .map {
@@ -36,7 +37,8 @@
   height: 100%;
   object-fit: cover;
   object-position: center;
-  background: #2b45c4 url('/auth-world.svg') center / cover no-repeat;
+  background: url('/world-halftone-blue.svg') center 40% / 120% auto no-repeat;
+  opacity: 0.9;
 }
 
 .headline {
@@ -46,9 +48,11 @@
   box-sizing: border-box;
   width: min(32.5rem, calc(100% - 3rem));
   padding: clamp(1.5rem, 3vw, 2.2rem);
-  border: 3px solid var(--auth-ink);
+  border: 1px solid rgb(248 249 250 / 0.14);
   border-radius: 1.65rem;
-  background: #fff;
+  background: rgb(15 23 42 / 0.82);
+  color: #f8f9fa;
+  backdrop-filter: blur(8px);
   box-shadow: none;
 }
 
@@ -57,20 +61,19 @@
   margin: 0;
   font-size: clamp(2.7rem, 5vw, 4.75rem);
   font-weight: 800;
-  font-stretch: 78%;
   letter-spacing: -0.055em;
   line-height: 0.91;
 }
 
 .headline em {
-  color: var(--auth-red);
+  color: #60a5fa;
   font-style: normal;
 }
 
 .headline p {
   max-width: 22rem;
   margin: 1.25rem 0 0;
-  color: #58536f;
+  color: #cbd5e1;
   font-size: 0.98rem;
   line-height: 1.45;
 }
@@ -102,7 +105,6 @@
   color: var(--auth-ink);
   font-size: 1.85rem;
   font-weight: 800;
-  font-stretch: 82%;
   letter-spacing: -0.045em;
   line-height: 1;
   text-decoration: none;
@@ -113,17 +115,15 @@
   width: 0.82em;
   height: 0.82em;
   place-items: center;
-  border: 2px solid var(--auth-ink);
   border-radius: 50%;
-  background: var(--auth-sea);
+  background: var(--auth-coral);
+  box-shadow:
+    inset 0 0 0 5px var(--auth-paper),
+    0 0 0 2px var(--auth-coral);
 }
 
 .brandMark::after {
-  width: 0.25em;
-  height: 0.25em;
-  border-radius: 50%;
-  background: #f5b31c;
-  content: '';
+  content: none;
 }
 
 .view {
@@ -139,14 +139,13 @@
   margin: 0;
   font-size: clamp(2.2rem, 3.5vw, 3rem);
   font-weight: 800;
-  font-stretch: 78%;
   letter-spacing: -0.05em;
   line-height: 0.98;
 }
 
 .lead {
   margin: -0.55rem 0 0;
-  color: #58536f;
+  color: #475569;
   font-size: 1rem;
   line-height: 1.5;
 }
@@ -173,23 +172,26 @@
 .form :global(.gt-field__control) {
   box-sizing: border-box;
   min-height: 3.25rem;
-  border-width: 2px;
-  border-radius: 0.85rem;
+  border-width: 1px;
+  border-color: #cbd2da;
+  border-radius: 14px;
   background: #fff;
   font-size: 1rem;
 }
 
 .form :global(.gt-field__control)::placeholder {
-  color: #69647f;
+  color: #5f6c80;
   font-style: italic;
 }
 
 .form :global(.gt-button) {
   width: 100%;
   min-height: 3.35rem;
-  border-radius: 1rem;
-  background: var(--auth-ink);
-  color: var(--auth-paper);
+  border: 0;
+  border-radius: 99px;
+  background: var(--auth-coral);
+  color: #0f172a;
+  box-shadow: 0 10px 24px -10px var(--auth-coral);
   font-size: 1rem;
 }
 
@@ -206,7 +208,7 @@
 }
 
 .passwordForgot {
-  color: var(--auth-red);
+  color: var(--auth-blue);
   font-size: 0.85rem;
   font-weight: 500;
   text-decoration-thickness: 1.5px;
@@ -216,7 +218,7 @@
 .passwordForgot:hover,
 .links a:hover,
 .language button:hover {
-  color: var(--auth-red);
+  color: #1d4ed8;
 }
 
 .divider {
@@ -224,7 +226,7 @@
   align-items: center;
   gap: 0.75rem;
   margin: -0.05rem 0;
-  color: #69647f;
+  color: #5f6c80;
   font-family: var(--gt-primitive-font-mono);
   font-size: 0.68rem;
   font-weight: 700;
@@ -236,7 +238,7 @@
 .divider::before,
 .divider::after {
   flex: 1;
-  border-top: 1px solid rgba(29, 26, 53, 0.24);
+  border-top: 1px solid #dde2e8;
   content: '';
 }
 
@@ -251,14 +253,14 @@
   justify-content: center;
   gap: 0.4rem;
   margin: 0.1rem 0 0;
-  color: #58536f;
+  color: #475569;
   font-size: 0.9rem;
   text-align: center;
 }
 
 .links a,
 .language button[aria-pressed='true'] {
-  color: var(--auth-red);
+  color: var(--auth-blue);
   font-weight: 650;
 }
 
@@ -274,18 +276,18 @@
   gap: 0.4rem;
   margin-top: 2.2rem;
   padding: 0.25rem;
-  border: 1.5px solid rgba(29, 26, 53, 0.22);
-  border-radius: 0.8rem;
-  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid #dde2e8;
+  border-radius: 99px;
+  background: #eef1f4;
 }
 
 .language button {
   min-height: 2.25rem;
   padding: 0.4rem 0.7rem;
   border: 0;
-  border-radius: 0.55rem;
+  border-radius: 99px;
   background: transparent;
-  color: #58536f;
+  color: #475569;
   font: 600 0.8rem/1.2 var(--gt-primitive-font-body);
   cursor: pointer;
 }
@@ -298,7 +300,7 @@
 .strength {
   display: grid;
   gap: 0.35rem;
-  color: #58536f;
+  color: #475569;
   font-size: 0.82rem;
 }
 
@@ -310,22 +312,22 @@
 
 .segment {
   height: 0.4rem;
-  border: 1.5px solid rgba(29, 26, 53, 0.32);
+  border: 0;
   border-radius: 99px;
-  background: #f8e9c9;
+  background: #e2e8f0;
 }
 
 .segment[data-on='1'] {
-  background: #c0301a;
+  background: #dc2626;
 }
 .segment[data-on='2'] {
-  background: #8a5a00;
+  background: #b45309;
 }
 .segment[data-on='3'] {
-  background: #f5b31c;
+  background: #f59e0b;
 }
 .segment[data-on='4'] {
-  background: #1d7a55;
+  background: #059669;
 }
 .strengthLabel {
   font-weight: 700;
@@ -344,7 +346,7 @@
     min-height: 0;
     height: 15rem;
     border-inline-end: 0;
-    border-block-end: 3px solid var(--auth-ink);
+    border-block-end: 0;
   }
 
   .map {

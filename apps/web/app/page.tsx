@@ -1,19 +1,13 @@
 import { formatMoney, money } from '@globetrot/domain';
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
-import { MOCK_PLANS } from '../lib/plan-config';
-import type { Metadata } from 'next';
 import { getLocale, getTranslations } from 'next-intl/server';
 import { siteOrigin } from '../lib/site-url';
 import { setScaffoldLocale } from './actions';
+import { PipAvatar } from './app/_components/pip-avatar';
+import { PipDemo, Pricing } from './landing-interactive';
 import { SITE_NAME } from './site';
-import {
-  MoneyPlanner as BudgetPlanner,
-  HeroMap,
-  PipPlanner,
-  StoryMap,
-  ThemeToggle,
-} from './landing-widgets';
 import styles from './landing.module.css';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -41,326 +35,225 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-/** Which copyable example trip each postcard opens (application/examples). */
-const EXAMPLE_FOR_POSTCARD = { 1: 'portugal', 2: 'japan', 3: 'rio-de-la-plata' } as const;
+/** Which copyable example trip each card opens (application/examples). */
+const EXAMPLES = [
+  { n: 1, id: 'portugal' },
+  { n: 2, id: 'japan' },
+  { n: 3, id: 'rio-de-la-plata' },
+] as const;
 
+/**
+ * The public landing page (design handoff v2, "Landing"): a dark hero over the halftone world, how it works in
+ * three steps, Pip with a live approve / dismiss demo, copyable example trips, placeholder pricing and a FAQ.
+ * Every amount is in USD, the default currency, and labelled as an example or a placeholder.
+ */
 export default function HomePage() {
   const t = useTranslations('landing');
   const auth = useTranslations('auth');
   const locale = useLocale();
   const usd = (whole: number) =>
     formatMoney(money(BigInt(whole) * 100n, 'USD'), locale, { precision: 'whole' });
+  const accent = (chunks: React.ReactNode) => <span className={styles.accent}>{chunks}</span>;
+
+  const steps = [
+    {
+      n: '01',
+      title: t('step1Title'),
+      body: t('step1Body'),
+      tone: 'light',
+      demo: [
+        ['1', 'Tokyo', t('demoNights', { count: 4 })],
+        ['2', 'Kyoto', t('demoNights', { count: 4 })],
+        ['3', 'Osaka', t('demoNights', { count: 3 })],
+      ],
+    },
+    {
+      n: '02',
+      title: t('step2Title'),
+      body: t('step2Body'),
+      tone: 'dark',
+      demo: [
+        ['●', t('demoPaid'), usd(1380)],
+        ['✓', t('demoConfirmed'), usd(647)],
+        ['≈', t('demoEstimate'), usd(1775)],
+      ],
+    },
+    {
+      n: '03',
+      title: t('step3Title'),
+      body: t('step3Body'),
+      tone: 'blue',
+      demo: [
+        ['$', t('demoSaved'), usd(1450)],
+        ['+', t('demoMonthly'), usd(900)],
+        [
+          '✓',
+          t('demoReady'),
+          new Intl.DateTimeFormat(locale, {
+            month: 'short',
+            year: 'numeric',
+            timeZone: 'UTC',
+          }).format(new Date('2027-03-15T12:00:00Z')),
+        ],
+      ],
+    },
+  ] as const;
 
   return (
     <div className={styles.site} data-landing>
-      <header className={styles.nav}>
-        <div className={styles.navInner}>
-          <Link href="/" className={styles.brand} aria-label={SITE_NAME}>
-            <span className={styles.brandMark} aria-hidden="true" />
-            <span>{SITE_NAME}</span>
+      <section className={styles.hero} id="top" aria-labelledby="hero-title">
+        <header className={styles.nav}>
+          <Link href="/" className={styles.brand}>
+            <span className={styles.brandRing} aria-hidden="true" />
+            <span>{SITE_NAME.toLowerCase()}</span>
           </Link>
           <nav className={styles.navLinks} aria-label={t('navSections')}>
-            <a href="#board">{t('navBoard')}</a>
+            <a href="#how">{t('navHow')}</a>
             <a href="#pip">{t('navPip')}</a>
-            <a href="#money">{t('navBudget')}</a>
             <a href="#trips">{t('navExamples')}</a>
             <a href="#pricing">{t('navPricing')}</a>
           </nav>
           <div className={styles.navActions}>
-            <ThemeToggle />
+            <form action={setScaffoldLocale} aria-label={auth('language')} className={styles.lang}>
+              <button type="submit" name="locale" value="en" aria-pressed={locale === 'en'}>
+                EN
+              </button>
+              <button type="submit" name="locale" value="pt-BR" aria-pressed={locale === 'pt-BR'}>
+                PT
+              </button>
+            </form>
             <Link href="/login" className={styles.login}>
-              {auth('login.submit')}
+              {t('navLogin')}
             </Link>
-            <Link href="/signup" className={styles.navCta}>
-              {t('navStart')}
+          </div>
+        </header>
+
+        <div className={styles.heroCopy}>
+          <span className={styles.heroKicker}>{t('kicker')}</span>
+          <h1 id="hero-title">{t.rich('heroTitle', { accent })}</h1>
+          <p>{t('heroLead')}</p>
+          <div className={styles.heroActions}>
+            <Link href="/signup" className={styles.cta}>
+              {t('heroCta')} <span aria-hidden="true">→</span>
             </Link>
-            <details className={styles.mobileMenu}>
-              <summary aria-label={t('navMenu')}>☰</summary>
-              <nav aria-label={t('navSections')}>
-                <a href="#board">{t('navBoard')}</a>
-                <a href="#pip">{t('navPip')}</a>
-                <a href="#money">{t('navBudget')}</a>
-                <a href="#trips">{t('navExamples')}</a>
-                <a href="#pricing">{t('navPricing')}</a>
-                <a href="#pricing">{t('navPricing')}</a>
-              </nav>
-            </details>
+            <a href="#how" className={styles.heroGhost}>
+              {t('heroCta2')}
+            </a>
+          </div>
+          <span className={styles.heroNote}>{t('heroNote')}</span>
+        </div>
+
+        <div className={styles.world} aria-hidden="true">
+          <img src="/world-halftone-blue.svg" alt="" width={1322} height={654} />
+        </div>
+        <div className={styles.sample}>
+          <span className={styles.sampleYes}>✓ {t('sampleYes')}</span>
+          <div>
+            <strong>{t('sampleLine')}</strong>
+            <span>{t('sampleSub')}</span>
           </div>
         </div>
-      </header>
+      </section>
 
       <main>
-        <section className={styles.heroIntro} id="top">
-          <div className={styles.heroTop}>
-            <h1>{t.rich('headline', { accent: (chunks) => <em>{chunks}</em> })}</h1>
-            <div className={styles.heroPitch}>
-              <p>{t('heroCopy')}</p>
-              <div className={styles.heroActions}>
-                <Link href="/signup" className={styles.threadButton}>
-                  {t('planDream')} <span aria-hidden="true">→</span>
+        <section className={styles.section} id="how" aria-labelledby="how-title">
+          <div className={styles.heading}>
+            <span className={styles.kicker}>{t('howKicker')}</span>
+            <h2 id="how-title">{t('howTitle')}</h2>
+          </div>
+          <ol className={styles.steps}>
+            {steps.map((step) => (
+              <li key={step.n} className={styles.step} data-tone={step.tone}>
+                <span className={styles.stepNumber}>{step.n}</span>
+                <h3>{step.title}</h3>
+                <p>{step.body}</p>
+                <ul className={styles.demo} aria-hidden="true">
+                  {step.demo.map(([glyph, label, value]) => (
+                    <li key={label}>
+                      <span>
+                        <i>{glyph}</i>
+                        {label}
+                      </span>
+                      <b>{value}</b>
+                    </li>
+                  ))}
+                </ul>
+              </li>
+            ))}
+          </ol>
+        </section>
+
+        <section className={styles.band} id="pip" aria-labelledby="pip-title">
+          <div className={styles.pipGrid}>
+            <div className={styles.heading}>
+              <div className={styles.pipStage}>
+                <PipAvatar
+                  size={180}
+                  look={{ hat: 'helmet', outfit: 'vest', bag: 'backpack', bagColor: 'cyan' }}
+                />
+              </div>
+              <span className={styles.kicker}>Pip</span>
+              <h2 id="pip-title">{t('pipTitle')}</h2>
+              <p className={styles.lead}>{t('pipBody')}</p>
+            </div>
+            <PipDemo />
+          </div>
+        </section>
+
+        <section className={styles.section} id="trips" aria-labelledby="trips-title">
+          <div className={styles.heading}>
+            <span className={styles.kicker}>{t('examplesKicker')}</span>
+            <h2 id="trips-title">{t('examplesTitle')}</h2>
+          </div>
+          <ul className={styles.examples}>
+            {EXAMPLES.map(({ n, id }) => (
+              <li key={id}>
+                <Link href={`/app/trips?example=${id}`} className={styles.example}>
+                  <span className={styles.exampleLength}>{t(`trip${n}Length`)}</span>
+                  <strong>{t.rich(`trip${n}Title`, { accent })}</strong>
+                  <span>{t(`trip${n}Body`)}</span>
+                  <b>
+                    {t('examplesUse')} <span aria-hidden="true">→</span>
+                  </b>
                 </Link>
-                <a href="#trips" className={styles.ghostButton}>
-                  {t('seeExamples')}
-                </a>
-              </div>
-            </div>
-          </div>
-          <HeroMap />
-        </section>
-
-        <section className={styles.sectionAlt} aria-labelledby="story-title">
-          <div className={styles.wrap}>
-            <div className={styles.sectionHead}>
-              <div>
-                <span className={styles.eyebrow}>{t('storyEyebrow')}</span>
-                <h2 id="story-title">
-                  {t.rich('storyTitle', { accent: (chunks) => <em>{chunks}</em> })}
-                </h2>
-              </div>
-              <p>{t('storyLead')}</p>
-            </div>
-            <StoryMap />
-          </div>
-        </section>
-
-        <section className={styles.section} aria-labelledby="stamps-title">
-          <div className={styles.wrap}>
-            <div className={styles.sectionHead}>
-              <div>
-                <span className={styles.eyebrow}>{t('stampsEyebrow')}</span>
-                <h2 id="stamps-title">
-                  {t.rich('stampsTitle', { accent: (chunks) => <em>{chunks}</em> })}
-                </h2>
-              </div>
-              <p>{t('stampsLead')}</p>
-            </div>
-            <div className={styles.stages}>
-              {[1, 2, 3, 4, 5].map((stage) => (
-                <article className={styles.stage} key={stage}>
-                  <span className={styles.stageNo}>{['i', 'ii', 'iii', 'iv', 'v'][stage - 1]}</span>
-                  <h3>{t(`stage${stage}Title`)}</h3>
-                  <p>{t(`stage${stage}Body`)}</p>
-                  <div
-                    className={`${styles.stageArt} ${styles[`stageArt${stage}` as keyof typeof styles]}`}
-                    aria-hidden="true"
-                  >
-                    {stage === 1 ? (
-                      <div className={styles.pinCluster}>
-                        <i />
-                        <i />
-                        <i />
-                      </div>
-                    ) : null}
-                    {stage === 2 ? (
-                      <svg viewBox="0 0 240 60">
-                        <path d="M8 25 Q70 56 128 22 Q185 0 232 33" />
-                        <circle cx="8" cy="25" r="5" />
-                        <circle cx="128" cy="22" r="5" />
-                        <circle cx="232" cy="33" r="5" />
-                      </svg>
-                    ) : null}
-                    {stage === 3 ? (
-                      <div className={styles.ledger}>
-                        <span>{t('stageLedgerStay')}</span>
-                        <i />
-                        <b>✓ {usd(225)}</b>
-                        <span>{t('stageLedgerTrains')}</span>
-                        <i />
-                        <b>≈ {usd(250)}</b>
-                      </div>
-                    ) : null}
-                    {stage > 3 ? (
-                      <div className={styles.stampArt}>
-                        <small>{stage === 4 ? 'N° 5' : t('stageGoStamp')}</small>
-                        <strong>{stage === 4 ? t('stagePaperStamp') : t('stageReadyStamp')}</strong>
-                        <small>{stage === 4 ? '05 NOV' : '03 APR'}</small>
-                      </div>
-                    ) : null}
-                  </div>
-                </article>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className={styles.pipSection} id="pip">
-          <div className={styles.wrap}>
-            <PipPlanner />
-          </div>
-        </section>
-
-        <section className={styles.section} id="money">
-          <div className={styles.wrap}>
-            <BudgetPlanner />
-          </div>
-        </section>
-
-        <section className={styles.sectionAlt} id="trips">
-          <div className={styles.wrap}>
-            <div className={styles.examplesHeading}>
-              <div>
-                <span className={styles.eyebrow}>{t('examplesEyebrow')}</span>
-                <h2>{t.rich('examplesTitle', { accent: (chunks) => <em>{chunks}</em> })}</h2>
-              </div>
-              <Link href="/signup">
-                {t('allExamples')} <span aria-hidden="true">→</span>
-              </Link>
-            </div>
-            <div className={styles.exampleGrid}>
-              {([1, 2, 3] as const).map((trip) => (
-                <Link
-                  href={`/app/trips?example=${EXAMPLE_FOR_POSTCARD[trip]}`}
-                  className={`${styles.postcard} ${styles[`postcard${trip}` as keyof typeof styles]}`}
-                  key={trip}
-                >
-                  <div className={styles.miniMap} aria-hidden="true">
-                    <span className={styles.miniRoute} />
-                    <i />
-                    <i />
-                    <i />
-                  </div>
-                  <span className={styles.postcardEyebrow}>{t(`trip${trip}Length`)}</span>
-                  <h3>{t.rich(`trip${trip}Title`, { accent: (chunks) => <em>{chunks}</em> })}</h3>
-                  <p>{t(`trip${trip}Body`)}</p>
-                  <strong>
-                    {t('tripUse')} <span aria-hidden="true">→</span>
-                  </strong>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className={styles.section} aria-labelledby="platform-title">
-          <div className={styles.wrap}>
-            <div className={styles.sectionHead}>
-              <div>
-                <span className={styles.eyebrow}>{t('platformEyebrow')}</span>
-                <h2 id="platform-title">
-                  {t.rich('platformTitle', { accent: (chunks) => <em>{chunks}</em> })}
-                </h2>
-              </div>
-              <p>{t('platformLead')}</p>
-            </div>
-            <div className={styles.platformGrid}>
-              <div>
-                <div className={styles.desktopMock}>
-                  <div className={styles.mockSidebar}>
-                    <b>{SITE_NAME}</b>
-                    <span>◉ {t('mockBoard')}</span>
-                    <span>▦ {t('mockDays')}</span>
-                    <span>＄ {t('mockBudget')}</span>
-                  </div>
-                  <div className={styles.mockMap}>
-                    <img src="/world-map-wide.svg" alt="" />
-                    <div className={styles.mockDetail}>
-                      <small>{t('mockStop')}</small>
-                      <b>Kyoto</b>
-                      <span>{t('mockStopMeta')}</span>
-                      <div />
-                    </div>
-                  </div>
-                </div>
-                <p className={styles.caption}>{t('platformDesktop')}</p>
-              </div>
-              <div className={styles.phoneColumn}>
-                <div className={styles.phoneMock}>
-                  <div className={styles.phoneTop} />
-                  <img src="/world-map-wide.svg" alt="" />
-                  <i className={styles.crosshair} />
-                  <span className={styles.pinHere}>{t('pinHere')}</span>
-                  <div className={styles.phoneSheet}>
-                    <small>{t('mockStop')}</small>
-                    <b>Kyoto</b>
-                    <span>{t('mockPhoneMeta')}</span>
-                  </div>
-                </div>
-                <p className={styles.caption}>{t('platformPhone')}</p>
-              </div>
-            </div>
-          </div>
+              </li>
+            ))}
+          </ul>
         </section>
 
         <section className={styles.section} id="pricing" aria-labelledby="pricing-title">
-          <div className={styles.wrap}>
-            <div className={styles.sectionHead}>
-              <div>
-                <span className={styles.eyebrow}>{t('pricingEyebrow')}</span>
-                <h2 id="pricing-title">
-                  {t.rich('pricingTitle', { accent: (chunks) => <em>{chunks}</em> })}
-                </h2>
-              </div>
-              <p>{t('pricingLead')}</p>
-            </div>
-            <ul className={styles.plans}>
-              {MOCK_PLANS.map((plan) => (
-                <li
-                  key={plan.id}
-                  className={
-                    plan.highlighted ? `${styles.plan} ${styles.planHighlighted}` : styles.plan
-                  }
-                >
-                  <h3>{t(`plans.${plan.id}.name`)}</h3>
-                  <p className={styles.planTagline}>{t(`plans.${plan.id}.tagline`)}</p>
-                  <p className={styles.planPrice}>
-                    {t('pricingPerMonth', {
-                      amount: formatMoney(money(plan.monthlyMinor, plan.currency), locale, {
-                        precision: plan.monthlyMinor === 0n ? 'whole' : 'full',
-                      }),
-                    })}
-                  </p>
-                  <ul className={styles.planFeatures}>
-                    {(['f1', 'f2', 'f3'] as const).map((feature) => (
-                      <li key={feature}>{t(`plans.${plan.id}.${feature}`)}</li>
-                    ))}
-                  </ul>
-                  {plan.monthlyMinor === 0n ? (
-                    <Link href="/signup" className={styles.planCta}>
-                      {t('pricingCta')}
-                    </Link>
-                  ) : null}
-                </li>
-              ))}
-            </ul>
-            <p className={styles.planNote}>
-              <strong>{t('pricingPlaceholder')}</strong>
-            </p>
-          </div>
+          <Pricing />
         </section>
 
-        <section className={styles.finalCta}>
-          <div className={styles.wrap}>
-            <span className={styles.eyebrow}>{t('finalEyebrow')}</span>
-            <h2>{t.rich('finalTitle', { accent: (chunks) => <em>{chunks}</em> })}</h2>
-            <form className={styles.finalForm} action="/signup" method="get">
-              <input
-                type="text"
-                name="dream"
-                placeholder={t('finalPlaceholder')}
-                aria-label={t('finalPlaceholder')}
-              />
-              <button type="submit">{t('finalButton')}</button>
-            </form>
-            <p>{t('finalNote')}</p>
+        <section className={styles.band} id="faq" aria-labelledby="faq-title">
+          <div className={styles.faq}>
+            <h2 id="faq-title">{t('faqTitle')}</h2>
+            {([1, 2, 3, 4] as const).map((n) => (
+              <details key={n} className={styles.question}>
+                <summary>
+                  {t(`faq${n}Q`)}
+                  <span aria-hidden="true">+</span>
+                </summary>
+                <p>{t(`faq${n}A`)}</p>
+              </details>
+            ))}
           </div>
         </section>
       </main>
 
       <footer className={styles.footer}>
         <div className={styles.footerInner}>
-          <span className={styles.footerBrand}>{SITE_NAME}</span>
+          <span className={styles.brand}>
+            <span className={styles.brandRing} aria-hidden="true" />
+            <span>{SITE_NAME.toLowerCase()}</span>
+          </span>
+          <span>{t('footTagline')}</span>
           <span>{t('mapAttribution')}</span>
-          <div className={styles.footerRight}>
-            <Link href="/login">{auth('login.submit')}</Link>
-            <form action={setScaffoldLocale} aria-label={auth('language')}>
-              <button type="submit" name="locale" value="en" aria-pressed={locale === 'en'}>
-                English
-              </button>
-              <button type="submit" name="locale" value="pt-BR" aria-pressed={locale === 'pt-BR'}>
-                Português (Brasil)
-              </button>
-            </form>
-          </div>
+          <nav className={styles.footerLinks} aria-label={SITE_NAME}>
+            <Link href="/terms">{t('footTerms')}</Link>
+            <Link href="/privacy">{t('footPrivacy')}</Link>
+            <Link href="/login">{t('navLogin')}</Link>
+          </nav>
         </div>
       </footer>
     </div>

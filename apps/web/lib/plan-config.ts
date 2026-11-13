@@ -9,6 +9,8 @@ export type PlanId = (typeof PLAN_IDS)[number];
 export interface PlanConfig {
   readonly id: PlanId;
   readonly monthlyMinor: bigint;
+  /** A year paid at once: two months free. Placeholder like the rest. */
+  readonly annualMinor: bigint;
   readonly currency: 'USD';
   /** Shown as the suggested plan. */
   readonly highlighted: boolean;
@@ -17,7 +19,28 @@ export interface PlanConfig {
 }
 
 export const MOCK_PLANS: readonly PlanConfig[] = [
-  { id: 'free', monthlyMinor: 0n, currency: 'USD', highlighted: false, placeholder: true },
-  { id: 'explorer', monthlyMinor: 499n, currency: 'USD', highlighted: true, placeholder: true },
-  { id: 'voyager', monthlyMinor: 999n, currency: 'USD', highlighted: false, placeholder: true },
+  {
+    id: 'free',
+    monthlyMinor: 0n,
+    annualMinor: 0n,
+    currency: 'USD',
+    highlighted: false,
+    placeholder: true,
+  },
+  {
+    id: 'explorer',
+    monthlyMinor: 499n,
+    annualMinor: 4990n,
+    currency: 'USD',
+    highlighted: true,
+    placeholder: true,
+  },
+  {
+    id: 'voyager',
+    monthlyMinor: 999n,
+    annualMinor: 9990n,
+    currency: 'USD',
+    highlighted: false,
+    placeholder: true,
+  },
 ];
