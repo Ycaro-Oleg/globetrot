@@ -20,6 +20,8 @@ const VALUES: SettingsViewProps['values'] = {
   motion: 'full',
   homeCity: null,
   pipOptIn: false,
+  pipLook: { hat: 'straw', outfit: 'none', bag: 'trolley', bagColor: 'amber' },
+  pipName: null,
 };
 
 function render(locale: SupportedLocale, status?: string, values = VALUES): string {

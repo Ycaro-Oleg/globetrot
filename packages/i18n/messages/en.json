@@ -217,7 +217,9 @@
       "settings": "Settings",
       "trip": "Trip",
       "tripLabel": "Trip tools",
-      "globalLabel": "Globetrot"
+      "globalLabel": "Globetrot",
+      "profile": "Profile",
+      "profileMenu": "Profile & My Pip"
     },
     "account": {
       "menu": "Account menu for {name}",
@@ -881,5 +883,77 @@
     "estimateCost": "Rough trip estimate (onboarding)",
     "finishError": "We could not create the trip. Check the amounts and try again.",
     "useTyped": "Continue with “{name}” — pin it on the map later"
+  },
+  "profilePage": {
+    "title": "Profile",
+    "homeFrom": "From {city}",
+    "statCountries": "countries",
+    "statContinents": "continents",
+    "statTrips": "trips",
+    "editPip": "Edit My Pip",
+    "settings": "Settings",
+    "myPip": "My Pip",
+    "myPipSub": "Dress your travel companion. Every Pip in the app wears it.",
+    "unsaved": "unsaved",
+    "pipName": "Pip’s name",
+    "pipNameHelp": "Up to 16 characters. Empty means “Pip”.",
+    "parts": "Parts",
+    "tabOutfit": "Outfit",
+    "tabHat": "Hat",
+    "tabBag": "Bag",
+    "pickOutfit": "Pick an outfit",
+    "pickHat": "Pick a hat",
+    "pickBag": "Bag type",
+    "bagColor": "Bag colour",
+    "noOutfit": "No outfit",
+    "noHat": "No hat",
+    "outfits": {
+      "scarf": "Scarf",
+      "aloha": "Floral shirt",
+      "vest": "Explorer vest"
+    },
+    "hats": {
+      "straw": "Straw hat",
+      "helmet": "Safari helmet",
+      "cap": "Cap"
+    },
+    "bags": {
+      "trolley": "Trolley",
+      "backpack": "Backpack",
+      "vintage": "Vintage case"
+    },
+    "colors": {
+      "amber": "Amber",
+      "cyan": "Cyan",
+      "pink": "Pink"
+    },
+    "lookSummary": "Wearing: {parts}",
+    "lookBare": "Just Pip, no outfit or hat",
+    "shuffle": "Shuffle",
+    "revert": "Undo changes",
+    "save": "Save Pip",
+    "saved": "Pip saved",
+    "saveError": "Pip could not be saved. Try again in a moment.",
+    "visas": "Visas",
+    "visaSummary": "{countries, plural, one {# country} other {# countries}} · {continents, plural, one {# continent} other {# continents}}",
+    "continentFilter": "Continent",
+    "allContinents": "All",
+    "continents": {
+      "africa": "Africa",
+      "asia": "Asia",
+      "europe": "Europe",
+      "north-america": "North America",
+      "south-america": "South America",
+      "oceania": "Oceania",
+      "antarctica": "Antarctica"
+    },
+    "stampLabel": "{country}, stamped in {city} on {date}",
+    "close": "Close",
+    "seeAll": "See all {count} visas",
+    "seeFewer": "Show fewer",
+    "emptyTitle": "Your passport is blank",
+    "emptyBody": "Mark a stop as visited on the map: the first visited stop in a country stamps its visa here.",
+    "emptyCta": "Open the map",
+    "visaNote": "Globetrot visas are keepsakes for your trips. They are not official documents."
   }
 }

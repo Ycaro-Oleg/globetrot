@@ -7,7 +7,7 @@
 
 /** Keys of the `shell.nav` catalog entries. */
 export type NavKey =
-  'board' | 'days' | 'budget' | 'lists' | 'passport' | 'trips' | 'trip' | 'settings';
+  'board' | 'days' | 'budget' | 'lists' | 'passport' | 'trips' | 'trip' | 'settings' | 'profile';
 
 export interface NavItem {
   readonly key: NavKey;
@@ -35,7 +35,7 @@ export const BOTTOM_ITEMS: readonly NavItem[] = [
   item('trip', '/app/board'),
   item('trips', '/app/trips'),
   item('passport', '/app/passport'),
-  item('settings', '/settings'),
+  item('profile', '/app/profile'),
 ];
 
 export const SETTINGS_HREF = '/settings';

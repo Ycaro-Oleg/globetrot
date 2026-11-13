@@ -22,6 +22,8 @@ const FULL = {
   motion: 'reduced',
   homeCity: 'São Paulo',
   pipOptIn: true,
+  pipLook: { hat: 'cap', outfit: 'vest', bag: 'backpack', bagColor: 'cyan' },
+  pipName: 'Pipoca',
 } as const;
 
 function setup() {
@@ -52,6 +54,8 @@ describe('getPreferences', () => {
       motion: 'full',
       homeCity: null,
       pipOptIn: false,
+      pipLook: { hat: 'straw', outfit: 'none', bag: 'trolley', bagColor: 'amber' },
+      pipName: null,
     });
   });
 
@@ -95,6 +99,8 @@ describe('updatePreferences changes one field and nothing else', () => {
       motion: 'full',
       homeCity: null,
       pipOptIn: false,
+      pipLook: { hat: 'straw', outfit: 'none', bag: 'trolley', bagColor: 'amber' },
+      pipName: null,
     });
   });
 

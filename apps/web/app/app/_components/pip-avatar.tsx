@@ -1,6 +1,6 @@
 'use client';
 
-import { DEFAULT_PIP_LOOK, type PipLook } from '@globetrot/domain';
+import type { PipLook } from '@globetrot/domain';
 import {
   avatarFrame,
   createAnimator,
@@ -12,6 +12,7 @@ import {
 } from 'open-bot-avatar';
 import { mountAvatar, subscribeFrames, type MountedAvatar } from 'open-bot-avatar/dom';
 import { useEffect, useId, useRef } from 'react';
+import { usePipLook } from './pip-look';
 import styles from './pip-avatar.module.css';
 
 /**
@@ -67,7 +68,7 @@ function reducedMotion(): boolean {
  */
 export function PipAvatar({
   size = 96,
-  look = DEFAULT_PIP_LOOK,
+  look: lookProp,
   mood = 'idle',
   followPointer = false,
   still = false,
@@ -80,6 +81,9 @@ export function PipAvatar({
   still?: boolean;
   className?: string;
 }) {
+  // A page may dress Pip itself; otherwise it wears the person's own look (or the default outside the app).
+  const saved = usePipLook();
+  const look = lookProp ?? saved.look;
   const clip = `pip-${useId().replace(/[^a-zA-Z0-9]/g, '')}`;
   const host = useRef<HTMLSpanElement>(null);
   const back = useRef<SVGGElement>(null);

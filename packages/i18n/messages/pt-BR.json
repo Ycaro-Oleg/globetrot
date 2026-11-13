@@ -217,7 +217,9 @@
       "settings": "Configurações",
       "trip": "Viagem",
       "tripLabel": "Ferramentas da viagem",
-      "globalLabel": "Globetrot"
+      "globalLabel": "Globetrot",
+      "profile": "Perfil",
+      "profileMenu": "Perfil e Meu Pip"
     },
     "account": {
       "menu": "Menu da conta de {name}",
@@ -881,5 +883,77 @@
     "estimateCost": "Estimativa da viagem (onboarding)",
     "finishError": "Não foi possível criar a viagem. Confira os valores e tente de novo.",
     "useTyped": "Continuar com “{name}” — marque no mapa depois"
+  },
+  "profilePage": {
+    "title": "Perfil",
+    "homeFrom": "De {city}",
+    "statCountries": "países",
+    "statContinents": "continentes",
+    "statTrips": "viagens",
+    "editPip": "Editar Meu Pip",
+    "settings": "Configurações",
+    "myPip": "Meu Pip",
+    "myPipSub": "Vista seu companheiro de viagem. Todo Pip do app usa esse visual.",
+    "unsaved": "não salvo",
+    "pipName": "Nome do Pip",
+    "pipNameHelp": "Até 16 caracteres. Vazio fica “Pip”.",
+    "parts": "Partes",
+    "tabOutfit": "Roupa",
+    "tabHat": "Chapéu",
+    "tabBag": "Mala",
+    "pickOutfit": "Escolha a roupa",
+    "pickHat": "Escolha o chapéu",
+    "pickBag": "Tipo de mala",
+    "bagColor": "Cor da mala",
+    "noOutfit": "Sem roupa",
+    "noHat": "Sem chapéu",
+    "outfits": {
+      "scarf": "Cachecol",
+      "aloha": "Camisa floral",
+      "vest": "Colete explorador"
+    },
+    "hats": {
+      "straw": "Chapéu de palha",
+      "helmet": "Capacete safári",
+      "cap": "Boné"
+    },
+    "bags": {
+      "trolley": "Mala de rodinhas",
+      "backpack": "Mochila",
+      "vintage": "Mala vintage"
+    },
+    "colors": {
+      "amber": "Âmbar",
+      "cyan": "Ciano",
+      "pink": "Rosa"
+    },
+    "lookSummary": "Usando: {parts}",
+    "lookBare": "Só o Pip, sem roupa nem chapéu",
+    "shuffle": "Aleatório",
+    "revert": "Desfazer mudanças",
+    "save": "Salvar Pip",
+    "saved": "Pip salvo",
+    "saveError": "Não foi possível salvar o Pip. Tente de novo em instantes.",
+    "visas": "Vistos",
+    "visaSummary": "{countries, plural, one {# país} other {# países}} · {continents, plural, one {# continente} other {# continentes}}",
+    "continentFilter": "Continente",
+    "allContinents": "Todos",
+    "continents": {
+      "africa": "África",
+      "asia": "Ásia",
+      "europe": "Europa",
+      "north-america": "América do Norte",
+      "south-america": "América do Sul",
+      "oceania": "Oceania",
+      "antarctica": "Antártida"
+    },
+    "stampLabel": "{country}, carimbado em {city} em {date}",
+    "close": "Fechar",
+    "seeAll": "Ver todos os {count} vistos",
+    "seeFewer": "Mostrar menos",
+    "emptyTitle": "Seu passaporte está em branco",
+    "emptyBody": "Marque uma parada como visitada no mapa: a primeira parada visitada em cada país carimba o visto aqui.",
+    "emptyCta": "Abrir o mapa",
+    "visaNote": "Os vistos do Globetrot são lembranças das suas viagens. Não são documentos oficiais."
   }
 }

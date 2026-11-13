@@ -297,6 +297,57 @@
                     },
                     "pipOptIn": {
                       "type": "boolean"
+                    },
+                    "pipLook": {
+                      "type": "object",
+                      "properties": {
+                        "hat": {
+                          "type": "string",
+                          "enum": [
+                            "straw",
+                            "helmet",
+                            "cap",
+                            "none"
+                          ]
+                        },
+                        "outfit": {
+                          "type": "string",
+                          "enum": [
+                            "none",
+                            "scarf",
+                            "aloha",
+                            "vest"
+                          ]
+                        },
+                        "bag": {
+                          "type": "string",
+                          "enum": [
+                            "trolley",
+                            "backpack",
+                            "vintage"
+                          ]
+                        },
+                        "bagColor": {
+                          "type": "string",
+                          "enum": [
+                            "amber",
+                            "cyan",
+                            "pink"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "hat",
+                        "outfit",
+                        "bag",
+                        "bagColor"
+                      ]
+                    },
+                    "pipName": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
                     }
                   },
                   "required": [
@@ -309,7 +360,9 @@
                     "theme",
                     "motion",
                     "homeCity",
-                    "pipOptIn"
+                    "pipOptIn",
+                    "pipLook",
+                    "pipName"
                   ]
                 }
               }
@@ -470,6 +523,62 @@
                   "pipOptIn": {
                     "type": "boolean",
                     "description": "Whether the person wants Pip’s suggestions."
+                  },
+                  "pipLook": {
+                    "type": "object",
+                    "properties": {
+                      "hat": {
+                        "type": "string",
+                        "enum": [
+                          "straw",
+                          "helmet",
+                          "cap",
+                          "none"
+                        ]
+                      },
+                      "outfit": {
+                        "type": "string",
+                        "enum": [
+                          "none",
+                          "scarf",
+                          "aloha",
+                          "vest"
+                        ]
+                      },
+                      "bag": {
+                        "type": "string",
+                        "enum": [
+                          "trolley",
+                          "backpack",
+                          "vintage"
+                        ]
+                      },
+                      "bagColor": {
+                        "type": "string",
+                        "enum": [
+                          "amber",
+                          "cyan",
+                          "pink"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "hat",
+                      "outfit",
+                      "bag",
+                      "bagColor"
+                    ],
+                    "description": "The person’s Pip: hat, outfit, bag and bag colour."
+                  },
+                  "pipName": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "minLength": 1,
+                    "maxLength": 16,
+                    "description": "Pip’s name, 1 to 16 characters; null brings back “Pip”.",
+                    "example": "Pipoca"
                   }
                 }
               }
@@ -542,6 +651,57 @@
                     },
                     "pipOptIn": {
                       "type": "boolean"
+                    },
+                    "pipLook": {
+                      "type": "object",
+                      "properties": {
+                        "hat": {
+                          "type": "string",
+                          "enum": [
+                            "straw",
+                            "helmet",
+                            "cap",
+                            "none"
+                          ]
+                        },
+                        "outfit": {
+                          "type": "string",
+                          "enum": [
+                            "none",
+                            "scarf",
+                            "aloha",
+                            "vest"
+                          ]
+                        },
+                        "bag": {
+                          "type": "string",
+                          "enum": [
+                            "trolley",
+                            "backpack",
+                            "vintage"
+                          ]
+                        },
+                        "bagColor": {
+                          "type": "string",
+                          "enum": [
+                            "amber",
+                            "cyan",
+                            "pink"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "hat",
+                        "outfit",
+                        "bag",
+                        "bagColor"
+                      ]
+                    },
+                    "pipName": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
                     }
                   },
                   "required": [
@@ -554,7 +714,9 @@
                     "theme",
                     "motion",
                     "homeCity",
-                    "pipOptIn"
+                    "pipOptIn",
+                    "pipLook",
+                    "pipName"
                   ]
                 }
               }

@@ -86,6 +86,10 @@ export interface PreferencesRecord {
   /** The city the person usually leaves from, or null. */
   readonly homeCity: string | null;
   readonly pipOptIn: boolean;
+  /** The person's Pip: hat, outfit, bag and bag colour (values from the domain's lists). */
+  readonly pipLook: { hat: string; outfit: string; bag: string; bagColor: string };
+  /** Pip's name as the person chose it, or null for "Pip". */
+  readonly pipName: string | null;
 }
 
 /** Only the fields present are written. `null` clears country, nationality or time zone. */
@@ -100,6 +104,8 @@ export interface PreferencesPatch {
   readonly motion?: MotionChoice | undefined;
   readonly homeCity?: string | null | undefined;
   readonly pipOptIn?: boolean | undefined;
+  readonly pipLook?: { hat: string; outfit: string; bag: string; bagColor: string } | undefined;
+  readonly pipName?: string | null | undefined;
 }
 
 export interface PreferencesReader {

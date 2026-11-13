@@ -123,6 +123,8 @@ export interface PreferencesRow {
   readonly motion: MotionChoice;
   readonly homeCity: string | null;
   readonly pipOptIn: boolean;
+  readonly pipLook: { hat: string; outfit: string; bag: string; bagColor: string };
+  readonly pipName: string | null;
 }
 
 const asPreferencesRow = (row: typeof userPreference.$inferSelect): PreferencesRow => ({
@@ -136,6 +138,8 @@ const asPreferencesRow = (row: typeof userPreference.$inferSelect): PreferencesR
   motion: row.motion as MotionChoice,
   homeCity: row.homeCity,
   pipOptIn: row.pipOptIn,
+  pipLook: { hat: row.pipHat, outfit: row.pipOutfit, bag: row.pipBag, bagColor: row.pipBagColor },
+  pipName: row.pipName,
 });
 
 export function createPreferencesRepository(executor: Executor) {
@@ -167,6 +171,9 @@ export function createPreferencesRepository(executor: Executor) {
         readonly motion?: MotionChoice | undefined;
         readonly homeCity?: string | null | undefined;
         readonly pipOptIn?: boolean | undefined;
+        readonly pipLook?:
+          { hat: string; outfit: string; bag: string; bagColor: string } | undefined;
+        readonly pipName?: string | null | undefined;
       },
       now: Date,
     ): Promise<PreferencesRow> {
@@ -181,6 +188,15 @@ export function createPreferencesRepository(executor: Executor) {
         ...(patch.motion === undefined ? {} : { motion: patch.motion }),
         ...(patch.homeCity === undefined ? {} : { homeCity: patch.homeCity }),
         ...(patch.pipOptIn === undefined ? {} : { pipOptIn: patch.pipOptIn }),
+        ...(patch.pipLook === undefined
+          ? {}
+          : {
+              pipHat: patch.pipLook.hat,
+              pipOutfit: patch.pipLook.outfit,
+              pipBag: patch.pipLook.bag,
+              pipBagColor: patch.pipLook.bagColor,
+            }),
+        ...(patch.pipName === undefined ? {} : { pipName: patch.pipName }),
       };
       const [row] = await executor
         .insert(userPreference)

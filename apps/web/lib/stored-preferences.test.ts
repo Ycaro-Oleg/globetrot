@@ -16,6 +16,8 @@ const STORED: StoredPreferences = {
   motion: 'full',
   homeCity: null,
   pipOptIn: false,
+  pipLook: { hat: 'straw', outfit: 'none', bag: 'trolley', bagColor: 'amber' },
+  pipName: null,
 };
 
 describe('sessionCookieHeader', () => {

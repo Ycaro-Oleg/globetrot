@@ -125,6 +125,8 @@ export function createFakePorts(options: FakeOptions = {}) {
         motion: 'full' as const,
         homeCity: null,
         pipOptIn: false,
+        pipLook: { hat: 'straw', outfit: 'none', bag: 'trolley', bagColor: 'amber' },
+        pipName: null,
       };
       const next: PreferencesRecord = {
         locale: patch.locale ?? current.locale,
@@ -137,6 +139,8 @@ export function createFakePorts(options: FakeOptions = {}) {
         motion: patch.motion ?? current.motion,
         homeCity: patch.homeCity === undefined ? current.homeCity : patch.homeCity,
         pipOptIn: patch.pipOptIn ?? current.pipOptIn,
+        pipLook: patch.pipLook ?? current.pipLook,
+        pipName: patch.pipName === undefined ? current.pipName : patch.pipName,
       };
       state.preferences.set(userId, next);
       return next;

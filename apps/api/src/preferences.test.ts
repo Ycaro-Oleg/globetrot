@@ -79,6 +79,8 @@ describe('/v1/me/preferences', () => {
       motion: 'full',
       homeCity: null,
       pipOptIn: false,
+      pipLook: { hat: 'straw', outfit: 'none', bag: 'trolley', bagColor: 'amber' },
+      pipName: null,
     });
   });
 
@@ -97,6 +99,8 @@ describe('/v1/me/preferences', () => {
       motion: 'full',
       homeCity: null,
       pipOptIn: false,
+      pipLook: { hat: 'straw', outfit: 'none', bag: 'trolley', bagColor: 'amber' },
+      pipName: null,
     });
     expect((await call(ana, 'PATCH', { homeCountry: null })).json).toMatchObject({
       homeCountry: null,

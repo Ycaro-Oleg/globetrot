@@ -2,6 +2,11 @@
 // independent columns: nothing derives one from another (business rules, "Locale and currency").
 import {
   DEFAULT_CURRENCY,
+  DEFAULT_PIP_LOOK,
+  PIP_BAG_COLORS,
+  PIP_BAGS,
+  PIP_HATS,
+  PIP_OUTFITS,
   DEFAULT_MOTION_CHOICE,
   DEFAULT_THEME_CHOICE,
   DEFAULT_UNIT_SYSTEM,
@@ -45,6 +50,12 @@ export const userPreference = pgTable(
     pipOptIn: boolean('pip_opt_in')
       .notNull()
       .default(sql`false`),
+    /** The person's own Pip (handoff v2, "Meu Pip"): its look and an optional name. */
+    pipHat: text('pip_hat').notNull().default(DEFAULT_PIP_LOOK.hat),
+    pipOutfit: text('pip_outfit').notNull().default(DEFAULT_PIP_LOOK.outfit),
+    pipBag: text('pip_bag').notNull().default(DEFAULT_PIP_LOOK.bag),
+    pipBagColor: text('pip_bag_color').notNull().default(DEFAULT_PIP_LOOK.bagColor),
+    pipName: text('pip_name'),
     createdAt: instant('created_at').defaultNow().notNull(),
     updatedAt: instant('updated_at').defaultNow().notNull(),
   },
@@ -56,6 +67,14 @@ export const userPreference = pgTable(
     check('user_preference_units_valid', oneOf(table.units, UNIT_SYSTEMS)),
     check('user_preference_theme_valid', oneOf(table.theme, THEME_CHOICES)),
     check('user_preference_motion_valid', oneOf(table.motion, MOTION_CHOICES)),
+    check('user_preference_pip_hat_valid', oneOf(table.pipHat, PIP_HATS)),
+    check('user_preference_pip_outfit_valid', oneOf(table.pipOutfit, PIP_OUTFITS)),
+    check('user_preference_pip_bag_valid', oneOf(table.pipBag, PIP_BAGS)),
+    check('user_preference_pip_bag_color_valid', oneOf(table.pipBagColor, PIP_BAG_COLORS)),
+    check(
+      'user_preference_pip_name_length',
+      sql`${table.pipName} is null or (${table.pipName} = btrim(${table.pipName}) and char_length(${table.pipName}) between 1 and 16)`,
+    ),
     check(
       'user_preference_home_city_length',
       sql`${table.homeCity} is null or (${table.homeCity} = btrim(${table.homeCity}) and char_length(${table.homeCity}) between 1 and 120)`,
