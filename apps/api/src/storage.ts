@@ -43,6 +43,10 @@ export function createS3Storage(config: StorageConfig): StoragePort {
       if (!response.ok) throw new StorageError(response.status);
       return new Uint8Array(await response.arrayBuffer());
     },
+    async delete(key) {
+      const response = await client.fetch(urlOf(key), { method: 'DELETE' });
+      if (!response.ok && response.status !== 404) throw new StorageError(response.status);
+    },
   };
 }
 
@@ -55,6 +59,9 @@ export function createMemoryStorage(): StoragePort {
     },
     async get(key) {
       return objects.get(key) ?? null;
+    },
+    async delete(key) {
+      objects.delete(key);
     },
   };
 }

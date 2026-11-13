@@ -38,7 +38,7 @@ One row per feature of the [PRD](prd.md), with where it stands, the issues, and 
 | Stripe subscriptions and entitlements | M10 | Not started | Test mode only; pricing is the owner's decision. [stripe](../integrations/stripe.md) |
 | PWA offline trip pack | After M8 | Not started | Needs map tiles |
 | Production deployment (Hetzner and Coolify), backups, monitoring | M11 | Not started | Dockerfiles exist; nothing is deployed |
-| Account data export and deletion | Before the public release | Not started and not designed | Required by LGPD/GDPR. See "Known gaps" in [current-state](../agents/current-state.md) |
+| Account data export and deletion | Before the public release | **Done** | Settings → "Your data": a JSON export of everything the account holds, and account deletion after typing the email again (rows, stored photos, sessions; the audit log is kept without personal data); archived trips can be deleted after a confirmation. [ADR-0015](../architecture/adr/0015-account-export-and-deletion.md) |
 
 ## Post-launch and experimental
 

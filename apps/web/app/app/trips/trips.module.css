@@ -527,3 +527,34 @@
   color: var(--gt-semantic-color-text);
   font-weight: var(--gt-primitive-type-weight-bold);
 }
+
+/* Deleting an archived trip: a confirmation with a destructive action that says what it does. */
+.dangerTitle {
+  margin: 0 0 0.25rem;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.banner p {
+  margin: 0;
+}
+
+.dangerAction {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  padding: 0.6rem 1rem;
+  border: 0;
+  border-radius: 0.9rem;
+  background: var(--gt-semantic-color-danger);
+  /* The card colour flips with the theme, so it stays readable on the danger red in both. */
+  color: var(--gt-semantic-color-surface-card);
+  font: 750 0.9rem/1.15 var(--gt-primitive-font-body);
+  cursor: pointer;
+}
+
+.dangerAction:focus-visible {
+  outline: var(--gt-component-focus-width) solid var(--gt-semantic-color-focus);
+  outline-offset: 3px;
+}

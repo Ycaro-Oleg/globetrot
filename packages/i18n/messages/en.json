@@ -84,7 +84,24 @@
     "motionReduced": "Reduced",
     "appearanceHelp": "“Match my device” follows your device’s light or dark setting. If your device asks for reduced motion, the app always follows it.",
     "homeCity": "Home city",
-    "homeCityHelp": "The city you usually leave from. Optional; used to show where a trip starts."
+    "homeCityHelp": "The city you usually leave from. Optional; used to show where a trip starts.",
+    "data": {
+      "title": "Your data",
+      "exportTitle": "Download your data",
+      "exportBody": "A JSON file with your account, settings, trips (stops, costs, savings, lists, day plans), visas, community posts and comments, the list of your photos and your own history. It never includes your password.",
+      "exportAction": "Download (JSON)",
+      "deleteTitle": "Delete your account",
+      "deleteBody": "Deletes your account and everything in it, for good. It cannot be undone.",
+      "deleteStart": "Delete account…",
+      "deleteList1": "Your trips, with their stops, costs, savings, lists and day plans.",
+      "deleteList2": "Your visas, your community profile, posts, comments, likes and follows.",
+      "deleteList3": "Your photos, your settings and every signed-in device.",
+      "confirmLabel": "To confirm, type your email: {email}",
+      "mismatch": "That is not your account’s email.",
+      "cancel": "Keep my account",
+      "deleteConfirm": "Delete my account forever",
+      "deleting": "Deleting…"
+    }
   },
   "email": {
     "greeting": "Hi {name},",
@@ -123,7 +140,8 @@
       "pending": "Logging in…",
       "forgot": "Forgot it?",
       "noAccount": "New to Globetrot?",
-      "toSignup": "Create an account"
+      "toSignup": "Create an account",
+      "accountDeleted": "Your account was deleted. Everything in it is gone."
     },
     "signup": {
       "title": "Start a board.",
@@ -319,7 +337,13 @@
         "rio-de-la-plata": "Around the Río de la Plata"
       }
     },
-    "planFirst": "Plan it step by step"
+    "planFirst": "Plan it step by step",
+    "deleteForever": "Delete forever",
+    "deleteTitle": "Delete “{title}” forever?",
+    "deleteBody": "Its stops, costs, savings, lists and day plan go with it. This cannot be undone.",
+    "deleteCancel": "Cancel",
+    "deleteConfirm": "Delete forever",
+    "deletedMessage": "Trip deleted."
   },
   "landing": {
     "metaTitle": "Globetrot · Plan the trip you keep dreaming about",

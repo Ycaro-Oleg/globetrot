@@ -38,7 +38,7 @@ Implemented in #53, #54, #57 and #58. Mechanics: [`../architecture/authenticatio
 ## Trips
 
 - A user can have many trips.
-- **Status** is set explicitly: `active`, `traveling`, `completed`, `archived`. Archiving hides a trip from the default list; it does not delete it, and setting the status back to `active` restores it. Deleting trips is not specified yet.
+- **Status** is set explicitly: `active`, `traveling`, `completed`, `archived`. Archiving hides a trip from the default list; it does not delete it, and setting the status back to `active` restores it. **Deleting** is only for an archived trip, after a confirmation, and takes everything in the trip with it.
 - **Title:** trimmed, 1 to 120 characters. **Start date:** a real calendar date or none. **Currency:** an active ISO 4217 code, `USD` by default (the UI pre-fills the user's preferred currency). A trip is **private** and only its owner can read or change it; anyone else gets "not found".
 - **Stage** is derived, never stored. Each station is met when its condition holds, and the trip sits at the first unmet station. When everything is met, the trip is at `ready`:
   - `dream`: a destination;
@@ -148,10 +148,11 @@ Decision record: [ADR-0013](../architecture/adr/0013-community.md).
 ## Privacy (applies from day one)
 
 - Trips are private by default, and the API answers "not found" (never "forbidden") for another user's trip.
-- The audit log records who changed what and when, with field names only, and cannot be edited. Account data export and deletion must be designed around that before a public release.
+- The audit log records who changed what and when, with field names only, and cannot be edited. It is kept when an account is deleted: it holds no personal values and its actor id then belongs to nobody ([ADR-0015](../architecture/adr/0015-account-export-and-deletion.md)).
 - Future public content must support delayed location publication, and never shows live location.
 - EXIF location data is stripped from uploaded media unless the user explicitly keeps it.
-- Users can export and delete their data (LGPD/GDPR).
+- **Export:** Settings → "Your data" downloads everything the account holds as JSON (never passwords or tokens).
+- **Account deletion:** after typing their email again, the person's account and everything in it go for good: trips, visas, community profile, posts and comments (also on others' posts), likes, follows, photos (with their stored files), settings and sessions. It cannot be undone.
 
 ## Progression (planned, M12+)
 

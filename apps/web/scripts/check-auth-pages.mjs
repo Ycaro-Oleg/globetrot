@@ -762,6 +762,18 @@ try {
       async (page) => go(page, `${base}/app/trips?filter=archived`),
       VIEWPORTS.desktop,
     ]);
+    for (const layout of ['desktop', 'phone']) {
+      entries.push([
+        `trips-confirm-delete-${layout}`,
+        true,
+        async (page) =>
+          go(
+            page,
+            `${base}/app/trips?filter=archived&confirmDelete=01a1c28d-afc9-7767-af40-c937c80dd9dd`,
+          ),
+        VIEWPORTS[layout],
+      ]);
+    }
     entries.push([
       'trip-unknown-desktop',
       true,
@@ -890,6 +902,18 @@ try {
     entries.push(['shell-passport-desktop', true, ...at('/app/passport', VIEWPORTS.desktop)]);
     entries.push(['shell-settings-desktop', true, ...at('/settings', VIEWPORTS.desktop)]);
     entries.push(['shell-settings-phone', true, ...at('/settings', VIEWPORTS.phone)]);
+    for (const layout of ['desktop', 'phone']) {
+      entries.push([
+        `settings-delete-account-${layout}`,
+        true,
+        async (page) => {
+          await go(page, `${base}/settings`);
+          await page.getByRole('button', { name: /Delete account…|Excluir conta…/ }).click();
+          await page.locator('form input[type=email]').waitFor();
+        },
+        VIEWPORTS[layout],
+      ]);
+    }
     entries.push([
       'shell-pip-off-404',
       true,

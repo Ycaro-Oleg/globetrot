@@ -5,6 +5,8 @@ import { describe, expect, it, vi } from 'vitest';
 
 // The server action only matters on submit; keep `next/headers` out of the render test.
 vi.mock('../actions', () => ({ savePreferences: vi.fn() }));
+vi.mock('./data-actions', () => ({ deleteAccount: vi.fn() }));
+vi.mock('next/navigation', () => ({ useRouter: () => ({ replace: vi.fn(), refresh: vi.fn() }) }));
 
 import { countryOptions, currencyOptions, timeZoneOptions } from './options';
 import { SettingsView, type SettingsViewProps } from './settings-view';
@@ -24,7 +26,12 @@ const VALUES: SettingsViewProps['values'] = {
   pipName: null,
 };
 
-function render(locale: SupportedLocale, status?: string, values = VALUES): string {
+function render(
+  locale: SupportedLocale,
+  status?: string,
+  values = VALUES,
+  email: string | null = null,
+): string {
   return renderToStaticMarkup(
     <NextIntlClientProvider locale={locale} messages={catalogs[locale]} timeZone="UTC">
       <SettingsView
@@ -33,6 +40,7 @@ function render(locale: SupportedLocale, status?: string, values = VALUES): stri
         countries={countryOptions(locale)}
         timeZones={timeZoneOptions(locale, values.timeZone)}
         status={status}
+        email={email}
       />
     </NextIntlClientProvider>,
   );
@@ -146,4 +154,19 @@ describe('settings view', () => {
       expect(selected).toEqual([copy.themeRedEye, copy.motionReduced]);
     },
   );
+});
+
+describe.each(SUPPORTED_LOCALES)('your data (%s)', (locale) => {
+  const copy = catalogs[locale].settings.data;
+  it('offers the download and a guarded deletion when the account is known', () => {
+    const html = render(locale, undefined, VALUES, 'ana@example.com');
+    expect(html).toContain('href="/v1/me/export"');
+    expect(visibleText(html)).toContain(copy.exportTitle);
+    expect(visibleText(html)).toContain(copy.deleteStart);
+    // The confirmation form only opens on request.
+    expect(html).not.toContain(copy.deleteConfirm);
+  });
+  it('is hidden without the account email', () => {
+    expect(visibleText(render(locale))).not.toContain(copy.exportTitle);
+  });
 });

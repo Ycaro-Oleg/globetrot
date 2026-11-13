@@ -24,6 +24,7 @@ import type {
   DayPlaceWriter,
   MediaRecord,
   MediaWriter,
+  AccountWriter,
 } from '../ports';
 import {
   createFakeCommunity,
@@ -324,6 +325,59 @@ export function createFakePorts(options: FakeOptions = {}) {
     },
   };
 
+  const removeTrip = (tripId: string) => {
+    state.trips.delete(tripId);
+    state.destinations.delete(tripId);
+    state.savings.delete(tripId);
+    for (const map of [state.expenses, state.checklist, state.dayPlaces] as Map<
+      string,
+      { tripId: string }
+    >[]) {
+      for (const [id, row] of map) if (row.tripId === tripId) map.delete(id);
+    }
+  };
+  const accountWriter: AccountWriter = {
+    async exportFor(userId) {
+      const found = users.find((u) => u.id === userId);
+      if (!found) return null;
+      const trips = [...state.trips.values()].filter((t) => t.ownerId === userId);
+      return JSON.parse(
+        JSON.stringify({
+          account: { name: found.name, email: found.email },
+          preferences: state.preferences.get(userId) ?? null,
+          trips: trips.map((t) => ({ ...t, stops: state.destinations.get(t.id) ?? [] })),
+          visas: [...state.visas.values()].filter((v) => v.userId === userId),
+          community: {
+            handle: state.community.profiles.get(userId) ?? null,
+            posts: [...state.community.posts.values()].filter((p) => p.authorId === userId),
+          },
+          media: [...state.media.values()].filter((m) => m.ownerId === userId),
+        }),
+      );
+    },
+    async mediaIdsOf(userId) {
+      return [...state.media.values()].filter((m) => m.ownerId === userId).map((m) => m.id);
+    },
+    async deleteAccount(userId) {
+      for (const t of [...state.trips.values()]) if (t.ownerId === userId) removeTrip(t.id);
+      state.preferences.delete(userId);
+      for (const [key, v] of state.visas) if (v.userId === userId) state.visas.delete(key);
+      for (const [id, m] of state.media) if (m.ownerId === userId) state.media.delete(id);
+      const c = state.community;
+      c.profiles.delete(userId);
+      for (const [id, p] of c.posts) if (p.authorId === userId) c.posts.delete(id);
+      for (const [id, cm] of c.comments) if (cm.authorId === userId) c.comments.delete(id);
+      const index = users.findIndex((u) => u.id === userId);
+      if (index >= 0) users.splice(index, 1);
+    },
+    async deleteArchivedTrip(tripId, ownerId) {
+      const t = state.trips.get(tripId);
+      if (!t || t.ownerId !== ownerId || t.status !== 'archived') return false;
+      removeTrip(tripId);
+      return true;
+    },
+  };
+
   const transaction: Transaction = {
     trips: tripWriter,
     expenses: expenseWriter,
@@ -335,6 +389,7 @@ export function createFakePorts(options: FakeOptions = {}) {
     preferences: preferencesWriter,
     community,
     media: mediaWriter,
+    account: accountWriter,
     audit: {
       async record(event) {
         if (faults.auditFails) throw new Error('audit store is down');
@@ -382,7 +437,11 @@ export function createFakePorts(options: FakeOptions = {}) {
       async get(key) {
         return storage.get(key)?.bytes ?? null;
       },
+      async delete(key) {
+        storage.delete(key);
+      },
     },
+    account: accountWriter,
     unitOfWork: {
       // Commit or roll back as one, like a database transaction.
       async run(work) {

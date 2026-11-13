@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { savePreferences } from '../actions';
 import { NOT_SET, type Option } from './options';
 import styles from './settings.module.css';
+import { YourData } from './your-data';
 
 export interface SettingsViewProps {
   readonly values: {
@@ -26,6 +27,8 @@ export interface SettingsViewProps {
   readonly timeZones: readonly Option[];
   /** `saved`, or `error:<field>,<field>` after a failed save (set by the server action's redirect). */
   readonly status: string | undefined;
+  /** The account's email, for the deletion confirmation; null hides "Your data". */
+  readonly email?: string | null;
 }
 
 /**
@@ -39,6 +42,7 @@ export function SettingsView({
   countries,
   timeZones,
   status,
+  email = null,
 }: SettingsViewProps) {
   const t = useTranslations('settings');
   const web = useTranslations('webScaffold');
@@ -153,6 +157,7 @@ export function SettingsView({
           </div>
         </form>
       </section>
+      {email ? <YourData email={email} /> : null}
     </div>
   );
 }

@@ -536,6 +536,24 @@ export interface StoragePort {
   put(key: string, bytes: Uint8Array, contentType: string): Promise<void>;
   /** `null` when there is no such object. */
   get(key: string): Promise<Uint8Array | null>;
+  /** Removes the object; a missing one is not an error. */
+  delete(key: string): Promise<void>;
+}
+
+// --- Account (export and deletion) --------------------------------------------------------------------
+
+export interface AccountReader {
+  /** Everything the account holds, as plain JSON (never password hashes or tokens); null without the user. */
+  exportFor(userId: string): Promise<Record<string, unknown> | null>;
+}
+
+export interface AccountWriter extends AccountReader {
+  /** Ids of the account's uploads, read before deleting it. */
+  mediaIdsOf(userId: string): Promise<string[]>;
+  /** Deletes the user and everything they own. The audit log keeps its rows (no personal data in them). */
+  deleteAccount(userId: string): Promise<void>;
+  /** Deletes an archived trip of `ownerId` and everything in it; `false` when there is no such trip. */
+  deleteArchivedTrip(tripId: string, ownerId: string): Promise<boolean>;
 }
 
 // --- Places (geocoding) -------------------------------------------------------------------------------
@@ -628,6 +646,7 @@ export interface Transaction {
   readonly preferences: PreferencesWriter;
   readonly community: CommunityWriter;
   readonly media: MediaWriter;
+  readonly account: AccountWriter;
   readonly audit: AuditLog;
   readonly idempotency: IdempotencyStore;
 }
@@ -659,6 +678,7 @@ export interface Ports {
   readonly community: CommunityReader;
   readonly media: MediaReader;
   readonly storage: StoragePort;
+  readonly account: AccountReader;
   readonly unitOfWork: UnitOfWork;
   readonly clock: Clock;
   readonly ids: IdGenerator;
