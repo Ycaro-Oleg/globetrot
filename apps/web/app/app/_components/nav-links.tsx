@@ -3,51 +3,96 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { isCurrent, RAIL_ITEMS, TAB_ITEMS, type NavItem } from './nav-model';
+import { BOTTOM_ITEMS, GLOBAL_LINKS, isCurrent, isTripPage, TRIP_TABS } from './nav-model';
 import styles from './shell.module.css';
 
-function Links({ items, variant }: { items: readonly NavItem[]; variant: 'rail' | 'tab' }) {
+/**
+ * The current trip's tools as a segmented control: inline in the bar on a wide screen (`inline`), a second
+ * sticky row of four equal pills on a phone (`row`, only on trip pages).
+ */
+export function TripTabs({ variant }: { variant: 'inline' | 'row' }) {
   const t = useTranslations('shell.nav');
   const pathname = usePathname();
+  if (variant === 'row' && !isTripPage(pathname)) return null;
   return (
-    <ul className={variant === 'rail' ? styles.navList : styles.tabList}>
-      {items.map((entry) => {
-        const current = isCurrent(entry, pathname);
-        return (
-          <li key={entry.key} className={variant === 'rail' ? styles.navItem : styles.tabItem}>
-            <Link
-              href={entry.href}
-              aria-current={current ? 'page' : undefined}
-              className={variant === 'rail' ? styles.navLink : styles.tabLink}
-            >
-              <entry.Icon aria-hidden="true" strokeWidth={1.6} size={22} className={styles.icon} />
-              <span className={variant === 'rail' ? styles.navLabel : styles.tabLabel}>
-                {t(entry.key)}
-              </span>
-            </Link>
-          </li>
-        );
-      })}
-    </ul>
-  );
-}
-
-/** The side rail's links: full width on desktop, icons only on tablet. */
-export function RailNav() {
-  const t = useTranslations('shell.nav');
-  return (
-    <nav aria-label={t('label')} className={styles.railNav}>
-      <Links items={RAIL_ITEMS} variant="rail" />
+    <nav
+      aria-label={t('tripLabel')}
+      className={variant === 'inline' ? styles.tabsInline : styles.tabsRow}
+    >
+      {TRIP_TABS.map((tab) => (
+        <Link
+          key={tab.key}
+          href={tab.href}
+          className={styles.tab}
+          aria-current={isCurrent(tab, pathname) ? 'page' : undefined}
+        >
+          {t(tab.key)}
+        </Link>
+      ))}
     </nav>
   );
 }
 
-/** The five-tab bar that floats at the bottom of a phone screen. */
-export function TabBar() {
-  const t = useTranslations('shell.nav');
+/** The account's places on the right of the bar, with a blue underline on the current one. */
+export function GlobalNav({ pipEnabled }: { pipEnabled: boolean }) {
+  const t = useTranslations('shell');
+  const pathname = usePathname();
   return (
-    <nav aria-label={t('label')} className={styles.tabBar} data-shell-tabbar="">
-      <Links items={TAB_ITEMS} variant="tab" />
+    <nav aria-label={t('nav.globalLabel')} className={styles.globalNav}>
+      {GLOBAL_LINKS.map((link) => (
+        <Link
+          key={link.key}
+          href={link.href}
+          className={styles.globalLink}
+          aria-current={isCurrent(link, pathname) ? 'page' : undefined}
+        >
+          {t(`nav.${link.key}`)}
+        </Link>
+      ))}
+      {pipEnabled ? (
+        <Link
+          href="/app/pip"
+          className={styles.globalLink}
+          aria-current={pathname === '/app/pip' ? 'page' : undefined}
+        >
+          {t('pip.ask')}
+        </Link>
+      ) : null}
+    </nav>
+  );
+}
+
+/**
+ * The phone's bottom bar. It steps aside on the map, where the route sheet takes the bottom of the screen.
+ * `data-shell-tabbar` lets the board measure what is left of the viewport.
+ */
+export function BottomBar({ pipEnabled }: { pipEnabled: boolean }) {
+  const t = useTranslations('shell');
+  const pathname = usePathname();
+  if (pathname === '/app/board' || pathname.startsWith('/app/board/')) return null;
+  return (
+    <nav aria-label={t('nav.globalLabel')} className={styles.bottomBar} data-shell-tabbar="">
+      {BOTTOM_ITEMS.map((entry) => (
+        <Link
+          key={entry.key}
+          href={entry.href}
+          className={styles.bottomLink}
+          aria-current={isCurrent(entry, pathname) ? 'page' : undefined}
+        >
+          <span aria-hidden="true" className={styles.bottomMark} />
+          {t(`nav.${entry.key}`)}
+        </Link>
+      ))}
+      {pipEnabled ? (
+        <Link
+          href="/app/pip"
+          className={styles.bottomLink}
+          aria-current={pathname === '/app/pip' ? 'page' : undefined}
+        >
+          <span aria-hidden="true" className={styles.bottomMark} />
+          {t('pip.ask')}
+        </Link>
+      ) : null}
     </nav>
   );
 }

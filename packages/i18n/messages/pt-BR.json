@@ -206,16 +206,16 @@
   "shell": {
     "skipLink": "Pular para o conteúdo",
     "nav": {
-      "label": "Navegação principal",
-      "home": "Início",
       "board": "Mapa",
       "days": "Dias",
       "budget": "Orçamento",
       "lists": "Listas",
-      "more": "Mais",
       "trips": "Viagens",
       "passport": "Passaporte",
-      "settings": "Configurações"
+      "settings": "Configurações",
+      "trip": "Viagem",
+      "tripLabel": "Ferramentas da viagem",
+      "globalLabel": "Globetrot"
     },
     "account": {
       "menu": "Menu da conta de {name}",
@@ -227,10 +227,6 @@
       "ask": "Perguntar ao Pip",
       "title": "Pip",
       "notBuilt": "O Pip, o companheiro de viagem, ainda não está disponível. Este atalho só aparece enquanto a flag do Pip estiver ligada."
-    },
-    "more": {
-      "title": "Mais",
-      "description": "O resto do Globetrot."
     },
     "comingSoon": {
       "label": "Ainda não disponível",

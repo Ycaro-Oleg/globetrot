@@ -3,7 +3,8 @@
 import { Button as AriaButton, type ButtonProps as AriaButtonProps } from 'react-aria-components';
 
 export interface ButtonProps extends Omit<AriaButtonProps, 'className'> {
-  variant?: 'primary' | 'thread' | 'ghost' | 'quiet' | 'danger';
+  /** `cta` is the one coral call to action of a view (design handoff v2); `thread` is the red one. */
+  variant?: 'primary' | 'cta' | 'thread' | 'ghost' | 'quiet' | 'danger';
   size?: 'sm' | 'md' | 'lg';
 }
 

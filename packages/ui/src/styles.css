@@ -1,7 +1,7 @@
 .gt-button {
   min-width: var(--gt-component-hit-target);
   min-height: var(--gt-component-hit-target);
-  border: 2.5px solid var(--gt-semantic-color-outline);
+  border: 1px solid var(--gt-semantic-color-input-border);
   border-radius: var(--gt-component-button-radius);
   padding: 8px 20px;
   font: 700 1rem/1.2 var(--gt-primitive-font-body);
@@ -12,19 +12,20 @@
     box-shadow 120ms;
 }
 .gt-button--primary {
-  color: var(--gt-semantic-color-surface-page);
-  background: var(--gt-semantic-color-text);
+  color: var(--gt-semantic-color-on-primary);
+  background: var(--gt-semantic-color-primary);
+  border-color: transparent;
 }
 .gt-button--ghost {
   color: var(--gt-semantic-color-text);
   background: var(--gt-semantic-color-surface-card);
 }
 .gt-button[data-hovered] {
-  transform: translateY(-2px);
+  transform: none;
   box-shadow: var(--gt-primitive-shadow-button-hover);
 }
 .gt-button[data-pressed] {
-  transform: translateY(3px);
+  transform: none;
   box-shadow: var(--gt-primitive-shadow-button-active);
 }
 .gt-button[data-disabled] {
@@ -57,11 +58,17 @@
   background: var(--gt-semantic-color-danger);
   color: var(--gt-button-thread-label);
 }
+.gt-button--cta {
+  border-color: transparent;
+  background: var(--gt-semantic-color-cta);
+  color: var(--gt-semantic-color-on-cta);
+  box-shadow: var(--gt-primitive-shadow-cta);
+}
 .gt-button--danger {
   background: var(--gt-semantic-color-surface-card);
   color: var(--gt-semantic-color-danger);
   border-color: var(--gt-semantic-color-danger);
-  box-shadow: 0 4px 0 var(--gt-semantic-color-danger);
+  box-shadow: none;
 }
 .gt-button--quiet {
   background: transparent;
@@ -122,7 +129,7 @@
 .gt-field__control {
   width: 100%;
   min-height: var(--gt-primitive-size-input);
-  border: 2.5px solid var(--gt-semantic-color-outline);
+  border: 1px solid var(--gt-semantic-color-hairline);
   border-radius: var(--gt-component-input-radius);
   background: var(--gt-semantic-color-surface-card);
   color: var(--gt-semantic-color-text);
@@ -162,7 +169,7 @@ textarea.gt-field__control {
   display: inline-grid;
   flex: none;
   place-items: center;
-  border: 2px solid var(--gt-semantic-color-outline);
+  border: 1px solid var(--gt-semantic-color-hairline);
   background: var(--gt-semantic-color-surface-card);
 }
 .gt-checkbox .gt-choice__mark {
@@ -247,7 +254,7 @@ textarea.gt-field__control {
   width: 100%;
   min-height: var(--gt-primitive-size-input);
   padding: 10px 12px;
-  border: 2.5px solid var(--gt-semantic-color-outline);
+  border: 1px solid var(--gt-semantic-color-hairline);
   border-radius: var(--gt-component-input-radius);
   background: var(--gt-semantic-color-surface-card);
   color: var(--gt-semantic-color-text);
@@ -267,7 +274,7 @@ textarea.gt-field__control {
   width: var(--trigger-width);
   max-height: min(300px, var(--available-height));
   overflow: auto;
-  border: 2.5px solid var(--gt-semantic-color-outline);
+  border: 1px solid var(--gt-semantic-color-hairline);
   border-radius: var(--gt-component-input-radius);
   background: var(--gt-semantic-color-surface-card);
   color: var(--gt-semantic-color-text);
@@ -334,7 +341,7 @@ textarea.gt-field__control {
   content: '';
   width: 22px;
   height: 22px;
-  border: 2px solid var(--gt-semantic-color-outline);
+  border: 1px solid var(--gt-semantic-color-hairline);
   border-radius: 50%;
   background: var(--gt-semantic-color-marigold);
 }
@@ -353,7 +360,7 @@ textarea.gt-field__control {
   display: flex;
   gap: 12px;
   padding: 16px;
-  border: 2px solid var(--gt-semantic-color-outline);
+  border: 1px solid var(--gt-semantic-color-hairline);
   border-radius: var(--gt-primitive-radius-14);
   background: var(--gt-semantic-color-surface-card);
   color: var(--gt-semantic-color-text);
@@ -378,7 +385,7 @@ textarea.gt-field__control {
   width: min(100%, 32rem);
   max-height: calc(100dvh - 32px);
   overflow: auto;
-  border: 3px solid var(--gt-semantic-color-outline);
+  border: 1px solid var(--gt-semantic-color-hairline);
   border-radius: var(--gt-component-modal-radius);
   padding: 24px;
   background: var(--gt-semantic-color-surface-card);
@@ -401,7 +408,7 @@ textarea.gt-field__control {
   flex: none;
   min-width: 44px;
   min-height: 44px;
-  border: 2px solid var(--gt-semantic-color-outline);
+  border: 1px solid var(--gt-semantic-color-hairline);
   border-radius: var(--gt-primitive-radius-12);
   background: var(--gt-semantic-color-surface-card);
   color: var(--gt-semantic-color-text);
@@ -426,7 +433,7 @@ textarea.gt-field__control {
   width: fit-content;
   max-width: 100%;
   padding: 4px;
-  border: 2.5px solid var(--gt-semantic-color-outline);
+  border: 1px solid var(--gt-semantic-color-hairline);
   border-radius: var(--gt-primitive-radius-14);
   background: var(--gt-semantic-color-surface-card);
   box-shadow: var(--gt-primitive-shadow-small);
@@ -441,8 +448,8 @@ textarea.gt-field__control {
   cursor: pointer;
 }
 .gt-segmented__item[data-selected] {
-  background: var(--gt-semantic-color-text);
-  color: var(--gt-semantic-color-surface-page);
+  background: var(--gt-semantic-color-primary);
+  color: var(--gt-semantic-color-on-primary);
 }
 .gt-segmented__item[data-focus-visible] {
   outline: var(--gt-component-focus-width) solid var(--gt-semantic-color-focus);
@@ -461,10 +468,10 @@ textarea.gt-field__control {
   width: fit-content;
   max-width: 100%;
   padding: 8px 12px 8px 16px;
-  border: 2.5px solid var(--gt-semantic-color-outline);
-  border-radius: var(--gt-primitive-radius-14);
-  background: var(--gt-primitive-color-ink);
-  color: var(--gt-primitive-color-cream);
+  border: 1px solid var(--gt-semantic-color-hairline);
+  border-radius: var(--gt-primitive-radius-pill);
+  background: var(--gt-semantic-color-primary);
+  color: var(--gt-semantic-color-on-primary);
   box-shadow: var(--gt-primitive-shadow-button);
 }
 .gt-toast__actions {
@@ -478,13 +485,13 @@ textarea.gt-field__control {
   border: 0;
   border-radius: var(--gt-primitive-radius-9);
   background: transparent;
-  color: var(--gt-primitive-color-cream);
+  color: var(--gt-semantic-color-surface-card);
   font: inherit;
   font-weight: 700;
   text-decoration: underline;
   cursor: pointer;
 }
 .gt-toast__action[data-focus-visible] {
-  outline: 3px solid var(--gt-primitive-color-marigold);
+  outline: 3px solid var(--gt-semantic-color-cta);
   outline-offset: 2px;
 }

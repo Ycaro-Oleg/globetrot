@@ -35,9 +35,9 @@
   align-items: center;
   justify-content: center;
   padding: var(--gt-primitive-space-8) var(--gt-primitive-space-16);
-  border: var(--gt-primitive-border-3) solid var(--gt-semantic-color-outline);
+  border: var(--gt-primitive-border-1) solid var(--gt-semantic-color-outline);
   border-radius: var(--gt-primitive-radius-12);
-  background: var(--gt-primitive-color-marigold);
+  background: var(--gt-semantic-color-cta);
   color: var(--gt-primitive-color-ink);
   font-weight: var(--gt-primitive-type-weight-bold);
   text-decoration: none;
@@ -59,7 +59,7 @@
   gap: var(--gt-primitive-space-8);
   justify-items: center;
   padding: var(--gt-primitive-space-24) var(--gt-primitive-space-16);
-  border: var(--gt-primitive-border-3) solid var(--gt-semantic-color-outline);
+  border: var(--gt-primitive-border-1) solid var(--gt-semantic-color-outline);
   border-radius: var(--gt-primitive-radius-12);
   background: var(--gt-semantic-color-surface-card);
   text-align: center;
@@ -132,7 +132,7 @@
   gap: var(--gt-primitive-space-24);
   align-items: center;
   padding: var(--gt-primitive-space-24);
-  border: var(--gt-primitive-border-3) dashed var(--gt-semantic-color-outline);
+  border: var(--gt-primitive-border-1) dashed var(--gt-semantic-color-outline);
   border-radius: var(--gt-primitive-radius-12);
   background: var(--gt-semantic-color-surface-card);
 }

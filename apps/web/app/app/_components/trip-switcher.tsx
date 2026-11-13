@@ -1,10 +1,15 @@
 import Link from 'next/link';
-import { Plane } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type { TripView } from '../../../lib/trips';
 import { openTrip } from '../trips/actions';
+import { tripCode } from './nav-model';
 import styles from './shell.module.css';
 
+/**
+ * The trip switcher pill (design handoff v2): the trip's disc, its name and a caret. A disclosure that works
+ * without a script; each trip is a small form that makes it the current one. The name is drawn only from
+ * 1100 px but always stays in the accessible name.
+ */
 export function TripSwitcher({
   trips,
   activeTripId,
@@ -14,44 +19,58 @@ export function TripSwitcher({
 }) {
   const t = useTranslations('tripWorkspace');
   const activeTrip = trips.find((trip) => trip.id === activeTripId);
+  const title = activeTrip?.title ?? t('switcher.noTrip');
 
   return (
     <details className={styles.tripSwitcher}>
-      {/* No aria-label: the visible words ("Trip" and its name) are the accessible name (label-in-name). */}
-      <summary className={styles.tripSwitcherSummary}>
-        <span className={styles.tripSwitcherGlyph}>
-          <Plane aria-hidden="true" size={18} />
+      <summary className={styles.tripPill} data-active={activeTrip ? '' : undefined}>
+        <span className={styles.tripDisc} aria-hidden="true">
+          {activeTrip ? tripCode(activeTrip.title) : '+'}
         </span>
-        <span className={styles.tripSwitcherCopy}>
-          <span className={styles.tripSwitcherLabel}>{t('switcher.label')}</span>
-          <strong className={styles.tripSwitcherName}>
-            {activeTrip?.title ?? t('switcher.noTrip')}
-          </strong>
-        </span>
-        <span className={styles.tripSwitcherCaret} aria-hidden="true">
-          ▾
+        <span className="sr-only">{t('switcher.label')}: </span>
+        <span className={styles.tripName}>{title}</span>
+        <span className={styles.caret} aria-hidden="true">
+          ⌄
         </span>
       </summary>
-      <div className={styles.tripSwitcherPanel}>
+      <div className={styles.menu} data-align="start">
         {trips.length ? (
-          trips.map((trip) => (
-            <form action={openTrip} key={trip.id}>
-              <button
-                className={styles.tripSwitcherOption}
-                type="submit"
-                name="tripId"
-                value={trip.id}
-                aria-current={trip.id === activeTripId ? 'page' : undefined}
-              >
-                <span>{trip.title}</span>
-                <span>{t(`status.${trip.status}`)}</span>
-              </button>
-            </form>
-          ))
+          trips.map((trip) => {
+            const current = trip.id === activeTripId;
+            return (
+              <form action={openTrip} key={trip.id}>
+                <button
+                  className={styles.tripOption}
+                  type="submit"
+                  name="tripId"
+                  value={trip.id}
+                  aria-current={current ? 'page' : undefined}
+                >
+                  <span
+                    className={styles.tripDisc}
+                    data-muted={current ? undefined : ''}
+                    aria-hidden="true"
+                  >
+                    {tripCode(trip.title)}
+                  </span>
+                  <span className={styles.tripOptionText}>
+                    <strong>{trip.title}</strong>
+                    <span>{t(`status.${trip.status}`)}</span>
+                  </span>
+                  {current ? (
+                    <span className={styles.check} aria-hidden="true">
+                      ✓
+                    </span>
+                  ) : null}
+                </button>
+              </form>
+            );
+          })
         ) : (
-          <p className={styles.tripSwitcherEmpty}>{t('switcher.empty')}</p>
+          <p className={styles.menuNote}>{t('switcher.empty')}</p>
         )}
-        <Link className={styles.tripSwitcherManage} href="/app/trips">
+        <span className={styles.menuRule} aria-hidden="true" />
+        <Link className={styles.menuAction} href="/app/trips">
           {t('switcher.manage')}
         </Link>
       </div>

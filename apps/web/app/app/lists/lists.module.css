@@ -37,7 +37,7 @@
   align-items: center;
   justify-content: center;
   padding: var(--gt-primitive-space-8) var(--gt-primitive-space-16);
-  border: var(--gt-primitive-border-3) solid var(--gt-semantic-color-outline);
+  border: var(--gt-primitive-border-1) solid var(--gt-semantic-color-outline);
   border-radius: var(--gt-primitive-radius-12);
   background: var(--gt-semantic-color-surface-card);
   color: var(--gt-semantic-color-text);
@@ -49,7 +49,7 @@
 }
 
 .primary {
-  background: var(--gt-primitive-color-marigold);
+  background: var(--gt-semantic-color-cta);
   color: var(--gt-primitive-color-ink);
 }
 
@@ -64,7 +64,7 @@
 .passport {
   min-width: 0;
   padding: var(--gt-primitive-space-20);
-  border: var(--gt-primitive-border-3) solid var(--gt-semantic-color-outline);
+  border: var(--gt-primitive-border-1) solid var(--gt-semantic-color-outline);
   border-radius: var(--gt-primitive-radius-16);
   background: var(--gt-semantic-color-surface-card);
   box-shadow: var(--gt-primitive-shadow-small);
@@ -113,12 +113,12 @@
 
 /* Earned: a filled stamp with a tick. Not yet: a dashed, empty one. The words say it too, never colour alone. */
 .stampOn {
-  border: var(--gt-primitive-border-2) solid var(--gt-semantic-color-outline);
+  border: var(--gt-primitive-border-1) solid var(--gt-semantic-color-outline);
   font-weight: var(--gt-primitive-type-weight-bold);
 }
 
 .stampOff {
-  border: var(--gt-primitive-border-2) dashed var(--gt-semantic-color-rule-strong);
+  border: var(--gt-primitive-border-1) dashed var(--gt-semantic-color-rule-strong);
   color: var(--gt-semantic-color-text-secondary);
 }
 
@@ -128,14 +128,14 @@
   width: 2rem;
   height: 2rem;
   place-items: center;
-  border: var(--gt-primitive-border-2) solid currentcolor;
+  border: var(--gt-primitive-border-1) solid currentcolor;
   border-radius: 50%;
   font-weight: var(--gt-primitive-type-weight-black);
 }
 
 .stampOn .stampMark {
-  background: var(--gt-primitive-color-marigold);
-  color: var(--gt-primitive-color-ink);
+  background: var(--gt-semantic-color-savings);
+  color: var(--gt-semantic-color-on-primary);
   transform: rotate(-8deg);
 }
 
@@ -205,14 +205,14 @@
   width: 1.5rem;
   height: 1.5rem;
   place-items: center;
-  border: var(--gt-primitive-border-2) solid var(--gt-semantic-color-outline);
+  border: var(--gt-primitive-border-1) solid var(--gt-semantic-color-outline);
   border-radius: var(--gt-primitive-radius-8, 6px);
   font-weight: var(--gt-primitive-type-weight-black);
 }
 
 .toggleDone .box {
-  background: var(--gt-primitive-color-marigold);
-  color: var(--gt-primitive-color-ink);
+  background: var(--gt-semantic-color-primary);
+  color: var(--gt-semantic-color-on-primary);
 }
 
 .itemLabel {
@@ -229,7 +229,7 @@
   min-width: var(--gt-component-hit-target);
   min-height: var(--gt-component-hit-target);
   place-items: center;
-  border: var(--gt-primitive-border-2) solid transparent;
+  border: var(--gt-primitive-border-1) solid transparent;
   border-radius: var(--gt-primitive-radius-12);
   background: transparent;
   color: var(--gt-semantic-color-danger);
@@ -253,7 +253,7 @@
   min-width: 0;
   min-height: var(--gt-component-hit-target);
   padding: var(--gt-primitive-space-8) var(--gt-primitive-space-12);
-  border: var(--gt-primitive-border-2) solid var(--gt-semantic-color-outline);
+  border: var(--gt-primitive-border-1) solid var(--gt-semantic-color-outline);
   border-radius: var(--gt-primitive-radius-12);
   background: #fff;
   color: var(--gt-semantic-color-always-light-text);

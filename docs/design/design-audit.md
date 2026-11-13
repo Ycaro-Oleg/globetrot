@@ -65,7 +65,7 @@ Which audit items have been carried out, so the next agent knows what is already
 | Contrast: rail title, tertiary text, both themes | **Done in the tokens** (declared pairs checked in CI); new pairs must be added to the contrast script | [design-system](design-system.md#tokens) |
 | Self-hosted fonts and fallbacks | **Done**: Bricolage Grotesque and Space Mono (OFL) are served from `apps/web/public/fonts` with `font-display: swap` | [design-system](design-system.md#typography-and-fonts) |
 | Home journey line compact variant | Pending (the signed-in home is now the board; revisit with the trip overview) | — |
-| Five-tab mobile bar, Pip as a separate action | Done (#59): five tabs, Pip as a round button behind `FEATURE_PIP` | [design-system](design-system.md#the-shell-as-built-59) |
+| Five-tab mobile bar, Pip as a separate action | Done (#59): five tabs, Pip as a round button behind `FEATURE_PIP` | [design-system](design-system.md#the-shell-as-built-design-handoff-v2-the-topbar) |
 | Mobile map label collisions | Pending (M4) | — |
 | Passport belongs to the account, visa page per trip | **Decided**, rules written; screens pending (M5, M9) | [business rules](../product/business-rules.md#passport) |
 | `PinConnection` as a first-class entity | **Decided**; built in M4 | [domain model](../architecture/domain-model.md) |

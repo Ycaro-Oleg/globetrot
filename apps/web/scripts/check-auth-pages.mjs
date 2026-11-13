@@ -646,11 +646,13 @@ try {
     for (const layout of ['narrow', 'phone', 'tablet', 'laptop', 'desktop']) {
       entries.push([`shell-home-${layout}`, true, ...at('/app', VIEWPORTS[layout])]);
     }
-    for (const section of ['board', 'days', 'budget', 'lists', 'trips', 'passport', 'more']) {
+    for (const section of ['board', 'days', 'budget', 'lists', 'trips', 'passport']) {
       entries.push([`shell-${section}-phone`, true, ...at(`/app/${section}`, VIEWPORTS.phone)]);
     }
     entries.push(['shell-budget-desktop', true, ...at('/app/budget', VIEWPORTS.desktop)]);
     entries.push(['shell-passport-desktop', true, ...at('/app/passport', VIEWPORTS.desktop)]);
+    entries.push(['shell-settings-desktop', true, ...at('/settings', VIEWPORTS.desktop)]);
+    entries.push(['shell-settings-phone', true, ...at('/settings', VIEWPORTS.phone)]);
     entries.push([
       'shell-pip-off-404',
       true,
@@ -961,150 +963,147 @@ try {
   }
 
   // -------------------------------------------------------------------------------------------------------
-  // The app shell: layout per screen size, navigation, keyboard, account menu, Pip flag.
+  // The app shell (design handoff v2, the TopBar): layout per screen size, navigation, keyboard, account menu,
+  // Pip flag.
   // -------------------------------------------------------------------------------------------------------
   {
     const shell = CATALOGS.en.shell;
     const accountLabel = shell.account.menu.replace('{name}', USER.name);
-    const railNames = [
-      shell.nav.home,
-      shell.nav.trips,
-      shell.nav.board,
-      shell.nav.days,
-      shell.nav.budget,
-      shell.nav.lists,
-      shell.nav.passport,
-    ];
-    const visibleNav = (page) => page.getByRole('navigation', { name: shell.nav.label });
-    const linkNames = async (nav) => nav.getByRole('link').allInnerTexts();
+    const tools = (nav) => [nav.board, nav.days, nav.budget, nav.lists];
+    const tripNav = (page, locale = 'en') =>
+      page.getByRole('navigation', { name: CATALOGS[locale].shell.nav.tripLabel });
+    const placesNav = (page, locale = 'en') =>
+      page.getByRole('navigation', { name: CATALOGS[locale].shell.nav.globalLabel });
+    const names = async (nav) => (await nav.getByRole('link').allInnerTexts()).map((n) => n.trim());
 
     {
-      // Desktop: a labelled rail of 248px and no tab bar.
+      // Desktop: one bar of 60px with the trip tools inline and the account places on the right; no bottom bar.
       const { context, page } = await open('en', { signedIn: true, viewport: VIEWPORTS.desktop });
-      await go(page, `${base}/app`);
-      const nav = visibleNav(page);
-      check((await nav.count()) === 1, 'desktop: expected exactly one visible navigation');
-      const names = (await linkNames(nav)).map((name) => name.trim());
+      await go(page, `${base}/app/budget`);
+      const trip = tripNav(page);
+      check((await trip.count()) === 1, 'desktop: expected exactly one visible trip navigation');
       check(
-        JSON.stringify(names) === JSON.stringify(railNames),
-        `desktop: the rail links are ${JSON.stringify(names)}`,
+        JSON.stringify(await names(trip)) === JSON.stringify(tools(shell.nav)),
+        `desktop: the trip tools are ${JSON.stringify(await names(trip))}`,
       );
-      const rail = await page
-        .locator('nav')
-        .first()
-        .evaluate((el) => el.parentElement.getBoundingClientRect().width);
-      check(Math.round(rail) === 248, `desktop: the rail is ${rail}px wide, not 248`);
-      await context.close();
-    }
-
-    {
-      // Tablet: a rail of icons 76px wide; the labels are not drawn but the links keep their names.
-      const { context, page } = await open('en', { signedIn: true, viewport: VIEWPORTS.tablet });
-      await go(page, `${base}/app`);
-      const nav = visibleNav(page);
-      check((await nav.count()) === 1, 'tablet: expected exactly one visible navigation');
-      const rail = await page
-        .locator('nav')
-        .first()
-        .evaluate((el) => el.parentElement.getBoundingClientRect().width);
-      check(Math.round(rail) === 76, `tablet: the rail is ${rail}px wide, not 76`);
-      for (const name of railNames) {
-        check(
-          (await nav.getByRole('link', { name, exact: true }).count()) === 1,
-          `tablet: the "${name}" link lost its accessible name`,
-        );
-      }
-      const box = await nav
-        .getByRole('link', { name: shell.nav.budget, exact: true })
-        .boundingBox();
-      check(box !== null && box.width <= 76, 'tablet: the Budget link is wider than the rail');
+      const places = placesNav(page);
+      check(
+        (await places.count()) === 1,
+        'desktop: expected exactly one visible account navigation',
+      );
+      check(
+        JSON.stringify(await names(places)) ===
+          JSON.stringify([shell.nav.trips, shell.nav.passport]),
+        `desktop: the account places are ${JSON.stringify(await names(places))}`,
+      );
+      const bar = await page.locator('header').first().boundingBox();
+      check(
+        bar !== null && Math.round(bar.height) === 60 && bar.y === 0,
+        'desktop: the bar is not 60px at the top',
+      );
+      check(
+        (await page.locator('[data-shell-tabbar]').count()) === 1,
+        'desktop: the bottom bar is missing from the page',
+      );
+      check(
+        !(await page.locator('[data-shell-tabbar]').isVisible()),
+        'desktop: the bottom bar is drawn on a wide screen',
+      );
       await context.close();
     }
 
     for (const locale of ['en', 'pt-BR']) {
-      // Phone, down to 320px wide: a top bar, five tabs of at least 44px, nothing wider than the screen.
-      const names = CATALOGS[locale].shell.nav;
-      const tabs = [names.board, names.days, names.budget, names.lists, names.more];
+      // Phone, down to 320px wide: the trip tools as a second row on trip pages, the account places in a bottom
+      // bar (not on the map), every link at least 44px, nothing wider than the screen.
+      const nav = CATALOGS[locale].shell.nav;
       for (const viewport of [VIEWPORTS.narrow, VIEWPORTS.phone]) {
-        for (const path of ['/app', '/app/board', '/app/budget', '/app/more']) {
+        for (const path of ['/app/budget', '/app/passport', '/app/board']) {
           const { context, page } = await open(locale, { signedIn: true, viewport });
           await go(page, `${base}${path}`);
           const where = `phone ${viewport.width}px ${locale} ${path}`;
-          const nav = page.getByRole('navigation', { name: CATALOGS[locale].shell.nav.label });
-          check((await nav.count()) === 1, `${where}: expected exactly one visible navigation`);
-          const found = (await nav.getByRole('link').allInnerTexts()).map((name) => name.trim());
+          const onTrip = path !== '/app/passport';
+          const trip = tripNav(page, locale);
           check(
-            JSON.stringify(found) === JSON.stringify(tabs),
-            `${where}: the tabs are ${JSON.stringify(found)}`,
+            (await trip.count()) === (onTrip ? 1 : 0),
+            `${where}: the trip row is ${onTrip ? 'missing' : 'shown off a trip page'}`,
           );
-          for (const link of await nav.getByRole('link').all()) {
-            const box = await link.boundingBox();
+          if (onTrip) {
             check(
-              box !== null && box.height >= 44 && box.width >= 44,
-              `${where}: a tab is smaller than 44px`,
+              JSON.stringify(await names(trip)) === JSON.stringify(tools(nav)),
+              `${where}: the trip row is ${JSON.stringify(await names(trip))}`,
             );
+          }
+          const bottom = placesNav(page, locale);
+          const onMap = path === '/app/board';
+          check(
+            (await bottom.count()) === (onMap ? 0 : 1),
+            `${where}: the bottom bar is ${onMap ? 'shown on the map' : 'missing'}`,
+          );
+          if (!onMap) {
             check(
-              box !== null && box.x >= 0 && box.x + box.width <= viewport.width,
-              `${where}: a tab sticks out of the screen`,
+              JSON.stringify(await names(bottom)) ===
+                JSON.stringify([nav.trip, nav.trips, nav.passport, nav.settings]),
+              `${where}: the bottom bar is ${JSON.stringify(await names(bottom))}`,
             );
+          }
+          for (const group of [trip, bottom]) {
+            if (!(await group.count())) continue;
+            for (const link of await group.getByRole('link').all()) {
+              const box = await link.boundingBox();
+              check(
+                box !== null && box.height >= 44 && box.width >= 44,
+                `${where}: a link is smaller than 44px`,
+              );
+              check(
+                box !== null && box.x >= 0 && box.x + box.width <= viewport.width,
+                `${where}: a link sticks out of the screen`,
+              );
+            }
           }
           const overflow = await page.evaluate(
             () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
           );
           check(overflow <= 0, `${where}: the page scrolls sideways by ${overflow}px`);
-          // Scrolled to the end, the last line of content must not hide under the floating bar.
-          await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-          const bar = await nav.boundingBox();
-          const contentBottom = await page.locator('main').evaluate((el) => {
-            const last = el.lastElementChild;
-            return last ? last.getBoundingClientRect().bottom : 0;
-          });
-          check(
-            bar !== null && contentBottom <= bar.y + 1,
-            `${where}: the content runs under the tab bar`,
-          );
+          if (!onMap) {
+            // Scrolled to the end, the last line of content must not hide under the bottom bar.
+            await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+            const bar = await bottom.boundingBox();
+            const contentBottom = await page.locator('main').evaluate((el) => {
+              const last = el.lastElementChild;
+              return last ? last.getBoundingClientRect().bottom : 0;
+            });
+            check(
+              bar !== null && contentBottom <= bar.y + 1,
+              `${where}: the content runs under the bottom bar`,
+            );
+          }
           await context.close();
         }
       }
     }
 
     {
-      // The layout breaks exactly at 720 and 1100.
+      // The layout breaks exactly at 720: below it the trip row and the bottom bar, from it the inline tabs.
       const { context, page } = await open('en', {
         signedIn: true,
         viewport: { width: 719, height: 800 },
       });
-      await go(page, `${base}/app`);
-      // The phone layout is the one where the navigation floats at the bottom; from 720px it is a rail on the left.
-      const phoneNav = await page
-        .getByRole('navigation', { name: CATALOGS.en.shell.nav.label })
-        .boundingBox();
-      check(phoneNav !== null && phoneNav.y > 500, '719px: the tab bar is not at the bottom');
-      await page.setViewportSize({ width: 720, height: 800 });
-      const railNav = await page
-        .getByRole('navigation', { name: CATALOGS.en.shell.nav.label })
-        .boundingBox();
+      await go(page, `${base}/app/budget`);
+      const bottom = await placesNav(page).boundingBox();
+      check(bottom !== null && bottom.y > 600, '719px: the bottom bar is not at the bottom');
+      const row = await tripNav(page).boundingBox();
       check(
-        railNav !== null && railNav.x < 100 && railNav.y < 300,
-        '720px: the rail is not on the left',
+        row !== null && row.y >= 59 && row.width >= 700,
+        '719px: the trip tools are not a full-width row',
       );
-      const rail720 = await page
-        .locator('nav')
-        .first()
-        .evaluate((el) => el.parentElement.getBoundingClientRect().width);
-      check(Math.round(rail720) === 76, `720px: the rail is ${rail720}px, not 76`);
-      await page.setViewportSize({ width: 1099, height: 800 });
-      const rail1099 = await page
-        .locator('nav')
-        .first()
-        .evaluate((el) => el.parentElement.getBoundingClientRect().width);
-      check(Math.round(rail1099) === 76, `1099px: the rail is ${rail1099}px, not 76`);
-      await page.setViewportSize({ width: 1100, height: 800 });
-      const rail1100 = await page
-        .locator('nav')
-        .first()
-        .evaluate((el) => el.parentElement.getBoundingClientRect().width);
-      check(Math.round(rail1100) === 248, `1100px: the rail is ${rail1100}px, not 248`);
+      await page.setViewportSize({ width: 720, height: 800 });
+      const inline = await tripNav(page).boundingBox();
+      check(
+        inline !== null && inline.y < 20 && inline.width < 500,
+        '720px: the trip tools are not inline in the bar',
+      );
+      const places = await placesNav(page).boundingBox();
+      check(places !== null && places.y < 20, '720px: the account places are not in the bar');
       await context.close();
     }
 
@@ -1125,9 +1124,9 @@ try {
         afterSkip === 'main',
         `the skip link left focus on "${afterSkip}", not the main region`,
       );
-      // Walk the rail with Tab and make sure every stop draws a focus ring of the token width.
+      // Walk the bar with Tab and make sure every stop draws a focus ring of at least the token width.
       await page.keyboard.press('Shift+Tab');
-      for (let stop = 0; stop < 12; stop++) {
+      for (let stop = 0; stop < 10; stop++) {
         await page.keyboard.press('Tab');
         const ring = await page.evaluate(() => {
           const el = document.activeElement;
@@ -1148,20 +1147,20 @@ try {
     }
 
     {
-      // Navigation: the current page is marked, and following a link changes the page and the mark.
+      // Navigation: the current tool is marked, and following a link changes the page and the mark.
       const { context, page } = await open('en', { signedIn: true, viewport: VIEWPORTS.desktop });
       await go(page, `${base}/app`);
-      const nav = visibleNav(page);
+      const nav = tripNav(page);
       check(
         (await nav.locator('[aria-current="page"]').allInnerTexts()).join() === shell.nav.board,
-        'Board is not the marked page after /app redirects to it',
+        'Map is not the marked tool after /app redirects to it',
       );
       await nav.getByRole('link', { name: shell.nav.budget, exact: true }).click();
       await page.waitForURL(`${base}/app/budget`);
       await page.getByRole('heading', { name: shell.nav.budget, level: 1 }).waitFor();
       check(
         (await nav.locator('[aria-current="page"]').allInnerTexts()).join() === shell.nav.budget,
-        'Budget is not the marked page on /app/budget',
+        'Budget is not the marked tool on /app/budget',
       );
       check(
         await page.getByText(CATALOGS.en.budgetPage.answerTitle).isVisible(),
@@ -1171,43 +1170,21 @@ try {
         (await page.title()).startsWith(shell.nav.budget),
         `the Budget page title is "${await page.title()}"`,
       );
-      await context.close();
-    }
-
-    {
-      // Phone: More holds the rest and the current tab follows it.
-      const { context, page } = await open('en', { signedIn: true, viewport: VIEWPORTS.phone });
-      await go(page, `${base}/app/more`);
-      const nav = visibleNav(page);
+      await placesNav(page).getByRole('link', { name: shell.nav.passport, exact: true }).click();
+      await page.waitForURL(`${base}/app/passport`);
       check(
-        (await nav.locator('[aria-current="page"]').allInnerTexts()).join() === shell.nav.more,
-        'More is not the marked tab on /app/more',
-      );
-      for (const name of [
-        shell.nav.home,
-        shell.nav.trips,
-        shell.nav.passport,
-        shell.nav.settings,
-      ]) {
-        check(
-          (await page.locator('main').getByRole('link', { name, exact: true }).count()) === 1,
-          `More does not list "${name}"`,
-        );
-      }
-      await page.locator('main').getByRole('link', { name: shell.nav.trips, exact: true }).click();
-      await page.waitForURL(`${base}/app/trips`);
-      check(
-        (await nav.locator('[aria-current="page"]').allInnerTexts()).join() === shell.nav.more,
-        'More should stay the marked tab on /app/trips',
+        (await placesNav(page).locator('[aria-current="page"]').allInnerTexts()).join() ===
+          shell.nav.passport,
+        'Passport is not the marked place on /app/passport',
       );
       await context.close();
     }
 
     {
       // Account menu: opens, closes on Escape with focus back on the button, closes on a click outside,
-      // reaches Settings, and logs out.
+      // reaches Settings (inside the same shell), and logs out.
       const { context, page } = await open('en', { signedIn: true, viewport: VIEWPORTS.desktop });
-      await go(page, `${base}/app`);
+      await go(page, `${base}/app/budget`);
       const trigger = page.getByRole('button', { name: accountLabel });
       check(
         (await trigger.getAttribute('aria-expanded')) === 'false',
@@ -1240,6 +1217,10 @@ try {
       await trigger.click();
       await page.getByRole('link', { name: shell.account.settings }).click();
       await page.waitForURL(`${base}/settings`);
+      check(
+        (await page.getByRole('button', { name: accountLabel }).count()) === 1,
+        'Settings is not inside the shell',
+      );
       await context.close();
     }
 
@@ -1247,7 +1228,7 @@ try {
       // Signing out (from the menu) ends up on the log-in page, on both layouts.
       for (const viewport of [VIEWPORTS.desktop, VIEWPORTS.phone]) {
         const { context, page } = await open('en', { signedIn: true, viewport });
-        await go(page, `${base}/app`);
+        await go(page, `${base}/app/budget`);
         await page.getByRole('button', { name: accountLabel }).click();
         await page.getByRole('button', { name: shell.account.signOut, exact: true }).click();
         await page.waitForURL(`${base}/login`, { timeout: 10_000 }).catch(() => {});
@@ -1262,22 +1243,17 @@ try {
     {
       // Pip is off by default: no entry point anywhere and no page. With the flag on it appears and leads to
       // an honest "not built yet".
-      const off = await open('en', { signedIn: true, viewport: VIEWPORTS.phone });
-      await go(off.page, `${base}/app`);
-      check(
-        (await off.page.getByRole('link', { name: shell.pip.ask }).count()) === 0,
-        'the Pip entry point shows while the flag is off',
-      );
-      await go(off.page, `${base}/app/more`);
-      check(
-        (await off.page.getByRole('link', { name: shell.pip.ask }).count()) === 0,
-        'More lists Pip while the flag is off',
-      );
-      await off.context.close();
-
       for (const viewport of [VIEWPORTS.phone, VIEWPORTS.desktop]) {
+        const off = await open('en', { signedIn: true, viewport });
+        await go(off.page, `${base}/app/budget`);
+        check(
+          (await off.page.getByRole('link', { name: shell.pip.ask }).count()) === 0,
+          `the Pip entry point shows at ${viewport.width}px while the flag is off`,
+        );
+        await off.context.close();
+
         const on = await open('en', { signedIn: true, viewport });
-        await go(on.page, `${pipBase}/app`);
+        await go(on.page, `${pipBase}/app/budget`);
         const entry = on.page.getByRole('link', { name: shell.pip.ask });
         check(
           (await entry.count()) === 1,
@@ -1518,7 +1494,7 @@ try {
       ['laptop-home-pip', 'en', VIEWPORTS.laptop, `${pipBase}/app`, null],
       ['tablet-home', 'en', VIEWPORTS.tablet, `${base}/app`, null],
       ['phone-board-ptbr', 'pt-BR', VIEWPORTS.phone, `${base}/app/board`, null],
-      ['narrow-more-ptbr', 'pt-BR', VIEWPORTS.narrow, `${base}/app/more`, null],
+      ['narrow-passport-ptbr', 'pt-BR', VIEWPORTS.narrow, `${base}/app/passport`, null],
       ['phone-menu-pip', 'en', VIEWPORTS.phone, `${pipBase}/app`, 'menu'],
       ['desktop-menu', 'en', VIEWPORTS.desktop, `${base}/app`, 'menu'],
     ];

@@ -61,7 +61,7 @@ export function SettingsView({
   const failed = status?.startsWith('error:') ? status.slice('error:'.length) : null;
 
   return (
-    <main className={styles.page}>
+    <div className={styles.page}>
       <header className={styles.header}>
         <p className={styles.eyebrow}>{t('eyebrow')}</p>
         <h1>{t('title')}</h1>
@@ -135,10 +135,12 @@ export function SettingsView({
           />
           <p className={styles.description}>{t('appearanceHelp')}</p>
           <div className={styles.actions}>
-            <Button type="submit">{t('save')}</Button>
+            <Button type="submit" variant="cta">
+              {t('save')}
+            </Button>
           </div>
         </form>
       </section>
-    </main>
+    </div>
   );
 }

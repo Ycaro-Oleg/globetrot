@@ -1,15 +1,16 @@
 # Design system
 
-Status: **direction approved; token v1.1 implemented (M1, #5)**. The visual values (colours, type scale, radii, shadows, motion timings) are specified in the handoff: [`design/reference/claude-design-v1/README.md`](../../design/reference/claude-design-v1/README.md), with `atlas/globetrot.css` authoritative for visuals. This doc defines how they become a production system. The adjustments come from [`design-audit.md`](design-audit.md).
+Status: **design handoff v2 implemented in the tokens and the shell** (slate, blue and coral, 60·30·10; Plus Jakarta Sans; the TopBar). The v2 handoff supersedes `design/reference/claude-design-v1` and the v1.1 tokens; its values (colours, type, radii, spacing, shadows, copy and behaviour) are final unless the handoff lists them as open decisions. The handoff lives outside the repository (the owner's `design_handoff_globetrot_v2` folder: `README.md` plus one `.dc.html` per screen); this doc defines how it becomes a production system.
 
 ## Tokens
 
 - One source in `packages/tokens`, written as DTCG-format JSON. It generates:
   - CSS custom properties for web, for both themes: Day (`light`) and Red-eye (`dark`).
   - A typed TS object for React Native (post-MVP).
-- Three layers: **primitive** (e.g. `color.marigold.500`) → **semantic** (e.g. `color.surface.card`, `color.status.confirmed.text`) → **component** (only when needed).
-- Surfaces that are always light (map labels, the legend, tinted library cards) re-scope their text tokens to dark ink in both themes.
-- **v1.1 changes:** fix the rail title contrast, add the trip-currency-neutral copy, and add focus and hit-area tokens. The Day tertiary text is darkened from the reference `#6E6985` to `#69647F` so it meets 4.5:1 on the alternate cream surface.
+- Three layers: **primitive** (e.g. `primitive.color.primary`) → **semantic** (e.g. `semantic.color.surface-card`, `semantic.color.cta`) → **component** (only when needed).
+- **v2 roles** (semantic, both themes): `surface-page` `#EEF1F4`, `surface-card` `#F8F9FA`, `input-surface` `#FFFFFF`, `hairline` `#DDE2E8`, `input-border` `#CBD2DA`, text `#1E293B` / `#475569` / tertiary; `primary` `#2563EB` (active tabs, selected state, links, secondary buttons) with `primary-tint`, `primary-soft` and `on-primary`; **`cta`** coral `#F97316` with `on-cta` `#0F172A`, for **exactly one** primary action per view; `savings` green, `expense` red, `warning` amber with their tints; `deep` slate `#0F172A` for dark surfaces. The v1 role names (`marigold`, `thread`, `airmail`, `rail-*`, `confirmed`, `danger`…) remain as aliases onto the v2 palette so older screens keep working.
+- **Shape:** borders are 1px hairlines (`primitive.border.1`); flat cards have no shadow; overlays and menus use `shadow.modal` (`0 20px 50px -12px rgba(15,23,42,.35)`); the coral CTA may use `shadow.cta`. Radii: pills `radius.pill` (buttons, segmented controls, chips, `component.button-radius`), cards `component.card-radius` (24), inputs 12.
+- **Contrast adjustments:** the handoff's tertiary `#64748B` is 4.2:1 on the page background, so the token is `#5F6C80` (4.7:1). Small green and red text use the strong shades (`#047857`, `#B91C1C`), which meet 4.5:1; the lighter handoff shades are for fills and large marks. The **red-eye** theme is a slate night derived from the handoff's deep surfaces (the handoff itself only specifies the light theme).
 
 ### Handoff token inventory
 
@@ -69,7 +70,7 @@ The inventory covers the handoff's token-level values, not every one-off prototy
 
 ## Typography and fonts
 
-The brand fonts, Bricolage Grotesque (display and body) and Space Mono (labels), are **self-hosted** under `apps/web/public/fonts/` as `woff2` subsets (latin, latin-ext, vietnamese) with their OFL licences next to them, and declared with `@font-face` and `font-display: swap` in `apps/web/app/globals.css`. Nothing is loaded from a font CDN (LGPD/GDPR and performance). The token `primitive.font` still names the stack with system fallbacks, so text stays readable while a font loads.
+The v2 fonts, **Plus Jakarta Sans** (400 to 800, everything) and **JetBrains Mono** (400 to 600, codes, dates, coordinates and small labels), are **self-hosted** under `apps/web/public/fonts/` as `woff2` subsets (latin, latin-ext, vietnamese) with their OFL licences next to them, and declared with `@font-face` and `font-display: swap` in `apps/web/app/globals.css`. Nothing is loaded from a font CDN (LGPD/GDPR and performance). The token `primitive.font` still names the stack with system fallbacks, so text stays readable while a font loads.
 
 ## Surfaces that are light in both themes
 
@@ -77,37 +78,36 @@ Some surfaces are cream or white in the red-eye theme too (the account pages' pa
 
 ## Responsive interaction models
 
-| Size | Layout | Map interaction |
+| Size | Shell | Map interaction |
 |---|---|---|
-| Desktop ≥ 1100 | Left rail 248px, full-bleed map, right panel 408px | Click to pin. Tools V/P/T, W (world), Esc |
-| Tablet 720–1099 | Icon rail 76px, panel 360px | Same as desktop, touch-friendly |
-| Phone < 720 | No rail. Top bar, floating 5-tab bar, Pip FAB | Fixed crosshair + "Pin here". Bottom sheet with peek/half/full detents |
+| Desktop ≥ 720 | One sticky TopBar (60px): logo, trip switcher, trip tabs, account places, avatar | Click to pin. Tools V/P, Esc; route panel on the right |
+| Phone < 720 | TopBar, trip tabs as a second sticky row, bottom bar (hidden on the map) | Fixed crosshair + "Pin here". Bottom sheet with peek/half/full detents |
 
 Phones get equivalent essential capabilities through patterns that suit the device, not shrunken desktop components.
 
-### The shell as built (#59)
+### The shell as built (design handoff v2, the TopBar)
 
-`apps/web/app/app/_components/` holds the frame of every signed-in page. One markup, three layouts switched by CSS at 720px and 1100px; the parts a layout does not show are `display: none`, so they are also out of the accessibility tree.
+`apps/web/app/app/_components/` holds the frame of every signed-in page: everything under `/app` and `/settings` renders inside `SignedInFrame`, which reads the person and their trips once and sends a visitor without a session to log in.
 
-| Part | Desktop ≥ 1100 | Tablet 720–1099 | Phone < 720 |
-|---|---|---|---|
-| Navigation | 248px rail with labels: Home, Trips, Board, Days, Budget, Lists, Passport | 76px rail, icons only (labels stay in the link's accessible name) | Floating bar of five tabs: Board, Days, Budget, Lists, More |
-| Rest of the app | In the rail | In the rail | **More** page: Home, Trips, Passport, Settings (and Pip when the flag is on) |
-| Account | Name and avatar in the rail footer, opens upward | Avatar only | Avatar in the top bar, opens downward |
-| Pip | "Ask Pip" button in the wide header | Same | Floating round button above the tab bar |
+| Part | Desktop ≥ 720 | Phone < 720 |
+|---|---|---|
+| Logo | Coral ring + "globetrot" wordmark (the wordmark is hidden from 720 to 899px) | Same |
+| Trip switcher | Pill with the trip's two-letter disc, its name (drawn from 1100px; always in the accessible name) and ⌄; the menu lists the trips with ✓ on the current one, then "Manage trips" | Same, without the name |
+| Trip tools | Segmented control in the bar: Map · Days · Budget · Lists; the active one blue with white text | A second sticky row of four equal 44px pills, only on trip pages |
+| Account places | Trips · Passport (and "Ask Pip" with the flag on), the current one with a 3px blue underline | Bottom bar (64px): Trip · Trips · Passport · Settings (and Pip with the flag on); hidden on the map so it does not clash with the route sheet |
+| Avatar | The person's Pip; opens the account panel: name, Trips, Passport, Settings, Log out | Same |
 
-- **The trip switcher** (current trip's name, a list of trips and a link to manage them) sits at the top of the rail and in the phone top bar; the wide header shows the current trip's name and, with the flag on, the Pip button. The chosen trip is kept in an HTTP-only cookie.
+- **Community and Profile** (the handoff's "Comunidade" and "Perfil e Meu Pip") are not built yet, so they are not in the bar; they join it when they exist. Settings stands in for the profile on the phone's bottom bar.
 - **Pip is behind `FEATURE_PIP`** ([configuration](../engineering/configuration.md#web-appsweb)), off by default. With it off there is no entry point and `/app/pip` answers 404 (decided in `proxy.ts`, because inside the app the loading boundary has already sent a 200 by the time a page could call `notFound()`). With it on, the entry points lead to a page that says Pip is not built yet.
-- **Placeholders are honest.** A section that is not built yet says so plainly (no fake data, no disabled controls) and links to Home. Today every section of the navigation is built; the placeholder remains for future sections. `app/app/loading.tsx` and `error.tsx` give every page a loading and an error state inside the shell.
-- **The current page** is a filled cream pill with dark text and `aria-current="page"`, so it is not marked by colour alone. On the More tab, the pages it holds (Trips, Passport, Pip) mark More as current.
-- **Keyboard.** The skip link is the first Tab stop and moves focus to `<main id="main">`. Every control draws a 3px focus ring (`--gt-component-focus-width`); on the blue rail and tab bar the ring is marigold in both themes, because the day theme's blue ring would vanish against the rail.
-- **The account menu** is a disclosure (a button with `aria-expanded`), not an ARIA menu: it holds a link to Settings and a Log out button, closes on Escape (focus returns to the button), on an outside click and when a link in it is followed. The avatar letter is drawn by CSS so the button's visible text is only the name its label contains (WCAG label-in-name).
-- **Phone details.** Tabs are at least 44px, the tab bar respects the bottom safe area, the content has room under it, and labels such as "Orçamento" fit one line down to 320px wide.
-- **Provisional.** The layout follows the prototype and stays provisional until the owner reviews the missing-screen studies (#7). Icons are [Lucide](https://lucide.dev) (`lucide-react`, ISC license) at stroke 1.6.
+- **Placeholders are honest.** A section that is not built yet says so plainly (no fake data, no disabled controls) and links to Home. `app/app/loading.tsx` and `error.tsx` give every page a loading and an error state inside the shell.
+- **The current page** carries `aria-current="page"` and a non-colour cue: a filled pill for the trip tools, an underline for the account places, a bar above the label in the bottom bar.
+- **Keyboard.** The skip link is the first Tab stop and moves focus to `<main id="main">`. Every control draws a 3px focus ring (`--gt-component-focus-width`) in the primary blue.
+- **The account panel and the trip switcher** are disclosures, not ARIA menus: the account panel closes on Escape (focus returns to the button), on an outside click and when a link in it is followed; the trip switcher is a native `<details>` and each trip is a small form, so it works without a script.
+- **Phone details.** Every link is at least 44px, the bottom bar respects the safe area, the content has room under it, and labels fit one line down to 320px wide.
 
 ## Accessibility
 
-- WCAG 2.2 AA in both themes. Hit targets ≥ 44px. 3px focus rings (blue in light, marigold in dark).
+- WCAG 2.2 AA in both themes. Hit targets ≥ 44px. 3px focus rings in the primary blue (light blue in the red-eye theme).
 - Pins are `<button>` elements with labels such as "Kyoto, stop 3".
 - Pip status uses `aria-live="polite"`. Celebrations use `assertive`.
 - Status is never colour-only. Mint is never used for text. White on stamp red only for bold text ≥ 17px.

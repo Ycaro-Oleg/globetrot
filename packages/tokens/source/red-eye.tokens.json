@@ -3,11 +3,11 @@
     "color": {
       "surface-page": {
         "$type": "color",
-        "$value": "{primitive.color.ink}"
+        "$value": "{primitive.color.night}"
       },
       "surface-page-alt": {
         "$type": "color",
-        "$value": "{primitive.color.night}"
+        "$value": "{primitive.color.night-card}"
       },
       "surface-card": {
         "$type": "color",
@@ -19,87 +19,87 @@
       },
       "text": {
         "$type": "color",
-        "$value": "{primitive.color.cream}"
+        "$value": "{primitive.color.night-text}"
       },
       "text-secondary": {
         "$type": "color",
-        "$value": "{primitive.color.light-secondary}"
+        "$value": "{primitive.color.night-secondary}"
       },
       "text-tertiary": {
         "$type": "color",
-        "$value": "{primitive.color.light-tertiary}"
+        "$value": "{primitive.color.night-tertiary}"
       },
       "outline": {
         "$type": "color",
-        "$value": "{primitive.color.night-outline}"
+        "$value": "{primitive.color.night-hairline}"
       },
       "shadow": {
         "$type": "color",
-        "$value": "{primitive.color.night-outline}"
+        "$value": "{primitive.color.deep}"
       },
       "sea": {
         "$type": "color",
-        "$value": "{primitive.color.blue-night}"
+        "$value": "{primitive.color.primary-night}"
       },
       "sea-deep": {
         "$type": "color",
-        "$value": "{primitive.color.blue-night-deep}"
+        "$value": "{primitive.color.primary}"
       },
       "land": {
         "$type": "color",
-        "$value": "{primitive.color.land-night}"
+        "$value": "{primitive.color.primary-night-tint}"
       },
       "land-highlight": {
         "$type": "color",
-        "$value": "{primitive.color.cream}"
+        "$value": "{primitive.color.night-text}"
       },
       "thread": {
         "$type": "color",
-        "$value": "{primitive.color.red-night}"
+        "$value": "{primitive.color.coral-night}"
       },
       "marigold": {
         "$type": "color",
-        "$value": "{primitive.color.marigold}"
+        "$value": "{primitive.color.coral-night}"
       },
       "mint": {
         "$type": "color",
-        "$value": "{primitive.color.mint}"
+        "$value": "{primitive.color.savings-night}"
       },
       "confirmed": {
         "$type": "color",
-        "$value": "{primitive.color.green-night}"
+        "$value": "{primitive.color.savings-night}"
       },
       "estimate": {
         "$type": "color",
-        "$value": "{primitive.color.ochre-night}"
+        "$value": "{primitive.color.warning-night}"
       },
       "note": {
         "$type": "color",
-        "$value": "{primitive.color.note}"
+        "$value": "{primitive.color.warning-night}"
       },
       "danger": {
         "$type": "color",
-        "$value": "{primitive.color.danger-night}"
+        "$value": "{primitive.color.expense-night}"
       },
       "focus": {
         "$type": "color",
-        "$value": "{primitive.color.marigold}"
+        "$value": "{primitive.color.primary-night}"
       },
       "rule": {
         "$type": "color",
-        "$value": "{primitive.color.rule-night}"
+        "$value": "{primitive.color.night-hairline}"
       },
       "rule-strong": {
         "$type": "color",
-        "$value": "{primitive.color.rule-strong-night}"
+        "$value": "{primitive.color.night-tertiary}"
       },
       "rail-surface": {
         "$type": "color",
-        "$value": "{primitive.color.blue-night-deep}"
+        "$value": "{primitive.color.night}"
       },
       "rail-title": {
         "$type": "color",
-        "$value": "{primitive.color.cream}"
+        "$value": "{primitive.color.night-text}"
       },
       "always-light-surface": {
         "$type": "color",
@@ -113,52 +113,132 @@
         "$type": "color",
         "$value": "{primitive.color.ink-secondary}"
       },
-      "airmail": {
-        "$type": "color",
-        "$value": "{primitive.color.blue}"
-      },
-      "airmail-deep": {
-        "$type": "color",
-        "$value": "{primitive.color.blue-deep}"
-      },
-      "sky": {
-        "$type": "color",
-        "$value": "{primitive.color.land}"
-      },
-      "ripple": {
-        "$type": "color",
-        "$value": "{primitive.color.ripple-night}"
-      },
-      "thread-ink": {
-        "$type": "color",
-        "$value": "{primitive.color.ink}"
-      },
-      "note-ink": {
-        "$type": "color",
-        "$value": "{primitive.color.ink}"
-      },
-      "pin-highlight": {
-        "$type": "color",
-        "$value": "{primitive.color.marigold}"
-      },
-      "pin-middle": {
-        "$type": "color",
-        "$value": "{primitive.color.marigold}"
-      },
-      "pin-low": {
-        "$type": "color",
-        "$value": "{primitive.color.marigold}"
-      },
       "always-light-text-tertiary": {
         "$type": "color",
         "$value": "{primitive.color.ink-tertiary}"
+      },
+      "airmail": {
+        "$type": "color",
+        "$value": "{primitive.color.primary-night}"
+      },
+      "airmail-deep": {
+        "$type": "color",
+        "$value": "{primitive.color.primary}"
+      },
+      "sky": {
+        "$type": "color",
+        "$value": "{primitive.color.night-nested}"
+      },
+      "ripple": {
+        "$type": "color",
+        "$value": "{primitive.color.ripple}"
+      },
+      "thread-ink": {
+        "$type": "color",
+        "$value": "{primitive.color.deep}"
+      },
+      "note-ink": {
+        "$type": "color",
+        "$value": "{primitive.color.deep}"
+      },
+      "pin-highlight": {
+        "$type": "color",
+        "$value": "{primitive.color.warning}"
+      },
+      "pin-middle": {
+        "$type": "color",
+        "$value": "{primitive.color.warning}"
+      },
+      "pin-low": {
+        "$type": "color",
+        "$value": "{primitive.color.warning}"
+      },
+      "primary": {
+        "$type": "color",
+        "$value": "{primitive.color.primary-night}"
+      },
+      "primary-hover": {
+        "$type": "color",
+        "$value": "{primitive.color.primary-line}"
+      },
+      "primary-tint": {
+        "$type": "color",
+        "$value": "{primitive.color.primary-night-tint}"
+      },
+      "primary-soft": {
+        "$type": "color",
+        "$value": "{primitive.color.night-nested}"
+      },
+      "on-primary": {
+        "$type": "color",
+        "$value": "{primitive.color.deep}"
+      },
+      "cta": {
+        "$type": "color",
+        "$value": "{primitive.color.coral-night}"
+      },
+      "on-cta": {
+        "$type": "color",
+        "$value": "{primitive.color.deep}"
+      },
+      "savings": {
+        "$type": "color",
+        "$value": "{primitive.color.savings-night}"
+      },
+      "savings-tint": {
+        "$type": "color",
+        "$value": "{primitive.color.night-nested}"
+      },
+      "expense": {
+        "$type": "color",
+        "$value": "{primitive.color.expense-night}"
+      },
+      "expense-tint": {
+        "$type": "color",
+        "$value": "{primitive.color.night-nested}"
+      },
+      "warning": {
+        "$type": "color",
+        "$value": "{primitive.color.warning-night}"
+      },
+      "warning-ink": {
+        "$type": "color",
+        "$value": "{primitive.color.warning-night}"
+      },
+      "warning-tint": {
+        "$type": "color",
+        "$value": "{primitive.color.night-nested}"
+      },
+      "hairline": {
+        "$type": "color",
+        "$value": "{primitive.color.night-hairline}"
+      },
+      "input-border": {
+        "$type": "color",
+        "$value": "{primitive.color.night-tertiary}"
+      },
+      "input-surface": {
+        "$type": "color",
+        "$value": "{primitive.color.night-nested}"
+      },
+      "track": {
+        "$type": "color",
+        "$value": "{primitive.color.night}"
+      },
+      "deep": {
+        "$type": "color",
+        "$value": "{primitive.color.deep}"
+      },
+      "like": {
+        "$type": "color",
+        "$value": "{primitive.color.like-tint}"
       }
     }
   },
   "component": {
     "button-radius": {
       "$type": "dimension",
-      "$value": "{primitive.radius.14}"
+      "$value": "{primitive.radius.pill}"
     },
     "input-radius": {
       "$type": "dimension",
@@ -170,7 +250,7 @@
     },
     "modal-radius": {
       "$type": "dimension",
-      "$value": "{primitive.radius.26}"
+      "$value": "{primitive.radius.24}"
     },
     "hit-target": {
       "$type": "dimension",
@@ -179,6 +259,10 @@
     "focus-width": {
       "$type": "dimension",
       "$value": "{primitive.size.focus-width}"
+    },
+    "card-radius": {
+      "$type": "dimension",
+      "$value": "{primitive.radius.24}"
     }
   }
 }

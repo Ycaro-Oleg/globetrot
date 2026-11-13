@@ -3,30 +3,24 @@
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { useEffect, useId, useRef, useState } from 'react';
-import { SETTINGS_HREF, SETTINGS_ICON as SettingsIcon } from './nav-model';
+import { PipAvatar } from './pip-avatar';
+import { SETTINGS_HREF } from './nav-model';
 import { SignOutButton } from './sign-out-button';
 import styles from './shell.module.css';
 
-/** The first letter of the name, for the round avatar. Falls back to a dot for an empty name. */
+/** The first letter of the name. Falls back to a dot for an empty name. */
 export function initialOf(name: string): string {
   const first = Array.from(name.trim())[0];
-  return first ? first.toLocaleUpperCase() : '\u2022';
+  return first ? first.toLocaleUpperCase() : '•';
 }
 
 /**
- * The person's name and the account actions (settings, log out). A disclosure, not an ARIA menu: it is a short
- * list of a link and a button, so Tab moves through it like anywhere else. It closes on Escape (focus returns to
- * the button), on a click outside and when a link in it is followed.
+ * The avatar button (the person's Pip) and the account panel: the name, the account's places, settings and log
+ * out. A disclosure, not an ARIA menu: Tab moves through it like anywhere else. It closes on Escape (focus
+ * returns to the button), on a click outside and when a link in it is followed.
  */
-export function AccountMenu({
-  name,
-  placement,
-}: {
-  name: string;
-  /** Which side of the button the panel opens on: above in the rail's footer, below in the top bar. */
-  placement: 'above' | 'below';
-}) {
-  const t = useTranslations('shell.account');
+export function AccountMenu({ name }: { name: string }) {
+  const t = useTranslations('shell');
   const panelId = useId();
   const [open, setOpen] = useState(false);
   const root = useRef<HTMLDivElement>(null);
@@ -56,31 +50,40 @@ export function AccountMenu({
       <button
         ref={button}
         type="button"
-        className={styles.accountButton}
+        className={styles.avatarButton}
         aria-expanded={open}
         aria-controls={panelId}
-        aria-label={t('menu', { name })}
+        aria-label={t('account.menu', { name })}
         onClick={() => setOpen((value) => !value)}
       >
-        {/* Drawn by CSS (::before) so the button's visible text is only the name, which its label contains. */}
-        <span className={styles.avatar} aria-hidden="true" data-initial={initialOf(name)} />
-        <span className={styles.accountName} aria-hidden="true">
-          {name}
-        </span>
+        <PipAvatar size={38} still />
       </button>
       <div
         id={panelId}
-        className={placement === 'above' ? styles.panelAbove : styles.panelBelow}
+        className={styles.menu}
+        data-align="end"
         hidden={!open}
         onClick={(event) => {
-          // Following the settings link closes the panel; the log-out button leaves the page anyway.
+          // Following a link closes the panel; the log-out button leaves the page anyway.
           if ((event.target as HTMLElement).closest('a')) setOpen(false);
         }}
       >
-        <Link href={SETTINGS_HREF} className={styles.menuItem}>
-          <SettingsIcon aria-hidden="true" strokeWidth={1.6} size={20} />
-          <span>{t('settings')}</span>
+        <p className={styles.menuName}>
+          <span className={styles.menuInitial} aria-hidden="true">
+            {initialOf(name)}
+          </span>
+          {name}
+        </p>
+        <Link href="/app/trips" className={styles.menuItem}>
+          {t('nav.trips')}
         </Link>
+        <Link href="/app/passport" className={styles.menuItem}>
+          {t('nav.passport')}
+        </Link>
+        <Link href={SETTINGS_HREF} className={styles.menuItem}>
+          {t('account.settings')}
+        </Link>
+        <span className={styles.menuRule} aria-hidden="true" />
         <SignOutButton />
       </div>
     </div>

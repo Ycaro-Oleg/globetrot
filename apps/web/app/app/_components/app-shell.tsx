@@ -4,17 +4,14 @@ import type { ReactNode } from 'react';
 import type { TripView } from '../../../lib/trips';
 import { SITE_NAME } from '../../site';
 import { AccountMenu } from './account-menu';
-import { RailNav, TabBar } from './nav-links';
-import { BRAND_ICON as BrandIcon, PIP_HREF } from './nav-model';
-import { PipAvatar } from './pip-avatar';
+import { BottomBar, GlobalNav, TripTabs } from './nav-links';
 import { TripSwitcher } from './trip-switcher';
 import styles from './shell.module.css';
 
 /**
- * The frame around every signed-in page.
- *
- * Three layouts from one markup, switched by CSS (see shell.module.css): on a wide screen a labelled rail on the
- * left, on a tablet a rail of icons, on a phone a top bar plus a floating bar of five tabs.
+ * The frame around every signed-in page (design handoff v2, the TopBar): one sticky bar with the logo, the trip
+ * switcher, the trip's tools and, on the right, the account's places and the avatar menu. On a phone the trip's
+ * tools become a second row and the account's places a bottom bar (hidden on the map).
  */
 export function AppShell({
   userName,
@@ -30,8 +27,6 @@ export function AppShell({
   children: ReactNode;
 }) {
   const t = useTranslations('shell');
-  const tripT = useTranslations('tripWorkspace');
-  const activeTrip = trips.find((trip) => trip.id === activeTripId) ?? null;
 
   return (
     <div className={styles.shell}>
@@ -39,52 +34,26 @@ export function AppShell({
         {t('skipLink')}
       </a>
 
-      <div className={styles.rail}>
-        <Link href="/app" className={styles.brand}>
-          <BrandIcon aria-hidden="true" strokeWidth={1.6} size={26} />
-          <span className={styles.brandName}>{SITE_NAME}</span>
-        </Link>
-        <TripSwitcher trips={trips} activeTripId={activeTripId} />
-        <RailNav />
-        <div className={styles.railFooter}>
-          <AccountMenu name={userName} placement="above" />
-        </div>
-      </div>
-
-      <header className={styles.desktopBar}>
-        <div className={styles.workspaceHeading}>
-          <span>{tripT('eyebrow')}</span>
-          <strong>{activeTrip?.title ?? tripT('title')}</strong>
-        </div>
-        {pipEnabled ? (
-          <Link href={PIP_HREF} className={styles.desktopPip}>
-            <PipAvatar size={26} still />
-            <span>{t('pip.ask')}</span>
-          </Link>
-        ) : null}
-      </header>
-
-      <header className={styles.topBar}>
-        <div className={styles.topBarBrand}>
-          <Link href="/app" className={styles.topBrand}>
-            <BrandIcon aria-hidden="true" strokeWidth={1.6} size={24} />
-            <span>{SITE_NAME}</span>
+      <div className={styles.top}>
+        <header className={styles.bar}>
+          <Link href="/app/board" className={styles.logo}>
+            <span className={styles.logoRing} aria-hidden="true" />
+            <span className={styles.wordmark}>{SITE_NAME.toLowerCase()}</span>
           </Link>
           <TripSwitcher trips={trips} activeTripId={activeTripId} />
-        </div>
-        <AccountMenu name={userName} placement="below" />
-      </header>
+          <TripTabs variant="inline" />
+          <span className={styles.spacer} />
+          <GlobalNav pipEnabled={pipEnabled} />
+          <AccountMenu name={userName} />
+        </header>
+        <TripTabs variant="row" />
+      </div>
 
       <main id="main" tabIndex={-1} className={styles.main}>
         {children}
       </main>
 
-      {pipEnabled ? (
-        <Link href={PIP_HREF} className={styles.pipFab} aria-label={t('pip.ask')}>
-          <PipAvatar size={40} still />
-        </Link>
-      ) : null}
-      <TabBar />
+      <BottomBar pipEnabled={pipEnabled} />
     </div>
   );
 }

@@ -206,16 +206,16 @@
   "shell": {
     "skipLink": "Skip to content",
     "nav": {
-      "label": "Main navigation",
-      "home": "Home",
-      "board": "Board",
+      "board": "Map",
       "days": "Days",
       "budget": "Budget",
       "lists": "Lists",
-      "more": "More",
       "trips": "Trips",
       "passport": "Passport",
-      "settings": "Settings"
+      "settings": "Settings",
+      "trip": "Trip",
+      "tripLabel": "Trip tools",
+      "globalLabel": "Globetrot"
     },
     "account": {
       "menu": "Account menu for {name}",
@@ -227,10 +227,6 @@
       "ask": "Ask Pip",
       "title": "Pip",
       "notBuilt": "Pip, the travel companion, is not available yet. This entry point is only shown while the Pip flag is on."
-    },
-    "more": {
-      "title": "More",
-      "description": "The rest of Globetrot."
     },
     "comingSoon": {
       "label": "Not available yet",

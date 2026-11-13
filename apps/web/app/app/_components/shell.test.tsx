@@ -15,10 +15,9 @@ vi.mock('next/navigation', () => ({
 }));
 vi.mock('next-intl/server', () => ({ getTranslations: vi.fn() }));
 
-import { AccountMenu, initialOf } from './account-menu';
+import { initialOf } from './account-menu';
 import { AppShell } from './app-shell';
 import { ComingSoon, type ComingSoonSection } from './coming-soon';
-import MorePage from '../more/page';
 import PipPage from '../pip/page';
 
 function render(locale: SupportedLocale, element: ReactElement): string {
@@ -73,50 +72,51 @@ describe.each(SUPPORTED_LOCALES)('app shell (%s)', (locale) => {
     expect(shell(locale, false)).toContain('<h1>Page</h1>');
   });
 
-  it('labels both navigations and lists the seven destinations on the rail', () => {
-    const html = shell(locale, false);
+  it('has the trip tools, the account places and the bottom bar, each labelled', () => {
+    const html = shell(locale, false, '/app/budget');
     const found = navs(html);
-    expect(found).toHaveLength(2);
-    expect(html.match(new RegExp(`<nav[^>]*aria-label="${copy.nav.label}"`, 'g'))).toHaveLength(2);
-    expect(linkLabels(found[0] ?? '')).toEqual([
-      copy.nav.home,
+    // Inline trip tabs, the account places, the phone's trip row, the bottom bar.
+    expect(found).toHaveLength(4);
+    expect(html.match(new RegExp(`<nav[^>]*aria-label="${copy.nav.tripLabel}"`, 'g'))).toHaveLength(
+      2,
+    );
+    expect(
+      html.match(new RegExp(`<nav[^>]*aria-label="${copy.nav.globalLabel}"`, 'g')),
+    ).toHaveLength(2);
+    const tools = [copy.nav.board, copy.nav.days, copy.nav.budget, copy.nav.lists];
+    expect(linkLabels(found[0] ?? '')).toEqual(tools);
+    expect(linkLabels(found[1] ?? '')).toEqual([copy.nav.trips, copy.nav.passport]);
+    expect(linkLabels(found[2] ?? '')).toEqual(tools);
+    expect(linkLabels(found[3] ?? '')).toEqual([
+      copy.nav.trip,
       copy.nav.trips,
-      copy.nav.board,
-      copy.nav.days,
-      copy.nav.budget,
-      copy.nav.lists,
       copy.nav.passport,
+      copy.nav.settings,
     ]);
   });
 
-  it('has exactly five tabs on the phone, ending with More', () => {
-    const tabs = linkLabels(navs(shell(locale, false))[1] ?? '');
-    expect(tabs).toEqual([
-      copy.nav.board,
-      copy.nav.days,
-      copy.nav.budget,
-      copy.nav.lists,
-      copy.nav.more,
-    ]);
-  });
-
-  it('marks the current page in both navigations, and only that page', () => {
-    const found = navs(shell(locale, false, '/app/budget'));
-    for (const markup of found) {
-      expect(markup.match(/aria-current="page"/g)).toHaveLength(1);
-      expect(markup).toMatch(new RegExp(`aria-current="page"[^>]*>[\\s\\S]*?${copy.nav.budget}`));
+  it('marks the current trip tool, and "Trip" in the bottom bar', () => {
+    const [inline, places, row, bottom] = navs(shell(locale, false, '/app/budget'));
+    for (const markup of [inline, row]) {
+      expect(markup?.match(/aria-current="page"/g)).toHaveLength(1);
+      expect(markup).toMatch(new RegExp(`aria-current="page"[^>]*>${copy.nav.budget}`));
     }
+    expect(places).not.toContain('aria-current');
+    expect(bottom).toMatch(new RegExp(`aria-current="page"[\\s\\S]*?${copy.nav.trip}`));
   });
 
-  it('marks Home on /app and nothing in the tab bar', () => {
-    const [rail, tabs] = navs(shell(locale, false, '/app'));
-    expect(rail?.match(/aria-current="page"/g)).toHaveLength(1);
-    expect(tabs).not.toContain('aria-current');
+  it('drops the trip row off trip pages and marks the account place instead', () => {
+    const found = navs(shell(locale, false, '/app/passport'));
+    expect(found).toHaveLength(3);
+    const [inline, places, bottom] = found;
+    expect(inline).not.toContain('aria-current');
+    expect(places).toMatch(new RegExp(`aria-current="page"[^>]*>${copy.nav.passport}`));
+    expect(bottom?.match(/aria-current="page"/g)).toHaveLength(1);
   });
 
-  it('marks the More tab for the pages it holds', () => {
-    const [, tabs] = navs(shell(locale, false, '/app/passport'));
-    expect(tabs).toMatch(new RegExp(`aria-current="page"[^>]*>[\\s\\S]*?${copy.nav.more}`));
+  it('hides the bottom bar on the map, where the route sheet sits', () => {
+    const html = shell(locale, false, '/app/board');
+    expect(html).not.toContain('data-shell-tabbar');
   });
 
   it('names the account button after the person and keeps the panel closed', () => {
@@ -127,6 +127,7 @@ describe.each(SUPPORTED_LOCALES)('app shell (%s)', (locale) => {
     expect(html).toMatch(/<div[^>]*hidden=""/);
     expect(html).toContain(copy.account.settings);
     expect(html).toContain(copy.account.signOut);
+    expect(html).toContain('Ana Souza');
   });
 
   it('shows no Pip entry point while the flag is off', () => {
@@ -135,10 +136,11 @@ describe.each(SUPPORTED_LOCALES)('app shell (%s)', (locale) => {
     expect(html).not.toContain(copy.pip.ask);
   });
 
-  it('shows the Pip entry point in the wide header and as the phone button when the flag is on', () => {
+  it('adds Pip to the account places when the flag is on', () => {
     const html = shell(locale, true);
+    // In the account places (wide screens) and in the bottom bar (phones).
     expect(html.match(/href="\/app\/pip"/g)).toHaveLength(2);
-    expect(html).toContain(`aria-label="${copy.pip.ask}"`);
+    expect(html).toContain(copy.pip.ask);
   });
 
   it('leaves no catalog key unresolved', () => {
@@ -171,25 +173,6 @@ describe('placeholder pages', () => {
   });
 });
 
-describe('More page', () => {
-  it.each(SUPPORTED_LOCALES)('lists what the tab bar leaves out (%s)', (locale) => {
-    const copy = catalogs[locale].shell;
-    const html = render(locale, <MorePage />);
-    expect(linkLabels(html)).toEqual([
-      copy.nav.home,
-      copy.nav.trips,
-      copy.nav.passport,
-      copy.nav.settings,
-    ]);
-    expect(html).toContain('href="/settings"');
-  });
-
-  it('adds Pip only when the flag is on', () => {
-    vi.stubEnv('FEATURE_PIP', 'true');
-    expect(render('en', <MorePage />)).toContain('href="/app/pip"');
-  });
-});
-
 describe('Pip page', () => {
   it('is a 404 while the flag is off', () => {
     expect(() => render('en', <PipPage />)).toThrow('404');
@@ -208,12 +191,5 @@ describe('account menu', () => {
     expect(initialOf('  émile')).toBe('É');
     expect(initialOf('')).toBe('•');
     expect(initialOf('🙂 Smile')).toBe('🙂');
-  });
-
-  it('opens above in the rail and below in the top bar', () => {
-    const above = render('en', <AccountMenu name="Ana" placement="above" />);
-    const below = render('en', <AccountMenu name="Ana" placement="below" />);
-    expect(above).toContain('panelAbove');
-    expect(below).toContain('panelBelow');
   });
 });

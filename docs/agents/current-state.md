@@ -1,12 +1,13 @@
 # Current state
 
-_Last updated: 2026-11-12, after the passport screen. Code state: `develop` includes #83 to #88; the passport screen is in an open PR._
+_Last updated: 2026-11-13, v2 foundation (tokens, fonts, TopBar shell). Code state: `develop` includes #83 to #90; the v2 foundation is in an open PR._
 
 Read this first. It says where the project is, what exists, what is open, what only the owner can unblock and what to do next. Procedure for working: [`playbook.md`](playbook.md). Feature-by-feature progress: [`../product/progress.md`](../product/progress.md). Milestones and exit criteria: [`../product/roadmap.md`](../product/roadmap.md).
 
 ## Snapshot
 
-- **Active milestone: M3 App Foundation.** 13 of 13 issues are done in code; #55 stays open for the owner's real-provider smoke run. M2 (engineering foundation) is complete. M0 (product foundation) is complete. **M1 (design system and spikes) is partly open** and its open items need the owner.
+- **Design handoff v2 is the visual direction** (slate, blue and coral; Plus Jakarta Sans; one TopBar on every screen). The tokens, fonts and the shell are v2; every screen picks up the v2 palette, hairlines and pills through the tokens. Still to rebuild screen by screen from the handoff: the Budget answer card with its chart and the expense drawer, the Days columns with drag and drop, the Lists stamp celebration and the passport booklet tab, the Landing and auth pages, and the new screens (Onboarding, Profile and Meu Pip, Community).
+- **Active milestone: M3 App Foundation.** 13 of 13 issues are done in code; #55 stays open for the owner's real-provider smoke run. M2 (engineering foundation) is complete. M0 (product foundation) is complete. **M1 (design system and spikes) is partly open**: the owner reviewed and approved the remaining screen studies (#7 closed on 2026-11-13); the other open items need the owner.
 - **What works end to end today** (checked against the real API, Postgres and Mailpit): a person can see the landing page, create an account in English or Portuguese, confirm the email through Mailpit, log in, create a trip, see it in the list and switcher, archive it and undo, open the world-map board, search places, pin a route, change language, currency, country, nationality, time zone, units, theme (day, red-eye or follow the device) and motion, recover a password and log out.
 - **The map board follows the design handoff v2** (#75, map board v2): a full-bleed map with Atlas, Terrain and Slate styles and country fills, teardrop pins with petals and a pin card (spots, notes, to-dos), arcs with a comet, a slate route panel (reorder, undo, nights, dates, distances), a stop detail (nearby places, leg, mark visited, remove), place search on the server, a phone bottom sheet with "Pin here". Marking the first stop in a country visited stamps a **commemorative visa** (`GET /v1/visas`). Still to do: photos on the pin card (uploads), state outlines (own boundaries), the v2 tokens, type and TopBar shell (a separate change), costs per stop.
 - **The landing page is complete in code** (#74): every section, mock pricing labelled as placeholder, example trips a visitor can copy into an account, metadata, social image, `robots.txt` and sitemap. Real prices, legal text and the owner's review remain.
@@ -20,7 +21,7 @@ Read this first. It says where the project is, what exists, what is open, what o
 | Milestone | State | Open issues | Notes |
 |---|---|---|---|
 | M0 Product Foundation | **Complete** (the GitHub milestone is still open: the owner decides when to close it) | 0 | Vision, PRD, business rules, roadmap, design audit, ADRs 0001–0009, agent docs |
-| M1 Design System & Spikes | **Partly open** | #4, #6, #7, #8, #9 | #2 MapLibre and #3 places spikes and #5 tokens are done. The owner approved the trip list/switcher portion of #7; other studies and checks remain. |
+| M1 Design System & Spikes | **Partly open** | #4, #6, #8, #9 | #2 MapLibre and #3 places spikes and #5 tokens are done; #7 approved and closed (2026-11-13). The design handoff v2 now supersedes the v1 prototype. |
 | M2 Engineering Foundation | **Complete** (closed) | 0 | Monorepo, CI, local services, domain rules (money, trips), i18n, standards |
 | **M3 App Foundation** | **Active** | #55 | Done: #50, #52, #53, #54, #56, #57, #58, #59, #60, #61, #62, #63. Plan and dependency table: [`m3-foundation-breakdown.md`](../engineering/m3-foundation-breakdown.md) |
 | M4 Travel Workspace & Map | **Started** (starter board, #75) | #75 | Needs M3 to finish. Map, search and a local route exist; persistence on the trip, mobile sheet and the rest are open. More issues are created when M3 nears its end |
@@ -54,7 +55,6 @@ These cannot be finished by an agent. Do not work around them, and do not mark t
 |---|---|---|
 | **Confirm the verified-email policy** ([ADR-0012](../architecture/adr/0012-email-delivery-and-verified-sign-in.md)) | Say whether a password sign-in must require a verified email (current default, Google counts as verified), or unverified accounts may enter with a banner | Nothing now; it is a one-line change if the answer is "banner" |
 | **Google sign-in credentials (#55)** | A Google OAuth client for a test environment, with the callback URL, supplied through environment variables (never in the repo), and a real-provider smoke test | #55's real-provider verification. The code can be written and tested without them |
-| **Remaining screen review (#7)** | Review the rest of the missing-screen studies in [`missing-screens.md`](../design/missing-screens.md); the trip list/switcher has been approved | Other M3/M6 screen designs and final #7 closure |
 | **Component and screen-reader review (#6)** | Manual keyboard and screen-reader pass on the Storybook components | Closing #6 |
 | **Usability test (#8)** | Five real participants (en and pt-BR) following [`usability-01.md`](../product/research/usability-01.md) | Closing M1; informs the board design |
 | **Geocoding provider (#4)** | Provider accounts and keys for quality tests, then a decision | Address search; not needed for city search from GeoNames |
@@ -79,14 +79,12 @@ Honest list of what is missing or deliberately simple, so nobody assumes otherwi
 - **No seed or demo data.** There are no example trips yet (M8) and no script that creates a test account; create one through `/signup` and Mailpit.
 - **The Geoapify tile key is a public browser key** written into the bundle at build time (`NEXT_PUBLIC_GEOAPIFY_API_KEY`); restrict it to the site's domains and to tiles in the Geoapify dashboard. Search uses the server key `GEOAPIFY_API_KEY` (#75). The place-lookup rate limit counts in memory, per API process.
 - **An unknown or foreign trip id shows a "not found" page with status 200**, not a 404 (the loading boundary has already sent the status). Harmless; fix if it matters for monitoring.
-- **The board keeps its own palette** (design handoff v2): the map is always light and its panels always slate, in both app themes; its colours live in `world-map.module.css`, not in the tokens, until the v2 tokens replace v1.
-- **Light surfaces inside the red-eye theme** (auth panel, landing cream sections, trip cards) are hard-coded light and use the `always-light` token overrides; any new light surface must do the same or axe fails on contrast in the red-eye theme.
+- **The board keeps its own palette** (design handoff v2): the map is always light and its panels always slate, in both app themes; its colours still live in `world-map.module.css` rather than the v2 tokens.
+- **Light surfaces inside the red-eye theme** (auth panel, landing sections, some trip-card controls) are hard-coded light and use the `always-light` token overrides; any new light surface must do the same or axe fails on contrast in the red-eye theme.
 - **The end-to-end suite is one journey** (`apps/web/e2e/journey.mjs`, #63): sign-up to trip to theme and keyboard, two widths, two languages. The board, itinerary and budget have no journey yet (M4 onwards). The account screens, the shell and the trip screens also have the stand-in browser check (`pnpm --filter @globetrot/web test:a11y`).
-- **The shell's pages are still placeholders.** The Passport page lists the visas (the Lists page works: four checklists and the stamps; the Days page works: one day per night, from the board's nights; the Budget page works: costs, conversion, totals and the savings answer); the Trips list and overview exist (#62). Pip's page exists only behind `FEATURE_PIP`. 
 - **Not verified by a person:** screen readers on any screen (including the shell's navigation and account menu); the shell on a real phone (safe-area, on-screen keyboard); the account screens at very large font sizes in pt-BR; MapLibre on a real phone.
 - The client address used for rate limits is only trustworthy behind a trusted edge, and the API must not be reachable from the internet ([`authentication.md`](../architecture/authentication.md#which-client-address-counts-trust-model)).
 - `NextIntlClientProvider` ships the whole catalog to the browser (fine for now; see [`i18n.md`](../architecture/i18n.md)).
-- Fonts are the system fallback; the brand fonts are not self-hosted yet (with #60).
 - Nothing is deployed. There is no CD pipeline, monitoring or backup yet (M11).
 
 ## Next

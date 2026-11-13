@@ -35,7 +35,7 @@
   align-items: center;
   justify-content: center;
   padding: var(--gt-primitive-space-8) var(--gt-primitive-space-16);
-  border: var(--gt-primitive-border-3) solid var(--gt-semantic-color-outline);
+  border: var(--gt-primitive-border-1) solid var(--gt-semantic-color-outline);
   border-radius: var(--gt-primitive-radius-12);
   background: var(--gt-semantic-color-surface-card);
   color: var(--gt-semantic-color-text);
@@ -47,7 +47,7 @@
 }
 
 .primary {
-  background: var(--gt-primitive-color-marigold);
+  background: var(--gt-semantic-color-cta);
   color: var(--gt-primitive-color-ink);
 }
 
@@ -55,7 +55,7 @@
 .answer {
   margin-block: var(--gt-primitive-space-16) var(--gt-primitive-space-24);
   padding: var(--gt-primitive-space-20) var(--gt-primitive-space-24);
-  border: var(--gt-primitive-border-3) solid var(--gt-semantic-color-outline);
+  border: var(--gt-primitive-border-1) solid var(--gt-semantic-color-outline);
   border-radius: var(--gt-primitive-radius-20);
   background: var(--gt-semantic-color-surface-card);
   box-shadow: var(--gt-primitive-shadow-button);
@@ -113,7 +113,7 @@
 .card {
   min-width: 0;
   padding: var(--gt-primitive-space-20);
-  border: var(--gt-primitive-border-3) solid var(--gt-semantic-color-outline);
+  border: var(--gt-primitive-border-1) solid var(--gt-semantic-color-outline);
   border-radius: var(--gt-primitive-radius-16);
   background: var(--gt-semantic-color-surface-card);
   box-shadow: var(--gt-primitive-shadow-small);
@@ -175,7 +175,7 @@
   min-width: var(--gt-component-hit-target);
   min-height: var(--gt-component-hit-target);
   place-items: center;
-  border: var(--gt-primitive-border-2) solid transparent;
+  border: var(--gt-primitive-border-1) solid transparent;
   border-radius: var(--gt-primitive-radius-12);
   background: transparent;
   color: var(--gt-semantic-color-danger);
@@ -225,7 +225,7 @@
   max-width: 100%;
   min-height: var(--gt-component-hit-target);
   padding: var(--gt-primitive-space-8) var(--gt-primitive-space-12);
-  border: var(--gt-primitive-border-2) solid var(--gt-semantic-color-outline);
+  border: var(--gt-primitive-border-1) solid var(--gt-semantic-color-outline);
   border-radius: var(--gt-primitive-radius-12);
   background: #fff;
   color: var(--gt-semantic-color-always-light-text);
