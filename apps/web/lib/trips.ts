@@ -102,6 +102,25 @@ export async function fetchChecklist(
   }
 }
 
+export type DayPlanData =
+  paths['/v1/trips/{id}/day-places']['get']['responses'][200]['content']['application/json'];
+export type DayPlaceData = DayPlanData['places'][number];
+
+/** The trip's places to see and their days, or `null` when they cannot be read. */
+export async function fetchDayPlaces(
+  options: FetchOptions,
+  tripId: string,
+): Promise<DayPlanData | null> {
+  try {
+    const { data } = await createServerApiClient(options).GET('/v1/trips/{id}/day-places', {
+      params: { path: { id: tripId } },
+    });
+    return data ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export type VisaData =
   paths['/v1/visas']['get']['responses'][200]['content']['application/json']['visas'][number];
 

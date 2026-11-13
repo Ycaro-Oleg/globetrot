@@ -144,6 +144,20 @@ const EXPENSES = [
   },
 ];
 
+const DAY_PLACES = {
+  places: [
+    ['Senso-ji', 0, 120, 1],
+    ['Fushimi Inari', 1, 180, 2],
+    ['Golden Gai', 0, 90, null],
+  ].map(([name, stop, minutes, day], index) => ({
+    id: `0193c0a8-7b1e-7c4a-9e2f-3d5a6b7c8a0${index}`,
+    destinationId: `0193c0a8-7b1e-7c4a-9e2f-3d5a6b7c8f0${stop}`,
+    name,
+    minutes,
+    day,
+  })),
+};
+
 const DESTINATIONS = {
   destinations: [
     ['tokyo', 'Tokyo', 35.68, 139.69, 4, 'Ramen in Shinjuku', 'train'],
@@ -257,6 +271,10 @@ const stub = createServer(async (request, response) => {
   if (/^\/v1\/trips\/[^/]+\/destinations$/.test(url.pathname) && request.method === 'GET') {
     if (!signedIn) return reply(response, 401, { code: 'UNAUTHENTICATED' });
     return reply(response, 200, DESTINATIONS);
+  }
+  if (/^\/v1\/trips\/[^/]+\/day-places$/.test(url.pathname) && request.method === 'GET') {
+    if (!signedIn) return reply(response, 401, { code: 'UNAUTHENTICATED' });
+    return reply(response, 200, DAY_PLACES);
   }
   if (/^\/v1\/trips\/[^/]+\/checklist$/.test(url.pathname) && request.method === 'GET') {
     if (!signedIn) return reply(response, 401, { code: 'UNAUTHENTICATED' });
@@ -654,6 +672,17 @@ try {
     for (const layout of ['narrow', 'phone', 'tablet', 'laptop', 'desktop']) {
       entries.push([`shell-home-${layout}`, true, ...at('/app', VIEWPORTS[layout])]);
     }
+    entries.push(['shell-days-desktop', true, ...at('/app/days', VIEWPORTS.desktop)]);
+    entries.push([
+      'days-add-place',
+      true,
+      async (page) => {
+        await go(page, `${base}/app/days`);
+        await page.locator('main button', { hasText: '+' }).first().click();
+        await page.locator('#place-name').waitFor();
+      },
+      VIEWPORTS.desktop,
+    ]);
     for (const section of ['board', 'days', 'budget', 'lists', 'trips', 'passport']) {
       entries.push([`shell-${section}-phone`, true, ...at(`/app/${section}`, VIEWPORTS.phone)]);
     }

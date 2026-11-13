@@ -20,6 +20,8 @@ import type {
   TripRecord,
   TripWriter,
   UserRecord,
+  DayPlaceRecord,
+  DayPlaceWriter,
 } from '../ports';
 
 /** In-memory ports for unit tests (here and in apps/api). Real adapters are tested against PostgreSQL. */
@@ -29,6 +31,7 @@ export interface FakeState {
   destinations: Map<string, DestinationRecord[]>;
   expenses: Map<string, ExpenseRecord>;
   checklist: Map<string, ChecklistItemRecord>;
+  dayPlaces: Map<string, DayPlaceRecord>;
   /** Keyed by `${userId}\u0000${countryCode}`. */
   visas: Map<string, VisaRecord>;
   savings: Map<string, SavingsRecord>;
@@ -67,6 +70,7 @@ export function createFakePorts(options: FakeOptions = {}) {
     destinations: new Map(),
     expenses: new Map(),
     checklist: new Map(),
+    dayPlaces: new Map(),
     visas: new Map(),
     savings: new Map(),
     preferences: new Map(),
@@ -181,6 +185,31 @@ export function createFakePorts(options: FakeOptions = {}) {
     },
   };
 
+  const dayPlaceWriter: DayPlaceWriter = {
+    async listByTrip(tripId) {
+      return [...state.dayPlaces.values()]
+        .filter((record) => record.tripId === tripId)
+        .sort((a, b) => a.position - b.position || a.createdAt.getTime() - b.createdAt.getTime());
+    },
+    async findById(id) {
+      return state.dayPlaces.get(id) ?? null;
+    },
+    async insert(row) {
+      const record: DayPlaceRecord = { ...row, updatedAt: row.createdAt };
+      state.dayPlaces.set(record.id, record);
+      return record;
+    },
+    async placeMany(entries, updatedAt) {
+      for (const entry of entries) {
+        const current = state.dayPlaces.get(entry.id);
+        if (current) state.dayPlaces.set(entry.id, { ...current, ...entry, updatedAt });
+      }
+    },
+    async delete(id) {
+      state.dayPlaces.delete(id);
+    },
+  };
+
   const checklistWriter: ChecklistWriter = {
     async listByTrip(tripId) {
       return [...state.checklist.values()]
@@ -257,6 +286,7 @@ export function createFakePorts(options: FakeOptions = {}) {
     trips: tripWriter,
     expenses: expenseWriter,
     checklist: checklistWriter,
+    dayPlaces: dayPlaceWriter,
     visas: visaWriter,
     savings: savingsWriter,
     destinations: destinationWriter,
@@ -295,6 +325,7 @@ export function createFakePorts(options: FakeOptions = {}) {
     destinations: destinationWriter,
     expenses: expenseWriter,
     checklist: checklistWriter,
+    dayPlaces: dayPlaceWriter,
     visas: visaWriter,
     savings: savingsWriter,
     preferences: preferencesWriter,
@@ -306,6 +337,7 @@ export function createFakePorts(options: FakeOptions = {}) {
           destinations: new Map(state.destinations),
           expenses: new Map(state.expenses),
           checklist: new Map(state.checklist),
+          dayPlaces: new Map(state.dayPlaces),
           visas: new Map(state.visas),
           savings: new Map(state.savings),
           preferences: new Map(state.preferences),
@@ -321,6 +353,7 @@ export function createFakePorts(options: FakeOptions = {}) {
           state.destinations = before.destinations;
           state.expenses = before.expenses;
           state.checklist = before.checklist;
+          state.dayPlaces = before.dayPlaces;
           state.visas = before.visas;
           state.savings = before.savings;
           state.preferences = before.preferences;

@@ -51,6 +51,12 @@ import {
   createGetChecklist,
   createUpdateChecklistItem,
 } from './checklists/operations';
+import {
+  createAddDayPlace,
+  createListDayPlaces,
+  createMoveDayPlace,
+  createRemoveDayPlace,
+} from './days/operations';
 import { createCreateTripFromExample } from './examples/operations';
 import { createReversePlace, createSearchPlaces } from './places/operations';
 import {
@@ -163,6 +169,16 @@ export {
 } from './checklists/schemas';
 
 export {
+  addDayPlaceFields,
+  DAY_PLACES_MAX,
+  dayPlaceSchema,
+  dayPlanSchema,
+  moveDayPlaceFields,
+  type DayPlaceView,
+  type DayPlanView,
+} from './days/schemas';
+
+export {
   destinationFields,
   destinationListSchema,
   destinationSchema,
@@ -205,6 +221,10 @@ export function createApplication(ports: Ports) {
     addChecklistItems: createAddChecklistItems(ports),
     updateChecklistItem: createUpdateChecklistItem(ports),
     deleteChecklistItem: createDeleteChecklistItem(ports),
+    listDayPlaces: createListDayPlaces(ports),
+    addDayPlace: createAddDayPlace(ports),
+    moveDayPlace: createMoveDayPlace(ports),
+    removeDayPlace: createRemoveDayPlace(ports),
     getBudget: createGetBudget(ports),
     listExpenses: createListExpenses(ports),
     createExpense: createCreateExpense(ports),

@@ -41,6 +41,7 @@ Implemented in #53, #54, #57 and #58. Mechanics: [`../architecture/authenticatio
   - `ready`: all of the above.
 - **Stops (destinations)** are ordered and have `nights ≥ 0`. Day trips have 0 nights. A stop is `planned` or `draft` (a Pip proposal not yet applied). Drafts never count towards days, milestones or next steps.
 - **Days:** consecutive local dates from `trip.start` across planned stops in order, one day per night. Without a start date, days are still numbered but have no dates.
+- **Places on days (the day plan):** a trip keeps up to 200 places to see, each with a name (1 to 120 characters), an estimated time (15 minutes to 12 hours), an optional stop and a day or "No day". A new place goes to "No day". Places move to a day (at its end or before another place of that day) by drag and drop or the "Move to" select, and every move can be undone. A day's load is the sum of its places' times: **more than 9 hours is a "full day"**, under 3 is "light". A place on a day spent at another stop shows a warning ("Outside the stop"), never a block. When the route changes, nothing is lost: a day the route no longer reaches reads as "No day", and a place whose stop was removed reads with no stop. "Every day has a plan" (readiness) is earned when each day has at least one place.
 - **Next steps:** up to 4, in this priority order:
   1. place the first pin;
   2. the first stop (with nights) that has no stay expense;

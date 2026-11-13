@@ -15,6 +15,7 @@ import {
   idempotencyKey,
   rateLimit,
   trip,
+  tripPlace,
   tripSavings,
   userPreference,
   visa,
@@ -536,6 +537,65 @@ export function createChecklistRepository(executor: Executor) {
 }
 export type ChecklistRepository = ReturnType<typeof createChecklistRepository>;
 
+export interface DayPlaceRow {
+  readonly id: string;
+  readonly tripId: string;
+  readonly destinationId: string | null;
+  readonly name: string;
+  readonly minutes: number;
+  readonly day: number | null;
+  readonly position: number;
+  readonly createdAt: Date;
+  readonly updatedAt: Date;
+}
+
+export type NewDayPlaceRow = Omit<DayPlaceRow, 'updatedAt'>;
+
+/** A trip's places to see, in trip order (`position`). */
+export function createDayPlaceRepository(executor: Executor) {
+  return {
+    async listByTrip(tripId: string): Promise<DayPlaceRow[]> {
+      return executor
+        .select()
+        .from(tripPlace)
+        .where(eq(tripPlace.tripId, tripId))
+        .orderBy(asc(tripPlace.position), asc(tripPlace.createdAt), asc(tripPlace.id));
+    },
+    async findById(id: string): Promise<DayPlaceRow | null> {
+      const [row] = await executor.select().from(tripPlace).where(eq(tripPlace.id, id)).limit(1);
+      return row ?? null;
+    },
+    async insert(row: NewDayPlaceRow): Promise<DayPlaceRow> {
+      const [created] = await executor
+        .insert(tripPlace)
+        .values({ ...row, updatedAt: row.createdAt })
+        .returning();
+      if (!created) throw new Error('day place insert returned no row');
+      return created;
+    },
+    /** Moves places: each gets its new day and position. Only the rows given are touched. */
+    async placeMany(
+      entries: readonly {
+        readonly id: string;
+        readonly day: number | null;
+        readonly position: number;
+      }[],
+      updatedAt: Date,
+    ): Promise<void> {
+      for (const entry of entries) {
+        await executor
+          .update(tripPlace)
+          .set({ day: entry.day, position: entry.position, updatedAt })
+          .where(eq(tripPlace.id, entry.id));
+      }
+    },
+    async delete(id: string): Promise<void> {
+      await executor.delete(tripPlace).where(eq(tripPlace.id, id));
+    },
+  };
+}
+export type DayPlaceRepository = ReturnType<typeof createDayPlaceRepository>;
+
 export interface SavingsRow {
   readonly tripId: string;
   readonly savedMinor: bigint;
@@ -596,6 +656,7 @@ export interface Transaction {
   readonly destinations: DestinationRepository;
   readonly expenses: ExpenseRepository;
   readonly checklist: ChecklistRepository;
+  readonly dayPlaces: DayPlaceRepository;
   readonly visas: VisaRepository;
   readonly savings: SavingsRepository;
   readonly preferences: PreferencesRepository;
@@ -613,6 +674,7 @@ export function createUnitOfWork(db: Database) {
           destinations: createDestinationRepository(tx),
           expenses: createExpenseRepository(tx),
           checklist: createChecklistRepository(tx),
+          dayPlaces: createDayPlaceRepository(tx),
           visas: createVisaRepository(tx),
           savings: createSavingsRepository(tx),
           preferences: createPreferencesRepository(tx),
