@@ -8,5 +8,6 @@ describe('generated client types', () => {
     // `renderSchema` also parses and validates openapi.json, so an invalid document fails here too.
     const fresh = (await renderSchema()) as string;
     expect(readFileSync(SCHEMA_FILE as URL, 'utf8')).toBe(fresh);
-  });
+    // Rendering grows with the contract and is slow on shared CI runners.
+  }, 30_000);
 });
