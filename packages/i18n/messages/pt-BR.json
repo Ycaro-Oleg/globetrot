@@ -235,8 +235,7 @@
     "comingSoon": {
       "label": "Ainda não disponível",
       "backHome": "Voltar para o início",
-      "board": "O mapa, onde você marca paradas e desenha sua rota, ainda não foi construído.",
-      "passport": "O seu passaporte e os carimbos ainda não foram construídos."
+      "board": "O mapa, onde você marca paradas e desenha sua rota, ainda não foi construído."
     },
     "loading": "Carregando…",
     "error": {
@@ -704,6 +703,21 @@
       "paid": "pago",
       "unknown": "desconhecido"
     }
+  },
+  "passportPage": {
+    "title": "Passaporte",
+    "eyebrow": "Passaporte comemorativo",
+    "lead": "{count, plural, =0 {Nenhum visto ainda.} one {# país visitado.} other {# países visitados.}}",
+    "since": "Primeiro carimbo em {date}.",
+    "disclaimer": "Os vistos do Globetrot são lembranças das suas viagens. Não são documentos oficiais nem comprovam entrada em país algum.",
+    "emptyTitle": "Seu primeiro visto está a um toque",
+    "emptyBody": "No mapa, abra uma parada onde você já esteve e escolha “Marcar como visitado”. A primeira parada visitada em cada país carimba o visto aqui.",
+    "goBoard": "Abrir o mapa",
+    "loadError": "Não foi possível carregar seu passaporte. Tente de novo em instantes.",
+    "listLabel": "Vistos",
+    "entry": "ENTRADA",
+    "stampedIn": "Carimbado em {city} em {date}",
+    "country": "{country} ({code})"
   },
   "listsPage": {
     "title": "Listas",

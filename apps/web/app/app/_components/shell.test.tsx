@@ -148,7 +148,7 @@ describe.each(SUPPORTED_LOCALES)('app shell (%s)', (locale) => {
 });
 
 describe('placeholder pages', () => {
-  const sections: ComingSoonSection[] = ['board', 'passport'];
+  const sections: ComingSoonSection[] = ['board'];
 
   it.each(
     SUPPORTED_LOCALES.flatMap((locale) => sections.map((section) => [locale, section] as const)),
