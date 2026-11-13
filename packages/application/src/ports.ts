@@ -288,6 +288,44 @@ export interface ChecklistWriter extends ChecklistReader {
   countByTrip(tripId: string): Promise<number>;
 }
 
+// --- Day plan (places to see, each on a day or not yet) -----------------------------------------------
+
+export interface DayPlaceRecord {
+  readonly id: string;
+  readonly tripId: string;
+  /** The stop it belongs to; a stop that no longer exists reads as none. */
+  readonly destinationId: string | null;
+  readonly name: string;
+  readonly minutes: number;
+  /** 1-based trip day, or null for "No day". */
+  readonly day: number | null;
+  readonly position: number;
+  readonly createdAt: Date;
+  readonly updatedAt: Date;
+}
+
+export type NewDayPlace = Omit<DayPlaceRecord, 'updatedAt'>;
+
+export interface DayPlaceReader {
+  /** In trip order. */
+  listByTrip(tripId: string): Promise<DayPlaceRecord[]>;
+  findById(id: string): Promise<DayPlaceRecord | null>;
+}
+
+export interface DayPlaceWriter extends DayPlaceReader {
+  insert(row: NewDayPlace): Promise<DayPlaceRecord>;
+  /** Gives each listed place its new day and position. */
+  placeMany(
+    entries: readonly {
+      readonly id: string;
+      readonly day: number | null;
+      readonly position: number;
+    }[],
+    updatedAt: Date,
+  ): Promise<void>;
+  delete(id: string): Promise<void>;
+}
+
 // --- Places (geocoding) -------------------------------------------------------------------------------
 
 /** A place a geocoder found. `key` is stable for the same place from the same provider. */
@@ -372,6 +410,7 @@ export interface Transaction {
   readonly destinations: DestinationWriter;
   readonly expenses: ExpenseWriter;
   readonly checklist: ChecklistWriter;
+  readonly dayPlaces: DayPlaceWriter;
   readonly visas: VisaWriter;
   readonly savings: SavingsWriter;
   readonly preferences: PreferencesWriter;
@@ -399,6 +438,7 @@ export interface Ports {
   readonly destinations: DestinationReader;
   readonly expenses: ExpenseReader;
   readonly checklist: ChecklistReader;
+  readonly dayPlaces: DayPlaceReader;
   readonly visas: VisaReader;
   readonly savings: SavingsReader;
   readonly preferences: PreferencesReader;

@@ -109,6 +109,7 @@ Migration `0006_trip_destinations`. One row per stop in `destination`, `trip_id`
 | `todos` | `jsonb` array of `{ text, done }`, at most 30 (`STOP_TODOS_MAX`), 1 to 120 characters. Personal: never in logs or audit |
 
 - **Replace, don't patch.** `replaceDestinations` deletes the trip's rows and inserts the list in order inside one transaction (with the audit entry), so a failed save leaves the old route intact and sending the same route twice changes nothing. At most 100 stops (`MAX_DESTINATIONS`).
+- **Stable ids.** A stop keeps its `id` across saves: the application reuses the id of the existing stop with the same `place_key`. What points at a stop (the day plan's places) survives the route being saved as a whole.
 - **State** (`planned` or `draft`, for Pip proposals) and the link to a places table are added by the migrations of the features that need them.
 - The audit entry (`destination.replace`) holds the **number** of stops, never which places: where someone plans to go is personal.
 
@@ -151,6 +152,20 @@ Migration `0008_checklists`. `checklist_item` references `trip` with `ON DELETE 
 - A trip keeps at most 100 items (enforced by the application, `CHECKLIST_MAX_ITEMS`).
 - **The readiness stamps are not stored.** `getChecklist` evaluates the domain's `milestones` from the route, costs, savings and items every time, so a stamp can come back off. Recording first-time stamps with their date (`recordStamps`), the visa page history and the celebration are still to do. `stays` and `itin` cannot be earned yet: they need costs per stop and activities per day.
 - Audit entries (`checklist.add`, `.update`, `.delete`) hold groups, the changed field names and a count, never a label (a label can be a passport number or a booking code).
+
+## Day plan (places to see, on days)
+
+Migration `0012_day_places`. `trip_place` references `trip` with `ON DELETE CASCADE`.
+
+| Column | Rule |
+|---|---|
+| `destination_id` | The stop it belongs to, or null. **Not** a foreign key: the route is replaced as a whole, so a place must survive it; a stop that no longer exists reads as none |
+| `name` | Trimmed, 1 to 120 characters. Personal: never in logs or audit |
+| `minutes` | Estimated time there, 15 to 720 |
+| `day` | 1-based trip day, or null for "No day". A day past the end of the route reads as "No day" |
+| `position` | Order across the trip (0..n-1, renumbered on every move); within a day the places read in this order |
+
+- At most 200 places per trip (`DAY_PLACES_MAX`). Audit entries (`day_place.add`, `.move`, `.remove`) hold the day at most, never a name.
 
 ## Extensions
 

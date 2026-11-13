@@ -7,6 +7,7 @@ import {
 import {
   createDestinationRepository,
   createChecklistRepository,
+  createDayPlaceRepository,
   createVisaRepository,
   createExpenseRepository,
   createSavingsRepository,
@@ -73,6 +74,7 @@ export function createServices(
       destinations: createDestinationRepository(db),
       expenses: createExpenseRepository(db),
       checklist: createChecklistRepository(db),
+      dayPlaces: createDayPlaceRepository(db),
       visas: createVisaRepository(db),
       savings: createSavingsRepository(db),
       preferences: createPreferencesRepository(db),

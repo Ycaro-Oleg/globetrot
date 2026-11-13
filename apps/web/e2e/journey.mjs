@@ -313,14 +313,34 @@ async function journey(browser, { width, height, locale }) {
       'the to-do on the stop is not saved',
     );
     await page.keyboard.press('Escape');
+    const daysCopy = CATALOGS[locale].daysPage;
     await go('/app/days');
     await axe('days');
     expect(
       (await page
-        .getByText(CATALOGS[locale].daysPage.day.replace('{index}', '5'), { exact: true })
+        .getByRole('heading', { name: daysCopy.dayLabel.replace('{index}', '5'), exact: true })
         .count()) === 1,
       'the five nights at the first stop are not five days on the Days page',
     );
+    // A place: saved to "No day", moved to day 2 with the keyboard path, still there after a reload.
+    await page.getByRole('button', { name: daysCopy.addPlace }).click();
+    await page.locator('#place-name').fill('Senso-ji');
+    await axe('days (add place)');
+    await page.getByRole('button', { name: daysCopy.fSubmit, exact: true }).click();
+    const moveSenso = page.getByLabel(daysCopy.moveLabel.replace('{name}', 'Senso-ji'));
+    await moveSenso.waitFor({ timeout: 15_000 });
+    await moveSenso.selectOption('2');
+    await page
+      .getByRole('button', { name: daysCopy.undo, exact: true })
+      .waitFor({ timeout: 15_000 });
+    await page.reload();
+    await page.waitForLoadState('networkidle');
+    expect(
+      (await page.getByLabel(daysCopy.moveLabel.replace('{name}', 'Senso-ji')).inputValue()) ===
+        '2',
+      'the place moved to day 2 is not on day 2 after a reload',
+    );
+    await axe('days (with a place)');
     await go('/app/board');
     expect((await stopsList.count()) === stops, 'the saved route is not the same after a reload');
     await page.getByRole('button', { name: board.clearRoute, exact: true }).click();

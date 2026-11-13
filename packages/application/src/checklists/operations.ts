@@ -1,4 +1,10 @@
-import { milestones, toLocalDate, type ChecklistGroup, type TripStop } from '@globetrot/domain';
+import {
+  milestones,
+  toLocalDate,
+  tripDays,
+  type ChecklistGroup,
+  type TripStop,
+} from '@globetrot/domain';
 import { z } from 'zod';
 import { planOf } from '../budget/operations';
 import { NotFoundError, ValidationError } from '../errors';
@@ -16,26 +22,34 @@ import {
 
 type ReadPorts = Pick<
   Ports,
-  'trips' | 'checklist' | 'destinations' | 'expenses' | 'savings' | 'clock'
+  'trips' | 'checklist' | 'destinations' | 'expenses' | 'savings' | 'dayPlaces' | 'clock'
 >;
 
 /** The lists of a trip and the readiness stamps, derived by the same domain rules the tests cover. */
 async function checklistOf(
-  deps: Pick<ReadPorts, 'checklist' | 'destinations' | 'expenses' | 'savings'>,
+  deps: Pick<ReadPorts, 'checklist' | 'destinations' | 'expenses' | 'savings' | 'dayPlaces'>,
   trip: Parameters<typeof planOf>[0],
   now: Date,
 ): Promise<ChecklistView> {
-  const [items, destinations, expenses, savings] = await Promise.all([
+  const [items, destinations, expenses, savings, dayPlaces] = await Promise.all([
     deps.checklist.listByTrip(trip.id),
     deps.destinations.listByTrip(trip.id),
     deps.expenses.listByTrip(trip.id),
     deps.savings.find(trip.id),
+    deps.dayPlaces.listByTrip(trip.id),
   ]);
-  const stops: TripStop[] = destinations.map((d) => ({
+  // Each scheduled place sits on the stop of its day, so "every day has a plan" reads the day plan.
+  const route = destinations.map((d) => ({
     id: d.id,
     nights: d.nights,
-    state: 'planned',
-    places: [],
+    state: 'planned' as const,
+  }));
+  const days = tripDays({ startDate: null, stops: route.map((stop) => ({ ...stop, places: [] })) });
+  const stops: TripStop[] = route.map((stop) => ({
+    ...stop,
+    places: dayPlaces
+      .filter((place) => place.day !== null && days[place.day - 1]?.stopId === stop.id)
+      .map((place) => ({ id: place.id, day: place.day, done: false })),
   }));
   const plan = planOf(trip, expenses, savings, {
     stops,

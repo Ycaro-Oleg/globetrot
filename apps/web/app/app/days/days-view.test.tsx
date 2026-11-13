@@ -1,34 +1,45 @@
-import { catalogs, SUPPORTED_LOCALES, type SupportedLocale } from '@globetrot/i18n';
 import { tripDays, toLocalDate } from '@globetrot/domain';
+import { catalogs, SUPPORTED_LOCALES, type SupportedLocale } from '@globetrot/i18n';
 import { NextIntlClientProvider } from 'next-intl';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+
+vi.mock('./actions', () => ({ addPlace: vi.fn(), movePlace: vi.fn(), removePlace: vi.fn() }));
+
+import type { BoardPlace, BoardStop } from './day-board';
 import { DaysView } from './days-view';
 
-const STOPS = [
-  { id: 'a', name: 'Tokyo', nights: 2 },
-  { id: 'b', name: 'Osaka', nights: 0 },
-  { id: 'c', name: 'Kyoto', nights: 3 },
+const STOPS: BoardStop[] = [
+  { id: '0193c0a8-7b1e-7c4a-9e2f-3d5a6b7c8e01', name: 'Tokyo', nights: 2, legMode: 'train' },
+  { id: '0193c0a8-7b1e-7c4a-9e2f-3d5a6b7c8e02', name: 'Kyoto', nights: 1, legMode: null },
 ];
-
-function render(
-  locale: SupportedLocale,
-  startDate: string | null,
-  stops = STOPS,
-  trip: { title: string } | null = { title: 'Japan 2027' },
-) {
-  const days = tripDays({
+const [TOKYO, KYOTO] = STOPS as [BoardStop, BoardStop];
+const PLACES: BoardPlace[] = [
+  { id: 'p1', name: 'Senso-ji', minutes: 120, day: 1, destinationId: TOKYO.id },
+  { id: 'p2', name: 'Fushimi Inari', minutes: 180, day: 2, destinationId: KYOTO.id },
+  { id: 'p3', name: 'Golden Gai', minutes: 90, day: null, destinationId: TOKYO.id },
+];
+const days = (startDate: string | null) =>
+  tripDays({
     startDate: startDate ? toLocalDate(startDate) : null,
-    stops: stops.map((stop) => ({
+    stops: STOPS.map((stop) => ({
       id: stop.id,
       nights: stop.nights,
-      state: 'planned' as const,
+      state: 'planned',
       places: [],
     })),
   });
+
+function render(locale: SupportedLocale, props: Partial<Parameters<typeof DaysView>[0]> = {}) {
   return renderToStaticMarkup(
     <NextIntlClientProvider locale={locale} messages={catalogs[locale]} timeZone="UTC">
-      <DaysView trip={trip} stops={stops} days={days} startDate={startDate} />
+      <DaysView
+        trip={{ id: '0193c0a8-7b1e-7c4a-9e2f-3d5a6b7c8d99', title: 'Japan 2027' }}
+        stops={STOPS}
+        days={days('2027-04-03')}
+        places={PLACES}
+        {...props}
+      />
     </NextIntlClientProvider>,
   );
 }
@@ -38,42 +49,52 @@ const text = (html: string) =>
     .replace(/\s+/g, ' ')
     .trim();
 
-describe('days view', () => {
-  it.each(SUPPORTED_LOCALES)(
-    'numbers one day per night across the stops, skipping day trips (%s)',
-    (locale) => {
-      const copy = catalogs[locale].daysPage;
-      const html = render(locale, null);
-      expect(html.match(/<li[^>]*><b>/g)).toHaveLength(5);
-      for (let index = 1; index <= 5; index++)
-        expect(html).toContain(copy.day.replace('{index}', String(index)));
-      expect(text(html)).not.toContain('Osaka'); // a day trip has no day of its own
-      expect(html.match(new RegExp(`<em>${copy.arrival}</em>`, 'g'))).toHaveLength(2); // arrival at Tokyo and at Kyoto
-      expect(text(html)).toContain(copy.noStartDate);
-    },
-  );
+describe.each(SUPPORTED_LOCALES)('days (%s)', (locale) => {
+  const copy = catalogs[locale].daysPage;
 
-  it('prints real dates from the start date, in the language of the page', () => {
-    expect(text(render('en', '2027-04-10'))).toMatch(/Sat, Apr 10/);
-    expect(text(render('pt-BR', '2027-04-10'))).toMatch(/sáb\.?,? 10 de abr/i);
-    expect(text(render('en', '2027-04-10'))).toContain('Starts April 10, 2027');
+  it('has the "No day" tray first and one column per night', () => {
+    const html = render(locale);
+    const headings = [...html.matchAll(/<h2 id="day-[^"]+">([^<]+)<\/h2>/g)].map((m) => m[1]);
+    expect(headings).toEqual([
+      copy.tray,
+      copy.dayLabel.replace('{index}', '1'),
+      copy.dayLabel.replace('{index}', '2'),
+      copy.dayLabel.replace('{index}', '3'),
+    ]);
   });
 
-  it.each(SUPPORTED_LOCALES)(
-    'explains an empty route, a route with no nights and no trip (%s)',
-    (locale) => {
-      const copy = catalogs[locale].daysPage;
-      expect(text(render(locale, null, []))).toContain(copy.noStops);
-      expect(text(render(locale, null, [{ id: 'a', name: 'Tokyo', nights: 0 }]))).toContain(
-        copy.noNights,
-      );
-      const none = render(locale, null, [], null);
-      expect(text(none)).toContain(copy.noTrip);
-      expect(none).toContain('href="/app/trips"');
-    },
-  );
+  it('gives every card a "Move to" select (the keyboard and phone path) and a remove button', () => {
+    const html = render(locale);
+    expect(html.match(/<select aria-label=/g)).toHaveLength(3);
+    expect(html.match(/draggable="true"/g)).toHaveLength(3);
+    expect(html).toContain(copy.remove.replace('{name}', 'Golden Gai'));
+  });
 
-  it('links to the board when there is nothing to show yet', () => {
-    expect(render('en', null, [])).toContain('href="/app/board"');
+  it('warns about a place on a day in another city, and shows the train between cities', () => {
+    const plain = text(render(locale));
+    expect(plain).toContain('▲');
+    expect(plain).toContain(copy.outside.replace('{stop}', 'Tokyo'));
+    expect(plain).toContain(`${copy.legs.train} Tokyo → Kyoto`);
+  });
+
+  it('has one coral call to action and no unresolved keys', () => {
+    const html = render(locale);
+    expect(html.match(/class="[^"]*cta[^"]*"/g)).toHaveLength(1);
+    expect(html).not.toMatch(/daysPage\.[a-zA-Z.]+/);
+  });
+});
+
+describe('days without what they need', () => {
+  it('numbers the days without a start date', () => {
+    expect(text(render('en', { days: days(null) }))).toContain(catalogs.en.daysPage.noDate);
+  });
+
+  it('leads to the trips, or to the board when the route is empty', () => {
+    expect(render('en', { trip: null })).toContain('href="/app/trips"');
+    expect(render('en', { stops: [], days: [] })).toContain('href="/app/board"');
+  });
+
+  it('says so when the plan cannot be read', () => {
+    expect(render('en', { places: null })).toContain('role="alert"');
   });
 });

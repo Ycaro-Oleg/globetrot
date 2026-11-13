@@ -41,10 +41,17 @@ export function createReplaceDestinations(deps: Pick<Ports, 'unitOfWork' | 'cloc
       const now = deps.clock.now();
       return deps.unitOfWork.run(async (tx) => {
         await loadOwnedTrip(tx.trips, actor, input.tripId);
+        // A stop keeps its id across saves (matched by its place key), so what points at it (the day plan's
+        // places) survives the route being saved as a whole.
+        const existing = new Map<string, string[]>();
+        for (const record of await tx.destinations.listByTrip(input.tripId)) {
+          existing.set(record.placeKey, [...(existing.get(record.placeKey) ?? []), record.id]);
+        }
+        const keep = (placeKey: string) => existing.get(placeKey)?.shift() ?? deps.ids.newId();
         const records = await tx.destinations.replaceForTrip(
           input.tripId,
           input.destinations.map((item, index) => ({
-            id: deps.ids.newId(),
+            id: keep(item.placeKey),
             placeKey: item.placeKey,
             name: item.name,
             countryCode: item.countryCode ?? null,

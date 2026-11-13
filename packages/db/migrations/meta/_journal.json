@@ -85,6 +85,13 @@
       "when": 1794574567968,
       "tag": "0011_trip_ceiling",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1794579855147,
+      "tag": "0012_day_places",
+      "breakpoints": true
     }
   ]
 }
