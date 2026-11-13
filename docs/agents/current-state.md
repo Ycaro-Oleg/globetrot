@@ -1,6 +1,6 @@
 # Current state
 
-_Last updated: 2026-11-13, account data. Code state: `develop` includes #83 to #99; account export and deletion are in an open PR._
+_Last updated: 2026-11-13, Pip v1. Code state: `develop` includes #83 to #99; account data (#100) and Pip v1 are in open PRs._
 
 Read this first. It says where the project is, what exists, what is open, what only the owner can unblock and what to do next. Procedure for working: [`playbook.md`](playbook.md). Feature-by-feature progress: [`../product/progress.md`](../product/progress.md). Milestones and exit criteria: [`../product/roadmap.md`](../product/roadmap.md).
 
@@ -13,7 +13,8 @@ Read this first. It says where the project is, what exists, what is open, what o
 - **The landing page is complete in code** (#74): every section, mock pricing labelled as placeholder, example trips a visitor can copy into an account, metadata, social image, `robots.txt` and sitemap. Real prices, legal text and the owner's review remain.
 - **Checklists and the visa page work** (`/app/lists`): four lists per trip (add, check, remove, a suggested starter list) and the nine readiness stamps as they stand now. The budget (costs, conversion, savings answer) and the Days page work too.
 - **The passport screen works** (`/app/passport`): the account's commemorative visas, newest first, with country, city and date, an empty state that leads to the board, and the "not an official document" note.
-- **What does not exist yet:** Pip's suggestions, a staff review queue for community reports, blocking, visa privacy, billing, deployment. The journey stage and the next steps are in the domain but not on a screen yet.
+- **Pip v1 works behind `FEATURE_PIP`** on DeepSeek (ADR-0016): ask, review a change list, apply, undo.
+- **What does not exist yet:** a staff review queue for community reports, blocking, visa privacy, billing, deployment. The journey stage and the next steps are in the domain but not on a screen yet.
 - **Branches:** `main` has no release yet; `develop` is the integration branch. All work goes through `feature/*` or `docs/*` PRs into `develop`.
 
 ## Milestone board
@@ -65,6 +66,7 @@ These cannot be finished by an agent. Do not work around them, and do not mark t
 | **Pricing, plan limits, regional pricing** | A business decision | M10 |
 | **Imagery licensing source** | Choose where destination images come from | Imagery in the board and landing |
 | **Production object storage** ([ADR-0014](../architecture/adr/0014-photos-and-storage.md)) | Choose an S3-compatible provider (or self-host on the Hetzner box) and provide `S3_*` settings as secrets | Photos in production (M11) |
+| **DeepSeek key and privacy text** ([ADR-0016](../architecture/adr/0016-pip-on-deepseek.md)) | Rotate the key that was shared in chat and keep the new one only in local `.env` and the production secret store; say in the privacy policy that Pip sends trip plans to DeepSeek; decide when to switch `FEATURE_PIP` on | Pip in production |
 | **Community before a public launch** ([ADR-0013](../architecture/adr/0013-community.md)) | Decide who reviews reported posts (and with what tool), whether to add blocking and private accounts, and the community rules text | A public release with the community on |
 | **Close the M0 milestone** | A GitHub setting, so it is the owner's call | Housekeeping only |
 

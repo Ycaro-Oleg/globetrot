@@ -248,8 +248,7 @@
     },
     "pip": {
       "ask": "Perguntar ao Pip",
-      "title": "Pip",
-      "notBuilt": "O Pip, o companheiro de viagem, ainda não está disponível. Este atalho só aparece enquanto a flag do Pip estiver ligada."
+      "title": "Pip"
     },
     "comingSoon": {
       "label": "Ainda não disponível",
@@ -1165,5 +1164,72 @@
     "ofStop": "Foto em {stop}",
     "open": "Abrir foto {n} de {total}",
     "close": "Fechar foto"
+  },
+  "pipPage": {
+    "title": "Pip",
+    "eyebrow": "Viagem: {trip}",
+    "lead": "Peça com suas palavras. O Pip rascunha uma lista de mudanças; nada muda até você escolher o que quer e aplicar.",
+    "noTrip": "O Pip ajuda com uma viagem. Crie ou abra uma primeiro.",
+    "openTrips": "Abrir minhas viagens",
+    "askLabel": "Com o que o Pip pode ajudar?",
+    "placeholder": "ex.: Deixe a viagem com dez dias e adicione lugares imperdíveis em Kyoto",
+    "suggestionsLabel": "Ideias",
+    "suggestions": {
+      "slower": "Deixe a viagem com um ritmo mais calmo",
+      "places": "Adicione lugares imperdíveis em cada parada",
+      "packing": "Sugira uma lista de mala",
+      "costs": "Estime os principais custos"
+    },
+    "privacy": "O Pip envia o plano desta viagem (paradas, noites, lugares, listas e totais de custos) para a DeepSeek, um provedor de IA, para rascunhar sugestões. Nunca seu nome, e-mail, cidade ou outras viagens.",
+    "ask": "Perguntar ao Pip",
+    "asking": "O Pip está pensando…",
+    "steps": {
+      "read": "Lendo sua viagem",
+      "draft": "Rascunhando mudanças",
+      "check": "Conferindo"
+    },
+    "ready": "{count, plural, =0 {O Pip não tem mudanças para sugerir.} one {O Pip sugere # mudança.} other {O Pip sugere # mudanças.}}",
+    "youAsked": "Você pediu:",
+    "noSummary": "Sugestões do Pip",
+    "noChanges": "Nada para mudar desta vez. Tente pedir de outro jeito.",
+    "estimate": "estimativa",
+    "disclaimer": "Valores são estimativas para planejar, não preços ao vivo. O Pip nunca reserva nada. Para regras de visto e entrada, confira sempre o site oficial do governo.",
+    "discard": "Descartar",
+    "apply": "{count, plural, =0 {Escolha uma mudança} one {Aplicar # mudança} other {Aplicar # mudanças}}",
+    "applied": "{count, plural, one {# mudança carimbada na sua viagem.} other {# mudanças carimbadas na sua viagem.}}",
+    "undone": "Desfeito: sua viagem voltou ao que era.",
+    "discarded": "Descartado. Nada mudou.",
+    "undo": "Desfazer",
+    "seeMap": "Ver no mapa",
+    "history": "Antes",
+    "statuses": {
+      "proposed": "Aguardando",
+      "applied": "Aplicado",
+      "discarded": "Descartado",
+      "undone": "Desfeito"
+    },
+    "noDay": "“Sem dia”",
+    "newStop": "uma nova parada",
+    "groups": {
+      "documents": "Documentos",
+      "money": "Dinheiro",
+      "bookings": "Reservas",
+      "packing": "Mala"
+    },
+    "change": {
+      "addStop": "Adicionar {name} ({nights, plural, =0 {bate-volta} one {# noite} other {# noites}})",
+      "removeStop": "Remover {stop}",
+      "setNights": "{stop}: {nights, plural, =0 {bate-volta} one {# noite} other {# noites}}",
+      "reorder": "Nova ordem: {order}",
+      "addPlace": "{name} → {stop}",
+      "addChecklistItem": "{group}: {label}",
+      "addExpense": "Custo: {description}",
+      "setMonthly": "Guardar {amount} por mês"
+    },
+    "errors": {
+      "RATE_LIMITED": "O Pip precisa descansar: você pediu bastante hoje. Tente amanhã.",
+      "SERVICE_UNAVAILABLE": "O Pip não está disponível agora. Tudo funciona sem o Pip; tente mais tarde.",
+      "UNKNOWN": "Não funcionou. Tente de novo."
+    }
   }
 }

@@ -199,6 +199,17 @@ Migration `0016_photos`. Rules: [business rules](../product/business-rules.md#ph
 - Audit: `media.upload` with the content type only. Descriptions are personal and never logged.
 - Uploads that are never placed are not cleaned up yet (no job runner).
 
+## Pip (AI proposals and usage)
+
+Migration `0017_pip`. Rules: [business rules](../product/business-rules.md#ai-pip), [ADR-0016](adr/0016-pip-on-deepseek.md).
+
+| Table | What | Rules |
+|---|---|---|
+| `ai_proposal` | One change list Pip proposed for a trip | `owner_id` (`user`, cascade), `trip_id` (`trip`, cascade), `request` (1–500, personal: never logged or audited), `summary`, `changes` (jsonb array of validated changes), `status` in `PROPOSAL_STATUSES`, `applied` (indexes), `undo` (route and monthly amount before, ids created), `decided_at` |
+| `ai_usage` | Tokens per request | `user_id` (cascade), `provider`, `model`, `input_tokens`, `output_tokens`. Counts toward the daily limit |
+
+- Audit: `pip.propose` (number and kinds of changes), `pip.apply` (applied and offered counts), `pip.discard`, `pip.undo`. Never the request or the changes' text.
+
 ## Extensions
 
 The first migration (`0000_extensions.sql`) enables `postgis`, `pg_trgm` and `unaccent`, using `IF NOT EXISTS`. The local Docker init script (`infra/postgres/init/`) enables the same ones as a convenience, and production relies on the migration.

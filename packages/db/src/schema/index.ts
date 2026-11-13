@@ -10,3 +10,4 @@ export * from './visa';
 export * from './media';
 export * from './day-plan';
 export * from './community';
+export * from './assistant';

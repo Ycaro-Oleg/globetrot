@@ -178,14 +178,8 @@ describe('placeholder pages', () => {
 });
 
 describe('Pip page', () => {
-  it('is a 404 while the flag is off', () => {
-    expect(() => render('en', <PipPage />)).toThrow('404');
-  });
-
-  it.each(SUPPORTED_LOCALES)('says Pip is not built when the flag is on (%s)', (locale) => {
-    vi.stubEnv('FEATURE_PIP', 'true');
-    const html = render(locale, <PipPage />);
-    expect(html).toContain(catalogs[locale].shell.pip.notBuilt);
+  it('is a 404 while the flag is off', async () => {
+    await expect(PipPage()).rejects.toThrow('404');
   });
 });
 

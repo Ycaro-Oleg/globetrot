@@ -556,6 +556,72 @@ export interface AccountWriter extends AccountReader {
   deleteArchivedTrip(tripId: string, ownerId: string): Promise<boolean>;
 }
 
+// --- Pip (AI proposals) --------------------------------------------------------------------------------
+
+export interface ProposalRecord {
+  readonly id: string;
+  readonly ownerId: string;
+  readonly tripId: string;
+  readonly request: string;
+  readonly summary: string;
+  readonly changes: unknown[];
+  readonly status: string;
+  readonly applied: number[];
+  readonly undo: unknown;
+  readonly createdAt: Date;
+  readonly decidedAt: Date | null;
+}
+
+export interface AssistantReader {
+  findProposal(id: string): Promise<ProposalRecord | null>;
+  /** Newest first. */
+  listProposals(tripId: string, limit: number): Promise<ProposalRecord[]>;
+  /** How many times the person asked an AI in a window (each costs tokens, answered or not). */
+  countRequestsSince(userId: string, since: Date): Promise<number>;
+}
+
+export interface AssistantWriter extends AssistantReader {
+  insertProposal(
+    record: Omit<ProposalRecord, 'applied' | 'undo' | 'decidedAt' | 'status'>,
+  ): Promise<void>;
+  updateProposal(
+    id: string,
+    patch: {
+      readonly status: string;
+      readonly decidedAt: Date;
+      readonly applied?: number[];
+      readonly undo?: unknown;
+    },
+  ): Promise<void>;
+  recordUsage(row: {
+    readonly id: string;
+    readonly userId: string;
+    readonly provider: string;
+    readonly model: string;
+    readonly inputTokens: number;
+    readonly outputTokens: number;
+    readonly createdAt: Date;
+  }): Promise<void>;
+}
+
+/**
+ * A language model that answers one JSON object for a system and a user message. Adapters (DeepSeek today) keep
+ * their keys on the server. `null` means the provider is not configured or did not answer.
+ */
+export interface AiPort {
+  completeJson(input: {
+    readonly system: string;
+    readonly user: string;
+    readonly maxTokens: number;
+  }): Promise<{
+    readonly content: string;
+    readonly provider: string;
+    readonly model: string;
+    readonly inputTokens: number;
+    readonly outputTokens: number;
+  } | null>;
+}
+
 // --- Places (geocoding) -------------------------------------------------------------------------------
 
 /** A place a geocoder found. `key` is stable for the same place from the same provider. */
@@ -647,6 +713,7 @@ export interface Transaction {
   readonly community: CommunityWriter;
   readonly media: MediaWriter;
   readonly account: AccountWriter;
+  readonly assistant: AssistantWriter;
   readonly audit: AuditLog;
   readonly idempotency: IdempotencyStore;
 }
@@ -679,6 +746,8 @@ export interface Ports {
   readonly media: MediaReader;
   readonly storage: StoragePort;
   readonly account: AccountReader;
+  readonly assistant: AssistantReader;
+  readonly ai: AiPort;
   readonly unitOfWork: UnitOfWork;
   readonly clock: Clock;
   readonly ids: IdGenerator;
