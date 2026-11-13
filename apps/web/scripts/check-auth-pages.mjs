@@ -117,6 +117,8 @@ const BUDGET = {
     monthsUntilDeparture: 8,
     monthlyNeeded: usd('220.00'),
     onTime: true,
+    ceiling: usd('3000.00'),
+    ceilingSlack: usd('775.00'),
   },
 };
 const EXPENSES = [
@@ -530,18 +532,24 @@ try {
       async (page) => go(page, `${base}/app/budget`),
       VIEWPORTS[layout],
     ]),
-    [
-      'budget-added',
+    ...['phone', 'desktop'].map((layout) => [
+      `budget-drawer-${layout}`,
       true,
-      async (page) => go(page, `${base}/app/budget?status=expense-added`),
-      VIEWPORTS.desktop,
-    ],
-    [
-      'budget-error',
-      true,
-      async (page) => go(page, `${base}/app/budget?status=expense-error`),
-      VIEWPORTS.desktop,
-    ],
+      async (page) => {
+        await go(page, `${base}/app/budget`);
+        await page
+          .getByRole('button', {
+            name:
+              copy === CATALOGS.en.auth
+                ? CATALOGS.en.budgetPage.addExpense
+                : CATALOGS['pt-BR'].budgetPage.addExpense,
+          })
+          .click();
+        await page.locator('#expense-currency').selectOption('EUR');
+        await page.locator('#expense-rate').waitFor();
+      },
+      VIEWPORTS[layout],
+    ]),
     ...['phone', 'desktop'].map((layout) => [
       `lists-${layout}`,
       true,
@@ -1163,7 +1171,7 @@ try {
         'Budget is not the marked tool on /app/budget',
       );
       check(
-        await page.getByText(CATALOGS.en.budgetPage.answerTitle).isVisible(),
+        await page.getByText(CATALOGS.en.budgetPage.answerKicker).isVisible(),
         'the Budget page does not show the savings answer',
       );
       check(

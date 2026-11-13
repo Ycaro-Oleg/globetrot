@@ -69,6 +69,9 @@ export const savingsFields = z.object({
   monthly: nonNegativeAmountSchema
     .optional()
     .meta({ description: 'Planned monthly amount, in the trip’s currency.' }),
+  ceiling: nonNegativeAmountSchema.nullable().optional().meta({
+    description: 'The most the trip should cost, in the trip’s currency; null clears it.',
+  }),
 });
 
 export const budgetSchema = z.object({
@@ -91,6 +94,10 @@ export const budgetSchema = z.object({
     monthsUntilDeparture: z.number().int().nullable(),
     monthlyNeeded: moneySchema.nullable(),
     onTime: z.boolean().nullable(),
+    /** The trip ceiling, or null when none is set. */
+    ceiling: moneySchema.nullable(),
+    /** ceiling − total: positive is slack, negative is over the ceiling. Null without a ceiling. */
+    ceilingSlack: moneySchema.nullable(),
   }),
 });
 export type BudgetView = z.infer<typeof budgetSchema>;

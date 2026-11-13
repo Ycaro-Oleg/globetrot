@@ -69,7 +69,9 @@ Implemented in #53, #54, #57 and #58. Mechanics: [`../architecture/authenticatio
 - Progress is saved ÷ total in basis points, capped at 100%.
 - Edge cases that need explicit copy: no costs yet; already fully saved; monthly = 0; no departure date; departure in the past or today (`departed`).
 - Deliberate differences from the prototype: it used "the 5th of the month" for the ready date and fixed rounding to 10 BRL. Both are replaced by the month-based and currency-neutral rules above.
-- Savings tracking is a record only. Globetrot never holds funds.
+- **Trip ceiling** (optional, design handoff v2): the most the person wants the trip to cost, in the trip's currency. `ceilingSlack = ceiling − total`: positive is slack ("$1,078 of slack under your ceiling"), negative is over it ("$200 over your ceiling"). Without a ceiling nothing is compared. The ceiling never changes the savings answer.
+- **Live answer.** While the monthly amount moves, the Budget screen recomputes the answer with this same rule (`savingsPlan`) and saves the new amount; the sentence never comes from a guess in the screen.
+- Savings tracking is a record only. Globetrot never holds funds, and the screen says so next to the savings inputs.
 
 ## Readiness milestones (trip "visa page" stamps)
 

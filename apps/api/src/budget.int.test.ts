@@ -136,6 +136,19 @@ describe('budget against a real database', () => {
       savings: unknown;
     };
     expect(faster.savings).toMatchObject({ saved: { amount: '500.00' }, monthsNeeded: 3 });
+    // a trip ceiling is stored with the savings and answers the slack (negative when over it)
+    const capped = (await call(ana.cookie, 'PUT', `${base}/savings`, { ceiling: '1800' })).json as {
+      savings: unknown;
+    };
+    expect(capped.savings).toMatchObject({
+      ceiling: { amount: '1800.00', currency: 'EUR' },
+      ceilingSlack: { amount: '-200.00', currency: 'EUR' },
+      monthly: { amount: '500.00' },
+    });
+    const cleared = (await call(ana.cookie, 'PUT', `${base}/savings`, { ceiling: null })).json as {
+      savings: { ceiling: unknown };
+    };
+    expect(cleared.savings.ceiling).toBeNull();
     const locked = await call(ana.cookie, 'PATCH', base, { currency: 'USD' });
     expect(locked.response.status).toBe(422);
     expect(JSON.stringify(locked.json)).toContain('currency_locked');

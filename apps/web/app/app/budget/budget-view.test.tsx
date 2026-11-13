@@ -1,9 +1,10 @@
 import { catalogs, SUPPORTED_LOCALES, type SupportedLocale } from '@globetrot/i18n';
 import { NextIntlClientProvider } from 'next-intl';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { describe, expect, it, vi } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 vi.mock('./actions', () => ({ addExpense: vi.fn(), removeExpense: vi.fn(), saveSavings: vi.fn() }));
+vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh: vi.fn() }) }));
 
 import type { BudgetData, ExpenseData } from '../../../lib/trips';
 import { BudgetView } from './budget-view';
@@ -57,6 +58,8 @@ function budget(overrides: Partial<BudgetData['savings']> = {}, total = '2225.00
       monthsUntilDeparture: 8,
       monthlyNeeded: money('220.00'),
       onTime: true,
+      ceiling: null,
+      ceilingSlack: null,
       ...overrides,
     },
   } as BudgetData;
@@ -89,14 +92,18 @@ function render(locale: SupportedLocale, props: Partial<Parameters<typeof Budget
   return renderToStaticMarkup(
     <NextIntlClientProvider locale={locale} messages={catalogs[locale]} timeZone="UTC">
       <BudgetView
-        trip={{ id: '0193c0a8-7b1e-7c4a-9e2f-3d5a6b7c8d99', title: 'Japan 2027', currency: 'USD' }}
+        trip={{
+          id: '0193c0a8-7b1e-7c4a-9e2f-3d5a6b7c8d99',
+          title: 'Japan 2027',
+          currency: 'USD',
+          startDate: '2027-07-03',
+        }}
         budget={budget()}
         expenses={EXPENSES}
         currencies={[
           { id: 'USD', label: 'USD · US Dollar' },
           { id: 'JPY', label: 'JPY · Yen' },
         ]}
-        status={undefined}
         {...props}
       />
     </NextIntlClientProvider>,
@@ -106,127 +113,95 @@ const text = (html: string) =>
   html
     .replace(/<[^>]+>/g, ' ')
     .replace(/&#x27;/g, "'")
+    .replace(/&amp;/g, '&')
     .replace(/\s+/g, ' ')
     .trim();
 
-describe('budget view', () => {
-  it('answers yes with the month and the monthly amount, in the language of the page', () => {
-    expect(text(render('en'))).toMatch(/Yes — by May 2027, if you put aside \$300\.00 a month/);
-    expect(text(render('pt-BR'))).toMatch(/Sim.*maio de 2027.*US\$\s?300,00/);
-  });
+// The answer is recomputed with the domain rule against today's date: pin it.
+beforeAll(() => {
+  vi.useFakeTimers();
+  vi.setSystemTime(new Date('2026-11-13T12:00:00Z'));
+});
+afterAll(() => vi.useRealTimers());
 
-  it('says "almost" when the goal is reached after leaving', () => {
-    const html = render('en', { budget: budget({ readyMonth: '2027-09', onTime: false }) });
-    expect(text(html)).toMatch(
-      /Almost\. At \$300\.00 a month you.ll have it by September 2027 — after you leave on July 3, 2027/,
-    );
-  });
+describe.each(SUPPORTED_LOCALES)('budget (%s)', (locale) => {
+  const copy = catalogs[locale].budgetPage;
 
-  it('asks for a monthly amount, offering what would be ready by departure', () => {
-    const html = render('en', {
-      budget: budget({
-        monthly: money('0.00'),
-        readyMonth: null,
-        monthsNeeded: null,
-        onTime: false,
-      }),
-    });
-    expect(text(html)).toContain(catalogs.en.budgetPage.setMonthly);
-    expect(text(html)).toContain('To leave on July 3, 2027, put aside $220.00 a month.');
-  });
-
-  it('says there is nothing to save for before any cost, and hides the progress bar', () => {
-    const html = render('en', { budget: budget({ status: 'no-costs' }, '0.00'), expenses: [] });
-    expect(text(html)).toContain(catalogs.en.savings.noCosts);
-    expect(html).not.toContain('<progress');
-    expect(text(html)).toContain(catalogs.en.budgetPage.noExpenses);
-  });
-
-  it('shows the progress as a labelled progress bar with the amounts', () => {
-    const html = render('en');
-    expect(html).toMatch(
-      /<progress[^>]*value="2247"[^>]*max="10000"[^>]*aria-label="Saved \$500\.00 of \$2,225\.00"/,
-    );
-    expect(text(html)).toContain('22% · $500.00 of $2,225.00');
-  });
-
-  it.each(SUPPORTED_LOCALES)(
-    'lists each cost with its category, a status with a glyph and word, and the amount in the trip currency (%s)',
-    (locale) => {
-      const copy = catalogs[locale].budgetPage;
-      const html = render(locale);
-      expect(text(html)).toContain('Flights to Tokyo');
-      expect(text(html)).toContain(copy.categories.flights);
-      expect(html).toContain('gt-status--estimate');
-      expect(html).toContain('gt-status--paid');
-      expect(text(html)).toContain(copy.statuses.paid);
-      // one remove button per cost, named for it
-      expect(
-        html.match(
-          new RegExp(`aria-label="${copy.removeExpense.replace('{description}', 'Ryokan')}"`, 'g'),
-        ),
-      ).toHaveLength(1);
-    },
-  );
-
-  it('shows how a foreign cost was converted: what was typed, the rate and the day', () => {
-    const t = text(render('en'));
-    expect(t).toContain('¥150,000 at 0.0065 USD each · rate you typed on Nov 1, 2026');
-    expect(t).toContain('$975.00');
-  });
-
-  it('breaks the total down by category and by status, leaving out the empty ones', () => {
-    const t = text(render('en'));
-    expect(t).toContain('By category');
-    expect(t).toMatch(/Flights \$1,250\.00/);
-    expect(t).toMatch(/Stays \$975\.00/);
-    expect(t).not.toMatch(/Food \$0\.00/);
-  });
-
-  it.each(SUPPORTED_LOCALES)('has the forms, with labels for every field (%s)', (locale) => {
-    const copy = catalogs[locale].budgetPage;
+  it('puts the answer first, with a coloured lead word and a status pill', () => {
     const html = render(locale);
-    for (const key of ['description', 'category', 'status', 'amount', 'currency'] as const) {
-      expect(text(html)).toContain(copy[key]);
+    const plain = text(html);
+    expect(html).toContain(`<h1`);
+    expect(plain).toContain(copy.title);
+    expect(plain).toContain(copy.leadYes);
+    expect(plain).toContain(copy.pillOk);
+    expect(html).toContain('aria-live="polite"');
+    expect(plain.indexOf(copy.leadYes)).toBeLessThan(plain.indexOf(copy.totalKicker));
+  });
+
+  it('shows the total by status with a glyph and a word for each, never colour alone', () => {
+    const plain = text(render(locale));
+    for (const status of ['paid', 'confirmed', 'estimate', 'unknown'] as const) {
+      expect(plain).toContain(copy.statuses[status]);
     }
-    for (const name of [
-      'description',
-      'category',
-      'status',
-      'amount',
-      'currency',
-      'fxRate',
-      'saved',
-      'monthly',
-    ]) {
-      expect(html, name).toMatch(new RegExp(`name="${name}"`));
-    }
-    expect(html.match(/name="tripId"/g)).toHaveLength(2 + EXPENSES.length);
-    expect(text(html)).toContain(copy.fxHelp.replaceAll('{currency}', 'USD'));
+    for (const glyph of ['●', '✓', '≈', '?']) expect(plain).toContain(glyph);
   });
 
-  it('offers every category and status', () => {
-    const html = render('en');
-    for (const category of CATEGORIES) expect(html).toContain(`value="${category}"`);
-    for (const status of ['estimate', 'confirmed', 'paid', 'unknown'])
-      expect(html).toContain(`value="${status}"`);
+  it('lists the expenses with the original amount when it was converted, and a remove button each', () => {
+    const html = render(locale);
+    expect(text(html)).toContain('Flights to Tokyo');
+    expect(text(html)).toContain('Ryokan');
+    expect(html.match(/aria-label="[^"]*Ryokan"/g)).toHaveLength(1);
+    expect(html).toMatch(/title="[^"]*0\.0065/);
   });
 
-  it('shows a confirmation or an alert after an action, and an error when the budget cannot load', () => {
-    expect(render('en', { status: 'expense-added' })).toContain('role="status"');
-    expect(render('en', { status: 'expense-error' })).toContain('role="alert"');
-    expect(render('en', { status: 'nonsense' })).not.toContain('role="alert"');
-    const failed = render('en', { budget: null });
-    expect(text(failed)).toContain(catalogs.en.budgetPage.loadError);
-    expect(failed).toContain('role="alert"');
+  it('says honestly that Globetrot never holds money and estimates are not quotes', () => {
+    const plain = text(render(locale));
+    expect(plain).toContain(copy.noMoney);
+    expect(plain).toContain(copy.estNote);
   });
 
-  it.each(SUPPORTED_LOCALES)(
-    'explains there is no trip yet and links to the trips (%s)',
-    (locale) => {
-      const html = render(locale, { trip: null, budget: null });
-      expect(text(html)).toContain(catalogs[locale].budgetPage.noTrip);
-      expect(html).toContain('href="/app/trips"');
-    },
-  );
+  it('asks for a ceiling until there is one, then shows the slack or the overrun', () => {
+    expect(text(render(locale))).toContain(copy.slackNone);
+    const over = text(
+      render(locale, {
+        budget: budget({ ceiling: money('2000.00'), ceilingSlack: money('-225.00') }),
+      }),
+    );
+    expect(over).toContain('▲');
+  });
+
+  it('has one coral call to action and no unresolved keys', () => {
+    const html = render(locale);
+    expect(html.match(/class="[^"]*cta[^"]*"/g)).toHaveLength(1);
+    expect(html).not.toMatch(/budgetPage\.[a-zA-Z.]+/);
+  });
+});
+
+describe('budget answers', () => {
+  it('says "not yet" and how much to save when the pace misses departure', () => {
+    const plain = text(render('en', { budget: budget({ monthly: money('100.00') }) }));
+    expect(plain).toContain('Not yet —');
+    expect(plain).toContain('a month to make it');
+  });
+
+  it('asks for a monthly amount when there is none', () => {
+    const plain = text(render('en', { budget: budget({ monthly: money('0.00') }) }));
+    expect(plain).toContain(catalogs.en.budgetPage.restSetMonthly);
+  });
+
+  it('says so when everything is saved', () => {
+    const plain = text(render('en', { budget: budget({ saved: money('3000.00') }) }));
+    expect(plain).toContain(catalogs.en.budgetPage.restAlready);
+  });
+
+  it('asks for a cost before answering', () => {
+    const plain = text(render('en', { budget: budget({}, '0.00'), expenses: [] }));
+    expect(plain).toContain(catalogs.en.savings.noCosts);
+    expect(plain).toContain(catalogs.en.budgetPage.empty);
+  });
+
+  it('leads to the trips without a trip, and says so when the budget cannot be read', () => {
+    expect(text(render('en', { trip: null }))).toContain(catalogs.en.budgetPage.noTrip);
+    expect(render('en', { budget: null })).toContain('role="alert"');
+  });
 });

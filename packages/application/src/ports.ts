@@ -238,6 +238,8 @@ export interface SavingsRecord {
   readonly tripId: string;
   readonly savedMinor: bigint;
   readonly monthlyMinor: bigint;
+  /** The most the trip should cost, or `null` without a ceiling. */
+  readonly ceilingMinor: bigint | null;
 }
 
 export interface SavingsReader {
@@ -248,7 +250,12 @@ export interface SavingsReader {
 export interface SavingsWriter extends SavingsReader {
   upsert(
     tripId: string,
-    patch: { readonly savedMinor?: bigint | undefined; readonly monthlyMinor?: bigint | undefined },
+    patch: {
+      readonly savedMinor?: bigint | undefined;
+      readonly monthlyMinor?: bigint | undefined;
+      /** `null` clears the ceiling. */
+      readonly ceilingMinor?: bigint | null | undefined;
+    },
     now: Date,
   ): Promise<SavingsRecord>;
 }

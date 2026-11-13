@@ -1842,6 +1842,22 @@ export interface operations {
                                 currency: string;
                             } | null;
                             onTime: boolean | null;
+                            ceiling: {
+                                /**
+                                 * @description Major units, exact.
+                                 * @example 1250.00
+                                 */
+                                amount: string;
+                                currency: string;
+                            } | null;
+                            ceilingSlack: {
+                                /**
+                                 * @description Major units, exact.
+                                 * @example 1250.00
+                                 */
+                                amount: string;
+                                currency: string;
+                            } | null;
                         };
                     };
                 };
@@ -2475,6 +2491,11 @@ export interface operations {
                      * @example 300.00
                      */
                     monthly?: string;
+                    /**
+                     * @description The most the trip should cost, in the trip’s currency; null clears it.
+                     * @example 300.00
+                     */
+                    ceiling?: string | null;
                 };
             };
         };
@@ -2561,6 +2582,22 @@ export interface operations {
                                 currency: string;
                             } | null;
                             onTime: boolean | null;
+                            ceiling: {
+                                /**
+                                 * @description Major units, exact.
+                                 * @example 1250.00
+                                 */
+                                amount: string;
+                                currency: string;
+                            } | null;
+                            ceilingSlack: {
+                                /**
+                                 * @description Major units, exact.
+                                 * @example 1250.00
+                                 */
+                                amount: string;
+                                currency: string;
+                            } | null;
                         };
                     };
                 };

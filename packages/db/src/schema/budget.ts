@@ -62,7 +62,10 @@ export const expense = pgTable(
   ],
 );
 
-/** What a trip has set aside and plans to put aside each month, in the trip's currency. One row per trip. */
+/**
+ * What a trip has set aside, plans to put aside each month and, optionally, its spending ceiling, in the trip's
+ * currency. One row per trip.
+ */
 export const tripSavings = pgTable(
   'trip_savings',
   {
@@ -75,12 +78,18 @@ export const tripSavings = pgTable(
     monthlyMinor: minor('monthly_minor')
       .notNull()
       .default(sql`0`),
+    /** The most the person wants the trip to cost; `null` while no ceiling is set. */
+    ceilingMinor: minor('ceiling_minor'),
     updatedAt: instant('updated_at').defaultNow().notNull(),
   },
   (table) => [
     check(
       'trip_savings_not_negative',
       sql`${table.savedMinor} >= 0 and ${table.monthlyMinor} >= 0`,
+    ),
+    check(
+      'trip_savings_ceiling_not_negative',
+      sql`${table.ceilingMinor} is null or ${table.ceilingMinor} >= 0`,
     ),
   ],
 );

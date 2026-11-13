@@ -7,6 +7,7 @@ import {
   money,
   MoneyError,
   savingsPlan,
+  subtract,
   toDecimalString,
   tripTotals,
   zero,
@@ -147,6 +148,10 @@ export function budgetOf(
   const plan = planOf(trip, expenses, savings);
   const totals = tripTotals(plan);
   const sp = savingsPlan(plan, toLocalDate(today.toISOString().slice(0, 10)));
+  const ceiling =
+    savings?.ceilingMinor === null || savings?.ceilingMinor === undefined
+      ? null
+      : money(savings.ceilingMinor, trip.currency);
   return {
     currency: trip.currency,
     total: view(totals.total),
@@ -168,6 +173,8 @@ export function budgetOf(
       monthsUntilDeparture: sp.monthsUntilDeparture,
       monthlyNeeded: sp.monthlyNeeded === null ? null : view(sp.monthlyNeeded),
       onTime: sp.onTime,
+      ceiling: ceiling === null ? null : view(ceiling),
+      ceilingSlack: ceiling === null ? null : view(subtract(ceiling, totals.total)),
     },
   };
 }
@@ -326,9 +333,13 @@ export function createUpdateSavings(deps: Writes) {
     kind: 'command',
     input: savingsFields
       .extend({ tripId: tripIdSchema })
-      .refine((value) => value.saved !== undefined || value.monthly !== undefined, {
-        error: 'Provide at least one field to change',
-      }),
+      .refine(
+        (value) =>
+          value.saved !== undefined || value.monthly !== undefined || value.ceiling !== undefined,
+        {
+          error: 'Provide at least one field to change',
+        },
+      ),
     output: budgetSchema,
     async handler(actor, input) {
       const now = deps.clock.now();
@@ -345,6 +356,12 @@ export function createUpdateSavings(deps: Writes) {
               input.monthly === undefined
                 ? undefined
                 : parseMoney(input.monthly, trip.currency, 'monthly').amountMinor,
+            ceilingMinor:
+              input.ceiling === undefined
+                ? undefined
+                : input.ceiling === null
+                  ? null
+                  : parseMoney(input.ceiling, trip.currency, 'ceiling').amountMinor,
           },
           now,
         );
@@ -359,6 +376,7 @@ export function createUpdateSavings(deps: Writes) {
             fields: [
               input.saved === undefined ? '' : 'saved',
               input.monthly === undefined ? '' : 'monthly',
+              input.ceiling === undefined ? '' : 'ceiling',
             ].filter(Boolean),
           },
         });

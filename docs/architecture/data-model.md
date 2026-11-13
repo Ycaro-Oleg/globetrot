@@ -138,7 +138,7 @@ Migration `0007_budget_and_savings`. Both tables reference `trip` with `ON DELET
 | `fx_rate`, `fx_source`, `fx_as_of` | Provenance of the conversion: 1 `currency` = `fx_rate` trip currency, where it came from (`manual` today) and the day. **All three or none**: a rate without its source and day is refused by a CHECK |
 
 - **The server converts.** The client sends the amount and, for another currency, the rate; the converted amount is always computed by `convert` from the domain, never read from the request. A cost too small to be worth one minor unit after converting is refused.
-- `trip_savings` is one row per trip: `saved_minor` and `monthly_minor` in the trip's currency, never negative.
+- `trip_savings` is one row per trip: `saved_minor` and `monthly_minor` in the trip's currency, never negative, and `ceiling_minor` (migration `0011_trip_ceiling`), the optional trip ceiling: `null` without one, never negative (CHECK).
 - **The trip's currency is locked once there is money in it.** `PATCH /v1/trips/{id}` with another currency answers `422` (`currency_locked`) while the trip has a cost or non-zero savings, because every stored amount is in that currency. It can change freely before that.
 - Audit entries (`expense.create`, `.update`, `.delete`, `savings.update`) hold the category and status, never an amount or a description.
 

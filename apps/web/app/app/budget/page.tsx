@@ -12,12 +12,8 @@ export async function generateMetadata() {
 }
 
 /** The budget of the current trip: what it costs, what is saved, and when you can afford it. */
-export default async function BudgetPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ status?: string }>;
-}) {
-  const [store, query, locale] = await Promise.all([cookies(), searchParams, getLocale()]);
+export default async function BudgetPage() {
+  const [store, locale] = await Promise.all([cookies(), getLocale()]);
   const cookieHeader = sessionCookieHeader(store.getAll());
   const options = cookieHeader ? { cookieHeader, apiUrl: apiInternalUrl() } : null;
   const trips = options ? ((await fetchTrips(options)) ?? []) : [];
@@ -30,11 +26,14 @@ export default async function BudgetPage({
 
   return (
     <BudgetView
-      trip={trip ? { id: trip.id, title: trip.title, currency: trip.currency } : null}
+      trip={
+        trip
+          ? { id: trip.id, title: trip.title, currency: trip.currency, startDate: trip.startDate }
+          : null
+      }
       budget={budget}
       expenses={expenses ?? []}
       currencies={currencyOptions(locale)}
-      status={query.status}
     />
   );
 }
