@@ -813,13 +813,7 @@
     "noTrip": "Create a trip to start its lists.",
     "goTrips": "Go to your trips",
     "loadError": "We could not load the lists. Try again in a moment.",
-    "visaTitle": "Visa page",
-    "visaNote": "Stamps are worked out from what the trip has today, so one can come off again. They are decoration, not an official document. Two stamps (a bed for every night, a plan for every day) need costs per stop and activities per day, which are not built yet.",
-    "stampsToGo": "{count, plural, one {# stamp to go} other {# stamps to go}}",
-    "allEarned": "Every stamp earned. Have a good trip.",
-    "stampEarned": "earned",
-    "stampNotYet": "not yet",
-    "groupsTitle": "Checklists",
+    "visaNote": "Globetrot visas are keepsakes: stamped when you mark a country as visited. They are not official documents.",
     "groups": {
       "documents": "Documents",
       "money": "Money",
@@ -859,9 +853,30 @@
         "s4": "Comfortable walking shoes"
       }
     },
-    "flash": {
-      "suggested": "Suggested items added.",
-      "error": "We could not save that. The lists may be full (100 items) or the text empty."
-    }
+    "sub": "Tick what’s sorted. Finished lists earn a stamp.",
+    "passportSub": "Your stamped countries and this trip’s stamps.",
+    "sections": "Sections",
+    "tabLists": "Lists",
+    "tabPassport": "Passport",
+    "rewardStamp": "Finish = stamp · {stamp}",
+    "rewardEarned": "Stamp earned · {stamp}",
+    "visaPages": "Visa pages",
+    "visasTitle": "Stamped countries",
+    "visaWord": "Globetrot visa",
+    "entryWord": "Entry",
+    "plannedWord": "Planned",
+    "visasEmpty": "No visas yet. Mark a stop as visited on the map to stamp its country.",
+    "stampsTitle": "This trip’s stamps",
+    "stampsCount": "{earned, number} of {total, number}",
+    "stampHelp": "Stamps mark planning milestones, never money spent. They follow what the trip has today, so one can come off again.",
+    "stampLocked": "Not yet",
+    "stampEarnedLabel": "{name}: earned",
+    "stampLockedLabel": "{name}: not yet",
+    "celebrationKicker": "Stamp earned",
+    "celebrationTitle": "Stamped.",
+    "celebrationBody": "“{name}” is on this trip’s visa page. A keepsake, not an official document.",
+    "continue": "Continue",
+    "seePassport": "See passport",
+    "actionError": "That did not work. The lists may be full (100 items) or the text empty."
   }
 }

@@ -580,12 +580,12 @@ try {
       async (page) => go(page, `${base}/app/trips?example=japan`),
       VIEWPORTS.phone,
     ],
-    [
-      'lists-error',
+    ...['phone', 'desktop'].map((layout) => [
+      `lists-passport-${layout}`,
       true,
-      async (page) => go(page, `${base}/app/lists?status=error`),
-      VIEWPORTS.desktop,
-    ],
+      async (page) => go(page, `${base}/app/lists?tab=passport`),
+      VIEWPORTS[layout],
+    ]),
     ...publicScenarios(),
     ...tripScenarios(copy),
   ];
