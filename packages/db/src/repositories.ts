@@ -6,6 +6,7 @@ import type {
   UnitSystem,
 } from '@globetrot/domain';
 import { and, asc, desc, eq, ne, sql, type SQL } from 'drizzle-orm';
+import { createCommunityRepository, type CommunityRepository } from './community-repository';
 import type { Database } from './client';
 import {
   auditEvent,
@@ -684,6 +685,7 @@ export interface Transaction {
   readonly visas: VisaRepository;
   readonly savings: SavingsRepository;
   readonly preferences: PreferencesRepository;
+  readonly community: CommunityRepository;
   readonly audit: AuditLog;
   readonly idempotency: IdempotencyStore;
 }
@@ -702,6 +704,7 @@ export function createUnitOfWork(db: Database) {
           visas: createVisaRepository(tx),
           savings: createSavingsRepository(tx),
           preferences: createPreferencesRepository(tx),
+          community: createCommunityRepository(tx),
           audit: createAuditLog(tx),
           idempotency: createIdempotencyStore(tx),
         }),

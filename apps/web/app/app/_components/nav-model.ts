@@ -7,7 +7,16 @@
 
 /** Keys of the `shell.nav` catalog entries. */
 export type NavKey =
-  'board' | 'days' | 'budget' | 'lists' | 'passport' | 'trips' | 'trip' | 'settings' | 'profile';
+  | 'board'
+  | 'days'
+  | 'budget'
+  | 'lists'
+  | 'passport'
+  | 'trips'
+  | 'trip'
+  | 'settings'
+  | 'profile'
+  | 'community';
 
 export interface NavItem {
   readonly key: NavKey;
@@ -27,16 +36,23 @@ export const TRIP_TABS: readonly NavItem[] = [
 /** The account's own places, on the right of the bar (from 720 px). */
 export const GLOBAL_LINKS: readonly NavItem[] = [
   item('trips', '/app/trips'),
+  item('community', '/app/community'),
   item('passport', '/app/passport'),
 ];
 
-/** The phone's bottom bar: the trip (its tools are the second row), then the account's places. */
+/**
+ * The phone's bottom bar (handoff: Trip · Community · Passport · Profile). The trip list is one tap away in the
+ * trip switcher and the avatar menu.
+ */
 export const BOTTOM_ITEMS: readonly NavItem[] = [
   item('trip', '/app/board'),
-  item('trips', '/app/trips'),
+  item('community', '/app/community'),
   item('passport', '/app/passport'),
   item('profile', '/app/profile'),
 ];
+
+/** Places a phone reaches through the trip switcher or the avatar menu rather than the bottom bar. */
+export const MENU_HREFS: readonly string[] = ['/app/trips'];
 
 export const SETTINGS_HREF = '/settings';
 export const PIP_HREF = '/app/pip';

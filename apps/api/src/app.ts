@@ -10,6 +10,7 @@ import { problemResponse, type Env } from './http';
 import { problem, problemFromApplicationError } from './problem';
 import { registerBudgetRoutes } from './routes/budget';
 import { registerChecklistRoutes } from './routes/checklists';
+import { registerCommunityRoutes } from './routes/community';
 import { registerDayPlaceRoutes } from './routes/day-places';
 import { registerDestinationRoutes } from './routes/destinations';
 import { registerPlaceRoutes } from './routes/places';
@@ -166,6 +167,7 @@ export function createApp({
   registerChecklistRoutes(app, application);
   registerDayPlaceRoutes(app, application);
   registerPlaceRoutes(app, application);
+  registerCommunityRoutes(app, application);
 
   app.notFound(() => problem(404, 'NOT_FOUND', { detail: 'No such route' }));
 

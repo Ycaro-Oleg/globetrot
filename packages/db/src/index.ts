@@ -43,6 +43,12 @@ export {
   type TripRow,
 } from './repositories';
 export {
+  createCommunityRepository,
+  type CommentRow,
+  type CommunityRepository,
+  type PostRow,
+} from './community-repository';
+export {
   assertLocalDatabase,
   assertSafeDatabaseName,
   createEmptyDatabase,

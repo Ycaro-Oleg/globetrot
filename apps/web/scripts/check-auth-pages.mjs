@@ -188,6 +188,97 @@ const DESTINATIONS = {
   })),
 };
 
+const LOOK = { hat: 'helmet', outfit: 'vest', bag: 'backpack', bagColor: 'cyan' };
+const ANA = { handle: 'ana.ribeiro', name: 'Ana Ribeiro', pipLook: LOOK };
+const ME_PERSON = { handle: 'qa.pip', name: USER.name, pipLook: PREFERENCES.pipLook };
+const post = (id, extra) => ({
+  id: `0193c0a8-7b1e-7c4a-9e2f-3d5a6b7c9a0${id}`,
+  body: '',
+  place: null,
+  audience: 'everyone',
+  attachment: null,
+  createdAt: NOW,
+  editedAt: null,
+  author: ANA,
+  mine: false,
+  following: false,
+  likes: 0,
+  liked: false,
+  saved: false,
+  comments: 0,
+  likedBy: null,
+  ...extra,
+});
+const COMMUNITY_POSTS = [
+  post(1, {
+    kind: 'tip',
+    body: 'Get to Fushimi Inari before 7am.',
+    place: { name: 'Fushimi Inari', countryCode: 'JP' },
+    likes: 12,
+    liked: true,
+    saved: true,
+    comments: 1,
+    likedBy: ME_PERSON,
+  }),
+  post(2, {
+    kind: 'route',
+    body: 'Nine nights, tested.',
+    attachment: {
+      kind: 'route',
+      title: 'Portugal',
+      nights: 9,
+      stops: [
+        { name: 'Lisbon', countryCode: 'PT', nights: 4 },
+        { name: 'Porto', countryCode: 'PT', nights: 5 },
+      ],
+      total: { amount: '2300.00', currency: 'USD' },
+    },
+  }),
+  post(3, {
+    kind: 'visa',
+    author: ME_PERSON,
+    mine: true,
+    audience: 'followers',
+    place: { name: 'Tokyo', countryCode: 'JP' },
+    attachment: { kind: 'visa', countryCode: 'JP', city: 'Tokyo', stampedAt: NOW, ordinal: 1 },
+  }),
+  post(4, {
+    kind: 'goal',
+    following: true,
+    attachment: { kind: 'goal', tripTitle: 'Patagonia', readyMonth: '2027-01', reached: false },
+  }),
+];
+const COMMENTS = {
+  comments: [
+    {
+      id: '0193c0a8-7b1e-7c4a-9e2f-3d5a6b7c9b01',
+      body: 'Doing this in April!',
+      createdAt: NOW,
+      author: ME_PERSON,
+      mine: true,
+      canDelete: true,
+      likes: 2,
+      liked: false,
+    },
+  ],
+};
+const DISCOVER = {
+  suggestions: [{ person: ANA, posts: 3 }],
+  trending: [
+    { countryCode: 'JP', posts: 4 },
+    { countryCode: 'PT', posts: 2 },
+  ],
+};
+const PERSON = {
+  person: ANA,
+  posts: 3,
+  followers: 10,
+  following: 2,
+  followed: false,
+  muted: false,
+  mine: false,
+};
+
 const VISAS = { visas: [{ countryCode: 'JP', city: 'Tokyo', stampedAt: NOW }] };
 
 const CHECKLIST = {
@@ -268,6 +359,30 @@ const stub = createServer(async (request, response) => {
     return reply(response, 200, PREFERENCES);
   }
   const budgetRoute = /^\/v1\/trips\/([^/]+)\/(budget|expenses)$/.exec(url.pathname);
+  if (url.pathname.startsWith('/v1/community/')) {
+    if (!signedIn) return reply(response, 401, { code: 'UNAUTHENTICATED' });
+    const path = url.pathname.slice('/v1/community/'.length);
+    if (path === 'feed') return reply(response, 200, { posts: COMMUNITY_POSTS, nextBefore: null });
+    if (path === 'me')
+      return reply(response, 200, {
+        handle: 'qa.pip',
+        suggestedHandle: 'qa.pip',
+        posts: 1,
+        followers: 0,
+        following: 1,
+      });
+    if (path === 'discover') return reply(response, 200, DISCOVER);
+    if (/^posts\/[^/]+\/comments$/.test(path)) return reply(response, 200, COMMENTS);
+    const one = /^posts\/([^/]+)$/.exec(path);
+    if (one) {
+      const found = COMMUNITY_POSTS.find((candidate) => candidate.id === one[1]);
+      return found ? reply(response, 200, found) : reply(response, 404, { code: 'NOT_FOUND' });
+    }
+    if (path === 'people/ana.ribeiro') return reply(response, 200, PERSON);
+    if (path === 'people/ana.ribeiro/posts')
+      return reply(response, 200, { posts: COMMUNITY_POSTS.slice(0, 2), nextBefore: null });
+    return reply(response, 404, { code: 'NOT_FOUND' });
+  }
   if (url.pathname === '/v1/visas' && request.method === 'GET') {
     if (!signedIn) return reply(response, 401, { code: 'UNAUTHENTICATED' });
     return reply(response, 200, VISAS);
@@ -690,6 +805,43 @@ try {
       VIEWPORTS.desktop,
     ]);
     for (const layout of ['desktop', 'phone']) {
+      entries.push([`community-${layout}`, true, ...at('/app/community', VIEWPORTS[layout])]);
+    }
+    entries.push([
+      'community-composer-route',
+      true,
+      async (page) => {
+        await go(page, `${base}/app/community`);
+        await page.locator('form textarea').first().focus();
+        await page.locator('form fieldset button').nth(2).click();
+        await page.locator('form select').first().waitFor();
+      },
+      VIEWPORTS.desktop,
+    ]);
+    entries.push([
+      'community-comments-and-menu',
+      true,
+      async (page) => {
+        await go(page, `${base}/app/community`);
+        const first = page.locator('article').first();
+        await first.locator('button[aria-expanded]').last().click();
+        await first.locator('section ul li').first().waitFor();
+        await page.locator('article').nth(1).locator('button[aria-controls]').first().click();
+        await page.locator('article').nth(1).locator('[id] > button').first().waitFor();
+      },
+      VIEWPORTS.desktop,
+    ]);
+    entries.push([
+      'community-person',
+      true,
+      ...at('/app/community/u/ana.ribeiro', VIEWPORTS.desktop),
+    ]);
+    entries.push([
+      'community-post-phone',
+      true,
+      ...at('/app/community/p/0193c0a8-7b1e-7c4a-9e2f-3d5a6b7c9a02', VIEWPORTS.phone),
+    ]);
+    for (const layout of ['desktop', 'phone']) {
       entries.push([`onboarding-welcome-${layout}`, true, ...at('/onboarding', VIEWPORTS[layout])]);
       entries.push([
         `onboarding-home-city-${layout}`,
@@ -1059,7 +1211,7 @@ try {
       );
       check(
         JSON.stringify(await names(places)) ===
-          JSON.stringify([shell.nav.trips, shell.nav.passport]),
+          JSON.stringify([shell.nav.trips, shell.nav.community, shell.nav.passport]),
         `desktop: the account places are ${JSON.stringify(await names(places))}`,
       );
       const bar = await page.locator('header').first().boundingBox();
@@ -1108,7 +1260,7 @@ try {
           if (!onMap) {
             check(
               JSON.stringify(await names(bottom)) ===
-                JSON.stringify([nav.trip, nav.trips, nav.passport, nav.profile]),
+                JSON.stringify([nav.trip, nav.community, nav.passport, nav.profile]),
               `${where}: the bottom bar is ${JSON.stringify(await names(bottom))}`,
             );
           }

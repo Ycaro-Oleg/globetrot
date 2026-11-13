@@ -171,6 +171,22 @@ Migration `0012_day_places`. `trip_place` references `trip` with `ON DELETE CASC
 
 - At most 200 places per trip (`DAY_PLACES_MAX`). Audit entries (`day_place.add`, `.move`, `.remove`) hold the day at most, never a name.
 
+## Community
+
+Migration `0015_community`. Rules: [business rules](../product/business-rules.md#community), [ADR-0013](adr/0013-community.md). Every table references `user` with `ON DELETE CASCADE`.
+
+| Table | What | Rules |
+|---|---|---|
+| `community_profile` | A person's handle, created the first time they act in the community | `handle` unique, `^[a-z0-9][a-z0-9._]{1,22}[a-z0-9]$` |
+| `post` | A post | `kind` in `POST_KINDS`, `audience` in `POST_AUDIENCES`, `body` trimmed ≤ 500, `place_name` 1–120 or null, `place_country` ISO alpha-2 or null, `attachment` jsonb (the route, visa or goal snapshot), `edited_at`, `deleted_at` (author, undoable), `hidden_at` (reports) |
+| `post_comment` | A comment | `body` trimmed 1–500, `deleted_at` (undoable) |
+| `post_like`, `post_save`, `comment_like` | One row per person and post or comment | Composite primary keys |
+| `follow`, `mute` | Who follows or muted whom | Composite primary keys; never oneself (CHECK) |
+| `post_report` | One report per person and post | `reason` in `REPORT_REASONS` |
+
+- Post ids are UUIDv7, so the feed pages by id (`before`). The feed applies `canSeePost` in SQL; see the ADR.
+- Post bodies, comments, place names and handles are personal: audit entries (`post.create`, `post.update`, `post.delete`, `post.restore`, `post.like`, `post.save`, `post.report`, `comment.create`, `comment.delete`, `comment.restore`, `comment.like`, `person.follow`, `person.mute`, `person.handle`) keep the kind, audience, reason or on/off only.
+
 ## Extensions
 
 The first migration (`0000_extensions.sql`) enables `postgis`, `pg_trgm` and `unaccent`, using `IF NOT EXISTS`. The local Docker init script (`infra/postgres/init/`) enables the same ones as a convenience, and production relies on the migration.
