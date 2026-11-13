@@ -142,6 +142,19 @@ async function journey(browser, { width, height, locale }) {
     await page.waitForLoadState('networkidle');
   }
   async function axe(label) {
+    // Let entrance animations (a stamp dropping in) finish first, so contrast is measured on the settled screen.
+    // Looping ones (Pip's idle bob) never finish and are left alone.
+    await page.evaluate(() =>
+      Promise.race([
+        Promise.all(
+          document
+            .getAnimations()
+            .filter((animation) => animation.effect?.getTiming().iterations !== Infinity)
+            .map((animation) => animation.finished.catch(() => undefined)),
+        ),
+        new Promise((done) => setTimeout(done, 3000)),
+      ]),
+    );
     const results = await new AxeBuilder({ page })
       .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
       .analyze();
