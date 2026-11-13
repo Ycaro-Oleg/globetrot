@@ -813,13 +813,7 @@
     "noTrip": "Crie uma viagem para começar as listas dela.",
     "goTrips": "Ir para as suas viagens",
     "loadError": "Não foi possível carregar as listas. Tente de novo em instantes.",
-    "visaTitle": "Página de vistos",
-    "visaNote": "Os carimbos são calculados com o que a viagem tem hoje, então um pode sair de novo. São decoração, não um documento oficial. Dois carimbos (cama para toda noite, plano para todo dia) precisam de custos por parada e atividades por dia, que ainda não foram construídos.",
-    "stampsToGo": "{count, plural, one {falta # carimbo} other {faltam # carimbos}}",
-    "allEarned": "Todos os carimbos conquistados. Boa viagem.",
-    "stampEarned": "conquistado",
-    "stampNotYet": "ainda não",
-    "groupsTitle": "Listas de tarefas",
+    "visaNote": "Os vistos do Globetrot são lembranças: carimbados quando você marca um país como visitado. Não são documentos oficiais.",
     "groups": {
       "documents": "Documentos",
       "money": "Dinheiro",
@@ -859,9 +853,30 @@
         "s4": "Calçado confortável para caminhar"
       }
     },
-    "flash": {
-      "suggested": "Itens sugeridos adicionados.",
-      "error": "Não foi possível salvar. As listas podem estar cheias (100 itens) ou o texto vazio."
-    }
+    "sub": "Marque o que já está resolvido. Listas completas ganham selo.",
+    "passportSub": "Seus países carimbados e os selos desta viagem.",
+    "sections": "Seções",
+    "tabLists": "Listas",
+    "tabPassport": "Passaporte",
+    "rewardStamp": "Completa = selo · {stamp}",
+    "rewardEarned": "Selo ganho · {stamp}",
+    "visaPages": "Páginas de vistos",
+    "visasTitle": "Países carimbados",
+    "visaWord": "Visto Globetrot",
+    "entryWord": "Entrada",
+    "plannedWord": "Planejado",
+    "visasEmpty": "Nenhum visto ainda. Marque uma parada como visitada no mapa para carimbar o país.",
+    "stampsTitle": "Selos desta viagem",
+    "stampsCount": "{earned, number} de {total, number}",
+    "stampHelp": "Selos marcam etapas do planejamento — nunca dinheiro gasto. Eles seguem o que a viagem tem hoje, então um selo pode sair de novo.",
+    "stampLocked": "Ainda não",
+    "stampEarnedLabel": "{name}: ganho",
+    "stampLockedLabel": "{name}: ainda não",
+    "celebrationKicker": "Selo ganho",
+    "celebrationTitle": "Carimbado.",
+    "celebrationBody": "“{name}” está na página de vistos desta viagem. Uma lembrança, não um documento oficial.",
+    "continue": "Continuar",
+    "seePassport": "Ver passaporte",
+    "actionError": "Não deu certo. As listas podem estar cheias (100 itens) ou o texto vazio."
   }
 }

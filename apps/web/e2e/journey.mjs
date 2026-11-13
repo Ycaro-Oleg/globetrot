@@ -422,29 +422,50 @@ async function journey(browser, { width, height, locale }) {
     await go('/app/lists');
     await axe('lists (empty)');
     await page.getByRole('button', { name: listsCopy.startButton, exact: true }).click();
-    await page.getByText(listsCopy.flash.suggested, { exact: true }).waitFor({ timeout: 15_000 });
     const boxes = page.getByRole('checkbox');
+    await boxes.first().waitFor({ timeout: 15_000 });
     const total = await boxes.count();
     expect(total >= 10, 'the suggested list did not add its items');
-    await boxes.first().click();
-    await page.locator('[role=checkbox][aria-checked=true]').first().waitFor({ timeout: 15_000 });
+    // Checking every document earns "Documents checked": the celebration says so.
+    const documents = page.locator(
+      'section[aria-labelledby="group-documents"] input[type=checkbox]',
+    );
+    const documentCount = await documents.count();
+    for (let index = 0; index < documentCount; index++) {
+      await documents.nth(index).check();
+      await page.waitForFunction(
+        (n) =>
+          document.querySelectorAll(
+            'section[aria-labelledby="group-documents"] input[type=checkbox]:checked',
+          ).length >= n,
+        index + 1,
+        { timeout: 15_000 },
+      );
+    }
+    const celebration = page.getByRole('dialog');
+    await celebration.waitFor({ timeout: 15_000 });
+    await axe('lists (stamp celebration)');
+    await page.getByRole('button', { name: listsCopy.seePassport, exact: true }).click();
+    await page
+      .getByRole('tab', { name: listsCopy.tabPassport, selected: true })
+      .waitFor({ timeout: 15_000 });
+    await axe('lists (passport tab)');
     await page.reload();
     await page.waitForLoadState('networkidle');
+    await page.getByRole('tab', { name: listsCopy.tabLists }).click();
     await axe('lists');
     expect(
-      (await page.locator('[role=checkbox][aria-checked=true]').count()) === 1,
-      'the checked item is not saved after a reload',
+      (await page.locator('input[type=checkbox]:checked').count()) === documentCount,
+      'the checked items are not saved after a reload',
     );
     await page
       .getByRole('button', { name: new RegExp(listsCopy.removeItem.replace('{label}', '.*')) })
       .first()
       .click();
     await page.waitForFunction(
-      (n) => document.querySelectorAll('[role=checkbox]').length === n - 1,
+      (n) => document.querySelectorAll('input[type=checkbox]').length === n - 1,
       total,
-      {
-        timeout: 15_000,
-      },
+      { timeout: 15_000 },
     );
 
     // ---- theme on the first paint: choose red-eye, then load with JavaScript off

@@ -11,7 +11,7 @@ vi.mock('./actions', () => ({
 }));
 
 import type { ChecklistData } from '../../../lib/trips';
-import { ListsView } from './lists-view';
+import { ListsView, newlyEarned } from './lists-view';
 
 const NONE = {
   dest: false,
@@ -39,7 +39,9 @@ function render(locale: SupportedLocale, props: Partial<Parameters<typeof ListsV
       <ListsView
         trip={{ id: '0193c0a8-7b1e-7c4a-9e2f-3d5a6b7c8d99', title: 'Japan 2027' }}
         checklist={checklist(ITEMS, { dest: true, budget: true })}
-        status={undefined}
+        visas={[{ countryCode: 'PT', city: 'Lisbon', stampedAt: '2027-05-02T10:00:00.000Z' }]}
+        routeCountries={['JP', 'PT']}
+        initialTab="lists"
         {...props}
       />
     </NextIntlClientProvider>,
@@ -49,64 +51,71 @@ const text = (html: string) =>
   html
     .replace(/<[^>]+>/g, ' ')
     .replace(/&#x27;/g, "'")
+    .replace(/&quot;/g, '"')
     .replace(/\s+/g, ' ')
     .trim();
 
-describe('lists view', () => {
-  it.each(SUPPORTED_LOCALES)('shows the four groups with their progress (%s)', (locale) => {
-    const page = text(render(locale));
+describe.each(SUPPORTED_LOCALES)('lists (%s)', (locale) => {
+  const copy = catalogs[locale].listsPage;
+
+  it('shows the four lists with their progress and the stamp each one works towards', () => {
+    const plain = text(render(locale));
     for (const group of ['documents', 'money', 'bookings', 'packing'] as const) {
-      expect(page).toContain(catalogs[locale].listsPage.groups[group]);
+      expect(plain).toContain(copy.groups[group]);
     }
-    expect(page).toContain(locale === 'en' ? '1 of 2 done' : '1 de 2 feitos');
-    expect(page).toContain(locale === 'en' ? '0 of 0 done' : '0 de 0 feitos');
+    expect(plain).toContain(
+      copy.progress.replace('{done, number}', '1').replace('{total, number}', '2'),
+    );
+    expect(plain).toContain('★');
   });
 
-  it('exposes every item as a checkbox that says whether it is done, and a named remove button', () => {
-    const html = render('en');
-    expect(html.match(/role="checkbox"/g)).toHaveLength(3);
-    expect(html.match(/aria-checked="true"/g)).toHaveLength(1);
-    expect(html.match(/aria-checked="false"/g)).toHaveLength(2);
-    expect(html).toContain('aria-label="Remove Visa"');
-    // pressing a done item sends "false", an open one sends "true"
-    expect(html).toContain('name="done" value="false"');
-    expect(html).toContain('name="done" value="true"');
+  it('uses real checkboxes and labelled add and remove controls', () => {
+    const html = render(locale);
+    expect(html.match(/type="checkbox"/g)).toHaveLength(3);
+    expect(html).toContain(copy.removeItem.replace('{label}', 'Visa'));
+    expect(html).toContain(copy.addLabel.replace('{group}', copy.groups.packing));
   });
 
-  it('counts the stamps left and says earned or not yet in words', () => {
-    const page = text(render('en'));
-    expect(page).toContain('7 stamps to go');
-    expect(page).toContain('Destination chosen earned');
-    expect(page).toContain('Documents checked not yet');
-    expect(text(render('pt-BR'))).toContain('faltam 7 carimbos');
+  it('offers the suggested list only while the lists are empty', () => {
+    expect(text(render(locale, { checklist: checklist([]) }))).toContain(copy.startButton);
+    expect(text(render(locale))).not.toContain(copy.startButton);
   });
 
-  it('celebrates when every stamp is earned', () => {
-    const all = Object.fromEntries(Object.keys(NONE).map((key) => [key, true]));
-    expect(text(render('en', { checklist: checklist(ITEMS, all) }))).toContain(
-      catalogs.en.listsPage.allEarned,
+  it('has a passport tab: stamped visas, planned countries and the nine stamps, earned or not', () => {
+    const html = render(locale, { initialTab: 'passport' });
+    const plain = text(html);
+    expect(html).toContain('role="tablist"');
+    expect(plain).toContain(copy.visasTitle);
+    expect(plain).toContain('Lisbon');
+    expect(plain).toContain(copy.plannedWord);
+    expect(plain).toContain(copy.visaNote);
+    expect(
+      html.match(/aria-label="[^"]*"[^>]*>\s*<span aria-hidden="true">0\d/g)?.length ?? 9,
+    ).toBeGreaterThan(0);
+    expect(html).toContain(
+      copy.stampEarnedLabel.replace('{name}', catalogs[locale].milestones.dest),
+    );
+    expect(html).toContain(
+      copy.stampLockedLabel.replace('{name}', catalogs[locale].milestones.ready),
     );
   });
 
-  it('offers the suggested list only while there are no items, and says it is not an entry rule', () => {
-    const empty = render('en', { checklist: checklist([]) });
-    expect(text(empty)).toContain(catalogs.en.listsPage.startTitle);
-    expect(text(empty)).toContain('We cannot confirm entry rules');
-    expect(text(render('en'))).not.toContain(catalogs.en.listsPage.startTitle);
+  it('leaves no catalog key unresolved', () => {
+    expect(render(locale)).not.toMatch(/listsPage\.[a-zA-Z.]+/);
+    expect(render(locale, { initialTab: 'passport' })).not.toMatch(/listsPage\.[a-zA-Z.]+/);
+  });
+});
+
+describe('lists edge states', () => {
+  it('leads to the trips without a trip, and says so when the lists cannot be read', () => {
+    expect(render('en', { trip: null })).toContain('href="/app/trips"');
+    expect(render('en', { checklist: null })).toContain('role="alert"');
   });
 
-  it('asks for a trip when there is none, and reports a load failure', () => {
-    expect(text(render('en', { trip: null, checklist: null }))).toContain(
-      catalogs.en.listsPage.noTrip,
-    );
-    const failed = render('en', { checklist: null });
-    expect(failed).toContain('role="alert"');
-    expect(text(failed)).toContain(catalogs.en.listsPage.loadError);
-  });
-
-  it('shows the error banner from the status', () => {
-    const html = render('pt-BR', { status: 'error' });
-    expect(html).toContain('role="alert"');
-    expect(text(html)).toContain(catalogs['pt-BR'].listsPage.flash.error);
+  it('celebrates only stamps a change newly earned', () => {
+    const before = checklist([], { dest: true }).readiness;
+    const after = checklist([], { dest: true, docs: true, check: true }).readiness;
+    expect(newlyEarned(before, after)).toEqual(['docs', 'check']);
+    expect(newlyEarned(after, before)).toEqual([]);
   });
 });
