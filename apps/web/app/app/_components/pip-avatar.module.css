@@ -4,6 +4,8 @@
   flex: none;
   max-width: 100%;
   aspect-ratio: 1;
+  /* The live canvas may reach a little past the box for motion; keep it off neighbouring text and controls. */
+  overflow: hidden;
 }
 
 .live,
