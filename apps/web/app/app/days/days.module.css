@@ -33,7 +33,7 @@
   min-height: var(--gt-component-hit-target);
   align-items: center;
   padding: var(--gt-primitive-space-8) var(--gt-primitive-space-16);
-  border: var(--gt-primitive-border-3) solid var(--gt-semantic-color-outline);
+  border: var(--gt-primitive-border-1) solid var(--gt-semantic-color-outline);
   border-radius: var(--gt-primitive-radius-12);
   background: var(--gt-semantic-color-surface-card);
   font-weight: var(--gt-primitive-type-weight-bold);
@@ -55,7 +55,7 @@
 
 .stop {
   padding: var(--gt-primitive-space-16) var(--gt-primitive-space-20);
-  border: var(--gt-primitive-border-3) solid var(--gt-semantic-color-outline);
+  border: var(--gt-primitive-border-1) solid var(--gt-semantic-color-outline);
   border-radius: var(--gt-primitive-radius-16);
   background: var(--gt-semantic-color-surface-card);
   box-shadow: var(--gt-primitive-shadow-small);
@@ -95,10 +95,10 @@
 
 .days em {
   padding: 0 var(--gt-primitive-space-8);
-  border: var(--gt-primitive-border-2) solid var(--gt-semantic-color-outline);
+  border: var(--gt-primitive-border-1) solid var(--gt-semantic-color-outline);
   border-radius: var(--gt-primitive-radius-12);
-  background: var(--gt-primitive-color-marigold);
-  color: var(--gt-primitive-color-ink);
+  background: var(--gt-semantic-color-primary-tint);
+  color: var(--gt-semantic-color-primary-hover);
   font-size: 0.75rem;
   font-style: normal;
   font-weight: var(--gt-primitive-type-weight-bold);

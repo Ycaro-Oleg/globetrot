@@ -29,12 +29,12 @@ export default async function SettingsPage({
   // Settings belong to an account. The sign-in screens arrive with #57.
   if (!stored) {
     return (
-      <main>
+      <section>
         <h1>{t('title')}</h1>
         <Banner tone="info" role="status">
           {t('signedOut')}
         </Banner>
-      </main>
+      </section>
     );
   }
 

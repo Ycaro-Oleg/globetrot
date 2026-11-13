@@ -66,7 +66,7 @@
 }
 
 .createDetails[open] > summary {
-  box-shadow: 0 1px 0 var(--gt-semantic-color-outline);
+  box-shadow: none;
 }
 
 .createPlus {
@@ -84,10 +84,10 @@
   gap: 0.55rem;
   box-sizing: border-box;
   padding: 1.25rem;
-  border: 2.5px solid var(--gt-semantic-color-outline);
+  border: 1px solid var(--gt-semantic-color-hairline);
   border-radius: 1.2rem;
   background: var(--gt-semantic-color-surface-card);
-  box-shadow: 0 7px 0 var(--gt-semantic-color-outline);
+  box-shadow: none;
 }
 
 .createPopover h2 {
@@ -147,30 +147,25 @@
   align-items: center;
   justify-content: center;
   padding: 0.4rem 0.85rem;
-  border: 1.5px solid rgba(29, 26, 53, 0.28);
+  border: 1px solid var(--gt-semantic-color-input-border);
   border-radius: 999px;
   background: var(--gt-semantic-color-surface-card);
   color: var(--gt-semantic-color-text-secondary);
   font-size: 0.9rem;
   font-weight: 700;
   text-decoration: none;
-  transition:
-    background 120ms ease,
-    color 120ms ease,
-    transform 120ms ease;
 }
 
 .filter:hover {
-  transform: translateY(-1px);
   background: #fff;
   color: var(--gt-semantic-color-always-light-text);
 }
 
 .filter[aria-current='page'] {
   border-color: var(--gt-semantic-color-outline);
-  background: var(--gt-semantic-color-text);
-  color: var(--gt-semantic-color-surface-page);
-  box-shadow: 0 2px 0 var(--gt-semantic-color-outline);
+  background: var(--gt-semantic-color-primary);
+  color: var(--gt-semantic-color-on-primary);
+  box-shadow: none;
 }
 
 .tripGrid {
@@ -182,10 +177,10 @@
 .tripCard,
 .emptyState {
   min-width: 0;
-  border: 2.5px solid var(--gt-semantic-color-outline);
+  border: 1px solid var(--gt-semantic-color-hairline);
   border-radius: 1.25rem;
   background: var(--gt-semantic-color-surface-card);
-  box-shadow: 0 5px 0 var(--gt-semantic-color-outline);
+  box-shadow: none;
 }
 
 .tripCard {
@@ -214,6 +209,8 @@
   margin: 0;
   font-size: 0.8rem;
   font-weight: 750;
+  background: var(--gt-semantic-color-primary-tint);
+  color: var(--gt-semantic-color-primary-hover);
 }
 
 .tripStatus {
@@ -227,10 +224,10 @@
 
 .currentTrip {
   padding: 0.25rem 0.65rem;
-  border: 1px solid rgba(29, 26, 53, 0.16);
+  border: 0;
   border-radius: 999px;
-  background: var(--gt-primitive-color-marigold);
-  color: var(--gt-primitive-color-ink);
+  background: var(--gt-semantic-color-primary-tint);
+  color: var(--gt-semantic-color-primary-hover);
   font-size: 0.72rem;
 }
 
@@ -281,28 +278,23 @@
   align-items: center;
   justify-content: center;
   padding: 0.6rem 1rem;
-  border: 2px solid var(--gt-semantic-color-outline);
+  border: 1px solid var(--gt-semantic-color-hairline);
   border-radius: 0.9rem;
   font: 750 0.9rem/1.15 var(--gt-primitive-font-body);
   text-decoration: none;
   cursor: pointer;
-  transition:
-    transform 120ms ease,
-    box-shadow 120ms ease,
-    background 120ms ease;
 }
 
 .primaryAction {
-  background: var(--gt-semantic-color-text);
-  color: var(--gt-semantic-color-surface-page);
-  box-shadow: 0 3px 0 var(--gt-semantic-color-outline);
+  background: var(--gt-semantic-color-primary);
+  color: var(--gt-semantic-color-on-primary);
+  box-shadow: none;
 }
 
 .primaryAction:hover,
 .secondaryAction:hover,
 .undoAction:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 0 var(--gt-semantic-color-outline);
+  box-shadow: none;
 }
 
 .secondaryAction,
@@ -363,10 +355,10 @@
   flex-wrap: wrap;
   gap: 0.75rem;
   padding: 0.9rem 1rem;
-  border: 2px solid var(--gt-semantic-color-outline);
+  border: 1px solid var(--gt-semantic-color-hairline);
   border-radius: 1rem;
   background: var(--gt-semantic-color-surface-page-alt);
-  box-shadow: 0 3px 0 var(--gt-semantic-color-outline);
+  box-shadow: none;
 }
 
 .emptyState {
@@ -502,7 +494,7 @@
 .exampleCard {
   margin-block: var(--gt-primitive-space-16);
   padding: var(--gt-primitive-space-20) var(--gt-primitive-space-24);
-  border: var(--gt-primitive-border-3) solid var(--gt-semantic-color-outline);
+  border: var(--gt-primitive-border-1) solid var(--gt-semantic-color-outline);
   border-block-start: 10px solid var(--gt-semantic-color-airmail);
   border-radius: var(--gt-primitive-radius-16);
   background: var(--gt-semantic-color-surface-card);

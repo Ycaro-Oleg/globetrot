@@ -1,75 +1,74 @@
-import {
-  Compass,
-  ListChecks,
-  type LucideIcon,
-  Map as MapIcon,
-  Menu,
-  Plane,
-  Settings,
-  Wallet,
-  CalendarDays,
-  House,
-  Stamp,
-} from 'lucide-react';
+/**
+ * The shell's navigation (design handoff v2, "Shell & Navigation", option 1a): one sticky bar on every screen
+ * with two levels. The trip's own tools sit in a segmented control next to the trip switcher; the places that
+ * belong to the whole account sit on the right. On a phone the trip tools become a second row and the account
+ * places a bottom bar.
+ */
 
 /** Keys of the `shell.nav` catalog entries. */
-export type NavKey = 'home' | 'trips' | 'board' | 'days' | 'budget' | 'lists' | 'passport' | 'more';
+export type NavKey =
+  'board' | 'days' | 'budget' | 'lists' | 'passport' | 'trips' | 'trip' | 'settings';
 
 export interface NavItem {
   readonly key: NavKey;
   readonly href: string;
-  readonly Icon: LucideIcon;
 }
 
-const item = (key: NavKey, href: string, Icon: LucideIcon): NavItem => ({ key, href, Icon });
+const item = (key: NavKey, href: string): NavItem => ({ key, href });
 
-/** The rail (desktop and tablet): everything the signed-in app has, in the order people use it. */
-export const RAIL_ITEMS: readonly NavItem[] = [
-  item('home', '/app', House),
-  item('trips', '/app/trips', Plane),
-  item('board', '/app/board', MapIcon),
-  item('days', '/app/days', CalendarDays),
-  item('budget', '/app/budget', Wallet),
-  item('lists', '/app/lists', ListChecks),
-  item('passport', '/app/passport', Stamp),
+/** The current trip's tools, in the order people plan: map, days, budget, lists. */
+export const TRIP_TABS: readonly NavItem[] = [
+  item('board', '/app/board'),
+  item('days', '/app/days'),
+  item('budget', '/app/budget'),
+  item('lists', '/app/lists'),
 ];
 
-/** The phone tab bar: the five trip tools; the rest lives under More. */
-export const TAB_ITEMS: readonly NavItem[] = [
-  item('board', '/app/board', MapIcon),
-  item('days', '/app/days', CalendarDays),
-  item('budget', '/app/budget', Wallet),
-  item('lists', '/app/lists', ListChecks),
-  item('more', '/app/more', Menu),
+/** The account's own places, on the right of the bar (from 720 px). */
+export const GLOBAL_LINKS: readonly NavItem[] = [
+  item('trips', '/app/trips'),
+  item('passport', '/app/passport'),
 ];
 
-/** What the More page lists: the destinations that are not in the tab bar. */
-export const MORE_ITEMS: readonly NavItem[] = [
-  item('home', '/app', House),
-  item('trips', '/app/trips', Plane),
-  item('passport', '/app/passport', Stamp),
+/** The phone's bottom bar: the trip (its tools are the second row), then the account's places. */
+export const BOTTOM_ITEMS: readonly NavItem[] = [
+  item('trip', '/app/board'),
+  item('trips', '/app/trips'),
+  item('passport', '/app/passport'),
+  item('settings', '/settings'),
 ];
 
 export const SETTINGS_HREF = '/settings';
 export const PIP_HREF = '/app/pip';
 
-/** Icons shared by the shell's other parts. */
-export const BRAND_ICON: LucideIcon = Compass;
-export const SETTINGS_ICON: LucideIcon = Settings;
-
-/** Paths that the More tab stands for: when one of them is open, More is the tab that is current. */
-const MORE_PATHS: readonly string[] = ['/app/more', '/app/trips', '/app/passport', '/app/pip'];
-
 function isWithin(pathname: string, base: string): boolean {
   return pathname === base || pathname.startsWith(`${base}/`);
 }
 
+/** Whether a page belongs to the current trip's tools (so the second row and the "Trip" item apply). */
+export function isTripPage(pathname: string): boolean {
+  return TRIP_TABS.some((tab) => isWithin(pathname, tab.href));
+}
+
 /**
- * Whether `item` is the current page for `pathname`. Home matches only itself (every other page is under
- * `/app`); the others match their own pages and anything beneath them (a trip's board, for example).
+ * Whether `navItem` is the current page for `pathname`: its own page and anything beneath it (a look-alike such
+ * as `/app/boardroom` does not count). "Trip" stands for all four trip tools.
  */
 export function isCurrent(navItem: NavItem, pathname: string): boolean {
-  if (navItem.key === 'home') return pathname === '/app';
-  if (navItem.key === 'more') return MORE_PATHS.some((path) => isWithin(pathname, path));
+  if (navItem.key === 'trip') return isTripPage(pathname);
   return isWithin(pathname, navItem.href);
+}
+
+/** Up to two letters for the trip's disc: the initials of its first two words ("Japan, spring" → "JS"). */
+export function tripCode(title: string): string {
+  const words = title
+    .split(/[\s,.;:/·-]+/u)
+    .map((word) => word.trim())
+    .filter(Boolean);
+  const letters = words.slice(0, 2).map((word) => Array.from(word)[0]!.toLocaleUpperCase());
+  if (letters.length === 1) {
+    const second = Array.from(words[0]!)[1];
+    if (second) letters.push(second.toLocaleUpperCase());
+  }
+  return letters.join('') || '•';
 }

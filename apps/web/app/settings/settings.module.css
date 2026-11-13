@@ -21,9 +21,8 @@
 
 .header h1 {
   margin: 0;
-  font-size: clamp(2.5rem, 5vw, 3.35rem);
+  font-size: var(--gt-primitive-type-page);
   font-weight: 800;
-  font-stretch: 80%;
   letter-spacing: -0.055em;
   line-height: 1;
 }
@@ -38,10 +37,10 @@
   display: grid;
   gap: 1rem;
   padding: clamp(1rem, 3vw, 2rem);
-  border: 2.5px solid var(--gt-semantic-color-outline);
+  border: 1px solid var(--gt-semantic-color-hairline);
   border-radius: 1.35rem;
   background: var(--gt-semantic-color-surface-card);
-  box-shadow: 0 5px 0 var(--gt-semantic-color-outline);
+  box-shadow: none;
 }
 
 .form {

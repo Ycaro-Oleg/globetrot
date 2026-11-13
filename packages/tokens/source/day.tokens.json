@@ -3,19 +3,19 @@
     "color": {
       "surface-page": {
         "$type": "color",
-        "$value": "{primitive.color.cream}"
+        "$value": "{primitive.color.page}"
       },
       "surface-page-alt": {
         "$type": "color",
-        "$value": "{primitive.color.cream-deep}"
+        "$value": "{primitive.color.white}"
       },
       "surface-card": {
         "$type": "color",
-        "$value": "{primitive.color.white}"
+        "$value": "{primitive.color.surface}"
       },
       "surface-nested": {
         "$type": "color",
-        "$value": "{primitive.color.cream-soft}"
+        "$value": "{primitive.color.white}"
       },
       "text": {
         "$type": "color",
@@ -31,75 +31,75 @@
       },
       "outline": {
         "$type": "color",
-        "$value": "{primitive.color.ink}"
+        "$value": "{primitive.color.hairline}"
       },
       "shadow": {
         "$type": "color",
-        "$value": "{primitive.color.ink}"
+        "$value": "{primitive.color.deep}"
       },
       "sea": {
         "$type": "color",
-        "$value": "{primitive.color.blue}"
+        "$value": "{primitive.color.primary}"
       },
       "sea-deep": {
         "$type": "color",
-        "$value": "{primitive.color.blue-deep}"
+        "$value": "{primitive.color.primary-hover}"
       },
       "land": {
         "$type": "color",
-        "$value": "{primitive.color.land}"
+        "$value": "{primitive.color.primary-tint}"
       },
       "land-highlight": {
         "$type": "color",
-        "$value": "{primitive.color.cream}"
+        "$value": "{primitive.color.white}"
       },
       "thread": {
         "$type": "color",
-        "$value": "{primitive.color.red}"
+        "$value": "{primitive.color.coral}"
       },
       "marigold": {
         "$type": "color",
-        "$value": "{primitive.color.marigold}"
+        "$value": "{primitive.color.coral}"
       },
       "mint": {
         "$type": "color",
-        "$value": "{primitive.color.mint}"
+        "$value": "{primitive.color.savings-tint}"
       },
       "confirmed": {
         "$type": "color",
-        "$value": "{primitive.color.green}"
+        "$value": "{primitive.color.savings-ink}"
       },
       "estimate": {
         "$type": "color",
-        "$value": "{primitive.color.ochre}"
+        "$value": "{primitive.color.warning-ink}"
       },
       "note": {
         "$type": "color",
-        "$value": "{primitive.color.note}"
+        "$value": "{primitive.color.warning-tint}"
       },
       "danger": {
         "$type": "color",
-        "$value": "{primitive.color.danger}"
+        "$value": "{primitive.color.expense-deep}"
       },
       "focus": {
         "$type": "color",
-        "$value": "{primitive.color.blue}"
+        "$value": "{primitive.color.primary}"
       },
       "rule": {
         "$type": "color",
-        "$value": "{primitive.color.rule-day}"
+        "$value": "{primitive.color.hairline}"
       },
       "rule-strong": {
         "$type": "color",
-        "$value": "{primitive.color.rule-strong-day}"
+        "$value": "{primitive.color.input-border}"
       },
       "rail-surface": {
         "$type": "color",
-        "$value": "{primitive.color.blue-deep}"
+        "$value": "{primitive.color.deep}"
       },
       "rail-title": {
         "$type": "color",
-        "$value": "{primitive.color.cream}"
+        "$value": "{primitive.color.white}"
       },
       "always-light-surface": {
         "$type": "color",
@@ -113,25 +113,29 @@
         "$type": "color",
         "$value": "{primitive.color.ink-secondary}"
       },
+      "always-light-text-tertiary": {
+        "$type": "color",
+        "$value": "{primitive.color.ink-tertiary}"
+      },
       "airmail": {
         "$type": "color",
-        "$value": "{primitive.color.blue}"
+        "$value": "{primitive.color.primary}"
       },
       "airmail-deep": {
         "$type": "color",
-        "$value": "{primitive.color.blue-deep}"
+        "$value": "{primitive.color.primary-hover}"
       },
       "sky": {
         "$type": "color",
-        "$value": "{primitive.color.land}"
+        "$value": "{primitive.color.primary-soft}"
       },
       "ripple": {
         "$type": "color",
-        "$value": "{primitive.color.ripple-day}"
+        "$value": "{primitive.color.ripple}"
       },
       "thread-ink": {
         "$type": "color",
-        "$value": "{primitive.color.white}"
+        "$value": "{primitive.color.deep}"
       },
       "note-ink": {
         "$type": "color",
@@ -139,26 +143,102 @@
       },
       "pin-highlight": {
         "$type": "color",
-        "$value": "{primitive.color.marigold}"
+        "$value": "{primitive.color.warning}"
       },
       "pin-middle": {
         "$type": "color",
-        "$value": "{primitive.color.marigold}"
+        "$value": "{primitive.color.warning}"
       },
       "pin-low": {
         "$type": "color",
-        "$value": "{primitive.color.marigold}"
+        "$value": "{primitive.color.warning}"
       },
-      "always-light-text-tertiary": {
+      "primary": {
         "$type": "color",
-        "$value": "{primitive.color.ink-tertiary}"
+        "$value": "{primitive.color.primary}"
+      },
+      "primary-hover": {
+        "$type": "color",
+        "$value": "{primitive.color.primary-hover}"
+      },
+      "primary-tint": {
+        "$type": "color",
+        "$value": "{primitive.color.primary-tint}"
+      },
+      "primary-soft": {
+        "$type": "color",
+        "$value": "{primitive.color.primary-soft}"
+      },
+      "on-primary": {
+        "$type": "color",
+        "$value": "{primitive.color.white}"
+      },
+      "cta": {
+        "$type": "color",
+        "$value": "{primitive.color.coral}"
+      },
+      "on-cta": {
+        "$type": "color",
+        "$value": "{primitive.color.deep}"
+      },
+      "savings": {
+        "$type": "color",
+        "$value": "{primitive.color.savings}"
+      },
+      "savings-tint": {
+        "$type": "color",
+        "$value": "{primitive.color.savings-soft}"
+      },
+      "expense": {
+        "$type": "color",
+        "$value": "{primitive.color.expense}"
+      },
+      "expense-tint": {
+        "$type": "color",
+        "$value": "{primitive.color.expense-tint}"
+      },
+      "warning": {
+        "$type": "color",
+        "$value": "{primitive.color.warning}"
+      },
+      "warning-ink": {
+        "$type": "color",
+        "$value": "{primitive.color.warning-ink}"
+      },
+      "warning-tint": {
+        "$type": "color",
+        "$value": "{primitive.color.warning-tint}"
+      },
+      "hairline": {
+        "$type": "color",
+        "$value": "{primitive.color.hairline}"
+      },
+      "input-border": {
+        "$type": "color",
+        "$value": "{primitive.color.input-border}"
+      },
+      "input-surface": {
+        "$type": "color",
+        "$value": "{primitive.color.white}"
+      },
+      "track": {
+        "$type": "color",
+        "$value": "{primitive.color.page}"
+      },
+      "deep": {
+        "$type": "color",
+        "$value": "{primitive.color.deep}"
+      },
+      "like": {
+        "$type": "color",
+        "$value": "{primitive.color.like}"
       }
     }
   },
   "component": {
     "button-radius": {
       "$type": "dimension",
-      "$value": "{primitive.radius.14}"
+      "$value": "{primitive.radius.pill}"
     },
     "input-radius": {
       "$type": "dimension",
@@ -170,7 +250,7 @@
     },
     "modal-radius": {
       "$type": "dimension",
-      "$value": "{primitive.radius.26}"
+      "$value": "{primitive.radius.24}"
     },
     "hit-target": {
       "$type": "dimension",
@@ -179,6 +259,10 @@
     "focus-width": {
       "$type": "dimension",
       "$value": "{primitive.size.focus-width}"
+    },
+    "card-radius": {
+      "$type": "dimension",
+      "$value": "{primitive.radius.24}"
     }
   }
 }
