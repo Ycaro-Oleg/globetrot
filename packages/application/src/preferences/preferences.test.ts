@@ -20,6 +20,8 @@ const FULL = {
   units: 'imperial',
   theme: 'red-eye',
   motion: 'reduced',
+  homeCity: 'São Paulo',
+  pipOptIn: true,
 } as const;
 
 function setup() {
@@ -48,6 +50,8 @@ describe('getPreferences', () => {
       units: 'metric',
       theme: 'system',
       motion: 'full',
+      homeCity: null,
+      pipOptIn: false,
     });
   });
 
@@ -89,6 +93,8 @@ describe('updatePreferences changes one field and nothing else', () => {
       units: 'metric',
       theme: 'system',
       motion: 'full',
+      homeCity: null,
+      pipOptIn: false,
     });
   });
 

@@ -10,6 +10,15 @@ This is the authoritative list. The prototype's executable spec is `design/refer
 - Each expense keeps its **original currency and amount**. Totals are computed in the trip currency using a recorded exchange rate. See [`../architecture/money.md`](../architecture/money.md).
 - No silent conversion: wherever a converted amount appears, its rate, source and date are available.
 - The payment currency (what Stripe charges for a subscription) is unrelated to trip currencies.
+- **Home city** is an optional setting: the city the person usually leaves from, as they wrote it. It is asked in the onboarding and editable in settings; nothing is derived from it.
+
+## Onboarding (the first trip)
+
+- Seven steps (welcome, home city, destination, month and length, money, Pip, the answer). Every step can be changed later, and nothing is charged.
+- **The cost is the person's own rough guess**, never ours: it is stored as one cost with status `estimate` ("Rough trip estimate") in the trip's currency (the preferred currency), and replaced by real costs later. Globetrot does not show invented typical ranges.
+- The answer uses the savings plan rule (below) on that guess, the amount saved, the monthly amount and the first day of the chosen month.
+- "Open my map" creates the trip through the same API as everything else: the trip (titled with the destination, starting on the first of the chosen month), its first stop with the nights when the place was found by the search, the estimate cost and the savings; then the board opens. When place search is unavailable the person can continue with the typed name, and the trip starts without a stop.
+- A signed-in person with no trip who opens the app lands on the onboarding.
 
 ## Accounts and sign-in
 

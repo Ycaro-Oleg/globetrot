@@ -11,7 +11,7 @@ import {
 } from '@globetrot/domain';
 import { DEFAULT_LOCALE, SUPPORTED_LOCALES } from '@globetrot/i18n';
 import { sql, type AnyColumn, type SQL } from 'drizzle-orm';
-import { char, check, pgTable, text, timestamp } from 'drizzle-orm/pg-core';
+import { boolean, char, check, pgTable, text, timestamp } from 'drizzle-orm/pg-core';
 import { user } from './auth';
 
 const instant = (name: string) => timestamp(name, { withTimezone: true });
@@ -39,6 +39,12 @@ export const userPreference = pgTable(
     theme: text('theme').notNull().default(DEFAULT_THEME_CHOICE),
     /** `full` or `reduced`; the OS's reduced-motion setting wins over `full` at display time. */
     motion: text('motion').notNull().default(DEFAULT_MOTION_CHOICE),
+    /** The city the person usually leaves from, as they wrote it. Optional; personal, never in logs or audit. */
+    homeCity: text('home_city'),
+    /** Whether the person asked for Pip's suggestions (onboarding). Pip itself stays behind its feature flag. */
+    pipOptIn: boolean('pip_opt_in')
+      .notNull()
+      .default(sql`false`),
     createdAt: instant('created_at').defaultNow().notNull(),
     updatedAt: instant('updated_at').defaultNow().notNull(),
   },
@@ -50,5 +56,9 @@ export const userPreference = pgTable(
     check('user_preference_units_valid', oneOf(table.units, UNIT_SYSTEMS)),
     check('user_preference_theme_valid', oneOf(table.theme, THEME_CHOICES)),
     check('user_preference_motion_valid', oneOf(table.motion, MOTION_CHOICES)),
+    check(
+      'user_preference_home_city_length',
+      sql`${table.homeCity} is null or (${table.homeCity} = btrim(${table.homeCity}) and char_length(${table.homeCity}) between 1 and 120)`,
+    ),
   ],
 );

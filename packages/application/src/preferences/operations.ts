@@ -48,6 +48,8 @@ export function createUpdatePreferences(deps: Pick<Ports, 'unitOfWork' | 'clock'
         units: input.units,
         theme: input.theme,
         motion: input.motion,
+        homeCity: input.homeCity,
+        pipOptIn: input.pipOptIn,
       };
       const fields = (Object.keys(patch) as (keyof PreferencesPatch)[]).filter(
         (field) => patch[field] !== undefined,

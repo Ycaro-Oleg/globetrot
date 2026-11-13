@@ -58,6 +58,8 @@ export const preferencesSchema = z.object({
   units: unitsSchema,
   theme: themeSchema,
   motion: motionSchema,
+  homeCity: z.string().nullable(),
+  pipOptIn: z.boolean(),
 });
 export type PreferencesView = z.infer<typeof preferencesSchema>;
 
@@ -74,6 +76,14 @@ export const updatePreferencesFields = z.object({
   units: unitsSchema.optional(),
   theme: themeSchema.optional(),
   motion: motionSchema.optional(),
+  homeCity: z.string().trim().min(1).max(120).nullable().optional().meta({
+    description: 'The city the person usually leaves from; null clears it.',
+    example: 'São Paulo',
+  }),
+  pipOptIn: z
+    .boolean()
+    .optional()
+    .meta({ description: 'Whether the person wants Pip’s suggestions.' }),
 });
 
 export const hasAPreferenceChange = (input: z.infer<typeof updatePreferencesFields>) =>
@@ -94,6 +104,8 @@ export const DEFAULT_PREFERENCES: PreferencesView = {
   units: DEFAULT_UNIT_SYSTEM,
   theme: DEFAULT_THEME_CHOICE,
   motion: DEFAULT_MOTION_CHOICE,
+  homeCity: null,
+  pipOptIn: false,
 };
 
 export const toPreferencesView = (record: PreferencesRecord): PreferencesView => ({
@@ -105,4 +117,6 @@ export const toPreferencesView = (record: PreferencesRecord): PreferencesView =>
   units: record.units,
   theme: record.theme,
   motion: record.motion,
+  homeCity: record.homeCity,
+  pipOptIn: record.pipOptIn,
 });

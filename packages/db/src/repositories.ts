@@ -121,6 +121,8 @@ export interface PreferencesRow {
   readonly units: UnitSystem;
   readonly theme: ThemeChoice;
   readonly motion: MotionChoice;
+  readonly homeCity: string | null;
+  readonly pipOptIn: boolean;
 }
 
 const asPreferencesRow = (row: typeof userPreference.$inferSelect): PreferencesRow => ({
@@ -132,6 +134,8 @@ const asPreferencesRow = (row: typeof userPreference.$inferSelect): PreferencesR
   units: row.units as UnitSystem,
   theme: row.theme as ThemeChoice,
   motion: row.motion as MotionChoice,
+  homeCity: row.homeCity,
+  pipOptIn: row.pipOptIn,
 });
 
 export function createPreferencesRepository(executor: Executor) {
@@ -161,6 +165,8 @@ export function createPreferencesRepository(executor: Executor) {
         readonly units?: UnitSystem | undefined;
         readonly theme?: ThemeChoice | undefined;
         readonly motion?: MotionChoice | undefined;
+        readonly homeCity?: string | null | undefined;
+        readonly pipOptIn?: boolean | undefined;
       },
       now: Date,
     ): Promise<PreferencesRow> {
@@ -173,6 +179,8 @@ export function createPreferencesRepository(executor: Executor) {
         ...(patch.units === undefined ? {} : { units: patch.units }),
         ...(patch.theme === undefined ? {} : { theme: patch.theme }),
         ...(patch.motion === undefined ? {} : { motion: patch.motion }),
+        ...(patch.homeCity === undefined ? {} : { homeCity: patch.homeCity }),
+        ...(patch.pipOptIn === undefined ? {} : { pipOptIn: patch.pipOptIn }),
       };
       const [row] = await executor
         .insert(userPreference)

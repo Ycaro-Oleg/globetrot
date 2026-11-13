@@ -1,0 +1,3 @@
+ALTER TABLE "user_preference" ADD COLUMN "home_city" text;--> statement-breakpoint
+ALTER TABLE "user_preference" ADD COLUMN "pip_opt_in" boolean DEFAULT false NOT NULL;--> statement-breakpoint
+ALTER TABLE "user_preference" ADD CONSTRAINT "user_preference_home_city_length" CHECK ("user_preference"."home_city" is null or ("user_preference"."home_city" = btrim("user_preference"."home_city") and char_length("user_preference"."home_city") between 1 and 120));

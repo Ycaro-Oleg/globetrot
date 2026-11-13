@@ -56,6 +56,10 @@ export async function savePreferences(formData: FormData): Promise<void> {
   const homeCountry = optional(formData, 'homeCountry');
   const nationality = optional(formData, 'nationality');
   const timeZone = optional(formData, 'timeZone');
+  // A blank home city clears it.
+  const rawHomeCity = formData.get('homeCity');
+  const homeCity =
+    typeof rawHomeCity === 'string' ? rawHomeCity.trim().slice(0, 120) || null : undefined;
   const submittedTheme = text(formData, 'theme');
   const submittedMotion = text(formData, 'motion');
   const theme = isThemeChoice(submittedTheme) ? submittedTheme : undefined;
@@ -66,6 +70,7 @@ export async function savePreferences(formData: FormData): Promise<void> {
     ...(homeCountry === undefined ? {} : { homeCountry }),
     ...(nationality === undefined ? {} : { nationality }),
     ...(timeZone === undefined ? {} : { timeZone }),
+    ...(homeCity === undefined ? {} : { homeCity }),
     ...(units === undefined ? {} : { units }),
     ...(theme === undefined ? {} : { theme }),
     ...(motion === undefined ? {} : { motion }),

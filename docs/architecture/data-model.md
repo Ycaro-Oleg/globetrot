@@ -72,7 +72,7 @@ Migration `0002_trips` (and `0003_audit_event_append_only`). Code: `packages/db/
 
 ## User preferences
 
-Migrations `0004_user_preferences` and `0005_theme_and_motion_preferences`. One row per user in `user_preference` (primary key `user_id`, `ON DELETE CASCADE`: it is settings, not history).
+Migrations `0004_user_preferences`, `0005_theme_and_motion_preferences` and `0013_home_city_and_pip`. One row per user in `user_preference` (primary key `user_id`, `ON DELETE CASCADE`: it is settings, not history).
 
 | Column | Rule |
 |---|---|
@@ -83,6 +83,8 @@ Migrations `0004_user_preferences` and `0005_theme_and_motion_preferences`. One 
 | `units` | `metric` or `imperial`, default `metric` |
 | `theme` | `day`, `red-eye` or `system` (follow the operating system), default `system` (CHECK from `THEME_CHOICES`) |
 | `motion` | `full` or `reduced`, default `full` (CHECK from `MOTION_CHOICES`). The OS's reduced-motion setting wins over `full` at display time, so it is not stored |
+| `home_city` | The city the person usually leaves from, as they wrote it: trimmed, 1 to 120 characters, or null. Personal: never in logs or audit (only the field name is) |
+| `pip_opt_in` | Whether the person asked for Pip's suggestions (onboarding), default false. Pip itself stays behind `FEATURE_PIP` |
 
 - **Independent by construction.** Nothing derives one column from another, and the update writes only the columns it is given (`INSERT ... ON CONFLICT DO UPDATE SET <given columns>`). Choosing Portuguese cannot move the currency or the country.
 - **The row is created at sign-up** with the language the person was using, read from the `globetrot_locale` cookie ([`authentication.md`](authentication.md)). If it is missing (the hook failed, or an account predates #58), `getPreferences` answers with the defaults and the first save creates the row.

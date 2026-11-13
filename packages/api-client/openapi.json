@@ -288,6 +288,15 @@
                       ],
                       "description": "Amount of animation. The OS reduced-motion setting wins over `full`.",
                       "example": "full"
+                    },
+                    "homeCity": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "pipOptIn": {
+                      "type": "boolean"
                     }
                   },
                   "required": [
@@ -298,7 +307,9 @@
                     "timeZone",
                     "units",
                     "theme",
-                    "motion"
+                    "motion",
+                    "homeCity",
+                    "pipOptIn"
                   ]
                 }
               }
@@ -445,6 +456,20 @@
                     ],
                     "description": "Amount of animation. The OS reduced-motion setting wins over `full`.",
                     "example": "full"
+                  },
+                  "homeCity": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "minLength": 1,
+                    "maxLength": 120,
+                    "description": "The city the person usually leaves from; null clears it.",
+                    "example": "São Paulo"
+                  },
+                  "pipOptIn": {
+                    "type": "boolean",
+                    "description": "Whether the person wants Pip’s suggestions."
                   }
                 }
               }
@@ -508,6 +533,15 @@
                       ],
                       "description": "Amount of animation. The OS reduced-motion setting wins over `full`.",
                       "example": "full"
+                    },
+                    "homeCity": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "pipOptIn": {
+                      "type": "boolean"
                     }
                   },
                   "required": [
@@ -518,7 +552,9 @@
                     "timeZone",
                     "units",
                     "theme",
-                    "motion"
+                    "motion",
+                    "homeCity",
+                    "pipOptIn"
                   ]
                 }
               }

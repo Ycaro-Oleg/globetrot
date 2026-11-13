@@ -14,6 +14,8 @@ const STORED: StoredPreferences = {
   units: 'metric',
   theme: 'system',
   motion: 'full',
+  homeCity: null,
+  pipOptIn: false,
 };
 
 describe('sessionCookieHeader', () => {

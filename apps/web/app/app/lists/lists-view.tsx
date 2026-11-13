@@ -116,22 +116,27 @@ function Lists({
   const [drafts, setDrafts] = useState<Partial<Record<ChecklistGroup, string>>>({});
 
   /** Applies a change: takes the server's lists and celebrates a stamp the change earned. */
+  // The last lists the server confirmed, and the newest change in flight: only its answer is applied, so a slow
+  // answer to an older click can never undo a newer one.
+  const confirmed = useRef(initial);
+  const latest = useRef(0);
   const apply = async (
     change: Promise<ChecklistData | null>,
     optimistic?: (current: ChecklistData) => ChecklistData,
   ) => {
-    const before = checklist.readiness;
-    const previous = checklist;
-    if (optimistic) setChecklist(optimistic(checklist));
+    const id = ++latest.current;
+    if (optimistic) setChecklist((current) => optimistic(current));
     const next = await change;
+    if (id !== latest.current) return;
     if (!next) {
-      setChecklist(previous);
+      setChecklist(confirmed.current);
       setError(true);
       return;
     }
     setError(false);
+    const earned = newlyEarned(confirmed.current.readiness, next.readiness);
+    confirmed.current = next;
     setChecklist(next);
-    const earned = newlyEarned(before, next.readiness);
     if (earned.length) setCelebrating(earned[0]!);
   };
 

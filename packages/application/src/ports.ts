@@ -83,6 +83,9 @@ export interface PreferencesRecord {
   readonly units: UnitSystem;
   readonly theme: ThemeChoice;
   readonly motion: MotionChoice;
+  /** The city the person usually leaves from, or null. */
+  readonly homeCity: string | null;
+  readonly pipOptIn: boolean;
 }
 
 /** Only the fields present are written. `null` clears country, nationality or time zone. */
@@ -95,6 +98,8 @@ export interface PreferencesPatch {
   readonly units?: UnitSystem | undefined;
   readonly theme?: ThemeChoice | undefined;
   readonly motion?: MotionChoice | undefined;
+  readonly homeCity?: string | null | undefined;
+  readonly pipOptIn?: boolean | undefined;
 }
 
 export interface PreferencesReader {

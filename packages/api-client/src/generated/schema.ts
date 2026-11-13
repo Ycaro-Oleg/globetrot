@@ -541,6 +541,8 @@ export interface operations {
                          * @enum {string}
                          */
                         motion: "full" | "reduced";
+                        homeCity: string | null;
+                        pipOptIn: boolean;
                     };
                 };
             };
@@ -618,6 +620,13 @@ export interface operations {
                      * @enum {string}
                      */
                     motion?: "full" | "reduced";
+                    /**
+                     * @description The city the person usually leaves from; null clears it.
+                     * @example São Paulo
+                     */
+                    homeCity?: string | null;
+                    /** @description Whether the person wants Pip’s suggestions. */
+                    pipOptIn?: boolean;
                 };
             };
         };
@@ -648,6 +657,8 @@ export interface operations {
                          * @enum {string}
                          */
                         motion: "full" | "reduced";
+                        homeCity: string | null;
+                        pipOptIn: boolean;
                     };
                 };
             };
