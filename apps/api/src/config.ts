@@ -42,6 +42,9 @@ const envSchema = z.object({
   GOOGLE_CLIENT_ID: z.string().optional(),
   GOOGLE_CLIENT_SECRET: z.string().optional(),
   GEOAPIFY_API_KEY: z.string().optional(),
+  DEEPSEEK_API_KEY: z.string().optional(),
+  DEEPSEEK_BASE_URL: z.url().default('https://api.deepseek.com'),
+  DEEPSEEK_MODEL: z.string().default('deepseek-chat'),
   S3_ENDPOINT: z.url().default('http://localhost:8333'),
   S3_REGION: z.string().default('us-east-1'),
   S3_BUCKET: z.string().default('globetrot-media'),
@@ -109,6 +112,8 @@ export interface ApiConfig {
   readonly geoapifyKey: string | null;
   readonly auth: AuthConfig;
   readonly email: EmailConfig;
+  /** Pip's model (DeepSeek); `null` turns Pip off (asking answers 503). */
+  readonly ai: { readonly apiKey: string; readonly baseUrl: string; readonly model: string } | null;
   /** S3-compatible storage for uploaded images (SeaweedFS locally). */
   readonly storage: StorageConfig;
   /** True when no secret was provided and the public development one is in use (never in production). */
@@ -223,6 +228,14 @@ export function loadApiConfig(
     port: values.PORT,
     databaseUrl,
     geoapifyKey: values.GEOAPIFY_API_KEY ?? null,
+    ai:
+      values.DEEPSEEK_API_KEY === undefined
+        ? null
+        : {
+            apiKey: values.DEEPSEEK_API_KEY,
+            baseUrl: values.DEEPSEEK_BASE_URL,
+            model: values.DEEPSEEK_MODEL,
+          },
     storage: {
       endpoint: values.S3_ENDPOINT,
       region: values.S3_REGION,

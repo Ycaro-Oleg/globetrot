@@ -1,6 +1,6 @@
 # 0007. Provider-agnostic AI with structured, approvable proposals
 
-- Status: Accepted
+- Status: Accepted; the provider (Claude) and library (Vercel AI SDK) are superseded by [ADR-0016](0016-pip-on-deepseek.md)
 - Date: 2026-11-07
 
 ## Context

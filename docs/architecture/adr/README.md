@@ -16,7 +16,7 @@ ADRs 0010 to 0012 were written after the work they describe (#53 to #61), which 
 | [0004](0004-money-and-currency.md) | Money as integer minor units with FX provenance | Accepted |
 | [0005](0005-authentication.md) | Authentication with Better Auth | Accepted |
 | [0006](0006-api-and-application-layer.md) | REST/OpenAPI API over a shared application layer | Accepted |
-| [0007](0007-ai-provider-abstraction.md) | Provider-agnostic AI with structured, approvable proposals | Accepted |
+| [0007](0007-ai-provider-abstraction.md) | Provider-agnostic AI with structured, approvable proposals | Accepted; provider and library superseded by 0016 |
 | [0008](0008-internationalization.md) | ICU-based internationalization | Accepted |
 | [0009](0009-git-workflow.md) | GitFlow-lite with convention-based protection | Accepted |
 | [0010](0010-web-proxies-the-api.md) | The web app proxies the API so the session cookie is first-party | Accepted |
@@ -25,3 +25,4 @@ ADRs 0010 to 0012 were written after the work they describe (#53 to #61), which 
 | [0013](0013-community.md) | The community: snapshots, a visibility rule shared by domain and SQL, and moderation by reports | Accepted |
 | [0014](0014-photos-and-storage.md) | Photos: S3-compatible storage, metadata cut out without decoding, served behind the API | Accepted |
 | [0015](0015-account-export-and-deletion.md) | Account export and deletion, and deleting archived trips | Accepted |
+| [0016](0016-pip-on-deepseek.md) | Pip v1 on DeepSeek, through a small JSON port | Accepted (supersedes the provider choice in 0007) |

@@ -13,6 +13,7 @@ import { registerChecklistRoutes } from './routes/checklists';
 import { registerCommunityRoutes } from './routes/community';
 import { registerMediaRoutes } from './routes/media';
 import { registerAccountRoutes } from './routes/account';
+import { registerPipRoutes } from './routes/pip';
 import { registerDayPlaceRoutes } from './routes/day-places';
 import { registerDestinationRoutes } from './routes/destinations';
 import { registerPlaceRoutes } from './routes/places';
@@ -172,6 +173,7 @@ export function createApp({
   registerCommunityRoutes(app, application);
   registerMediaRoutes(app, application);
   registerAccountRoutes(app, application);
+  registerPipRoutes(app, application);
 
   app.notFound(() => problem(404, 'NOT_FOUND', { detail: 'No such route' }));
 

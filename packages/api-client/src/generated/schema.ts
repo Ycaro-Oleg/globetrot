@@ -831,6 +831,87 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/trips/{id}/pip/proposals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** A trip’s last ten proposals, newest first */
+        get: operations["listProposals"];
+        put?: never;
+        /**
+         * Ask Pip for a change list
+         * @description Pip (an AI model, DeepSeek today) sees this trip’s plan only, never the person’s name, email, home or other trips, and answers a change list that is validated here. Nothing changes until the person applies it. Amounts are estimates in the trip’s currency. At most 20 requests a day.
+         */
+        post: operations["askPip"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/pip/proposals/{proposalId}/apply": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Apply the chosen changes
+         * @description In one transaction, with what "Undo" needs kept. Costs are added as estimates.
+         */
+        post: operations["applyProposal"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/pip/proposals/{proposalId}/discard": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Discard a proposal
+         * @description Nothing on the trip changes.
+         */
+        post: operations["discardProposal"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/pip/proposals/{proposalId}/undo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Undo an applied proposal
+         * @description Within 24 hours: puts the route and the monthly amount back as they were and removes what applying added.
+         */
+        post: operations["undoProposal"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -8281,6 +8362,915 @@ export interface operations {
             };
             /** @description No valid session. */
             401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    listProposals: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Trip id (UUID). */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Proposals. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        proposals: {
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: uuid */
+                            tripId: string;
+                            request: string;
+                            summary: string;
+                            currency: string;
+                            changes: ({
+                                /** @enum {string} */
+                                kind: "addStop";
+                                name: string;
+                                /** @default null */
+                                countryCode: string | null;
+                                latitude: number;
+                                longitude: number;
+                                nights: number;
+                                /** @default null */
+                                afterStopId: string | null;
+                                /** @default  */
+                                reason: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "removeStop";
+                                stopId: string;
+                                /** @default  */
+                                reason: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "setNights";
+                                stopId: string;
+                                nights: number;
+                                /** @default  */
+                                reason: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "reorder";
+                                order: string[];
+                                /** @default  */
+                                reason: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "addPlace";
+                                /** @default null */
+                                stopId: string | null;
+                                name: string;
+                                /** @default 90 */
+                                minutes: number;
+                                /** @default  */
+                                reason: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "addChecklistItem";
+                                /** @enum {string} */
+                                group: "documents" | "money" | "bookings" | "packing";
+                                label: string;
+                                /** @default  */
+                                reason: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "addExpense";
+                                /** @enum {string} */
+                                category: "flights" | "stay" | "local_transport" | "intercity_transport" | "food" | "experiences" | "insurance" | "documents" | "taxes" | "shopping" | "buffer" | "other";
+                                description: string;
+                                amount: string;
+                                /** @default  */
+                                reason: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "setMonthly";
+                                amount: string;
+                                /** @default  */
+                                reason: string;
+                            })[];
+                            /** @enum {string} */
+                            status: "proposed" | "applied" | "discarded" | "undone";
+                            applied: number[];
+                            undoable: boolean;
+                            /** Format: date-time */
+                            createdAt: string;
+                            /** Format: date-time */
+                            decidedAt: string | null;
+                        }[];
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description No such trip or proposal, or it belongs to someone else. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    askPip: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Trip id (UUID). */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /**
+                     * @description What the person asks Pip, in their own words.
+                     * @example Make this trip ten days and add must-see places in Kyoto
+                     */
+                    request: string;
+                };
+            };
+        };
+        responses: {
+            /** @description The proposal as the person sees it. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                        /** Format: uuid */
+                        tripId: string;
+                        request: string;
+                        summary: string;
+                        currency: string;
+                        changes: ({
+                            /** @enum {string} */
+                            kind: "addStop";
+                            name: string;
+                            /** @default null */
+                            countryCode: string | null;
+                            latitude: number;
+                            longitude: number;
+                            nights: number;
+                            /** @default null */
+                            afterStopId: string | null;
+                            /** @default  */
+                            reason: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "removeStop";
+                            stopId: string;
+                            /** @default  */
+                            reason: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "setNights";
+                            stopId: string;
+                            nights: number;
+                            /** @default  */
+                            reason: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "reorder";
+                            order: string[];
+                            /** @default  */
+                            reason: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "addPlace";
+                            /** @default null */
+                            stopId: string | null;
+                            name: string;
+                            /** @default 90 */
+                            minutes: number;
+                            /** @default  */
+                            reason: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "addChecklistItem";
+                            /** @enum {string} */
+                            group: "documents" | "money" | "bookings" | "packing";
+                            label: string;
+                            /** @default  */
+                            reason: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "addExpense";
+                            /** @enum {string} */
+                            category: "flights" | "stay" | "local_transport" | "intercity_transport" | "food" | "experiences" | "insurance" | "documents" | "taxes" | "shopping" | "buffer" | "other";
+                            description: string;
+                            amount: string;
+                            /** @default  */
+                            reason: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "setMonthly";
+                            amount: string;
+                            /** @default  */
+                            reason: string;
+                        })[];
+                        /** @enum {string} */
+                        status: "proposed" | "applied" | "discarded" | "undone";
+                        applied: number[];
+                        undoable: boolean;
+                        /** Format: date-time */
+                        createdAt: string;
+                        /** Format: date-time */
+                        decidedAt: string | null;
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description No such trip or proposal, or it belongs to someone else. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description The request is empty or too long. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description Too many requests to Pip today. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description Pip is not configured or the model did not answer. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    applyProposal: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                proposalId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @description Indexes of the changes to apply; the rest are left out. */
+                    include: number[];
+                };
+            };
+        };
+        responses: {
+            /** @description The proposal as the person sees it. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                        /** Format: uuid */
+                        tripId: string;
+                        request: string;
+                        summary: string;
+                        currency: string;
+                        changes: ({
+                            /** @enum {string} */
+                            kind: "addStop";
+                            name: string;
+                            /** @default null */
+                            countryCode: string | null;
+                            latitude: number;
+                            longitude: number;
+                            nights: number;
+                            /** @default null */
+                            afterStopId: string | null;
+                            /** @default  */
+                            reason: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "removeStop";
+                            stopId: string;
+                            /** @default  */
+                            reason: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "setNights";
+                            stopId: string;
+                            nights: number;
+                            /** @default  */
+                            reason: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "reorder";
+                            order: string[];
+                            /** @default  */
+                            reason: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "addPlace";
+                            /** @default null */
+                            stopId: string | null;
+                            name: string;
+                            /** @default 90 */
+                            minutes: number;
+                            /** @default  */
+                            reason: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "addChecklistItem";
+                            /** @enum {string} */
+                            group: "documents" | "money" | "bookings" | "packing";
+                            label: string;
+                            /** @default  */
+                            reason: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "addExpense";
+                            /** @enum {string} */
+                            category: "flights" | "stay" | "local_transport" | "intercity_transport" | "food" | "experiences" | "insurance" | "documents" | "taxes" | "shopping" | "buffer" | "other";
+                            description: string;
+                            amount: string;
+                            /** @default  */
+                            reason: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "setMonthly";
+                            amount: string;
+                            /** @default  */
+                            reason: string;
+                        })[];
+                        /** @enum {string} */
+                        status: "proposed" | "applied" | "discarded" | "undone";
+                        applied: number[];
+                        undoable: boolean;
+                        /** Format: date-time */
+                        createdAt: string;
+                        /** Format: date-time */
+                        decidedAt: string | null;
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description No such trip or proposal, or it belongs to someone else. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description Already decided (`already_decided`) or no longer undoable (`not_undoable`). */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    discardProposal: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                proposalId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The proposal as the person sees it. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                        /** Format: uuid */
+                        tripId: string;
+                        request: string;
+                        summary: string;
+                        currency: string;
+                        changes: ({
+                            /** @enum {string} */
+                            kind: "addStop";
+                            name: string;
+                            /** @default null */
+                            countryCode: string | null;
+                            latitude: number;
+                            longitude: number;
+                            nights: number;
+                            /** @default null */
+                            afterStopId: string | null;
+                            /** @default  */
+                            reason: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "removeStop";
+                            stopId: string;
+                            /** @default  */
+                            reason: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "setNights";
+                            stopId: string;
+                            nights: number;
+                            /** @default  */
+                            reason: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "reorder";
+                            order: string[];
+                            /** @default  */
+                            reason: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "addPlace";
+                            /** @default null */
+                            stopId: string | null;
+                            name: string;
+                            /** @default 90 */
+                            minutes: number;
+                            /** @default  */
+                            reason: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "addChecklistItem";
+                            /** @enum {string} */
+                            group: "documents" | "money" | "bookings" | "packing";
+                            label: string;
+                            /** @default  */
+                            reason: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "addExpense";
+                            /** @enum {string} */
+                            category: "flights" | "stay" | "local_transport" | "intercity_transport" | "food" | "experiences" | "insurance" | "documents" | "taxes" | "shopping" | "buffer" | "other";
+                            description: string;
+                            amount: string;
+                            /** @default  */
+                            reason: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "setMonthly";
+                            amount: string;
+                            /** @default  */
+                            reason: string;
+                        })[];
+                        /** @enum {string} */
+                        status: "proposed" | "applied" | "discarded" | "undone";
+                        applied: number[];
+                        undoable: boolean;
+                        /** Format: date-time */
+                        createdAt: string;
+                        /** Format: date-time */
+                        decidedAt: string | null;
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description No such trip or proposal, or it belongs to someone else. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description Already decided (`already_decided`) or no longer undoable (`not_undoable`). */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    undoProposal: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                proposalId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The proposal as the person sees it. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                        /** Format: uuid */
+                        tripId: string;
+                        request: string;
+                        summary: string;
+                        currency: string;
+                        changes: ({
+                            /** @enum {string} */
+                            kind: "addStop";
+                            name: string;
+                            /** @default null */
+                            countryCode: string | null;
+                            latitude: number;
+                            longitude: number;
+                            nights: number;
+                            /** @default null */
+                            afterStopId: string | null;
+                            /** @default  */
+                            reason: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "removeStop";
+                            stopId: string;
+                            /** @default  */
+                            reason: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "setNights";
+                            stopId: string;
+                            nights: number;
+                            /** @default  */
+                            reason: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "reorder";
+                            order: string[];
+                            /** @default  */
+                            reason: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "addPlace";
+                            /** @default null */
+                            stopId: string | null;
+                            name: string;
+                            /** @default 90 */
+                            minutes: number;
+                            /** @default  */
+                            reason: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "addChecklistItem";
+                            /** @enum {string} */
+                            group: "documents" | "money" | "bookings" | "packing";
+                            label: string;
+                            /** @default  */
+                            reason: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "addExpense";
+                            /** @enum {string} */
+                            category: "flights" | "stay" | "local_transport" | "intercity_transport" | "food" | "experiences" | "insurance" | "documents" | "taxes" | "shopping" | "buffer" | "other";
+                            description: string;
+                            amount: string;
+                            /** @default  */
+                            reason: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "setMonthly";
+                            amount: string;
+                            /** @default  */
+                            reason: string;
+                        })[];
+                        /** @enum {string} */
+                        status: "proposed" | "applied" | "discarded" | "undone";
+                        applied: number[];
+                        undoable: boolean;
+                        /** Format: date-time */
+                        createdAt: string;
+                        /** Format: date-time */
+                        decidedAt: string | null;
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description No such trip or proposal, or it belongs to someone else. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description Already decided (`already_decided`) or no longer undoable (`not_undoable`). */
+            422: {
                 headers: {
                     [name: string]: unknown;
                 };

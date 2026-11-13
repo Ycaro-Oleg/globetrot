@@ -1,34 +1,45 @@
-import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { useTranslations } from 'next-intl';
+import { cookies } from 'next/headers';
 import { getTranslations } from 'next-intl/server';
+import { apiInternalUrl } from '../../../lib/api-proxy';
 import { isPipEnabled } from '../../../lib/flags';
+import { createServerApiClient, sessionCookieHeader } from '../../../lib/stored-preferences';
+import { fetchDestinations, fetchTrips, SELECTED_TRIP_COOKIE } from '../../../lib/trips';
 import { SITE_NAME } from '../../site';
-import { PipAvatar } from '../_components/pip-avatar';
-import styles from '../_components/shell.module.css';
+import { PipView } from './pip-view';
 
 export async function generateMetadata() {
-  const t = await getTranslations('shell.pip');
-  return { title: `${t('title')} \u00b7 ${SITE_NAME}` };
+  const t = await getTranslations('pipPage');
+  return { title: `${t('title')} · ${SITE_NAME}` };
 }
 
 /**
- * Where the Pip entry points lead while Pip itself is not built. The page exists only behind the `FEATURE_PIP`
- * flag; with the flag off it is a plain 404, like any page that does not exist.
+ * Pip, the optional companion: ask in your own words, review a change list, apply what you want, undo it.
+ * Only behind the `FEATURE_PIP` flag; with the flag off it is a plain 404.
  */
-export default function PipPage() {
-  const t = useTranslations('shell.pip');
-  const soon = useTranslations('shell.comingSoon');
+export default async function PipPage() {
   if (!isPipEnabled()) notFound();
+  const store = await cookies();
+  const cookieHeader = sessionCookieHeader(store.getAll());
+  const options = cookieHeader ? { cookieHeader, apiUrl: apiInternalUrl() } : null;
+  const trips = options ? ((await fetchTrips(options)) ?? []) : [];
+  const savedId = store.get(SELECTED_TRIP_COOKIE)?.value;
+  const trip = trips.find((candidate) => candidate.id === savedId) ?? trips[0] ?? null;
+  const [stops, proposals] =
+    options && trip
+      ? await Promise.all([
+          fetchDestinations(options, trip.id),
+          createServerApiClient(options)
+            .GET('/v1/trips/{id}/pip/proposals', { params: { path: { id: trip.id } } })
+            .then((r) => r.data?.proposals ?? [])
+            .catch(() => []),
+        ])
+      : [null, []];
   return (
-    <section className={styles.card}>
-      <PipAvatar size={160} followPointer />
-      <p className={styles.eyebrow}>{soon('label')}</p>
-      <h1 className={styles.pageTitle}>{t('title')}</h1>
-      <p className={styles.lead}>{t('notBuilt')}</p>
-      <p>
-        <Link href="/app">{soon('backHome')}</Link>
-      </p>
-    </section>
+    <PipView
+      trip={trip ? { id: trip.id, title: trip.title, currency: trip.currency } : null}
+      stops={(stops ?? []).map((stop) => ({ id: stop.id, name: stop.name }))}
+      initial={proposals}
+    />
   );
 }

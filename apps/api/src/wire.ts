@@ -1,12 +1,14 @@
 import {
   createApplication,
   type EmailPort,
+  type AiPort,
   type GeocodingPort,
   type StoragePort,
   type UserReader,
 } from '@globetrot/application';
 import {
   createAccountRepository,
+  createAssistantRepository,
   createCommunityRepository,
   createDestinationRepository,
   createMediaRepository,
@@ -29,6 +31,7 @@ import type { ApiConfig } from './config';
 import { createSmtpEmail } from './email';
 import { createGeoapifyGeocoder, createMemoryRateLimiter } from './places';
 import { createS3Storage } from './storage';
+import { createDeepSeekAi } from './ai';
 
 /** Adapter: the application's `UserReader` port over the `user` table. Selects only what the port names. */
 export function createUserReader(db: Database): UserReader {
@@ -71,6 +74,7 @@ export function createServices(
     readonly email?: EmailPort;
     readonly geocoding?: GeocodingPort;
     readonly storage?: StoragePort;
+    readonly ai?: AiPort;
   } = {},
 ) {
   const email = overrides.email ?? createSmtpEmail(config.email);
@@ -90,6 +94,8 @@ export function createServices(
       community: createCommunityRepository(db),
       media: createMediaRepository(db),
       account: createAccountRepository(db),
+      assistant: createAssistantRepository(db),
+      ai: overrides.ai ?? createDeepSeekAi(config.ai),
       storage: overrides.storage ?? createS3Storage(config.storage),
       unitOfWork: createUnitOfWork(db),
       clock: { now: () => new Date() },

@@ -25,6 +25,8 @@ import type {
   MediaRecord,
   MediaWriter,
   AccountWriter,
+  AssistantWriter,
+  ProposalRecord,
 } from '../ports';
 import {
   createFakeCommunity,
@@ -46,6 +48,8 @@ export interface FakeState {
   preferences: Map<string, PreferencesRecord>;
   community: FakeCommunityState;
   media: Map<string, MediaRecord>;
+  proposals: Map<string, ProposalRecord>;
+  aiUsage: { userId: string; createdAt: Date }[];
   audit: AuditEventInput[];
   idempotency: Map<string, { fingerprint: string; response: unknown }>;
 }
@@ -86,6 +90,8 @@ export function createFakePorts(options: FakeOptions = {}) {
     preferences: new Map(),
     community: emptyCommunityState(),
     media: new Map(),
+    proposals: new Map(),
+    aiUsage: [],
     audit: [],
     idempotency: new Map(),
   };
@@ -378,6 +384,45 @@ export function createFakePorts(options: FakeOptions = {}) {
     },
   };
 
+  /** What the fake model answers next: a JSON string, or null for "not available". */
+  const ai: { next: string | null; requests: { system: string; user: string }[] } = {
+    next: '{"summary":"","changes":[]}',
+    requests: [],
+  };
+  const assistantWriter: AssistantWriter = {
+    async findProposal(id) {
+      return state.proposals.get(id) ?? null;
+    },
+    async listProposals(tripId, limit) {
+      return [...state.proposals.values()]
+        .filter((p) => p.tripId === tripId)
+        .sort((a, b) => (a.id < b.id ? 1 : -1))
+        .slice(0, limit);
+    },
+    async insertProposal(record) {
+      state.proposals.set(record.id, {
+        ...record,
+        status: 'proposed',
+        applied: [],
+        undo: null,
+        decidedAt: null,
+      });
+    },
+    async updateProposal(id, patch) {
+      const current = state.proposals.get(id);
+      // Stored as JSON in the database: keep the fake honest about that.
+      if (!current) return;
+      const undo = patch.undo === undefined ? current.undo : JSON.parse(JSON.stringify(patch.undo));
+      state.proposals.set(id, { ...current, ...patch, undo });
+    },
+    async recordUsage(row) {
+      state.aiUsage.push({ userId: row.userId, createdAt: row.createdAt });
+    },
+    async countRequestsSince(userId, since) {
+      return state.aiUsage.filter((u) => u.userId === userId && u.createdAt >= since).length;
+    },
+  };
+
   const transaction: Transaction = {
     trips: tripWriter,
     expenses: expenseWriter,
@@ -390,6 +435,7 @@ export function createFakePorts(options: FakeOptions = {}) {
     community,
     media: mediaWriter,
     account: accountWriter,
+    assistant: assistantWriter,
     audit: {
       async record(event) {
         if (faults.auditFails) throw new Error('audit store is down');
@@ -442,6 +488,20 @@ export function createFakePorts(options: FakeOptions = {}) {
       },
     },
     account: accountWriter,
+    assistant: assistantWriter,
+    ai: {
+      async completeJson(input) {
+        ai.requests.push({ system: input.system, user: input.user });
+        if (ai.next === null) return null;
+        return {
+          content: ai.next,
+          provider: 'fake',
+          model: 'fake-1',
+          inputTokens: 10,
+          outputTokens: 5,
+        };
+      },
+    },
     unitOfWork: {
       // Commit or roll back as one, like a database transaction.
       async run(work) {
@@ -456,6 +516,8 @@ export function createFakePorts(options: FakeOptions = {}) {
           preferences: new Map(state.preferences),
           community: structuredClone(state.community),
           media: new Map(state.media),
+          proposals: new Map(state.proposals),
+          aiUsage: [...state.aiUsage],
           audit: [...state.audit],
           idempotency: new Map(
             [...state.idempotency].map(([key, value]) => [key, { ...value }] as const),
@@ -474,6 +536,8 @@ export function createFakePorts(options: FakeOptions = {}) {
           state.preferences = before.preferences;
           state.community = before.community;
           state.media = before.media;
+          state.proposals = before.proposals;
+          state.aiUsage = before.aiUsage;
           state.audit = before.audit;
           state.idempotency = before.idempotency;
           throw error;
@@ -517,6 +581,7 @@ export function createFakePorts(options: FakeOptions = {}) {
     state,
     faults,
     places,
+    ai,
     setNow(date: Date) {
       time = date;
     },
