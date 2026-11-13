@@ -236,11 +236,17 @@ export function createFakePorts(options: FakeOptions = {}) {
       return state.savings.get(tripId) ?? null;
     },
     async upsert(tripId, patch) {
-      const current = state.savings.get(tripId) ?? { tripId, savedMinor: 0n, monthlyMinor: 0n };
+      const current = state.savings.get(tripId) ?? {
+        tripId,
+        savedMinor: 0n,
+        monthlyMinor: 0n,
+        ceilingMinor: null,
+      };
       const next: SavingsRecord = {
         tripId,
         savedMinor: patch.savedMinor ?? current.savedMinor,
         monthlyMinor: patch.monthlyMinor ?? current.monthlyMinor,
+        ceilingMinor: patch.ceilingMinor === undefined ? current.ceilingMinor : patch.ceilingMinor,
       };
       state.savings.set(tripId, next);
       return next;

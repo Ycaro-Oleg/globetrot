@@ -540,6 +540,8 @@ export interface SavingsRow {
   readonly tripId: string;
   readonly savedMinor: bigint;
   readonly monthlyMinor: bigint;
+  /** The trip ceiling, or `null` without one. */
+  readonly ceilingMinor: bigint | null;
 }
 
 export function createSavingsRepository(executor: Executor) {
@@ -558,12 +560,15 @@ export function createSavingsRepository(executor: Executor) {
       patch: {
         readonly savedMinor?: bigint | undefined;
         readonly monthlyMinor?: bigint | undefined;
+        /** `null` clears the ceiling; `undefined` leaves it as it is. */
+        readonly ceilingMinor?: bigint | null | undefined;
       },
       now: Date,
     ): Promise<SavingsRow> {
       const changes = {
         ...(patch.savedMinor === undefined ? {} : { savedMinor: patch.savedMinor }),
         ...(patch.monthlyMinor === undefined ? {} : { monthlyMinor: patch.monthlyMinor }),
+        ...(patch.ceilingMinor === undefined ? {} : { ceilingMinor: patch.ceilingMinor }),
       };
       const [row] = await executor
         .insert(tripSavings)

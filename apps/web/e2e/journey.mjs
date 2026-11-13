@@ -333,30 +333,36 @@ async function journey(browser, { width, height, locale }) {
     const budgetCopy = CATALOGS[locale].budgetPage;
     await go('/app/budget');
     await axe('budget (empty)');
-    await page.locator('form#add-expense-form input[name=description]').fill('Flights to Tokyo');
-    await page.locator('form#add-expense-form input[name=amount]').fill('1200');
-    await page.locator('form#add-expense-form select[name=currency]').selectOption('USD');
-    await page.locator('form#add-expense-form input[name=fxRate]').fill('0.9');
-    await page.locator('form#add-expense-form button[type=submit]').click();
-    await page.getByText(budgetCopy.expenseAdded, { exact: true }).waitFor({ timeout: 15_000 });
+    await page.getByRole('button', { name: budgetCopy.addExpense }).first().click();
+    await page.locator('#expense-description').fill('Flights to Tokyo');
+    await page.locator('#expense-amount').fill('1200');
+    await page.locator('#expense-currency').selectOption('USD');
+    await page.locator('#expense-rate').fill('0.9');
+    await axe('budget (add expense drawer)');
+    await page.getByRole('button', { name: budgetCopy.submit, exact: true }).click();
+    await page.getByText(budgetCopy.added, { exact: true }).waitFor({ timeout: 15_000 });
+    await page.getByText('Flights to Tokyo').waitFor({ timeout: 15_000 });
     expect((await page.getByText('Flights to Tokyo').count()) === 1, 'the cost is not in the list');
-    await page.locator('form#savings-form input[name=saved]').fill('300');
-    await page.locator('form#savings-form input[name=monthly]').fill('200');
-    await page.locator('form#savings-form button[type=submit]').click();
-    await page.getByText(budgetCopy.savingsSaved, { exact: true }).waitFor({ timeout: 15_000 });
+    await page.locator('#budget-saved').fill('300');
+    await page.locator('#budget-monthly').fill('200');
+    await page.locator('[role=status]', { hasText: budgetCopy.saved }).waitFor({ timeout: 15_000 });
     await page.reload();
     await page.waitForLoadState('networkidle');
     await axe('budget');
     expect(
-      (await page.locator('progress').getAttribute('value')) !== null,
-      'the budget has no progress bar once there is a cost',
+      (await page.locator('figure').count()) === 1,
+      'the budget has no savings chart once there is a cost',
     );
     expect(
       (await page.getByText('Flights to Tokyo').count()) === 1,
       'the cost is gone after a reload',
     );
     expect(
-      (await page.locator('p', { hasText: /1[.,]?080/ }).count()) >= 1,
+      (await page.locator('#budget-saved').inputValue()).startsWith('300'),
+      'what was saved is gone after a reload',
+    );
+    expect(
+      (await page.getByText(/1[.,]?080/).count()) >= 1,
       'the converted amount (1200 USD at 0.9) is not on the page',
     );
     await page
@@ -364,7 +370,9 @@ async function journey(browser, { width, height, locale }) {
         name: budgetCopy.removeExpense.replace('{description}', 'Flights to Tokyo'),
       })
       .click();
-    await page.getByText(budgetCopy.expenseRemoved, { exact: true }).waitFor({ timeout: 15_000 });
+    await page
+      .getByText(budgetCopy.removed.replace('{description}', 'Flights to Tokyo'), { exact: true })
+      .waitFor({ timeout: 15_000 });
 
     // ---- an example trip from the landing: copy it, and its route is on the board
     const exampleCopy = CATALOGS[locale].tripWorkspace.example;

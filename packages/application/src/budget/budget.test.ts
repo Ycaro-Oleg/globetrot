@@ -273,6 +273,24 @@ describe('the budget and the savings answer', () => {
     });
   });
 
+  it('keeps a trip ceiling and says how much slack is left, or how far over it the costs are', async () => {
+    const { app, trip } = await setup();
+    await app.createExpense.execute(as(ana), { tripId: trip.id, ...FLIGHTS, amount: '2000.00' });
+    const none = await app.getBudget.execute(as(ana), { tripId: trip.id });
+    expect(none.savings.ceiling).toBeNull();
+    expect(none.savings.ceilingSlack).toBeNull();
+    const under = await app.updateSavings.execute(as(ana), { tripId: trip.id, ceiling: '2500' });
+    expect(under.savings.ceiling).toEqual({ amount: '2500.00', currency: 'USD' });
+    expect(under.savings.ceilingSlack).toEqual({ amount: '500.00', currency: 'USD' });
+    const over = await app.updateSavings.execute(as(ana), { tripId: trip.id, ceiling: '1800' });
+    expect(over.savings.ceilingSlack).toEqual({ amount: '-200.00', currency: 'USD' });
+    // Changing another field leaves the ceiling alone; null clears it.
+    const kept = await app.updateSavings.execute(as(ana), { tripId: trip.id, monthly: '100' });
+    expect(kept.savings.ceiling?.amount).toBe('1800.00');
+    const cleared = await app.updateSavings.execute(as(ana), { tripId: trip.id, ceiling: null });
+    expect(cleared.savings.ceiling).toBeNull();
+  });
+
   it('works with no start date (no departure to be on time for)', async () => {
     const { app, trip } = await setup(null);
     await app.createExpense.execute(as(ana), { tripId: trip.id, ...FLIGHTS });
@@ -290,6 +308,7 @@ describe('the budget and the savings answer', () => {
     ['a negative amount', { saved: '-1' }],
     ['too many decimals', { monthly: '10.999' }],
     ['text', { saved: 'lots' }],
+    ['a negative ceiling', { ceiling: '-5' }],
   ])('rejects savings with %s', async (_name, body) => {
     const { app, trip } = await setup();
     await expect(

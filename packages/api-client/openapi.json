@@ -3596,6 +3596,46 @@
                             "boolean",
                             "null"
                           ]
+                        },
+                        "ceiling": {
+                          "type": [
+                            "object",
+                            "null"
+                          ],
+                          "properties": {
+                            "amount": {
+                              "type": "string",
+                              "description": "Major units, exact.",
+                              "example": "1250.00"
+                            },
+                            "currency": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "amount",
+                            "currency"
+                          ]
+                        },
+                        "ceilingSlack": {
+                          "type": [
+                            "object",
+                            "null"
+                          ],
+                          "properties": {
+                            "amount": {
+                              "type": "string",
+                              "description": "Major units, exact.",
+                              "example": "1250.00"
+                            },
+                            "currency": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "amount",
+                            "currency"
+                          ]
                         }
                       },
                       "required": [
@@ -3610,7 +3650,9 @@
                         "departed",
                         "monthsUntilDeparture",
                         "monthlyNeeded",
-                        "onTime"
+                        "onTime",
+                        "ceiling",
+                        "ceilingSlack"
                       ]
                     }
                   },
@@ -5204,6 +5246,15 @@
                     "pattern": "^\\d{1,15}(\\.\\d{1,8})?$",
                     "description": "Planned monthly amount, in the trip’s currency.",
                     "example": "300.00"
+                  },
+                  "ceiling": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "pattern": "^\\d{1,15}(\\.\\d{1,8})?$",
+                    "description": "The most the trip should cost, in the trip’s currency; null clears it.",
+                    "example": "300.00"
                   }
                 }
               }
@@ -5439,6 +5490,46 @@
                             "boolean",
                             "null"
                           ]
+                        },
+                        "ceiling": {
+                          "type": [
+                            "object",
+                            "null"
+                          ],
+                          "properties": {
+                            "amount": {
+                              "type": "string",
+                              "description": "Major units, exact.",
+                              "example": "1250.00"
+                            },
+                            "currency": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "amount",
+                            "currency"
+                          ]
+                        },
+                        "ceilingSlack": {
+                          "type": [
+                            "object",
+                            "null"
+                          ],
+                          "properties": {
+                            "amount": {
+                              "type": "string",
+                              "description": "Major units, exact.",
+                              "example": "1250.00"
+                            },
+                            "currency": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "amount",
+                            "currency"
+                          ]
                         }
                       },
                       "required": [
@@ -5453,7 +5544,9 @@
                         "departed",
                         "monthsUntilDeparture",
                         "monthlyNeeded",
-                        "onTime"
+                        "onTime",
+                        "ceiling",
+                        "ceilingSlack"
                       ]
                     }
                   },

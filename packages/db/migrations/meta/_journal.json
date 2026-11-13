@@ -78,6 +78,13 @@
       "when": 1794446560880,
       "tag": "0010_stop_kit_and_visas",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1794574567968,
+      "tag": "0011_trip_ceiling",
+      "breakpoints": true
     }
   ]
 }

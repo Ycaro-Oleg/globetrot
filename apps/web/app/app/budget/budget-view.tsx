@@ -1,50 +1,76 @@
-import { EXPENSE_CATEGORIES, EXPENSE_STATUSES, fromDecimal, formatMoney } from '@globetrot/domain';
+'use client';
+
+import {
+  convert,
+  exchangeRate,
+  EXPENSE_CATEGORIES,
+  EXPENSE_STATUSES,
+  formatMoney,
+  minorUnitExponent,
+  toCurrencyCode,
+  fromDecimal,
+  money,
+  toLocalDate,
+  type ExpenseStatus,
+  type LocalDate,
+  type Money,
+} from '@globetrot/domain';
 import { formatLocalDate, formatYearMonth, type SupportedLocale } from '@globetrot/i18n';
-import { Banner, StatusMark } from '@globetrot/ui';
+import { Banner } from '@globetrot/ui';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
+import { useEffect, useId, useRef, useState, useTransition, type FormEvent } from 'react';
 import type { BudgetData, ExpenseData } from '../../../lib/trips';
 import type { Option } from '../../settings/options';
-import { addExpense, removeExpense, saveSavings } from './actions';
-import { answerOf } from './answer';
+import { addExpense, removeExpense, saveSavings, type ExpenseInput } from './actions';
+import { chartBars, livePlan, parseAmount } from './budget-plan';
 import styles from './budget.module.css';
 
-const FLASH: Record<string, { tone: 'success' | 'error'; key: string }> = {
-  'expense-added': { tone: 'success', key: 'expenseAdded' },
-  'expense-removed': { tone: 'success', key: 'expenseRemoved' },
-  'expense-error': { tone: 'error', key: 'expenseError' },
-  'savings-saved': { tone: 'success', key: 'savingsSaved' },
-  'savings-error': { tone: 'error', key: 'savingsError' },
+/** Status glyphs (business rules: a status always shows a glyph and a word, never colour alone). */
+export const STATUS_GLYPH: Record<ExpenseStatus, string> = {
+  paid: '●',
+  confirmed: '✓',
+  estimate: '≈',
+  unknown: '?',
 };
+const STATUS_ORDER: readonly ExpenseStatus[] = ['paid', 'confirmed', 'estimate', 'unknown'];
+const MONTHLY_MIN = 50;
+const MONTHLY_MAX = 2000;
+const MONTHLY_STEP = 25;
+
+type Trip = { id: string; title: string; currency: string; startDate: string | null };
+
+function todayLocal(): LocalDate {
+  const now = new Date();
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return toLocalDate(`${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`);
+}
 
 /**
- * The budget of the current trip. Everything is derived on the server by the same rules the domain tests cover:
- * the totals add up costs already converted to the trip's currency, and the answer sentence comes from the
- * savings plan. Costs in other currencies show the amount typed, the converted amount and the rate that was used.
+ * The budget and savings of the current trip (design handoff v2, "Budget"): the answer sentence first, then the
+ * numbers. Totals and conversions come from the server; the answer is recomputed live with the domain's savings
+ * rule while the monthly amount moves, and every change is saved to the trip.
  */
 export function BudgetView({
   trip,
   budget,
   expenses,
   currencies,
-  status,
 }: {
-  trip: { id: string; title: string; currency: string } | null;
+  trip: Trip | null;
   budget: BudgetData | null;
   expenses: readonly ExpenseData[];
   currencies: readonly Option[];
-  status: string | undefined;
 }) {
   const t = useTranslations('budgetPage');
-  const savingsText = useTranslations('savings');
-  const locale = useLocale() as SupportedLocale;
 
   if (trip === null) {
     return (
       <section className={styles.page}>
-        <h1>{t('title')}</h1>
-        <p className={styles.lead}>{t('noTrip')}</p>
-        <Link className={styles.action} href="/app/trips">
+        <h1 className={styles.title}>{t('title')}</h1>
+        <p className={styles.sub}>{t('noTrip')}</p>
+        <Link className={styles.secondary} href="/app/trips">
           {t('goTrips')}
         </Link>
       </section>
@@ -53,252 +79,734 @@ export function BudgetView({
   if (budget === null) {
     return (
       <section className={styles.page}>
-        <h1>{t('title')}</h1>
+        <h1 className={styles.title}>{t('title')}</h1>
         <Banner tone="error" role="alert">
           {t('loadError')}
         </Banner>
       </section>
     );
   }
+  return <Board trip={trip} budget={budget} expenses={expenses} currencies={currencies} />;
+}
 
-  const money = (value: { amount: string; currency: string }) =>
-    formatMoney(fromDecimal(value.amount, value.currency), locale);
-  const flash = status ? FLASH[status] : undefined;
-  const plan = budget.savings;
-  const answer = answerOf(plan);
-  const strong = (chunks: React.ReactNode) => <strong>{chunks}</strong>;
-  const progress = Math.round(plan.progressBasisPoints / 100);
-  const hasCosts = plan.status !== 'no-costs';
+function Board({
+  trip,
+  budget,
+  expenses,
+  currencies,
+}: {
+  trip: Trip;
+  budget: BudgetData;
+  expenses: readonly ExpenseData[];
+  currencies: readonly Option[];
+}) {
+  const t = useTranslations('budgetPage');
+  const locale = useLocale() as SupportedLocale;
+  const router = useRouter();
+  const [, startTransition] = useTransition();
+  // The budget says which currency its amounts are in (the trip's); read them in it.
+  const currency = budget.currency;
+  const fmt = (value: Money, whole = false) =>
+    formatMoney(value, locale, whole ? { precision: 'whole' } : {});
+  const view = (value: { amount: string; currency: string }) =>
+    fmt(fromDecimal(value.amount, value.currency));
+
+  const total = fromDecimal(budget.total.amount, currency);
+  const [savedText, setSavedText] = useState(budget.savings.saved.amount);
+  const [ceilingText, setCeilingText] = useState(budget.savings.ceiling?.amount ?? '');
+  const [monthly, setMonthly] = useState(() => Math.round(Number(budget.savings.monthly.amount)));
+  const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const [today] = useState(todayLocal);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [toast, setToast] = useState<{ text: string; undo?: ExpenseInput } | null>(null);
+  const openButton = useRef<HTMLButtonElement>(null);
+
+  const saved = parseAmount(savedText, currency) ?? money(0n, currency);
+  const monthlyMoney = parseAmount(String(monthly), currency) ?? money(0n, currency);
+  const ceiling = ceilingText.trim() === '' ? null : parseAmount(ceilingText, currency);
+  const startDate = trip.startDate === null ? null : toLocalDate(trip.startDate);
+  const plan = livePlan({ total, saved, monthly: monthlyMoney, startDate, today });
+
+  // Save the savings a moment after the person stops changing them.
+  const pending = useRef<Parameters<typeof saveSavings>[1] | null>(null);
+  const timer = useRef<number | undefined>(undefined);
+  const queue = (patch: Parameters<typeof saveSavings>[1]) => {
+    pending.current = { ...pending.current, ...patch };
+    setSaveState('saving');
+    window.clearTimeout(timer.current);
+    timer.current = window.setTimeout(() => {
+      const body = pending.current;
+      pending.current = null;
+      if (!body) return;
+      void saveSavings(trip.id, body).then((result) => {
+        setSaveState(result.ok ? 'saved' : 'error');
+        if (result.ok) startTransition(() => router.refresh());
+      });
+    }, 600);
+  };
+  useEffect(() => () => window.clearTimeout(timer.current), []);
+
+  const showToast = (next: { text: string; undo?: ExpenseInput }) => setToast(next);
+  useEffect(() => {
+    if (!toast) return;
+    const id = window.setTimeout(() => setToast(null), 5000);
+    return () => window.clearTimeout(id);
+  }, [toast]);
+
+  const remove = (expense: ExpenseData) => {
+    void removeExpense(trip.id, expense.id).then((result) => {
+      if (!result.ok) return showToast({ text: t('actionError') });
+      startTransition(() => router.refresh());
+      showToast({
+        text: t('removed', { description: expense.description }),
+        undo: {
+          tripId: trip.id,
+          description: expense.description,
+          category: expense.category,
+          status: expense.status,
+          amount: expense.original.amount,
+          currency: expense.original.currency,
+          fxRate: expense.fx?.rate,
+        },
+      });
+    });
+  };
+  const undo = (input: ExpenseInput) => {
+    setToast(null);
+    void addExpense(input).then((result) => {
+      if (result.ok) startTransition(() => router.refresh());
+      else showToast({ text: t('actionError') });
+    });
+  };
 
   return (
     <section className={styles.page}>
-      <p className={styles.eyebrow}>{trip.title}</p>
-      <h1>{t('title')}</h1>
+      <header className={styles.header}>
+        <div className={styles.heading}>
+          <h1 className={styles.title}>{t('title')}</h1>
+          <span className={styles.sub}>
+            {trip.title}
+            {trip.startDate
+              ? ` · ${formatLocalDate(trip.startDate, locale, { dateStyle: 'medium' })}`
+              : ''}
+          </span>
+        </div>
+        <button
+          ref={openButton}
+          type="button"
+          className={styles.cta}
+          onClick={() => setDrawerOpen(true)}
+        >
+          + {t('addExpense')}
+        </button>
+      </header>
 
-      {flash ? (
-        <Banner tone={flash.tone} role={flash.tone === 'error' ? 'alert' : 'status'}>
-          {t(flash.key)}
-        </Banner>
+      <div className={styles.top}>
+        <Answer
+          plan={plan}
+          total={total}
+          saved={saved}
+          monthly={monthlyMoney}
+          today={today}
+          startDate={startDate}
+          fmt={fmt}
+        >
+          <div className={styles.controls}>
+            <label className={styles.field}>
+              <span>{t('savedLabel')}</span>
+              <span className={styles.moneyInput}>
+                <span aria-hidden="true">{currency}</span>
+                <input
+                  id="budget-saved"
+                  inputMode="decimal"
+                  autoComplete="off"
+                  value={savedText}
+                  onChange={(event) => {
+                    setSavedText(event.target.value);
+                    const value = parseAmount(event.target.value, currency);
+                    if (value) queue({ saved: event.target.value.trim().replace(',', '.') });
+                  }}
+                />
+              </span>
+            </label>
+            <label className={styles.field}>
+              <span>{t('ceilingLabel')}</span>
+              <span className={styles.moneyInput}>
+                <span aria-hidden="true">{currency}</span>
+                <input
+                  id="budget-ceiling"
+                  inputMode="decimal"
+                  autoComplete="off"
+                  placeholder={t('ceilingPlaceholder')}
+                  value={ceilingText}
+                  onChange={(event) => {
+                    const text = event.target.value;
+                    setCeilingText(text);
+                    if (text.trim() === '') queue({ ceiling: null });
+                    else if (parseAmount(text, currency))
+                      queue({ ceiling: text.trim().replace(',', '.') });
+                  }}
+                />
+              </span>
+            </label>
+            <label className={styles.slider}>
+              <span>
+                <span>{t('monthlyLabel')}</span>
+                <strong>{fmt(monthlyMoney, true)}</strong>
+              </span>
+              <input
+                id="budget-monthly"
+                type="range"
+                min={MONTHLY_MIN}
+                max={Math.max(MONTHLY_MAX, monthly)}
+                step={MONTHLY_STEP}
+                value={Math.max(MONTHLY_MIN, monthly)}
+                aria-valuetext={fmt(monthlyMoney, true)}
+                onChange={(event) => {
+                  const next = Number(event.target.value);
+                  setMonthly(next);
+                  queue({ monthly: String(next) });
+                }}
+              />
+            </label>
+            <p className={styles.noMoney}>
+              {t('noMoney')}{' '}
+              <span role="status" className={styles.saveState}>
+                {saveState === 'saving' ? t('saving') : null}
+                {saveState === 'saved' ? `✓ ${t('saved')}` : null}
+                {saveState === 'error' ? t('savingsError') : null}
+              </span>
+            </p>
+          </div>
+        </Answer>
+
+        <Totals budget={budget} total={total} ceiling={ceiling} fmt={fmt} view={view} />
+      </div>
+
+      <section className={styles.card} aria-labelledby="expenses-title">
+        <div className={styles.listHead}>
+          <h2 id="expenses-title">{t('expensesTitle')}</h2>
+          <span>{t('itemsCount', { count: expenses.length })}</span>
+        </div>
+        {expenses.length === 0 ? (
+          <p className={styles.empty}>{t('empty')}</p>
+        ) : (
+          <ul className={styles.rows}>
+            {expenses.map((expense) => (
+              <li key={expense.id} className={styles.row}>
+                <div className={styles.rowMain}>
+                  <strong>{expense.description}</strong>
+                  <span>{t(`categories.${expense.category}`)}</span>
+                </div>
+                <span className={styles.chip} data-status={expense.status}>
+                  <span className={styles.dot} data-status={expense.status} aria-hidden="true">
+                    {STATUS_GLYPH[expense.status]}
+                  </span>
+                  {t(`statuses.${expense.status}`)}
+                </span>
+                <span
+                  className={styles.original}
+                  title={
+                    expense.fx
+                      ? t('fxNote', {
+                          original: view(expense.original),
+                          rate: expense.fx.rate,
+                          currency,
+                          date: formatLocalDate(expense.fx.asOf, locale, { dateStyle: 'medium' }),
+                        })
+                      : undefined
+                  }
+                >
+                  {expense.fx ? view(expense.original) : ''}
+                </span>
+                <span className={styles.converted}>
+                  {expense.status === 'estimate' ? '≈ ' : ''}
+                  {view(expense.inTripCurrency)}
+                </span>
+                <button
+                  type="button"
+                  className={styles.remove}
+                  aria-label={t('removeExpense', { description: expense.description })}
+                  onClick={() => remove(expense)}
+                >
+                  ×
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+        <p className={styles.footnote}>{t('rateNote')}</p>
+      </section>
+
+      {drawerOpen ? (
+        <ExpenseDrawer
+          trip={trip}
+          currencies={currencies}
+          fmt={fmt}
+          onClose={() => {
+            setDrawerOpen(false);
+            openButton.current?.focus();
+          }}
+          onAdded={() => {
+            setDrawerOpen(false);
+            openButton.current?.focus();
+            startTransition(() => router.refresh());
+            showToast({ text: t('added') });
+          }}
+        />
       ) : null}
 
-      <div className={styles.answer} aria-labelledby="answer-title">
-        <h2 id="answer-title" className={styles.answerTitle}>
-          {t('answerTitle')}
-        </h2>
-        <p className={styles.sentence}>
-          {answer.kind === 'noCosts' ? savingsText('noCosts') : null}
-          {answer.kind === 'fullySaved' ? savingsText('fullySaved') : null}
-          {answer.kind === 'yes'
-            ? savingsText.rich('answerYes', {
-                strong,
-                month: formatYearMonth(answer.month, locale),
-                amount: money(plan.monthly),
-              })
-            : null}
-          {answer.kind === 'almost'
-            ? savingsText.rich('answerAlmost', {
-                strong,
-                month: formatYearMonth(answer.month, locale),
-                monthly: money(plan.monthly),
-                departure: formatLocalDate(answer.departure, locale, { dateStyle: 'long' }),
-              })
-            : null}
-          {answer.kind === 'setMonthly' ? t('setMonthly') : null}
-        </p>
-        {answer.kind === 'setMonthly' && answer.needed && answer.departure ? (
-          <p className={styles.note}>
-            {t('neededByDeparture', {
-              date: formatLocalDate(answer.departure, locale, { dateStyle: 'long' }),
-              amount: money({ amount: answer.needed, currency: trip.currency }),
-            })}
-          </p>
-        ) : null}
-        {hasCosts ? (
-          <div className={styles.progress}>
-            <progress
-              value={plan.progressBasisPoints}
-              max={10000}
-              aria-label={t('progressLabel', {
-                saved: money(plan.saved),
-                total: money(budget.total),
-              })}
-            />
-            <span>
-              {t('progressText', {
-                percent: progress,
-                saved: money(plan.saved),
-                total: money(budget.total),
-              })}
-            </span>
-          </div>
-        ) : null}
-        <p className={styles.disclaimer}>{savingsText('disclaimer')}</p>
-      </div>
-
-      <div className={styles.grid}>
-        <section className={styles.card} aria-labelledby="costs-title">
-          <h2 id="costs-title">{t('costsTitle')}</h2>
-          <p className={styles.total}>
-            <span>{t('total')}</span> <strong>{money(budget.total)}</strong>
-          </p>
-          {expenses.length === 0 ? (
-            <p className={styles.note}>{t('noExpenses')}</p>
-          ) : (
-            <ul className={styles.expenses}>
-              {expenses.map((expense) => (
-                <li key={expense.id}>
-                  <div className={styles.expenseMain}>
-                    <strong>{expense.description}</strong>
-                    <span className={styles.meta}>
-                      {t(`categories.${expense.category}`)}{' '}
-                      <StatusMark status={expense.status}>
-                        {t(`statuses.${expense.status}`)}
-                      </StatusMark>
-                    </span>
-                    {expense.fx ? (
-                      <span className={styles.meta}>
-                        {t('fxNote', {
-                          original: money(expense.original),
-                          rate: expense.fx.rate,
-                          currency: trip.currency,
-                          date: formatLocalDate(expense.fx.asOf, locale, { dateStyle: 'medium' }),
-                        })}
-                      </span>
-                    ) : null}
-                  </div>
-                  <span className={styles.amount}>{money(expense.inTripCurrency)}</span>
-                  <form action={removeExpense}>
-                    <input type="hidden" name="tripId" value={trip.id} />
-                    <input type="hidden" name="expenseId" value={expense.id} />
-                    <button
-                      type="submit"
-                      className={styles.remove}
-                      aria-label={t('removeExpense', { description: expense.description })}
-                    >
-                      ×
-                    </button>
-                  </form>
-                </li>
-              ))}
-            </ul>
-          )}
-          {hasCosts ? (
-            <>
-              <h3>{t('byCategory')}</h3>
-              <ul className={styles.breakdown}>
-                {budget.byCategory
-                  .filter((entry) => Number(entry.amount.amount) > 0)
-                  .map((entry) => (
-                    <li key={entry.category}>
-                      <span>{t(`categories.${entry.category}`)}</span>
-                      <span>{money(entry.amount)}</span>
-                    </li>
-                  ))}
-              </ul>
-              <h3>{t('byStatus')}</h3>
-              <ul className={styles.breakdown}>
-                {budget.byStatus
-                  .filter((entry) => Number(entry.amount.amount) > 0)
-                  .map((entry) => (
-                    <li key={entry.status}>
-                      <StatusMark status={entry.status}>{t(`statuses.${entry.status}`)}</StatusMark>
-                      <span>{money(entry.amount)}</span>
-                    </li>
-                  ))}
-              </ul>
-            </>
+      {toast ? (
+        <div className={styles.toast} role="status">
+          <span>{toast.text}</span>
+          {toast.undo ? (
+            <button type="button" onClick={() => undo(toast.undo!)}>
+              {t('undo')}
+            </button>
           ) : null}
-        </section>
-
-        <div className={styles.side}>
-          <section className={styles.card} aria-labelledby="add-title">
-            <h2 id="add-title">{t('addTitle')}</h2>
-            <form action={addExpense} className={styles.form} id="add-expense-form">
-              <input type="hidden" name="tripId" value={trip.id} />
-              <label className={styles.field}>
-                <span>{t('description')}</span>
-                <input name="description" required maxLength={120} autoComplete="off" />
-              </label>
-              <div className={styles.row}>
-                <label className={styles.field}>
-                  <span>{t('category')}</span>
-                  <select name="category" defaultValue="flights">
-                    {EXPENSE_CATEGORIES.map((category) => (
-                      <option key={category} value={category}>
-                        {t(`categories.${category}`)}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label className={styles.field}>
-                  <span>{t('status')}</span>
-                  <select name="status" defaultValue="estimate">
-                    {EXPENSE_STATUSES.map((value) => (
-                      <option key={value} value={value}>
-                        {t(`statuses.${value}`)}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              </div>
-              <div className={styles.row}>
-                <label className={styles.field}>
-                  <span>{t('amount')}</span>
-                  <input name="amount" required inputMode="decimal" autoComplete="off" />
-                </label>
-                <label className={styles.field}>
-                  <span>{t('currency')}</span>
-                  <select name="currency" defaultValue={trip.currency}>
-                    {currencies.map((currency) => (
-                      <option key={currency.id} value={currency.id}>
-                        {currency.label}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              </div>
-              <label className={styles.field}>
-                <span>{t('fxRate', { currency: trip.currency })}</span>
-                <input name="fxRate" inputMode="decimal" autoComplete="off" />
-                <small>{t('fxHelp', { currency: trip.currency })}</small>
-              </label>
-              <button type="submit" className={styles.primary}>
-                {t('add')}
-              </button>
-            </form>
-          </section>
-
-          <section className={styles.card} aria-labelledby="savings-title">
-            <h2 id="savings-title">{t('savingsTitle')}</h2>
-            <form action={saveSavings} className={styles.form} id="savings-form">
-              <input type="hidden" name="tripId" value={trip.id} />
-              <div className={styles.row}>
-                <label className={styles.field}>
-                  <span>{t('savedSoFar', { currency: trip.currency })}</span>
-                  <input
-                    name="saved"
-                    inputMode="decimal"
-                    autoComplete="off"
-                    placeholder={plan.saved.amount}
-                  />
-                </label>
-                <label className={styles.field}>
-                  <span>{t('perMonth', { currency: trip.currency })}</span>
-                  <input
-                    name="monthly"
-                    inputMode="decimal"
-                    autoComplete="off"
-                    placeholder={plan.monthly.amount}
-                  />
-                </label>
-              </div>
-              <button type="submit" className={styles.primary}>
-                {t('saveSavings')}
-              </button>
-            </form>
-          </section>
         </div>
-      </div>
+      ) : null}
     </section>
+  );
+}
+
+function Answer({
+  plan,
+  total,
+  saved,
+  monthly,
+  today,
+  startDate,
+  fmt,
+  children,
+}: {
+  plan: ReturnType<typeof livePlan>;
+  total: Money;
+  saved: Money;
+  monthly: Money;
+  today: LocalDate;
+  startDate: LocalDate | null;
+  fmt: (value: Money, whole?: boolean) => string;
+  children: React.ReactNode;
+}) {
+  const t = useTranslations('budgetPage');
+  const savingsText = useTranslations('savings');
+  const locale = useLocale() as SupportedLocale;
+  const month = (value: string) => formatYearMonth(value, locale);
+  const departure = startDate
+    ? formatLocalDate(startDate, locale, { day: 'numeric', month: 'long' })
+    : null;
+
+  let tone: 'ok' | 'late' | 'start' = 'start';
+  let lead: string | null = null;
+  let rest: string;
+  let sub: string | null = null;
+  if (plan.status === 'no-costs') {
+    rest = savingsText('noCosts');
+  } else if (plan.status === 'fully-saved') {
+    tone = 'ok';
+    lead = t('leadYes');
+    rest = t('restAlready');
+    sub = t('subExtra', {
+      amount: fmt(money(saved.amountMinor - total.amountMinor, total.currency)),
+    });
+  } else if (plan.readyMonth === null) {
+    tone = 'start';
+    lead = t('leadNotYet');
+    rest = t('restSetMonthly');
+  } else if (plan.onTime === false) {
+    tone = 'late';
+    lead = t('leadNotYet');
+    rest = plan.monthlyNeeded
+      ? t('restLate', { month: month(plan.readyMonth), needed: fmt(plan.monthlyNeeded, true) })
+      : t('restLateNoNeeded', { month: month(plan.readyMonth) });
+  } else {
+    tone = 'ok';
+    lead = t('leadYes');
+    rest = t('restYes', { month: month(plan.readyMonth), amount: fmt(monthly, true) });
+  }
+  if (plan.status === 'saving') {
+    sub =
+      plan.monthsUntilDeparture !== null && departure
+        ? t('subToGo', {
+            left: fmt(plan.left, true),
+            months: plan.monthsUntilDeparture,
+            date: departure,
+          })
+        : t('subToGoNoDate', { left: fmt(plan.left, true) });
+  }
+
+  const bars = chartBars({ total, saved, monthly, today, startDate });
+  const highest = bars.reduce(
+    (max, bar) => (bar.value.amountMinor > max ? bar.value.amountMinor : max),
+    total.amountMinor,
+  );
+  const scale = (value: bigint) =>
+    highest > 0n ? Math.max(3, (Number(value) / Number(highest)) * 89) : 3;
+  const shortMonth = (value: string) =>
+    new Intl.DateTimeFormat(locale, { month: 'short', timeZone: 'UTC' })
+      .format(new Date(`${value}-15T12:00:00Z`))
+      .replace('.', '');
+
+  return (
+    <section className={styles.card} aria-labelledby="answer-sentence">
+      <div className={styles.answerHead}>
+        <span className={styles.kicker}>{t('answerKicker')}</span>
+        <span className={styles.pill} data-tone={tone}>
+          {tone === 'ok' ? '✓' : tone === 'late' ? '!' : '→'}{' '}
+          {tone === 'ok' ? t('pillOk') : tone === 'late' ? t('pillAdjust') : t('pillStart')}
+        </span>
+      </div>
+      <p id="answer-sentence" className={styles.sentence} aria-live="polite">
+        {lead ? (
+          <span className={styles.lead} data-tone={tone}>
+            {lead}
+          </span>
+        ) : null}{' '}
+        {rest}
+      </p>
+      {sub ? <p className={styles.answerSub}>{sub}</p> : null}
+
+      {plan.status !== 'no-costs' ? (
+        <figure className={styles.chart} aria-labelledby="chart-label">
+          <figcaption id="chart-label" className="sr-only">
+            {t('chartLabel')}
+          </figcaption>
+          <div className={styles.bars} aria-hidden="true">
+            {bars.map((bar) => (
+              <div key={bar.month} className={styles.barSlot}>
+                <div
+                  className={styles.bar}
+                  data-done={bar.done || undefined}
+                  data-now={bar.now || undefined}
+                  style={{ height: `${scale(bar.value.amountMinor)}%` }}
+                />
+                {bar.ready && !bar.departure ? (
+                  <span
+                    className={styles.readyMark}
+                    style={{ bottom: `calc(${scale(bar.value.amountMinor)}% + 6px)` }}
+                  >
+                    ✓ {t('chartReady')}
+                  </span>
+                ) : null}
+              </div>
+            ))}
+            <div className={styles.goal} style={{ bottom: `${scale(total.amountMinor)}%` }}>
+              <span>{t('chartGoal', { amount: fmt(total, true) })}</span>
+            </div>
+          </div>
+          <div className={styles.barLabels} aria-hidden="true">
+            {bars.map((bar) => (
+              <span key={bar.month}>
+                <strong>
+                  {shortMonth(bar.month)}
+                  {bar.departure ? ' ✈' : ''}
+                </strong>
+                <span>
+                  {new Intl.NumberFormat(locale, {
+                    notation: 'compact',
+                    maximumFractionDigits: 1,
+                  }).format(
+                    Number(bar.value.amountMinor) / 10 ** minorUnitExponent(total.currency),
+                  )}
+                </span>
+              </span>
+            ))}
+          </div>
+          <ul className="sr-only">
+            {bars.map((bar) => (
+              <li key={bar.month}>
+                {t('chartRow', { month: month(bar.month), amount: fmt(bar.value, true) })}
+                {bar.ready ? ` · ${t('chartReady')}` : ''}
+                {bar.departure ? ` · ${t('chartDeparts')}` : ''}
+              </li>
+            ))}
+          </ul>
+        </figure>
+      ) : null}
+      {children}
+    </section>
+  );
+}
+
+function Totals({
+  budget,
+  total,
+  ceiling,
+  fmt,
+  view,
+}: {
+  budget: BudgetData;
+  total: Money;
+  ceiling: Money | null;
+  fmt: (value: Money, whole?: boolean) => string;
+  view: (value: { amount: string; currency: string }) => string;
+}) {
+  const t = useTranslations('budgetPage');
+  const byStatus = STATUS_ORDER.map((status) => ({
+    status,
+    amount: budget.byStatus.find((entry) => entry.status === status)?.amount ?? {
+      amount: '0',
+      currency: total.currency,
+    },
+  }));
+  const totalNumber = Number(budget.total.amount);
+  const slack =
+    ceiling === null ? null : money(ceiling.amountMinor - total.amountMinor, total.currency);
+
+  return (
+    <section className={styles.card} aria-labelledby="total-kicker">
+      <span id="total-kicker" className={styles.kicker}>
+        {t('totalKicker')}
+      </span>
+      <p className={styles.totalNumber}>{fmt(total)}</p>
+      {totalNumber > 0 ? (
+        <div className={styles.stack} role="img" aria-label={t('byStatusLabel')}>
+          {byStatus
+            .filter((entry) => Number(entry.amount.amount) > 0)
+            .map((entry) => (
+              <span
+                key={entry.status}
+                data-status={entry.status}
+                style={{ width: `${(Number(entry.amount.amount) / totalNumber) * 100}%` }}
+              />
+            ))}
+        </div>
+      ) : null}
+      <ul className={styles.legend} aria-label={t('byStatusLabel')}>
+        {byStatus.map((entry) => (
+          <li key={entry.status}>
+            <span className={styles.dot} data-status={entry.status} aria-hidden="true">
+              {STATUS_GLYPH[entry.status]}
+            </span>
+            <span>{t(`statuses.${entry.status}`)}</span>
+            <strong>{view(entry.amount)}</strong>
+          </li>
+        ))}
+      </ul>
+      <p
+        className={styles.slack}
+        data-tone={slack === null ? 'none' : slack.amountMinor < 0n ? 'over' : 'ok'}
+      >
+        {slack === null
+          ? t('slackNone')
+          : slack.amountMinor < 0n
+            ? `▲ ${t('slackOver', { amount: fmt(money(-slack.amountMinor, slack.currency), true) })}`
+            : `✓ ${t('slackOk', { amount: fmt(slack, true) })}`}
+      </p>
+      <p className={styles.footnote}>{t('estNote')}</p>
+    </section>
+  );
+}
+
+function ExpenseDrawer({
+  trip,
+  currencies,
+  fmt,
+  onClose,
+  onAdded,
+}: {
+  trip: Trip;
+  currencies: readonly Option[];
+  fmt: (value: Money, whole?: boolean) => string;
+  onClose: () => void;
+  onAdded: () => void;
+}) {
+  const t = useTranslations('budgetPage');
+  const titleId = useId();
+  const first = useRef<HTMLInputElement>(null);
+  const [description, setDescription] = useState('');
+  const [amount, setAmount] = useState('');
+  const [currency, setCurrency] = useState(trip.currency);
+  const [fxRate, setFxRate] = useState('');
+  const [category, setCategory] = useState<(typeof EXPENSE_CATEGORIES)[number]>('food');
+  const [status, setStatus] = useState<ExpenseStatus>('estimate');
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    first.current?.focus();
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [onClose]);
+
+  const foreign = currency !== trip.currency;
+  const typed = parseAmount(amount, currency);
+  const rateText = fxRate.trim().replace(',', '.');
+  const rate = Number(rateText);
+  const preview = (() => {
+    if (!typed || !foreign || !(rate > 0)) return null;
+    try {
+      const converted = convert(
+        typed,
+        exchangeRate({
+          id: 'preview',
+          base: currency,
+          quote: toCurrencyCode(trip.currency),
+          rate: rateText,
+          source: 'typed',
+          asOf: new Date(),
+        }),
+      );
+      return fmt(converted.converted);
+    } catch {
+      return null;
+    }
+  })();
+
+  const submit = (event: FormEvent) => {
+    event.preventDefault();
+    if (!description.trim() || !typed || typed.amountMinor <= 0n) {
+      setError(t('formError'));
+      return;
+    }
+    if (foreign && !(rate > 0)) {
+      setError(t('rateRequired', { currency: trip.currency }));
+      return;
+    }
+    setBusy(true);
+    void addExpense({
+      tripId: trip.id,
+      description,
+      category,
+      status,
+      amount: amount.trim().replace(',', '.'),
+      currency,
+      fxRate: foreign ? fxRate.trim().replace(',', '.') : undefined,
+    }).then((result) => {
+      setBusy(false);
+      if (result.ok) onAdded();
+      else setError(t('expenseError'));
+    });
+  };
+
+  return (
+    <>
+      <div className={styles.scrim} onClick={onClose} aria-hidden="true" />
+      <form
+        className={styles.drawer}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        onSubmit={submit}
+        noValidate
+      >
+        <div className={styles.drawerHead}>
+          <h2 id={titleId}>{t('addExpense')}</h2>
+          <button type="button" className={styles.close} onClick={onClose} aria-label={t('close')}>
+            ×
+          </button>
+        </div>
+        <label className={styles.field}>
+          <span>{t('description')}</span>
+          <input
+            ref={first}
+            id="expense-description"
+            value={description}
+            maxLength={120}
+            autoComplete="off"
+            placeholder={t('descPlaceholder')}
+            onChange={(event) => {
+              setDescription(event.target.value);
+              setError(null);
+            }}
+          />
+        </label>
+        <div className={styles.amountRow}>
+          <label className={styles.field}>
+            <span>{t('amount')}</span>
+            <input
+              id="expense-amount"
+              inputMode="decimal"
+              autoComplete="off"
+              value={amount}
+              onChange={(event) => {
+                setAmount(event.target.value);
+                setError(null);
+              }}
+            />
+          </label>
+          <label className={styles.field}>
+            <span>{t('currency')}</span>
+            <select
+              id="expense-currency"
+              value={currency}
+              onChange={(event) => setCurrency(event.target.value)}
+            >
+              {currencies.map((option) => (
+                <option key={option.id} value={option.id}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+        {foreign ? (
+          <label className={styles.field}>
+            <span>{t('fxRate', { currency: trip.currency })}</span>
+            <input
+              id="expense-rate"
+              inputMode="decimal"
+              autoComplete="off"
+              value={fxRate}
+              onChange={(event) => {
+                setFxRate(event.target.value);
+                setError(null);
+              }}
+            />
+            <small>
+              {preview
+                ? t('preview', { amount: preview })
+                : t('fxHelp', { currency: trip.currency })}
+            </small>
+          </label>
+        ) : null}
+        <fieldset className={styles.choices}>
+          <legend>{t('category')}</legend>
+          <div className={styles.chips}>
+            {EXPENSE_CATEGORIES.map((value) => (
+              <button
+                key={value}
+                type="button"
+                aria-pressed={category === value}
+                onClick={() => setCategory(value)}
+              >
+                {t(`categories.${value}`)}
+              </button>
+            ))}
+          </div>
+        </fieldset>
+        <fieldset className={styles.choices}>
+          <legend>{t('status')}</legend>
+          <div className={styles.statuses}>
+            {EXPENSE_STATUSES.map((value) => (
+              <button
+                key={value}
+                type="button"
+                aria-pressed={status === value}
+                onClick={() => setStatus(value)}
+              >
+                <span className={styles.dot} data-status={value} aria-hidden="true">
+                  {STATUS_GLYPH[value]}
+                </span>
+                {t(`statuses.${value}`)}
+              </button>
+            ))}
+          </div>
+          <small>{t(`statusHelp.${status}`)}</small>
+        </fieldset>
+        {error ? (
+          <p className={styles.formError} role="alert">
+            {error}
+          </p>
+        ) : null}
+        <button type="submit" className={styles.submit} disabled={busy}>
+          {t('submit')}
+        </button>
+      </form>
+    </>
   );
 }

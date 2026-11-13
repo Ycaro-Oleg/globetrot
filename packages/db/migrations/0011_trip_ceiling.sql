@@ -1,0 +1,2 @@
+ALTER TABLE "trip_savings" ADD COLUMN "ceiling_minor" bigint;--> statement-breakpoint
+ALTER TABLE "trip_savings" ADD CONSTRAINT "trip_savings_ceiling_not_negative" CHECK ("trip_savings"."ceiling_minor" is null or "trip_savings"."ceiling_minor" >= 0);
