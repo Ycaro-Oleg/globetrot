@@ -8,6 +8,7 @@ import { useEffect, useRef, useState, type FormEvent } from 'react';
 import type { ChecklistData, VisaData } from '../../../lib/trips';
 import { PipAvatar } from '../_components/pip-avatar';
 import { addItem, addSuggestions, removeItem, setItemDone } from './actions';
+import { AskPipLink } from '../_components/ask-pip-link';
 import styles from './lists.module.css';
 
 type Milestone = (typeof MILESTONES)[number];
@@ -53,7 +54,9 @@ export function ListsView({
   visas,
   routeCountries,
   initialTab,
+  pipEnabled = false,
 }: {
+  pipEnabled?: boolean;
   trip: { id: string; title: string } | null;
   checklist: ChecklistData | null;
   visas: readonly VisaData[];
@@ -90,6 +93,7 @@ export function ListsView({
       visas={visas}
       routeCountries={routeCountries}
       initialTab={initialTab}
+      pipEnabled={pipEnabled}
     />
   );
 }
@@ -100,7 +104,9 @@ function Lists({
   visas,
   routeCountries,
   initialTab,
+  pipEnabled,
 }: {
+  pipEnabled: boolean;
   tripId: string;
   initial: ChecklistData;
   visas: readonly VisaData[];
@@ -157,6 +163,7 @@ function Lists({
           <h1 className={styles.title}>{tab === 'lists' ? t('title') : t('tabPassport')}</h1>
           <span className={styles.sub}>{tab === 'lists' ? t('sub') : t('passportSub')}</span>
         </div>
+        {pipEnabled && tab === 'lists' ? <AskPipLink topic="lists" /> : null}
         <div className={styles.tabs} role="tablist" aria-label={t('sections')}>
           {(['lists', 'passport'] as const).map((key) => (
             <button

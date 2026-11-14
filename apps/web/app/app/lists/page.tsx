@@ -1,4 +1,5 @@
 import { cookies } from 'next/headers';
+import { isPipEnabled } from '../../../lib/flags';
 import { getTranslations } from 'next-intl/server';
 import { apiInternalUrl } from '../../../lib/api-proxy';
 import { sessionCookieHeader } from '../../../lib/stored-preferences';
@@ -43,6 +44,7 @@ export default async function ListsPage({
 
   return (
     <ListsView
+      pipEnabled={isPipEnabled()}
       trip={trip ? { id: trip.id, title: trip.title } : null}
       checklist={checklist}
       visas={visas ?? []}

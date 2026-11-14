@@ -1,4 +1,5 @@
 import { cookies } from 'next/headers';
+import { isPipEnabled } from '../../../lib/flags';
 import { getLocale, getTranslations } from 'next-intl/server';
 import { apiInternalUrl } from '../../../lib/api-proxy';
 import { sessionCookieHeader } from '../../../lib/stored-preferences';
@@ -26,6 +27,7 @@ export default async function BudgetPage() {
 
   return (
     <BudgetView
+      pipEnabled={isPipEnabled()}
       trip={
         trip
           ? { id: trip.id, title: trip.title, currency: trip.currency, startDate: trip.startDate }

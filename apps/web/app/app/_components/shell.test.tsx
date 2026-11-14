@@ -179,7 +179,7 @@ describe('placeholder pages', () => {
 
 describe('Pip page', () => {
   it('is a 404 while the flag is off', async () => {
-    await expect(PipPage()).rejects.toThrow('404');
+    await expect(PipPage({ searchParams: Promise.resolve({}) })).rejects.toThrow('404');
   });
 });
 

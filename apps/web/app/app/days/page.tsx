@@ -1,5 +1,6 @@
 import { tripDays, toLocalDate } from '@globetrot/domain';
 import { cookies } from 'next/headers';
+import { isPipEnabled } from '../../../lib/flags';
 import { getTranslations } from 'next-intl/server';
 import { apiInternalUrl } from '../../../lib/api-proxy';
 import { sessionCookieHeader } from '../../../lib/stored-preferences';
@@ -47,6 +48,7 @@ export default async function DaysPage() {
   });
   return (
     <DaysView
+      pipEnabled={isPipEnabled()}
       trip={trip ? { id: trip.id, title: trip.title, startDate } : null}
       stops={stops}
       days={days}

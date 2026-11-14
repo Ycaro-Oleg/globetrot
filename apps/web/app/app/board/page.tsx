@@ -1,7 +1,8 @@
 import { cookies } from 'next/headers';
 import { getTranslations } from 'next-intl/server';
 import { apiInternalUrl } from '../../../lib/api-proxy';
-import { sessionCookieHeader } from '../../../lib/stored-preferences';
+import { isPipEnabled } from '../../../lib/flags';
+import { createServerApiClient, sessionCookieHeader } from '../../../lib/stored-preferences';
 import {
   fetchDestinations,
   fetchTrips,
@@ -27,10 +28,36 @@ export default async function BoardPage() {
   const trips = options ? ((await fetchTrips(options)) ?? []) : [];
   const savedId = store.get(SELECTED_TRIP_COOKIE)?.value;
   const trip = trips.find((candidate) => candidate.id === savedId) ?? trips[0] ?? null;
-  const [destinations, visas] = await Promise.all([
+  const pipEnabled = isPipEnabled();
+  const [destinations, visas, proposals] = await Promise.all([
     options && trip ? fetchDestinations(options, trip.id) : Promise.resolve(null),
     options ? fetchVisas(options) : Promise.resolve(null),
+    options && trip && pipEnabled
+      ? createServerApiClient(options)
+          .GET('/v1/trips/{id}/pip/proposals', { params: { path: { id: trip.id } } })
+          .then((answer) => answer.data?.proposals ?? [])
+          .catch(() => [])
+      : Promise.resolve([]),
   ]);
+  // The newest proposal still waiting for a decision: its new stops are pencilled on the map.
+  const waiting = proposals.find((proposal) => proposal.status === 'proposed');
+  const pipSuggestion = waiting
+    ? {
+        count: waiting.changes.length,
+        stops: waiting.changes.flatMap((change) =>
+          change.kind === 'addStop'
+            ? [
+                {
+                  name: change.name,
+                  latitude: change.latitude,
+                  longitude: change.longitude,
+                  nights: change.nights,
+                },
+              ]
+            : [],
+        ),
+      }
+    : null;
 
   const route: RouteStop[] = (destinations ?? []).map((stop) => ({
     id: stop.placeKey,
@@ -56,6 +83,8 @@ export default async function BoardPage() {
       startDate={trip?.startDate ?? null}
       initialRoute={route}
       initialVisas={(visas ?? []).map((visa) => visa.countryCode)}
+      pipEnabled={pipEnabled}
+      pipSuggestion={pipSuggestion}
     />
   );
 }

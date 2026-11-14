@@ -16,6 +16,7 @@ import {
   type BoardPlace,
   type BoardStop,
 } from './day-board';
+import { AskPipLink } from '../_components/ask-pip-link';
 import styles from './days.module.css';
 
 const LEGS = ['flight', 'train', 'bus', 'car', 'boat', 'walk', 'other'] as const;
@@ -31,7 +32,9 @@ export function DaysView({
   stops,
   days,
   places,
+  pipEnabled = false,
 }: {
+  pipEnabled?: boolean;
   trip: { readonly id: string; readonly title: string; readonly startDate?: string | null } | null;
   stops: readonly BoardStop[];
   days: readonly TripDay[];
@@ -87,6 +90,7 @@ export function DaysView({
       stops={stops}
       days={days}
       initial={places}
+      pipEnabled={pipEnabled}
     />
   );
 }
@@ -97,7 +101,9 @@ function Board({
   stops,
   days,
   initial,
+  pipEnabled,
 }: {
+  pipEnabled: boolean;
   tripId: string;
   startDate: string | null;
   stops: readonly BoardStop[];
@@ -292,6 +298,7 @@ function Board({
             })}
           </span>
         </div>
+        {pipEnabled ? <AskPipLink topic="days" /> : null}
         <button
           ref={addButton}
           type="button"
