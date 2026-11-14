@@ -9,6 +9,8 @@ import { PipAvatar } from './app/_components/pip-avatar';
 import { AnswerCalculator } from './landing-calculator';
 import { PipDemo, Pricing } from './landing-interactive';
 import { StickyCta } from './landing-sticky-cta';
+import { ConsentLink } from './analytics';
+import { TrackedLink } from './tracked-link';
 import { SITE_NAME } from './site';
 import styles from './landing.module.css';
 
@@ -127,9 +129,9 @@ export default function HomePage() {
             <Link href="/login" className={styles.login}>
               {t('navLogin')}
             </Link>
-            <Link href="/signup" className={styles.navCta}>
+            <TrackedLink href="/signup" className={styles.navCta} event="cta_click">
               {t('navStart')}
-            </Link>
+            </TrackedLink>
           </div>
         </header>
 
@@ -138,9 +140,9 @@ export default function HomePage() {
           <h1 id="hero-title">{t.rich('heroTitle', { accent })}</h1>
           <p>{t('heroLead')}</p>
           <div className={styles.heroActions}>
-            <Link href="/signup" className={styles.cta}>
+            <TrackedLink href="/signup" className={styles.cta} event="cta_click">
               {t('heroCta')} <span aria-hidden="true">→</span>
-            </Link>
+            </TrackedLink>
             <a href="#how" className={styles.heroGhost}>
               {t('heroCta2')}
             </a>
@@ -260,9 +262,9 @@ export default function HomePage() {
           <h2 id="start-title">{t('closeTitle')}</h2>
           <p>{t('closeBody')}</p>
           <div className={styles.heroActions}>
-            <Link href="/signup" className={styles.cta}>
+            <TrackedLink href="/signup" className={styles.cta} event="cta_click">
               {t('heroCta')} <span aria-hidden="true">→</span>
-            </Link>
+            </TrackedLink>
             <Link href="/login" className={styles.heroGhost}>
               {t('closeLogin')}
             </Link>
@@ -284,6 +286,7 @@ export default function HomePage() {
             <Link href="/terms">{t('footTerms')}</Link>
             <Link href="/privacy">{t('footPrivacy')}</Link>
             <Link href="/login">{t('navLogin')}</Link>
+            <ConsentLink label={t('cookiePrefs')} />
           </nav>
         </div>
       </footer>

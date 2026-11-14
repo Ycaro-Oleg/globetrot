@@ -1,8 +1,8 @@
 'use client';
 
-import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import styles from './landing.module.css';
+import { TrackedLink } from './tracked-link';
 
 /**
  * On a phone, once the hero has scrolled away, a slim bar keeps "Start planning" one thumb away. It steps aside
@@ -30,9 +30,14 @@ export function StickyCta({ label, note }: { label: string; note: string }) {
   return (
     <div className={styles.sticky} data-shown={shown || undefined} aria-hidden={!shown}>
       <span>{note}</span>
-      <Link href="/signup" className={styles.cta} tabIndex={shown ? 0 : -1}>
+      <TrackedLink
+        href="/signup"
+        className={styles.cta}
+        tabIndex={shown ? 0 : -1}
+        event="cta_click"
+      >
         {label} <span aria-hidden="true">→</span>
-      </Link>
+      </TrackedLink>
     </div>
   );
 }

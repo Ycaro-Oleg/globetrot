@@ -21,6 +21,9 @@ ENV NODE_ENV=production
 WORKDIR /app
 USER node
 COPY --from=builder --chown=node:node /repo/apps/api/dist ./dist
+# The SQL migrations, for the release step (`node dist/migrate.js`).
+COPY --from=builder --chown=node:node /repo/packages/db/migrations ./migrations
 ENV PORT=4000
 EXPOSE 4000
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s CMD wget -qO- http://127.0.0.1:${PORT}/ready || exit 1
 CMD ["node", "dist/index.js"]

@@ -6,6 +6,7 @@ import { getLocale } from 'next-intl/server';
 import { chooseAppearance, MOTION_COOKIE, THEME_COOKIE, THEME_SCRIPT } from '../lib/appearance';
 import { getStoredPreferences } from '../lib/request-preferences';
 import { siteOrigin } from '../lib/site-url';
+import { Analytics } from './analytics';
 import { SITE_NAME } from './site';
 import '@globetrot/tokens/tokens.css';
 import '@globetrot/ui/styles.css';
@@ -40,7 +41,10 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
       </head>
       <body>
-        <NextIntlClientProvider>{children}</NextIntlClientProvider>
+        <NextIntlClientProvider>
+          {children}
+          <Analytics />
+        </NextIntlClientProvider>
       </body>
     </html>
   );

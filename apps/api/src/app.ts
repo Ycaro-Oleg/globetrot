@@ -38,6 +38,8 @@ export interface AppDependencies {
   readonly trustedOrigins: readonly string[];
   /** Social sign-in providers that are configured. None until Google is set up (#55). */
   readonly enabledProviders?: readonly 'google'[];
+  /** Whether the API can serve: the database answers. `/ready` reports it for the platform's health check. */
+  readonly readiness?: () => Promise<boolean>;
 }
 
 const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
@@ -83,6 +85,7 @@ export function createApp({
   application,
   trustedOrigins,
   enabledProviders = [],
+  readiness = async () => true,
 }: AppDependencies) {
   const app = new OpenAPIHono<Env>({
     // Input that fails an operation's schema before the handler runs.
@@ -101,7 +104,13 @@ export function createApp({
   });
   const trusted = new Set(trustedOrigins);
 
+  // Liveness: the process answers. Readiness: it can reach what it needs (the database).
   app.get('/health', (c) => c.json({ status: 'ok', service: 'api' }));
+  app.get('/ready', async (c) =>
+    (await readiness().catch(() => false))
+      ? c.json({ status: 'ready', service: 'api' }, 200)
+      : c.json({ status: 'unavailable', service: 'api' }, 503),
+  );
 
   // Cross-site request forgery: a browser always sends `Origin` on a cross-site POST. Better Auth only
   // checks it for requests that carry cookies, which would still let a hostile page start a sign-in or

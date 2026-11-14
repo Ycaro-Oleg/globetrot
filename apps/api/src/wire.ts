@@ -24,7 +24,7 @@ import {
   type Database,
 } from '@globetrot/db';
 import { uuidV7 } from '@globetrot/domain';
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import { createApp, type AuthService } from './app';
 import { createAuth, type Auth } from './auth';
 import type { ApiConfig } from './config';
@@ -104,6 +104,10 @@ export function createServices(
       rateLimiter: createMemoryRateLimiter(),
     }),
     trustedOrigins: config.auth.trustedOrigins,
+    readiness: async () => {
+      await db.execute(sql`select 1`);
+      return true;
+    },
     enabledProviders: config.auth.google ? ['google'] : [],
   });
   return { auth, app };

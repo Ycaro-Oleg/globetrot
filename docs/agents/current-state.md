@@ -1,6 +1,6 @@
 # Current state
 
-_Last updated: 2026-11-13, usability pass. Code state: `develop` includes #83 to #103; the landing conversion pass (#104) and the usability pass are in open PRs._
+_Last updated: 2026-11-13, launch readiness. Code state: `develop` includes #83 to #105; launch readiness is in an open PR. The [launch runbook](../engineering/launch-runbook.md) lists what the owner must provide._
 
 Read this first. It says where the project is, what exists, what is open, what only the owner can unblock and what to do next. Procedure for working: [`playbook.md`](playbook.md). Feature-by-feature progress: [`../product/progress.md`](../product/progress.md). Milestones and exit criteria: [`../product/roadmap.md`](../product/roadmap.md).
 
@@ -61,13 +61,14 @@ These cannot be finished by an agent. Do not work around them, and do not mark t
 | **Geocoding provider (#4)** | Provider accounts and keys for quality tests, then a decision | Address search; not needed for city search from GeoNames |
 | **Pip brief (#9)** | Approve [`pip-character.md`](../design/pip-character.md) and choose an illustrator | The Pip assets (M7) |
 | **Real-device MapLibre test** | Run the frame-rate test on a mid-range Android phone ([`spikes/maplibre.md`](../architecture/spikes/maplibre.md)) | Final go for the board (M4) |
-| **Legal text** | Write the Terms of use and the Privacy policy. Until then the pages are marked draft and acceptance is not stored | A public release |
+| **Legal text** | Fill the `[bracketed]` facts in the drafted Terms and Privacy policy and have them reviewed; then remove the draft banner. Acceptance is not stored yet | A public release |
 | **Production email provider** | Choose Resend or Postmark, then provide settings and a verified sending domain | Production (M11). SMTP settings are the only change |
 | **Pricing, plan limits, regional pricing** | A business decision | M10 |
 | **Imagery licensing source** | Choose where destination images come from | Imagery in the board and landing |
 | **Production object storage** ([ADR-0014](../architecture/adr/0014-photos-and-storage.md)) | Choose an S3-compatible provider (or self-host on the Hetzner box) and provide `S3_*` settings as secrets | Photos in production (M11) |
 | **DeepSeek key and privacy text** ([ADR-0016](../architecture/adr/0016-pip-on-deepseek.md)) | Rotate the key that was shared in chat and keep the new one only in local `.env` and the production secret store; say in the privacy policy that Pip sends trip plans to DeepSeek; decide when to switch `FEATURE_PIP` on | Pip in production |
 | **Community before a public launch** ([ADR-0013](../architecture/adr/0013-community.md)) | Decide who reviews reported posts (and with what tool), whether to add blocking and private accounts, and the community rules text | A public release with the community on |
+| **Launch infrastructure** ([launch runbook](../engineering/launch-runbook.md)) | Server, domain, database with backups, email provider, photo bucket, production secrets, Plausible site and Meta Pixel ID | The public launch |
 | **Close the M0 milestone** | A GitHub setting, so it is the owner's call | Housekeeping only |
 
 ## Known gaps and debt
@@ -80,8 +81,8 @@ Honest list of what is missing or deliberately simple, so nobody assumes otherwi
 - **Terms acceptance is not stored** (needs the final legal text and a version).
 - **Trips: no pagination** (a list returns at most 200), delete only after archiving, and visibility is always `private`.
 - **The worker runs hourly housekeeping** (ADR-0017); there is no queue yet (pg-boss when queued work appears).
-- **No production migration step.** Nothing in the API image runs migrations or ships the `migrations` folder; locally `pnpm --filter @globetrot/db migrate` does it. How migrations run on deploy (app start or a release step) is decided in M11 ([`data-model.md`](../architecture/data-model.md#migrations)).
-- **`/health` is shallow:** it answers `ok` without checking the database or the mail server. Add readiness checks with the deployment work (M11).
+- **Migrations in production** run as the API image's release command (`node dist/migrate.js`).
+- **Health:** `/health` (liveness) and `/ready` (database) on the API.
 - **No seed or demo data.** There are no example trips yet (M8) and no script that creates a test account; create one through `/signup` and Mailpit.
 - **The Geoapify tile key is a public browser key** written into the bundle at build time (`NEXT_PUBLIC_GEOAPIFY_API_KEY`); restrict it to the site's domains and to tiles in the Geoapify dashboard. Search uses the server key `GEOAPIFY_API_KEY` (#75). The place-lookup rate limit counts in memory, per API process.
 - **An unknown or foreign trip id shows a "not found" page with status 200**, not a 404 (the loading boundary has already sent the status). Harmless; fix if it matters for monitoring.

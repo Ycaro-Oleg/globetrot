@@ -46,6 +46,22 @@ describe('api app', () => {
     expect(seen.length).toBe(before);
   });
 
+  it('reports readiness from the database check, and 503 when it fails', async () => {
+    const make = (readiness: () => Promise<boolean>) =>
+      createApp({
+        auth,
+        application: createApplication({ ...createFakePorts().ports, users: { findById } }),
+        trustedOrigins: [WEB],
+        readiness,
+      });
+    expect((await make(async () => true).request('/ready')).status).toBe(200);
+    const down = await make(async () => {
+      throw new Error('connection refused');
+    }).request('/ready');
+    expect(down.status).toBe(503);
+    expect(await down.json()).toEqual({ status: 'unavailable', service: 'api' });
+  });
+
   it.each([
     ['GET', '/api/auth/get-session'],
     ['POST', '/api/auth/sign-in/email'],
