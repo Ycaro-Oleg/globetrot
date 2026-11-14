@@ -757,7 +757,10 @@
     "ideasBuiltIn": "Popular picks from Globetrot. Check opening times before you go.",
     "minutes": "{minutes} min",
     "hoursMinutes": "{hours} h {minutes}",
-    "ideaAddHint": ", add to “No day”"
+    "ideaAddHint": ", add to “No day”",
+    "calendar": "Add to calendar",
+    "calendarSummary": "Day {index} · {stop} — {trip}",
+    "calendarDone": "Calendar file ready: open it to add the days to your calendar."
   },
   "budgetPage": {
     "title": "Budget & savings",

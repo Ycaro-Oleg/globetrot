@@ -1,3 +1,4 @@
+export { escapeCalendarText, foldCalendarLine, tripCalendar, type CalendarDay } from './calendar';
 export { emptyDays, plannedStops, tripDays, type TripDay } from './days';
 export {
   JOURNEY_STAGES,

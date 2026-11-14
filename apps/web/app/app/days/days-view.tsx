@@ -1,6 +1,6 @@
 'use client';
 
-import type { TripDay } from '@globetrot/domain';
+import { tripCalendar, type TripDay } from '@globetrot/domain';
 import { formatLocalDate, type SupportedLocale } from '@globetrot/i18n';
 import { Banner } from '@globetrot/ui';
 import Link from 'next/link';
@@ -89,6 +89,7 @@ export function DaysView({
   return (
     <Board
       tripId={trip.id}
+      tripTitle={trip.title}
       startDate={trip.startDate ?? null}
       stops={stops}
       days={days}
@@ -101,6 +102,7 @@ export function DaysView({
 
 function Board({
   tripId,
+  tripTitle,
   startDate,
   stops,
   days,
@@ -111,6 +113,7 @@ function Board({
   pipEnabled: boolean;
   ideas: DayIdeas | null;
   tripId: string;
+  tripTitle: string;
   startDate: string | null;
   stops: readonly BoardStop[];
   days: readonly TripDay[];
@@ -124,6 +127,35 @@ function Board({
   const [toast, setToast] = useState<Toast | null>(null);
   const [adding, setAdding] = useState(false);
   const [ideas, setIdeas] = useState(initialIdeas);
+
+  /** Downloads the trip as a calendar file: one all-day event per day, with that day's places. */
+  const exportCalendar = () => {
+    const dated = days.filter((day) => day.date !== null);
+    const file = tripCalendar({
+      tripId,
+      calendarName: tripTitle,
+      now: new Date(),
+      days: dated.map((day) => ({
+        index: day.index,
+        date: day.date!,
+        summary: t('calendarSummary', {
+          index: day.index,
+          stop: stopName(day.stopId) ?? t('noStop'),
+          trip: tripTitle,
+        }),
+        lines: places
+          .filter((place) => place.day === day.index)
+          .map((place) => `${place.name} · ${hours(place.minutes / 60)}`),
+      })),
+    });
+    const url = URL.createObjectURL(new Blob([file], { type: 'text/calendar;charset=utf-8' }));
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${tripTitle.replace(/[^\p{L}\p{N}]+/gu, '-').replace(/^-|-$/g, '') || 'trip'}.ics`;
+    link.click();
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+    setToast({ text: t('calendarDone') });
+  };
   /** A visit's typical time the way people say it: "45 min", "2 h", "1 h 15". */
   const duration = (minutes: number) =>
     minutes < 60
@@ -339,6 +371,11 @@ function Board({
           </span>
         </div>
         {pipEnabled ? <AskPipLink topic="days" /> : null}
+        {days.some((day) => day.date !== null) ? (
+          <button type="button" className={styles.calendarButton} onClick={exportCalendar}>
+            {t('calendar')}
+          </button>
+        ) : null}
         <button
           ref={addButton}
           type="button"
