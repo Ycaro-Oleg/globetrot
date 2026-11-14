@@ -750,7 +750,14 @@
     "startTitle": "{days, plural, one {Your day is open} other {Your # days are open}}. What can’t you miss?",
     "startText": "Add the places you want to see: a café, a viewpoint, a museum. They land in “No day” first, then you move each one onto a day.",
     "startCta": "Add your first place",
-    "trayFirst": "Places you add land here first."
+    "trayFirst": "Places you add land here first.",
+    "ideasTitle": "Ideas to fill your days",
+    "ideasFor": "Near {stop}",
+    "ideaAdded": "{name} added to “No day”",
+    "ideasBuiltIn": "Popular picks from Globetrot. Check opening times before you go.",
+    "minutes": "{minutes} min",
+    "hoursMinutes": "{hours} h {minutes}",
+    "ideaAddHint": ", add to “No day”"
   },
   "budgetPage": {
     "title": "Budget & savings",

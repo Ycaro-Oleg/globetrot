@@ -138,4 +138,27 @@ describe('day plan against a real database', () => {
       }),
     ).rejects.toThrow();
   });
+
+  it('suggests built-in ideas for a popular city without the provider, and leaves out what is planned', async () => {
+    const { signUp, call, tripFor } = await harness();
+    const ana = await signUp('Ana', 'ana@example.com');
+    const tripId = await tripFor(ana.cookie);
+    const { json } = await call(ana.cookie, 'PUT', `/v1/trips/${tripId}/destinations`, {
+      destinations: [stop('Tokyo', 3)],
+    });
+    const stopId = (json.destinations as { id: string }[])[0]!.id;
+    await call(ana.cookie, 'POST', `/v1/trips/${tripId}/day-places`, {
+      name: 'Shibuya Crossing',
+      destinationId: stopId,
+      minutes: 60,
+    });
+    const ideas = await call(ana.cookie, 'GET', `/v1/trips/${tripId}/day-ideas?language=en`);
+    expect(ideas.response.status).toBe(200);
+    const first = (
+      ideas.json.stops as { stopId: string; source: string; ideas: { name: string }[] }[]
+    )[0]!;
+    expect(first).toMatchObject({ stopId, source: 'built-in' });
+    expect(first.ideas.map((idea) => idea.name)).toContain('Senso-ji Temple');
+    expect(first.ideas.map((idea) => idea.name)).not.toContain('Shibuya Crossing');
+  });
 });

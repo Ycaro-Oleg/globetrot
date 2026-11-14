@@ -139,4 +139,37 @@ describe('days without what they need', () => {
     expect(full).not.toContain(copy.startCta);
     expect(full).toContain(copy.how);
   });
+
+  it.each(SUPPORTED_LOCALES)(
+    'offers ideas per stop, one tap each, with where they come from (%s)',
+    (locale) => {
+      const copy = catalogs[locale].daysPage;
+      const html = render(locale, {
+        ideas: {
+          stops: [
+            {
+              stopId: TOKYO.id,
+              ideas: [{ name: 'Senso-ji Temple', kind: 'landmark', minutes: 60 }],
+              source: 'built-in',
+              attribution: null,
+            },
+            {
+              stopId: KYOTO.id,
+              ideas: [{ name: 'Fushimi Inari Taisha', kind: 'landmark', minutes: 60 }],
+              source: 'provider',
+              attribution: '© OpenStreetMap contributors · Geoapify',
+            },
+          ],
+        },
+      });
+      expect(html).toContain(copy.ideasTitle);
+      expect(html).toContain('Senso-ji Temple');
+      expect(html).toContain(copy.ideasBuiltIn);
+      expect(html).toContain('© OpenStreetMap contributors · Geoapify');
+      // The name a screen reader hears starts with the words on the button (WCAG 2.5.3).
+      expect(html).toContain(copy.ideaAddHint);
+      expect(html).not.toMatch(/aria-label="[^"]*Senso-ji Temple/);
+      expect(text(render(locale, { ideas: { stops: [] } }))).not.toContain(copy.ideasTitle);
+    },
+  );
 });

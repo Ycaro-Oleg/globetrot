@@ -59,7 +59,7 @@ export function buildOpenApiDocument() {
       unitOfWork: { run: unreachable },
       clock: { now: unreachable },
       ids: { newId: unreachable, newToken: unreachable },
-      geocoding: { search: unreachable, reverse: unreachable },
+      geocoding: { search: unreachable, reverse: unreachable, sights: unreachable },
       rateLimiter: { consume: unreachable },
     }),
     trustedOrigins: [],

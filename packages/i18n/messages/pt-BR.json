@@ -750,7 +750,14 @@
     "startTitle": "{days, plural, one {Seu dia está livre} other {Seus # dias estão livres}}. O que você não pode perder?",
     "startText": "Adicione os lugares que quer conhecer: um café, um mirante, um museu. Eles entram primeiro em “Sem dia” e depois você move cada um para um dia.",
     "startCta": "Adicionar o primeiro lugar",
-    "trayFirst": "Os lugares que você adicionar aparecem aqui primeiro."
+    "trayFirst": "Os lugares que você adicionar aparecem aqui primeiro.",
+    "ideasTitle": "Ideias para encher seus dias",
+    "ideasFor": "Perto de {stop}",
+    "ideaAdded": "{name} adicionado em “Sem dia”",
+    "ideasBuiltIn": "Escolhas populares do Globetrot. Confira os horários antes de ir.",
+    "minutes": "{minutes} min",
+    "hoursMinutes": "{hours} h {minutes}",
+    "ideaAddHint": ", adicionar em “Sem dia”"
   },
   "budgetPage": {
     "title": "Orçamento e poupança",

@@ -4,6 +4,7 @@ import type {
   ReportReason,
   MotionChoice,
   ThemeChoice,
+  SightKind,
   SubscriptionState,
   TripStatus,
   TripVisibility,
@@ -652,6 +653,17 @@ export interface GeocodingPort {
     point: { readonly latitude: number; readonly longitude: number },
     options: { readonly language: string },
   ): Promise<PlaceResult | null | undefined>;
+  /** Sights to visit around a point (museums, landmarks, parks…), best first; `null` when unavailable. */
+  sights(
+    point: { readonly latitude: number; readonly longitude: number },
+    options: { readonly language: string; readonly limit: number },
+  ): Promise<SightResult[] | null>;
+}
+
+export interface SightResult {
+  readonly name: string;
+  readonly kind: SightKind;
+  readonly attribution: string;
 }
 
 /** Counts requests per key in a short window. `true` when this one is allowed. */
