@@ -5,6 +5,7 @@ import { formatYearMonth, type SupportedLocale } from '@globetrot/i18n';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import { useEffect, useRef, useState, useTransition, type FormEvent } from 'react';
+import { track } from '../../lib/analytics';
 import { livePlan, parseAmount } from '../app/budget/budget-plan';
 import { PipAvatar } from '../app/_components/pip-avatar';
 import { SITE_NAME } from '../site';
@@ -89,6 +90,7 @@ export function OnboardingFlow({
       return;
     }
     if (!destination || !month || !estimateMoney) return;
+    track('first_trip');
     startTransition(async () => {
       const result = await finishOnboarding({
         idempotencyKey,

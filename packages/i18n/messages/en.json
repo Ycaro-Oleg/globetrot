@@ -215,9 +215,80 @@
   "legal": {
     "termsTitle": "Terms of use",
     "privacyTitle": "Privacy policy",
-    "draft": "Draft. This page is a placeholder: it is not the final text and has no legal effect. The final text is still to be written.",
-    "placeholder": "The text will appear here.",
-    "back": "Back"
+    "draft": "Draft for review: placeholders in [brackets] are the owner's to fill in, and the final text needs a legal review before launch.",
+    "back": "Back",
+    "privacy": {
+      "s1": {
+        "h": "Who we are",
+        "p": "Globetrot is a trip-planning app run by [owner: legal name and country]. Contact: [owner: contact email]."
+      },
+      "s2": {
+        "h": "What we keep",
+        "p": "Your account (name, email, a hash of your password, or your Google sign-in), your settings, and what you put in Globetrot: trips, stops, costs, savings amounts, lists, day plans, photos, visas, Pip requests and community posts, comments and likes. We do not collect your live location. Photos have their location and camera data removed before they are stored."
+      },
+      "s3": {
+        "h": "Why",
+        "p": "To run the app you asked for: save and show your plans, compute your savings answer, send account emails (confirmation and password reset), and keep the service safe (rate limits, an audit log of changes without personal values)."
+      },
+      "s4": {
+        "h": "Who else handles it",
+        "p": "Hosting and database: [owner: provider and region]. Email: [owner: provider]. Photo storage: [owner: provider]. Pip: when you ask Pip, the plan of that trip (title, dates, stops, nights, places, checklist labels, cost totals and savings amounts) is sent to DeepSeek to draft suggestions; never your name, email or other trips. Sign in with Google, if you use it. Measurement: Plausible (cookieless, aggregate) and, only if you accept, the Meta Pixel."
+      },
+      "s5": {
+        "h": "Cookies",
+        "p": "Needed: your session, your language and theme, and, if you used the calculator on the home page, the three numbers you typed (30 days). Optional: the Meta Pixel, only after you accept; change your choice any time from “Cookie preferences” on the home page."
+      },
+      "s6": {
+        "h": "What others see",
+        "p": "Trips are private. Community posts are seen by everyone or only your followers, as you choose; your name, handle and Pip are shown with them. A shared route is a copy of the stops and nights at that moment, without amounts unless you chose to show them."
+      },
+      "s7": {
+        "h": "How long",
+        "p": "Until you delete it, or delete your account. Deleting the account removes your trips, photos, posts, comments, likes, follows, settings and sessions at once. The audit log keeps its rows, which hold no personal values. Backups: [owner: retention period]."
+      },
+      "s8": {
+        "h": "Your rights",
+        "p": "Download everything as JSON or delete your account in Settings → Your data. For anything else (correction, objection, questions) write to [owner: contact email]. You can also complain to your data protection authority (in Brazil, the ANPD)."
+      },
+      "s9": {
+        "h": "Children",
+        "p": "Globetrot is not meant for children under [owner: minimum age]."
+      },
+      "s10": {
+        "h": "Changes",
+        "p": "We will say here, with a date, when this policy changes. Last change: [owner: date]."
+      }
+    },
+    "terms": {
+      "s1": {
+        "h": "The service",
+        "p": "Globetrot helps you plan trips: a map, days, a budget with a savings answer, lists, a passport of keepsake visas, an optional AI companion (Pip) and a community. It is offered by [owner: legal name]. Using it means you accept these terms."
+      },
+      "s2": {
+        "h": "Free, for now",
+        "p": "Planning is free. Prices shown on the home page are placeholders: nothing is sold or charged until paid plans are announced, with their own terms."
+      },
+      "s3": {
+        "h": "Estimates, not bookings",
+        "p": "Globetrot never books, sells or holds money. Costs are what you type; estimates are labelled ≈ and are not quotes. Pip’s suggestions are drafts you review; they can be wrong. Always check prices, availability and entry or visa rules on official sources. Globetrot visas and stamps are keepsakes, not documents."
+      },
+      "s4": {
+        "h": "Your account",
+        "p": "Keep your password safe; you are responsible for what happens in your account. One person per account. You can delete it at any time in Settings."
+      },
+      "s5": {
+        "h": "Your content",
+        "p": "What you post stays yours. By posting in the community you let us show it to the audience you chose, and to copy a shared route into someone’s trip when they ask. Do not post what you have no right to share, other people’s private data or live location, hate, harassment, spam or anything illegal. We may hide or remove such content and close accounts that break these rules."
+      },
+      "s6": {
+        "h": "Availability",
+        "p": "We work to keep Globetrot running and your data safe, but the service is provided as it is, without guarantees of uninterrupted availability. As far as the law allows, we are not liable for indirect losses or for decisions you make from the app’s estimates."
+      },
+      "s7": {
+        "h": "Changes and law",
+        "p": "We may update these terms; we will say so here with a date. These terms are governed by [owner: governing law and venue]. Contact: [owner: contact email]."
+      }
+    }
   },
   "app": {
     "welcome": "Hi, {name}!",
@@ -490,7 +561,8 @@
       "noCost": "add what the trip costs to get a date.",
       "cta": "Save this plan — it’s free",
       "note": "An estimate from what you type. Globetrot never holds your money."
-    }
+    },
+    "cookiePrefs": "Cookie preferences"
   },
   "mapBoard": {
     "legModes": {
@@ -1368,5 +1440,21 @@
       "saved": "Date saved.",
       "error": "That did not save. Try again."
     }
+  },
+  "consent": {
+    "title": "Help us measure our ads?",
+    "body": "With your OK we load the Meta Pixel to know which ads bring people to Globetrot. It sets cookies. Saying no changes nothing else.",
+    "privacy": "Privacy policy",
+    "accept": "Accept",
+    "reject": "Reject"
+  },
+  "statusPages": {
+    "notFoundTitle": "This page took a wrong turn",
+    "notFoundBody": "The address does not exist, or the page moved.",
+    "toTrips": "Go to my trips",
+    "toHome": "Home page",
+    "errorTitle": "Something went wrong",
+    "errorBody": "It was not your fault. Try again, or go back to the home page.",
+    "retry": "Try again"
   }
 }

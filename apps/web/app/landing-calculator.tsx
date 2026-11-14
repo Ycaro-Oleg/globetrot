@@ -6,6 +6,7 @@ import { useId, useState } from 'react';
 import { livePlan, parseAmount } from './app/budget/budget-plan';
 import styles from './landing.module.css';
 
+import { track } from '../lib/analytics';
 import { PLAN_DRAFT_COOKIE } from '../lib/plan-draft';
 
 const DEFAULTS = { cost: '3000', saved: '500', monthly: '300' };
@@ -68,6 +69,7 @@ export function AnswerCalculator({ signupHref }: { signupHref: string }) {
 
   const keep = () => {
     const draft = JSON.stringify({ cost, saved, monthly });
+    track('plan_saved');
     document.cookie = `${PLAN_DRAFT_COOKIE}=${encodeURIComponent(draft)}; path=/; max-age=${60 * 60 * 24 * 30}; samesite=lax`;
   };
 

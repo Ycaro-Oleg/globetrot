@@ -4,6 +4,7 @@ import { PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from '@globetrot/domain';
 import { Button, Checkbox, TextField } from '@globetrot/ui';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { track } from '../../../lib/analytics';
 import { useTranslations } from 'next-intl';
 import { useMemo, useRef, useState, type FormEvent } from 'react';
 import { createAuthClient } from '../../../lib/auth-client';
@@ -79,6 +80,7 @@ export function SignupForm({ next, googleEnabled }: { next: string; googleEnable
       if (Object.keys(view.fields).length > 0) setAttempt((count) => count + 1);
       return;
     }
+    track('sign_up');
     // No session yet while the address is unverified: ask them to open the link. If the server does not require
     // verification it opened a session, so go straight in.
     if (result.data.token) {

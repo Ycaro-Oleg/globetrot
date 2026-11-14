@@ -215,9 +215,80 @@
   "legal": {
     "termsTitle": "Termos de uso",
     "privacyTitle": "Política de privacidade",
-    "draft": "Rascunho. Esta página é provisória: não é o texto final e não tem efeito legal. O texto final ainda será escrito.",
-    "placeholder": "O texto aparecerá aqui.",
-    "back": "Voltar"
+    "draft": "Rascunho para revisão: os campos entre [colchetes] são do dono, e o texto final precisa de revisão jurídica antes do lançamento.",
+    "back": "Voltar",
+    "privacy": {
+      "s1": {
+        "h": "Quem somos",
+        "p": "O Globetrot é um app de planejamento de viagens operado por [dono: razão social e país]. Contato: [dono: e-mail de contato]."
+      },
+      "s2": {
+        "h": "O que guardamos",
+        "p": "Sua conta (nome, e-mail, um hash da sua senha, ou seu login Google), suas configurações e o que você coloca no Globetrot: viagens, paradas, custos, valores de poupança, listas, roteiros por dia, fotos, vistos, pedidos ao Pip e posts, comentários e curtidas da comunidade. Não coletamos sua localização ao vivo. As fotos têm os dados de localização e câmera removidos antes de serem guardadas."
+      },
+      "s3": {
+        "h": "Para quê",
+        "p": "Para fazer o app funcionar: salvar e mostrar seus planos, calcular sua resposta de poupança, enviar e-mails da conta (confirmação e troca de senha) e manter o serviço seguro (limites de uso e um registro de alterações sem valores pessoais)."
+      },
+      "s4": {
+        "h": "Quem mais trata os dados",
+        "p": "Hospedagem e banco de dados: [dono: provedor e região]. E-mail: [dono: provedor]. Armazenamento de fotos: [dono: provedor]. Pip: quando você pergunta ao Pip, o plano daquela viagem (título, datas, paradas, noites, lugares, itens da checklist, totais de custos e valores de poupança) vai para a DeepSeek para rascunhar sugestões; nunca seu nome, e-mail ou outras viagens. Login com Google, se você usar. Medição: Plausible (sem cookies, agregada) e, só se você aceitar, o Meta Pixel."
+      },
+      "s5": {
+        "h": "Cookies",
+        "p": "Necessários: sua sessão, seu idioma e tema e, se você usou a calculadora da página inicial, os três números que digitou (30 dias). Opcional: o Meta Pixel, só depois que você aceitar; mude sua escolha quando quiser em “Preferências de cookies” na página inicial."
+      },
+      "s6": {
+        "h": "O que os outros veem",
+        "p": "As viagens são privadas. Posts da comunidade são vistos por todos ou só por seus seguidores, como você escolher; seu nome, @ e Pip aparecem com eles. Um roteiro compartilhado é uma cópia das paradas e noites naquele momento, sem valores, a menos que você escolha mostrá-los."
+      },
+      "s7": {
+        "h": "Por quanto tempo",
+        "p": "Até você apagar, ou excluir sua conta. Excluir a conta remove na hora suas viagens, fotos, posts, comentários, curtidas, quem você segue, configurações e sessões. O registro de alterações mantém suas linhas, que não guardam valores pessoais. Backups: [dono: prazo de retenção]."
+      },
+      "s8": {
+        "h": "Seus direitos",
+        "p": "Baixe tudo em JSON ou exclua sua conta em Configurações → Seus dados. Para o resto (correção, oposição, dúvidas) escreva para [dono: e-mail de contato]. Você também pode reclamar à ANPD."
+      },
+      "s9": {
+        "h": "Crianças",
+        "p": "O Globetrot não é feito para menores de [dono: idade mínima] anos."
+      },
+      "s10": {
+        "h": "Mudanças",
+        "p": "Avisaremos aqui, com data, quando esta política mudar. Última mudança: [dono: data]."
+      }
+    },
+    "terms": {
+      "s1": {
+        "h": "O serviço",
+        "p": "O Globetrot ajuda você a planejar viagens: um mapa, dias, um orçamento com resposta de poupança, listas, um passaporte de vistos comemorativos, um companheiro de IA opcional (Pip) e uma comunidade. É oferecido por [dono: razão social]. Usar o app significa aceitar estes termos."
+      },
+      "s2": {
+        "h": "Grátis, por enquanto",
+        "p": "Planejar é grátis. Os preços na página inicial são provisórios: nada é vendido ou cobrado até que os planos pagos sejam anunciados, com termos próprios."
+      },
+      "s3": {
+        "h": "Estimativas, não reservas",
+        "p": "O Globetrot nunca reserva, vende ou guarda dinheiro. Custos são o que você digita; estimativas têm o ≈ e não são cotações. As sugestões do Pip são rascunhos que você revisa e podem estar erradas. Confira sempre preços, disponibilidade e regras de entrada ou visto em fontes oficiais. Vistos e carimbos do Globetrot são lembranças, não documentos."
+      },
+      "s4": {
+        "h": "Sua conta",
+        "p": "Guarde sua senha; você responde pelo que acontece na sua conta. Uma pessoa por conta. Você pode excluí-la quando quiser em Configurações."
+      },
+      "s5": {
+        "h": "Seu conteúdo",
+        "p": "O que você publica continua seu. Ao publicar na comunidade, você nos autoriza a mostrar ao público que escolheu e a copiar um roteiro compartilhado para a viagem de quem pedir. Não publique o que não tem direito de compartilhar, dados privados ou localização ao vivo de outras pessoas, ódio, assédio, spam ou nada ilegal. Podemos ocultar ou remover esse conteúdo e encerrar contas que quebrem estas regras."
+      },
+      "s6": {
+        "h": "Disponibilidade",
+        "p": "Trabalhamos para manter o Globetrot no ar e seus dados seguros, mas o serviço é oferecido como está, sem garantia de funcionamento ininterrupto. Na medida permitida pela lei, não respondemos por perdas indiretas ou por decisões tomadas a partir das estimativas do app."
+      },
+      "s7": {
+        "h": "Mudanças e lei",
+        "p": "Podemos atualizar estes termos; avisaremos aqui com data. Estes termos seguem [dono: lei aplicável e foro]. Contato: [dono: e-mail de contato]."
+      }
+    }
   },
   "app": {
     "welcome": "Olá, {name}!",
@@ -490,7 +561,8 @@
       "noCost": "diga quanto a viagem custa para ter uma data.",
       "cta": "Salvar este plano — é grátis",
       "note": "Uma estimativa a partir do que você digita. O Globetrot nunca guarda seu dinheiro."
-    }
+    },
+    "cookiePrefs": "Preferências de cookies"
   },
   "mapBoard": {
     "legModes": {
@@ -1368,5 +1440,21 @@
       "saved": "Data salva.",
       "error": "Não salvou. Tente de novo."
     }
+  },
+  "consent": {
+    "title": "Nos ajuda a medir nossos anúncios?",
+    "body": "Com o seu ok, carregamos o Meta Pixel para saber quais anúncios trazem pessoas ao Globetrot. Ele usa cookies. Recusar não muda mais nada.",
+    "privacy": "Política de privacidade",
+    "accept": "Aceitar",
+    "reject": "Recusar"
+  },
+  "statusPages": {
+    "notFoundTitle": "Esta página pegou o caminho errado",
+    "notFoundBody": "O endereço não existe, ou a página mudou de lugar.",
+    "toTrips": "Ir para minhas viagens",
+    "toHome": "Página inicial",
+    "errorTitle": "Algo deu errado",
+    "errorBody": "Não foi culpa sua. Tente de novo ou volte à página inicial.",
+    "retry": "Tentar de novo"
   }
 }

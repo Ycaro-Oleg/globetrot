@@ -158,6 +158,8 @@ Decision record: [ADR-0013](../architecture/adr/0013-community.md).
 - **Export:** Settings → "Your data" downloads everything the account holds as JSON (never passwords or tokens).
 - **Account deletion:** after typing their email again, the person's account and everything in it go for good: trips, visas, community profile, posts and comments (also on others' posts), likes, follows, photos (with their stored files), settings and sessions. It cannot be undone.
 
+- **Measurement:** cookieless counts (Plausible) when configured; the Meta Pixel only after the visitor accepts marketing cookies, with Accept and Reject equally easy and the choice changeable; conversion events never carry personal data ([ADR-0018](../architecture/adr/0018-launch-measurement-and-consent.md)).
+
 ## Progression (planned, M12+)
 
 - XP comes from an immutable event ledger, with diminishing returns and daily caps.

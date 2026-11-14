@@ -218,6 +218,8 @@ The first migration (`0000_extensions.sql`) enables `postgis`, `pg_trgm` and `un
 
 ## Migrations
 
+- **In production** the API image ships the migrations and a release command: Coolify's pre-deployment command `node dist/migrate.js` applies them before the new version starts ([launch runbook](../engineering/launch-runbook.md)).
+
 - **Forward-only.** Never edit a migration that was applied anywhere. Fix mistakes with a new one.
 - **Generate:** edit `src/schema`, run `pnpm --filter @globetrot/db generate`, review the SQL and commit it **with** `migrations/meta/`. For hand-written SQL (extensions, data fixes, special indexes) use `pnpm --filter @globetrot/db exec drizzle-kit generate --custom --name=<what>`.
 - **Check:** `drizzle-kit check` runs inside the package's `lint`, so CI fails if the journal and snapshots are inconsistent.

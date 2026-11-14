@@ -725,6 +725,7 @@ try {
     ],
     ['terms-draft', false, async (page) => go(page, `${base}/terms`)],
     ['privacy-draft', false, async (page) => go(page, `${base}/privacy`)],
+    ['not-found', false, async (page) => go(page, `${base}/this-page-does-not-exist`)],
     ...shellScenarios(copy),
     ['settings', true, async (page) => go(page, `${base}/settings`)],
     ...['phone', 'desktop'].map((layout) => [
