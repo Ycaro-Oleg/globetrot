@@ -116,6 +116,7 @@ describe('the board against a real database', () => {
     const geocoding: GeocodingPort = {
       search: async () => (down ? null : [KYOTO]),
       reverse: async () => (down ? undefined : KYOTO),
+      sights: async () => null,
     };
     const { signUp, call } = await harness(geocoding);
     const ana = await signUp('Ana', 'ana@example.com');

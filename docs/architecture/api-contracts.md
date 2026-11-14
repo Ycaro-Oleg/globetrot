@@ -111,6 +111,7 @@ Today:
 | `deleteExpense` | `DELETE /v1/trips/{id}/expenses/{expenseId}` | Removes it |
 | `updateSavings` | `PUT /v1/trips/{id}/savings` | `saved`, `monthly` and/or `ceiling`, in the trip's currency, zero allowed; `ceiling: null` clears the ceiling. Fields left out keep their value. Answers with the new budget. Audited (field names only) |
 | `listDayPlaces` | `GET /v1/trips/{id}/day-places` | The trip's places to see in trip order: `name`, `minutes`, `destinationId` (null when none or removed), `day` (null for "No day", also when the route no longer reaches it) |
+| `suggestDayPlaces` | `GET /v1/trips/{id}/day-ideas?language=` | Up to 6 ideas (`name`, `kind`, `minutes`) for each of the first 6 stops, without places already planned; `source` is `provider` (with `attribution`) or `built-in`, null when there is nothing. `429` after 20 a minute ([business rules](../product/business-rules.md#trips)) |
 | `addDayPlace` | `POST /v1/trips/{id}/day-places` | `201`. `name`, `minutes` (15–720), optional `destinationId` (a stop of the trip). Saved to "No day". At most 200 per trip. Audited without the name |
 | `moveDayPlace` | `PATCH /v1/trips/{id}/day-places/{placeId}` | `day` (a day of the route, or null) and optional `beforeId` (a place on that day); without it, the end of the day. `422` for a day the route does not have |
 | `removeDayPlace` | `DELETE /v1/trips/{id}/day-places/{placeId}` | Answers with the plan. Another person's place is the same `404` |

@@ -1,5 +1,6 @@
 import {
   addDayPlaceFields,
+  dayIdeasSchema,
   dayPlanSchema,
   moveDayPlaceFields,
   tripIdSchema,
@@ -97,7 +98,42 @@ const removeRoute = createRoute({
 });
 
 /** Every handler acts on a trip of the session's own user: the actor comes from the session only. */
+const ideasRoute = createRoute({
+  method: 'get',
+  path: '/v1/trips/{id}/day-ideas',
+  operationId: 'suggestDayPlaces',
+  tags: ['Days'],
+  summary: 'Places worth a visit near each stop',
+  description:
+    'Up to 6 ideas for each of the first 6 stops, with a kind of visit and a typical time, without places already ' +
+    'on the plan. From the places provider when configured (with its `attribution`), otherwise a built-in list ' +
+    'for popular cities. `429` after 20 a minute.',
+  security,
+  request: {
+    params: tripParams,
+    query: z.object({ language: z.enum(['en', 'pt-BR']).optional() }),
+  },
+  responses: {
+    200: {
+      description: 'Ideas per stop.',
+      content: { 'application/json': { schema: dayIdeasSchema } },
+    },
+    401: problemResponse('No valid session.'),
+    404: notFound,
+    429: problemResponse('Too many requests.'),
+  },
+});
+
 export function registerDayPlaceRoutes(app: OpenAPIHono<Env>, application: Application) {
+  app.openapi(ideasRoute, async (c) =>
+    c.json(
+      await application.suggestDayPlaces.execute(c.get('actor'), {
+        tripId: c.req.valid('param').id,
+        language: c.req.valid('query').language ?? 'en',
+      }),
+      200,
+    ),
+  );
   app.openapi(listRoute, async (c) =>
     c.json(
       await application.listDayPlaces.execute(c.get('actor'), { tripId: c.req.valid('param').id }),

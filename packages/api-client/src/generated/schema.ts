@@ -343,6 +343,26 @@ export interface paths {
         patch: operations["updateChecklistItem"];
         trace?: never;
     };
+    "/v1/trips/{id}/day-ideas": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Places worth a visit near each stop
+         * @description Up to 6 ideas for each of the first 6 stops, with a kind of visit and a typical time, without places already on the plan. From the places provider when configured (with its `attribution`), otherwise a built-in list for popular cities. `429` after 20 a minute.
+         */
+        get: operations["suggestDayPlaces"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/trips/{id}/day-places": {
         parameters: {
             query?: never;
@@ -4159,6 +4179,113 @@ export interface operations {
             };
             /** @description The ids or the body are not valid. */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    suggestDayPlaces: {
+        parameters: {
+            query?: {
+                language?: "en" | "pt-BR";
+            };
+            header?: never;
+            path: {
+                /** @description Trip id (UUID). */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Ideas per stop. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        stops: {
+                            stopId: string;
+                            ideas: {
+                                name: string;
+                                /** @enum {string} */
+                                kind: "landmark" | "museum" | "park" | "viewpoint" | "neighbourhood" | "market" | "beach";
+                                minutes: number;
+                            }[];
+                            /** @enum {string|null} */
+                            source: "provider" | "built-in" | null;
+                            attribution: string | null;
+                        }[];
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description No such trip or place, or it belongs to someone else. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description Too many requests. */
+            429: {
                 headers: {
                     [name: string]: unknown;
                 };

@@ -1,5 +1,6 @@
 import type {
   PlaceResult,
+  SightResult,
   ChecklistItemRecord,
   ChecklistWriter,
   VisaRecord,
@@ -90,6 +91,8 @@ export function createFakePorts(options: FakeOptions = {}) {
         attribution: '© OpenStreetMap contributors',
       },
     ] as PlaceResult[],
+    /** What the fake provider answers for sights (none unless a test sets them). */
+    sights: [] as SightResult[],
   };
   const state: FakeState = {
     trips: new Map(),
@@ -665,6 +668,11 @@ export function createFakePorts(options: FakeOptions = {}) {
               Math.abs(place.longitude - point.longitude) < 0.5,
           ) ?? null
         );
+      },
+      async sights() {
+        // Offline, or a provider with nothing around: the caller falls back to its own list.
+        if (places.offline || places.sights.length === 0) return places.offline ? null : [];
+        return places.sights;
       },
     },
     rateLimiter: {

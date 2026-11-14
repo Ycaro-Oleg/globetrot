@@ -64,3 +64,63 @@ describe('memory rate limiter', () => {
     expect(limiter.consume('a', 2)).toBe(true);
   });
 });
+
+describe('Geoapify sights', () => {
+  const feature = (name: string | undefined, categories: string[]) => ({
+    properties: { name, categories },
+  });
+
+  it('maps categories to kinds of visit, and drops unnamed places', async () => {
+    const { sightKind, toSightResult } = await import('./places');
+    expect(sightKind(['tourism', 'entertainment.museum'])).toBe('museum');
+    expect(sightKind(['tourism.sights.viewpoint'])).toBe('viewpoint');
+    expect(sightKind(['leisure.park.garden'])).toBe('park');
+    expect(sightKind(['beach'])).toBe('beach');
+    expect(sightKind(['tourism.sights.castle'])).toBe('landmark');
+    expect(toSightResult(feature(undefined, []))).toBeNull();
+  });
+
+  it('asks around the point, removes duplicates, and answers again from the cache', async () => {
+    const fetcher = vi.fn(async () =>
+      Response.json({
+        features: [
+          feature('Belém Tower', ['tourism.sights.tower']),
+          feature('Belém Tower', ['tourism.sights.tower']),
+          feature('MAAT', ['entertainment.museum']),
+        ],
+      }),
+    );
+    const geocoder = createGeoapifyGeocoder('server-key', fetcher as unknown as typeof fetch);
+    const point = { latitude: 38.6916, longitude: -9.216 };
+    expect(await geocoder.sights(point, { language: 'pt-BR', limit: 6 })).toEqual([
+      {
+        name: 'Belém Tower',
+        kind: 'landmark',
+        attribution: '© OpenStreetMap contributors · Geoapify',
+      },
+      { name: 'MAAT', kind: 'museum', attribution: '© OpenStreetMap contributors · Geoapify' },
+    ]);
+    const url = new URL(String((fetcher.mock.calls[0] as unknown as [URL])[0]));
+    expect(url.origin + url.pathname).toBe('https://api.geoapify.com/v2/places');
+    expect(url.searchParams.get('filter')).toBe('circle:-9.216,38.6916,8000');
+    expect(url.searchParams.get('lang')).toBe('pt');
+    await geocoder.sights(point, { language: 'pt-BR', limit: 6 });
+    expect(fetcher).toHaveBeenCalledTimes(1);
+  });
+
+  it('is unavailable without a key or when the provider fails', async () => {
+    expect(
+      await createGeoapifyGeocoder(null).sights(
+        { latitude: 1, longitude: 1 },
+        { language: 'en', limit: 6 },
+      ),
+    ).toBeNull();
+    const failing = createGeoapifyGeocoder(
+      'k',
+      (async () => new Response('', { status: 500 })) as typeof fetch,
+    );
+    expect(
+      await failing.sights({ latitude: 1, longitude: 1 }, { language: 'en', limit: 6 }),
+    ).toBeNull();
+  });
+});

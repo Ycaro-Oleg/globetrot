@@ -8,7 +8,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useEffect, useId, useRef, useState, type DragEvent, type FormEvent } from 'react';
 import { PipAvatar } from '../_components/pip-avatar';
 import { StartDateForm } from '../_components/start-date-form';
-import { addPlace, movePlace, removePlace } from './actions';
+import { addPlace, movePlace, removePlace, type DayIdea, type DayIdeas } from './actions';
 import {
   buildBoard,
   dropTarget,
@@ -33,12 +33,15 @@ export function DaysView({
   days,
   places,
   pipEnabled = false,
+  ideas = null,
 }: {
   pipEnabled?: boolean;
   trip: { readonly id: string; readonly title: string; readonly startDate?: string | null } | null;
   stops: readonly BoardStop[];
   days: readonly TripDay[];
   places: readonly BoardPlace[] | null;
+  /** Places worth a visit near each stop, or null when they could not be read. */
+  ideas?: DayIdeas | null;
 }) {
   const t = useTranslations('daysPage');
 
@@ -91,6 +94,7 @@ export function DaysView({
       days={days}
       initial={places}
       pipEnabled={pipEnabled}
+      ideas={ideas}
     />
   );
 }
@@ -102,8 +106,10 @@ function Board({
   days,
   initial,
   pipEnabled,
+  ideas: initialIdeas,
 }: {
   pipEnabled: boolean;
+  ideas: DayIdeas | null;
   tripId: string;
   startDate: string | null;
   stops: readonly BoardStop[];
@@ -117,6 +123,40 @@ function Board({
   const [over, setOver] = useState<string | null>(null);
   const [toast, setToast] = useState<Toast | null>(null);
   const [adding, setAdding] = useState(false);
+  const [ideas, setIdeas] = useState(initialIdeas);
+  /** A visit's typical time the way people say it: "45 min", "2 h", "1 h 15". */
+  const duration = (minutes: number) =>
+    minutes < 60
+      ? t('minutes', { minutes })
+      : minutes % 60 === 0
+        ? t('hours', { hours: String(minutes / 60) })
+        : t('hoursMinutes', { hours: Math.floor(minutes / 60), minutes: minutes % 60 });
+  const [addingIdea, setAddingIdea] = useState<string | null>(null);
+
+  /** Puts an idea in "No day" with its typical time, and takes it off the ideas. */
+  const addIdea = (stopId: string, idea: DayIdea) => {
+    const key = `${stopId}:${idea.name}`;
+    setAddingIdea(key);
+    void addPlace(tripId, { name: idea.name, destinationId: stopId, minutes: idea.minutes }).then(
+      (plan) => {
+        setAddingIdea(null);
+        if (!plan) return setToast({ text: t('actionError') });
+        setPlaces(plan.places);
+        setIdeas((current) =>
+          current
+            ? {
+                stops: current.stops.map((stop) =>
+                  stop.stopId === stopId
+                    ? { ...stop, ideas: stop.ideas.filter((other) => other.name !== idea.name) }
+                    : stop,
+                ),
+              }
+            : current,
+        );
+        setToast({ text: t('ideaAdded', { name: idea.name }) });
+      },
+    );
+  };
   const addButton = useRef<HTMLButtonElement>(null);
   const board = buildBoard(days, stops, places);
   const stopName = (id: string | null) => stops.find((stop) => stop.id === id)?.name ?? null;
@@ -330,6 +370,40 @@ function Board({
           <strong>{t('how')}</strong> {t('howText')}
         </p>
       )}
+
+      {ideas && ideas.stops.some((stop) => stop.ideas.length > 0) ? (
+        <section className={styles.ideas} aria-labelledby="ideas-title">
+          <h2 id="ideas-title">{t('ideasTitle')}</h2>
+          {ideas.stops
+            .filter((stop) => stop.ideas.length > 0)
+            .map((stop) => (
+              <div key={stop.stopId} className={styles.ideaGroup}>
+                <h3>{t('ideasFor', { stop: stopName(stop.stopId) ?? t('noStop') })}</h3>
+                <ul>
+                  {stop.ideas.map((idea) => (
+                    <li key={idea.name}>
+                      <button
+                        type="button"
+                        className={styles.idea}
+                        disabled={addingIdea !== null}
+                        onClick={() => addIdea(stop.stopId, idea)}
+                      >
+                        <span aria-hidden="true">+</span> {idea.name}
+                        <span className={styles.ideaTime}>{duration(idea.minutes)}</span>
+                        <span className="sr-only">{t('ideaAddHint')}</span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+                <p className={styles.ideaSource}>
+                  {stop.source === 'provider' && stop.attribution
+                    ? stop.attribution
+                    : t('ideasBuiltIn')}
+                </p>
+              </div>
+            ))}
+        </section>
+      ) : null}
 
       {/* Scrolls sideways on wide screens: focusable, so the keyboard can scroll it too. */}
       <div className={styles.board} role="region" aria-label={t('title')} tabIndex={0}>

@@ -1,9 +1,9 @@
 import { tripDays, toLocalDate } from '@globetrot/domain';
 import { cookies } from 'next/headers';
 import { isPipEnabled } from '../../../lib/flags';
-import { getTranslations } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
 import { apiInternalUrl } from '../../../lib/api-proxy';
-import { sessionCookieHeader } from '../../../lib/stored-preferences';
+import { createServerApiClient, sessionCookieHeader } from '../../../lib/stored-preferences';
 import {
   fetchDayPlaces,
   fetchDestinations,
@@ -25,10 +25,23 @@ export default async function DaysPage() {
   const trips = options ? ((await fetchTrips(options)) ?? []) : [];
   const savedId = store.get(SELECTED_TRIP_COOKIE)?.value;
   const trip = trips.find((candidate) => candidate.id === savedId) ?? trips[0] ?? null;
-  const [destinations, plan] =
+  const locale = await getLocale();
+  const [destinations, plan, ideas] =
     options && trip
-      ? await Promise.all([fetchDestinations(options, trip.id), fetchDayPlaces(options, trip.id)])
-      : [null, null];
+      ? await Promise.all([
+          fetchDestinations(options, trip.id),
+          fetchDayPlaces(options, trip.id),
+          createServerApiClient(options)
+            .GET('/v1/trips/{id}/day-ideas', {
+              params: {
+                path: { id: trip.id },
+                query: { language: locale === 'pt-BR' ? 'pt-BR' : 'en' },
+              },
+            })
+            .then((response) => response.data ?? null)
+            .catch(() => null),
+        ])
+      : [null, null, null];
 
   const stops = (destinations ?? []).map((stop) => ({
     id: stop.id,
@@ -53,6 +66,7 @@ export default async function DaysPage() {
       stops={stops}
       days={days}
       places={plan?.places ?? null}
+      ideas={ideas}
     />
   );
 }

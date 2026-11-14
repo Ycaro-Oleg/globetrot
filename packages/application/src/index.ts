@@ -2,6 +2,7 @@
  * @globetrot/application: commands and queries with authorization, idempotency and audit; ports for adapters
  * (ADR-0006). No HTTP, database or UI imports: adapters pass their implementations in through `Ports`.
  */
+import { createSuggestDayPlaces } from './days/ideas';
 import { createGetPreferences, createUpdatePreferences } from './preferences/operations';
 import { createGetTripShare, createShareTrip, createUnshareTrip } from './trips/share';
 import {
@@ -25,6 +26,7 @@ export const PACKAGE_NAME = '@globetrot/application' as const;
 export type { Actor } from './actor';
 export { assertOwner } from './authorization';
 export { billingSchema } from './billing/operations';
+export { dayIdeasSchema } from './days/ideas';
 export {
   createSharedTrips,
   sharedTripSchema,
@@ -124,6 +126,7 @@ export { defineOperation, type Operation } from './operation';
 export type {
   GeocodingPort,
   PlaceResult,
+  SightResult,
   RateLimiter,
   ChecklistItemPatch,
   CommentRecord,
@@ -417,6 +420,7 @@ export function createApplication(ports: Ports) {
     getTripShare: createGetTripShare(ports),
     shareTrip: createShareTrip(ports),
     unshareTrip: createUnshareTrip(ports),
+    suggestDayPlaces: createSuggestDayPlaces(ports),
   };
   // After the trial, without a plan, the account is read-only: every command but a few passes this guard.
   return Object.fromEntries(
