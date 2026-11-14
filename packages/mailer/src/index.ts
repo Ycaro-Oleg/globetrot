@@ -1,6 +1,14 @@
 import { renderEmail, type EmailPort } from '@globetrot/application';
 import nodemailer from 'nodemailer';
-import type { EmailConfig } from './config';
+/** SMTP settings, read by each app's own config. */
+export interface EmailConfig {
+  readonly host: string;
+  readonly port: number;
+  /** `Name <address>` shown as the sender. */
+  readonly from: string;
+  readonly user: string | undefined;
+  readonly password: string | undefined;
+}
 
 /**
  * The `EmailPort` over SMTP (nodemailer). Locally it talks to Mailpit, which catches everything; a production

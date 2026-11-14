@@ -2,7 +2,7 @@ import { catalogs, SUPPORTED_LOCALES } from '@globetrot/i18n';
 import { describe, expect, it } from 'vitest';
 import { renderEmail, type EmailData, type EmailTemplate } from './templates';
 
-const TEMPLATES: EmailTemplate[] = ['verifyEmail', 'resetPassword'];
+const TEMPLATES: EmailTemplate[] = ['verifyEmail', 'resetPassword', 'trialEnding', 'trialEnded'];
 const URL_ = 'https://app.example.test/api/auth/verify-email?token=abc.def&callbackURL=%2F';
 const DATA: EmailData = { url: URL_, name: 'Ana', expiresInHours: 24 };
 
@@ -42,9 +42,12 @@ describe.each(SUPPORTED_LOCALES)('renderEmail in %s', (locale) => {
     // Both versions give the link, and the expiry sentence in the same words.
     expect(text).toContain(URL_);
     expect(html).toContain(URL_.replaceAll('&', '&amp;'));
-    const expiry = /(\d+) (hours?|horas?)/.exec(text)?.[0];
-    expect(expiry).toBeDefined();
-    expect(visible).toContain(expiry);
+    // The trial-ended email has no countdown; every other one says how long is left in the same words.
+    if (template !== 'trialEnded') {
+      const expiry = /(\d+) (hours?|horas?)/.exec(text)?.[0];
+      expect(expiry).toBeDefined();
+      expect(visible).toContain(expiry);
+    }
   });
 
   it('puts the language on the document', () => {

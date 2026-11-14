@@ -67,7 +67,9 @@ Semantics, error codes and the trust model for the client address: [`authenticat
 |---|---|---|---|
 | `DATABASE_URL` | local compose database | **required** | Same database as the API |
 | `S3_*` | as for the API | **required**, as for the API | Where stored images are swept ([ADR-0017](../architecture/adr/0017-worker-housekeeping.md)) |
-| `MAINTENANCE_INTERVAL_MINUTES` | `60` | optional | Minutes between housekeeping rounds (1 to 1440) |
+| `MAINTENANCE_INTERVAL_MINUTES` | `60` | optional | Minutes between rounds: housekeeping and the trial emails (1 to 1440) |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `EMAIL_FROM` | as for the API | **`SMTP_HOST` and `EMAIL_FROM` required**, as for the API | Sends the two trial emails ([ADR-0019](../architecture/adr/0019-plans-trial-and-pip-credits.md)) |
+| `BETTER_AUTH_URL` | `http://localhost:3000` | **required**, `https` | The public web origin, for the plans link in those emails |
 
 ## Database tooling (`packages/db`)
 

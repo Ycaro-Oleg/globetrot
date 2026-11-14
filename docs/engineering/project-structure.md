@@ -25,6 +25,7 @@ packages/
   ui/           @globetrot/ui           Web components (React Aria + Tailwind) + Storybook
   i18n/         @globetrot/i18n         ICU message catalogs (en, pt-BR) and locale helpers
   storage/      @globetrot/storage      S3-compatible StoragePort adapter and settings reader (API and worker)
+  mailer/       @globetrot/mailer       SMTP EmailPort adapter (API and worker)
 eslint.config.mjs   One flat ESLint config for the repo, including the architecture boundary rules
 turbo.json          Task graph: build, dev, lint, typecheck, test, test:int. apps/web/turbo.json makes the web build wait for the tokens build and for the web typecheck (they share `.next`), and dev wait for the tokens build; neither waits for the Storybook build of @globetrot/ui
 compose.yaml        Local services (Postgres + PostGIS, S3 storage, Mailpit). See local-development.md

@@ -30,6 +30,11 @@ The product is sold, not given away: at most a time-limited trial. Each Pip requ
   - The subscription row mirrors the provider: `provider_customer_id` and `provider_subscription_id` match webhooks.
   - The Stripe adapter uses `fetch` with no SDK. Its webhook re-reads the subscription from Stripe on every event and applies the current state, so retries and reordering are harmless ([stripe](../../integrations/stripe.md)).
 
+- **Two trial emails** are sent by the worker's hourly round, to verified addresses without a paid plan:
+  - "ends in 2 days", 48 hours before the end;
+  - "your trips are safe", once, within 3 days after the end, so older accounts are never written to.
+  - Each email is claimed in `account_notice` before sending and released if sending fails, so it goes at most once per account.
+
 ## Consequences
 - The landing shows the real prices; nothing is labelled placeholder any more. No real charge happens until Stripe's live keys are set by the owner.
 - Each command does one more small read (the account's plan) before it runs.

@@ -172,3 +172,8 @@ export function creditBalance(input: {
 export function trialDaysLeft(trialEndsAt: Date, now: Date): number {
   return Math.max(0, Math.ceil((trialEndsAt.getTime() - now.getTime()) / DAY_MS));
 }
+
+/** The "free week ends soon" email goes this many hours before the end. */
+export const TRIAL_ENDING_NOTICE_HOURS = 48;
+/** The "free week is over" email is sent only this many days after the end (older accounts are not written to). */
+export const TRIAL_ENDED_NOTICE_DAYS = 3;
