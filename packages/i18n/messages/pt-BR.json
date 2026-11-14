@@ -439,7 +439,8 @@
     "deletedMessage": "Viagem excluída.",
     "tripLimit": "Este plano mantém 10 viagens ativas. Arquive uma, ou passe para o Voyager e tenha viagens ilimitadas.",
     "planRequired": "Sua semana grátis acabou: escolha um plano para criar ou mudar viagens.",
-    "seePlans": "Ver planos"
+    "seePlans": "Ver planos",
+    "routeSummary": "{route} · {nights, plural, one {# noite} other {# noites}}"
   },
   "landing": {
     "metaTitle": "Globetrot · Planeje a viagem com que você sempre sonha",
@@ -1456,6 +1457,23 @@
       "saving": "Salvando…",
       "saved": "Data salva.",
       "error": "Não salvou. Tente de novo."
+    },
+    "share": {
+      "title": "Compartilhar esta viagem",
+      "hint": "Um link privado que qualquer pessoa pode abrir: o roteiro, o mês e se dá para ir. Nunca seu nome nem as datas exatas.",
+      "start": "Criar um link",
+      "linkLabel": "Link desta viagem",
+      "copy": "Copiar",
+      "copied": "Link copiado.",
+      "copyFailed": "Não deu para copiar: selecione o link e copie.",
+      "send": "Enviar…",
+      "postX": "Postar no X",
+      "postText": "Planejando {title} no Globetrot ✈️",
+      "showAmounts": "Mostrar os valores (custo e economia)",
+      "stop": "Parar de compartilhar",
+      "on": "O link está ativo.",
+      "off": "O link foi desativado. O endereço antigo não abre mais.",
+      "error": "Não deu certo. Tente de novo."
     }
   },
   "consent": {
@@ -1536,5 +1554,26 @@
     "failed": "Não deu certo. Tente de novo em instantes.",
     "thanksPlan": "Obrigado! Seu pagamento foi aprovado. Seu plano é ativado em instantes; recarregue se ainda aparecer o teste grátis.",
     "thanksTopUp": "Obrigado! Seus créditos extras do Pip chegam em instantes."
+  },
+  "sharedTrip": {
+    "kicker": "Uma viagem planejada no Globetrot",
+    "meta": "{month} · {nights, plural, one {# noite} other {# noites}} · {stops, plural, one {# parada} other {# paradas}}",
+    "noDate": "Sem data ainda",
+    "nights": "{count, plural, =0 {Bate-volta} one {# noite} other {# noites}}",
+    "routeLabel": "O roteiro",
+    "mapLabel": "Desenho do roteiro",
+    "answerTitle": "Dá para ir?",
+    "ready": "Pronto para ir em {month}",
+    "saved": "Dinheiro guardado. Malas prontas.",
+    "noPlan": "Ainda fechando as contas.",
+    "progress": "{percent, number}% guardado",
+    "amounts": "{saved} de {total} guardados · {monthly} por mês",
+    "ctaTitle": "Planeje a sua viagem assim",
+    "ctaBody": "Marque seu roteiro, veja quanto custa na sua moeda e descubra o mês em que você consegue ir. 7 dias grátis, sem cartão.",
+    "cta": "Começar minha semana grátis",
+    "note": "Compartilhado por quem está planejando. Só o mês aparece, nunca as datas exatas.",
+    "metaDescription": "{title}: {nights, plural, one {# noite} other {# noites}}, planejada no Globetrot.",
+    "ogReady": "Pronto em {month}",
+    "ogNights": "{nights, plural, one {# noite} other {# noites}}"
   }
 }

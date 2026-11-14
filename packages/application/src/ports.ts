@@ -701,6 +701,27 @@ export interface IdempotencyStore {
   complete(ownerId: string, key: string, response: unknown): Promise<void>;
 }
 
+// --- Sharing a trip -------------------------------------------------------------------------------------
+
+export interface TripShareRecord {
+  readonly slug: string;
+  readonly tripId: string;
+  readonly ownerId: string;
+  readonly showAmounts: boolean;
+  readonly createdAt: Date;
+}
+
+export interface ShareReader {
+  findByTrip(tripId: string): Promise<TripShareRecord | null>;
+  findBySlug(slug: string): Promise<TripShareRecord | null>;
+}
+
+export interface ShareWriter extends ShareReader {
+  insert(record: TripShareRecord): Promise<void>;
+  setShowAmounts(tripId: string, showAmounts: boolean): Promise<void>;
+  deleteByTrip(tripId: string): Promise<void>;
+}
+
 // --- Billing (ADR-0019) --------------------------------------------------------------------------------
 
 export interface BillingAccount {
@@ -769,6 +790,7 @@ export interface Transaction {
   readonly account: AccountWriter;
   readonly assistant: AssistantWriter;
   readonly billing: BillingWriter;
+  readonly shares: ShareWriter;
   readonly audit: AuditLog;
   readonly idempotency: IdempotencyStore;
 }
@@ -784,6 +806,8 @@ export interface Clock {
 export interface IdGenerator {
   /** A new UUIDv7. */
   newId(): string;
+  /** 128 random bits as 22 base64url characters: for secrets in links (a shared trip). */
+  newToken(): string;
 }
 
 export interface Ports {
@@ -804,6 +828,7 @@ export interface Ports {
   readonly assistant: AssistantReader;
   readonly billing: BillingReader;
   readonly payments: PaymentsPort;
+  readonly shares: ShareReader;
   readonly ai: AiPort;
   readonly unitOfWork: UnitOfWork;
   readonly clock: Clock;

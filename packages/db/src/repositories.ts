@@ -9,6 +9,7 @@ import { and, asc, count, desc, eq, gte, inArray, ne, sql, type SQL } from 'driz
 import { createAccountRepository, type AccountRepository } from './account-repository';
 import { createAssistantRepository, type AssistantRepository } from './assistant-repository';
 import { createBillingRepository, type BillingRepository } from './billing-repository';
+import { createShareRepository, type ShareRepository } from './share-repository';
 import { createCommunityRepository, type CommunityRepository } from './community-repository';
 import type { Database } from './client';
 import {
@@ -737,6 +738,7 @@ export interface Transaction {
   readonly account: AccountRepository;
   readonly assistant: AssistantRepository;
   readonly billing: BillingRepository;
+  readonly shares: ShareRepository;
   readonly audit: AuditLog;
   readonly idempotency: IdempotencyStore;
 }
@@ -760,6 +762,7 @@ export function createUnitOfWork(db: Database) {
           account: createAccountRepository(tx),
           assistant: createAssistantRepository(tx),
           billing: createBillingRepository(tx),
+          shares: createShareRepository(tx),
           audit: createAuditLog(tx),
           idempotency: createIdempotencyStore(tx),
         }),

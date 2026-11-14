@@ -4,7 +4,7 @@ import { getLocale, getTranslations } from 'next-intl/server';
 import { cookies } from 'next/headers';
 import { apiInternalUrl } from '../../../lib/api-proxy';
 import { createServerApiClient, sessionCookieHeader } from '../../../lib/stored-preferences';
-import { fetchTrips, SELECTED_TRIP_COOKIE } from '../../../lib/trips';
+import { fetchDestinations, fetchTrips, SELECTED_TRIP_COOKIE } from '../../../lib/trips';
 import { currencyOptions } from '../../settings/options';
 import { findExampleTrip } from '@globetrot/application';
 import {
@@ -64,6 +64,26 @@ export default async function TripsPage({
 
   const error = fetchedTrips === null;
   const trips = fetchedTrips ?? [];
+  // Each card says where the trip goes (a few small reads; a person keeps a handful of trips).
+  const routes = new Map(
+    options
+      ? await Promise.all(
+          trips.map(
+            async (trip) => [trip.id, (await fetchDestinations(options, trip.id)) ?? []] as const,
+          ),
+        )
+      : [],
+  );
+  const routeSummary = (tripId: string) => {
+    const stops = routes.get(tripId) ?? [];
+    if (stops.length === 0) return t('noDestinations');
+    const names = stops.map((stop) => stop.name);
+    const shown = names.length > 3 ? [...names.slice(0, 3), `+${names.length - 3}`] : names;
+    return t('routeSummary', {
+      route: shown.join(' → '),
+      nights: stops.reduce((sum, stop) => sum + stop.nights, 0),
+    });
+  };
   const selectedFilter: Filter = FILTERS.includes(query.filter as Filter)
     ? (query.filter as Filter)
     : 'all';
@@ -280,7 +300,7 @@ export default async function TripsPage({
                     <span aria-hidden="true"> · </span>
                     {displayCurrency(trip.currency, locale)}
                   </p>
-                  <p className={styles.tripSummary}>{t('noDestinations')}</p>
+                  <p className={styles.tripSummary}>{routeSummary(trip.id)}</p>
                   <div className={styles.cardActions}>
                     <form action={openTrip}>
                       <input type="hidden" name="tripId" value={trip.id} />

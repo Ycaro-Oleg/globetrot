@@ -3,7 +3,7 @@ import { getLocale, getTranslations } from 'next-intl/server';
 import { cookies } from 'next/headers';
 import { apiInternalUrl } from '../../../../lib/api-proxy';
 import { isPipEnabled } from '../../../../lib/flags';
-import { sessionCookieHeader } from '../../../../lib/stored-preferences';
+import { createServerApiClient, sessionCookieHeader } from '../../../../lib/stored-preferences';
 import {
   fetchBudget,
   fetchChecklist,
@@ -16,6 +16,7 @@ import { StartDateForm } from '../../_components/start-date-form';
 import { openTripAt } from '../../_components/trip-actions';
 import { archiveTrip, undoArchiveTrip } from '../actions';
 import { MakeCurrent } from './make-current';
+import { ShareCard } from './share-card';
 import { TitleEditor } from './title-editor';
 import styles from './trip-hub.module.css';
 
@@ -52,6 +53,13 @@ export default async function TripHub({ params }: { params: Promise<{ id: string
   const cookieHeader = sessionCookieHeader(store.getAll());
   const options = cookieHeader ? { cookieHeader, apiUrl: apiInternalUrl() } : null;
   const trip = options ? await fetchTrip(options, id) : null;
+  const share =
+    options && trip
+      ? await createServerApiClient(options)
+          .GET('/v1/trips/{id}/share', { params: { path: { id: trip.id } } })
+          .then((response) => response.data ?? { slug: null, showAmounts: false })
+          .catch(() => ({ slug: null, showAmounts: false }))
+      : { slug: null, showAmounts: false };
 
   if (!options || !trip) {
     return (
@@ -187,6 +195,8 @@ export default async function TripHub({ params }: { params: Promise<{ id: string
             {answer ? <p className={styles.answer}>{answer}</p> : null}
             <p className={styles.hint}>{t('whenHint')}</p>
           </section>
+
+          {!archived ? <ShareCard tripId={trip.id} title={trip.title} initial={share} /> : null}
 
           <section className={styles.card} aria-labelledby="tools-title">
             <h2 id="tools-title">{t('toolsTitle')}</h2>

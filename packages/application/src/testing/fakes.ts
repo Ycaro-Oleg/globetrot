@@ -29,6 +29,8 @@ import type {
   BillingWriter,
   ProposalRecord,
   SubscriptionRecord,
+  ShareWriter,
+  TripShareRecord,
 } from '../ports';
 import {
   createFakeCommunity,
@@ -55,6 +57,8 @@ export interface FakeState {
   /** When each account signed up; an account not listed signed up "now" (in its trial). */
   signedUpAt: Map<string, Date>;
   subscriptions: Map<string, SubscriptionRecord>;
+  /** Public links by trip id. */
+  shares: Map<string, TripShareRecord>;
   credits: { userId: string; delta: number; reason: string; ref: string | null }[];
   audit: AuditEventInput[];
   idempotency: Map<string, { fingerprint: string; response: unknown }>;
@@ -102,6 +106,7 @@ export function createFakePorts(options: FakeOptions = {}) {
     aiUsage: [],
     signedUpAt: new Map(),
     subscriptions: new Map(),
+    shares: new Map(),
     credits: [],
     audit: [],
     idempotency: new Map(),
@@ -469,6 +474,25 @@ export function createFakePorts(options: FakeOptions = {}) {
     },
   };
 
+  const shareWriter: ShareWriter = {
+    async findByTrip(tripId) {
+      return state.shares.get(tripId) ?? null;
+    },
+    async findBySlug(slug) {
+      return [...state.shares.values()].find((share) => share.slug === slug) ?? null;
+    },
+    async insert(record) {
+      state.shares.set(record.tripId, record);
+    },
+    async setShowAmounts(tripId, showAmounts) {
+      const current = state.shares.get(tripId);
+      if (current) state.shares.set(tripId, { ...current, showAmounts });
+    },
+    async deleteByTrip(tripId) {
+      state.shares.delete(tripId);
+    },
+  };
+
   const transaction: Transaction = {
     trips: tripWriter,
     expenses: expenseWriter,
@@ -483,6 +507,7 @@ export function createFakePorts(options: FakeOptions = {}) {
     account: accountWriter,
     assistant: assistantWriter,
     billing: billingWriter,
+    shares: shareWriter,
     audit: {
       async record(event) {
         if (faults.auditFails) throw new Error('audit store is down');
@@ -543,6 +568,7 @@ export function createFakePorts(options: FakeOptions = {}) {
     account: accountWriter,
     assistant: assistantWriter,
     billing: billingWriter,
+    shares: shareWriter,
     payments: {
       async checkoutUrl(input) {
         return payments.enabled
@@ -586,6 +612,7 @@ export function createFakePorts(options: FakeOptions = {}) {
           aiUsage: [...state.aiUsage],
           signedUpAt: new Map(state.signedUpAt),
           subscriptions: new Map(state.subscriptions),
+          shares: new Map(state.shares),
           credits: [...state.credits],
           audit: [...state.audit],
           idempotency: new Map(
@@ -609,6 +636,7 @@ export function createFakePorts(options: FakeOptions = {}) {
           state.aiUsage = before.aiUsage;
           state.signedUpAt = before.signedUpAt;
           state.subscriptions = before.subscriptions;
+          state.shares = before.shares;
           state.credits = before.credits;
           state.audit = before.audit;
           state.idempotency = before.idempotency;
@@ -619,6 +647,7 @@ export function createFakePorts(options: FakeOptions = {}) {
     clock: { now: () => time },
     ids: {
       newId: () => `00000000-0000-7000-8000-${String(++counter).padStart(12, '0')}`,
+      newToken: () => `token${String(++counter).padStart(17, '0')}`,
     },
     geocoding: {
       // A tiny gazetteer: enough for the board's tests. `places.offline` makes it behave like a provider that is down.

@@ -149,6 +149,14 @@ Decision record: [ADR-0013](../architecture/adr/0013-community.md).
 - **Pip v1** ([ADR-0016](../architecture/adr/0016-pip-on-deepseek.md)): the person asks in their own words; Pip (DeepSeek) answers up to 12 changes of these kinds: add, remove or reorder stops, change nights, add a place to "No day", add a checklist item, add a cost (always `≈ estimate`, in the trip's currency) and set the monthly savings amount. Every change is ticked by default and can be unticked; **Apply** runs the ticked ones together, **Discard** changes nothing, **Undo** (24 hours) puts the trip back as it was before applying. While a proposal waits, its new stops are pencilled on the map (dashed, not real stops) and the route panel says so; “Ask Pip” on each trip tool only writes an idea into the box, nothing is sent until the person asks.
 - **What leaves Globetrot:** only the trip's plan (title, dates, stops, nights, places, checklist labels, cost totals, savings amounts), never the person's name, email, home city or other trips. The Pip screen says so.
 
+## Sharing a trip
+
+- The owner can turn on **one public link per trip** (from the trip's page). The address is 128 random bits; anyone who has it can open the page, and search engines are told not to list it.
+- The page shows the trip's title, the route (stops in order, their countries and nights, drawn as a sketch), the **month** of departure (never the day, so nobody learns when a house is empty), and the savings answer as a percentage and a ready month.
+- **Amounts** (cost, saved, monthly) show only if the owner ticks "Show the amounts". The person's name, email, notes, places, photos and checklist never show.
+- **Stopping** deletes the link: the old address answers "not found" for good, and a new link gets a new address. Stopping works even when the account is read-only; turning sharing on needs the trial or a plan.
+- An archived trip's link answers "not found" too. The page invites visitors to plan their own trip (the free week).
+
 ## Plans, trial and Pip credits
 
 Decided in [ADR-0019](../architecture/adr/0019-plans-trial-and-pip-credits.md). Prices are in USD and come from `PLAN_TERMS` in the domain.

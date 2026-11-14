@@ -1,6 +1,7 @@
 import {
   createApplication,
   createPaymentEvents,
+  createSharedTrips,
   type EmailPort,
   type AiPort,
   type PaymentsPort,
@@ -12,6 +13,7 @@ import {
   createAccountRepository,
   createAssistantRepository,
   createBillingRepository,
+  createShareRepository,
   createCommunityRepository,
   createDestinationRepository,
   createMediaRepository,
@@ -92,24 +94,32 @@ export function createServices(
   const users = createUserReader(db);
   const unitOfWork = createUnitOfWork(db);
   const clock = { now: () => new Date() };
-  const ids = { newId: () => uuidV7(Date.now(), crypto.getRandomValues(new Uint8Array(10))) };
+  const ids = {
+    newId: () => uuidV7(Date.now(), crypto.getRandomValues(new Uint8Array(10))),
+    newToken: () => Buffer.from(crypto.getRandomValues(new Uint8Array(16))).toString('base64url'),
+  };
   const webhook = createStripeWebhook(
     config.stripe,
     createPaymentEvents({ users, billing, unitOfWork, clock, ids }),
     { fetch: overrides.stripeFetch },
   );
   const auth = createAuth(db, config.auth, { email });
+  const reads = {
+    trips: createTripRepository(db),
+    destinations: createDestinationRepository(db),
+    expenses: createExpenseRepository(db),
+    savings: createSavingsRepository(db),
+    shares: createShareRepository(db),
+  };
   const app = createApp({
     auth: toAuthService(auth),
+    sharedTrips: createSharedTrips({ ...reads, clock }),
     application: createApplication({
+      ...reads,
       users,
-      trips: createTripRepository(db),
-      destinations: createDestinationRepository(db),
-      expenses: createExpenseRepository(db),
       checklist: createChecklistRepository(db),
       dayPlaces: createDayPlaceRepository(db),
       visas: createVisaRepository(db),
-      savings: createSavingsRepository(db),
       preferences: createPreferencesRepository(db),
       community: createCommunityRepository(db),
       media: createMediaRepository(db),

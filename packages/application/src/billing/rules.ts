@@ -64,4 +64,6 @@ export const OPEN_WHEN_READ_ONLY: ReadonlySet<string> = new Set([
   'updateHandle',
   'startCheckout',
   'openBillingPortal',
+  // Stopping a public link must always work.
+  'unshareTrip',
 ]);

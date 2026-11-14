@@ -210,6 +210,16 @@ Migration `0017_pip`. Rules: [business rules](../product/business-rules.md#ai-pi
 
 - Audit: `pip.propose` (number and kinds of changes), `pip.apply` (applied and offered counts), `pip.discard`, `pip.undo`. Never the request or the changes' text.
 
+## Shared trips
+
+Migration `0020_trip_share`. Rules: [business rules](../product/business-rules.md#sharing-a-trip).
+
+| Table | What | Rules |
+|---|---|---|
+| `trip_share` | A trip's public link | `slug` (primary key, 22 base64url characters, 128 random bits), `trip_id` (unique, `trip`, cascade), `owner_id` (`user`, cascade), `show_amounts` (default false), `created_at`. Stopping deletes the row |
+
+- Audit: `trip.share` (whether amounts show), `trip.unshare`.
+
 ## Plans and credits
 
 Migration `0018_billing`. Rules: [business rules](../product/business-rules.md#plans-trial-and-pip-credits), [ADR-0019](adr/0019-plans-trial-and-pip-credits.md). The trial has no table: it runs from `user.created_at`.

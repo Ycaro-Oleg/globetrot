@@ -4,6 +4,7 @@ import {
   UnauthenticatedError,
   currentUserSchema,
   type Application,
+  type SharedTripView,
 } from '@globetrot/application';
 import { HTTPException } from 'hono/http-exception';
 import { problemResponse, type Env } from './http';
@@ -14,6 +15,7 @@ import { registerCommunityRoutes } from './routes/community';
 import { registerMediaRoutes } from './routes/media';
 import { registerAccountRoutes } from './routes/account';
 import { registerBillingRoutes } from './routes/billing';
+import { registerShareRoutes, registerSharedTripRoute } from './routes/shares';
 import { registerPipRoutes } from './routes/pip';
 import { registerDayPlaceRoutes } from './routes/day-places';
 import { registerDestinationRoutes } from './routes/destinations';
@@ -42,6 +44,8 @@ export interface AppDependencies {
   /** Whether the API can serve: the database answers. `/ready` reports it for the platform's health check. */
   readonly readiness?: () => Promise<boolean>;
   /** Stripe's webhook: raw body and signature in, the HTTP status out (ADR-0019). Absent: the route is 404. */
+  /** The public view of shared trips; absent, the route answers 404. */
+  readonly sharedTrips?: { view(slug: string): Promise<SharedTripView | null> } | undefined;
   readonly paymentWebhook?:
     ((rawBody: string, signature: string | null) => Promise<number>) | undefined;
 }
@@ -91,6 +95,7 @@ export function createApp({
   enabledProviders = [],
   readiness = async () => true,
   paymentWebhook,
+  sharedTrips = { view: async () => null },
 }: AppDependencies) {
   const app = new OpenAPIHono<Env>({
     // Input that fails an operation's schema before the handler runs.
@@ -164,6 +169,9 @@ export function createApp({
   app.doc31('/v1/openapi.json', OPENAPI_CONFIG);
   registerProviderRoutes(app, enabledProviders);
 
+  // A shared trip is public: anyone with the link may read it, so it is registered before the session middleware.
+  registerSharedTripRoute(app, sharedTrips);
+
   // Stripe calls this with no session: it is trusted only through the signature over the raw body, so it is
   // registered before the session middleware and reads the body as text, untouched.
   app.post('/v1/webhooks/stripe', async (c) => {
@@ -200,6 +208,7 @@ export function createApp({
   registerAccountRoutes(app, application);
   registerPipRoutes(app, application);
   registerBillingRoutes(app, application);
+  registerShareRoutes(app, application);
 
   app.notFound(() => problem(404, 'NOT_FOUND', { detail: 'No such route' }));
 
