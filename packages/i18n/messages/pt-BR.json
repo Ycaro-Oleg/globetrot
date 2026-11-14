@@ -1519,6 +1519,8 @@
     "perMonthShort": "{price}/mês",
     "tripsTitle": "Viagens ativas",
     "choosePlans": "Escolha seu plano",
-    "failed": "Não deu certo. Tente de novo em instantes."
+    "failed": "Não deu certo. Tente de novo em instantes.",
+    "thanksPlan": "Obrigado! Seu pagamento foi aprovado. Seu plano é ativado em instantes; recarregue se ainda aparecer o teste grátis.",
+    "thanksTopUp": "Obrigado! Seus créditos extras do Pip chegam em instantes."
   }
 }

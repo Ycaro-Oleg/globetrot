@@ -41,6 +41,9 @@ export interface AppDependencies {
   readonly enabledProviders?: readonly 'google'[];
   /** Whether the API can serve: the database answers. `/ready` reports it for the platform's health check. */
   readonly readiness?: () => Promise<boolean>;
+  /** Stripe's webhook: raw body and signature in, the HTTP status out (ADR-0019). Absent: the route is 404. */
+  readonly paymentWebhook?:
+    ((rawBody: string, signature: string | null) => Promise<number>) | undefined;
 }
 
 const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
@@ -87,6 +90,7 @@ export function createApp({
   trustedOrigins,
   enabledProviders = [],
   readiness = async () => true,
+  paymentWebhook,
 }: AppDependencies) {
   const app = new OpenAPIHono<Env>({
     // Input that fails an operation's schema before the handler runs.
@@ -159,6 +163,17 @@ export function createApp({
   // registration order, so everything registered after `app.use('/v1/*', ...)` requires a session.
   app.doc31('/v1/openapi.json', OPENAPI_CONFIG);
   registerProviderRoutes(app, enabledProviders);
+
+  // Stripe calls this with no session: it is trusted only through the signature over the raw body, so it is
+  // registered before the session middleware and reads the body as text, untouched.
+  app.post('/v1/webhooks/stripe', async (c) => {
+    if (!paymentWebhook) return problem(404, 'NOT_FOUND');
+    const status = await paymentWebhook(
+      await c.req.text(),
+      c.req.header('stripe-signature') ?? null,
+    );
+    return c.json({ received: status === 200 }, status as 200 | 400 | 404 | 500);
+  });
 
   // The only place an `Actor` is created. It comes from the verified session cookie and from nothing else:
   // not a header, a query parameter or a body field. Do not read any of those here.

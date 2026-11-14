@@ -296,3 +296,42 @@ describe('Google sign-in settings', () => {
     },
   );
 });
+
+describe('Stripe', () => {
+  const stripe = (key = 'sk_test_abc123') => ({
+    STRIPE_SECRET_KEY: key,
+    STRIPE_WEBHOOK_SECRET: 'whsec_abc',
+    STRIPE_PRICE_EXPLORER_MONTHLY: 'price_em',
+    STRIPE_PRICE_EXPLORER_YEARLY: 'price_ey',
+    STRIPE_PRICE_VOYAGER_MONTHLY: 'price_vm',
+    STRIPE_PRICE_VOYAGER_YEARLY: 'price_vy',
+    STRIPE_PRICE_TOP_UP: 'price_top',
+  });
+
+  it('is off without settings, and on with all of them', () => {
+    expect(loadApiConfig({ DATABASE_URL }).stripe).toBeNull();
+    expect(loadApiConfig({ DATABASE_URL, ...stripe() }).stripe).toMatchObject({
+      prices: { voyager: { year: 'price_vy' }, topUp: 'price_top' },
+      returnOrigin: 'http://localhost:3000',
+    });
+  });
+
+  it('refuses half a setup, naming what is missing but never a value', () => {
+    const partial: Record<string, string> = { ...stripe() };
+    delete partial.STRIPE_PRICE_TOP_UP;
+    const attempt = () => loadApiConfig({ DATABASE_URL, ...partial });
+    expect(attempt).toThrow(/missing: STRIPE_PRICE_TOP_UP/);
+    expect(attempt).not.toThrow(/sk_test_abc123/);
+  });
+
+  it('takes live keys only in production, and only real-looking secrets', () => {
+    expect(() => loadApiConfig({ DATABASE_URL, ...stripe('sk_live_abc') })).toThrow(ApiConfigError);
+    expect(loadApiConfig(production(stripe('sk_live_abc'))).stripe?.secretKey).toBe('sk_live_abc');
+    expect(() => loadApiConfig({ DATABASE_URL, ...stripe('pk_test_abc') })).toThrow(
+      /not a Stripe secret/,
+    );
+    expect(() =>
+      loadApiConfig({ DATABASE_URL, ...stripe(), STRIPE_WEBHOOK_SECRET: 'nope' }),
+    ).toThrow(/whsec_/);
+  });
+});

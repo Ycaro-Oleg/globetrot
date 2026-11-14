@@ -1,5 +1,6 @@
 import {
   createApplication,
+  createPaymentEvents,
   type EmailPort,
   type AiPort,
   type PaymentsPort,
@@ -34,6 +35,7 @@ import { createSmtpEmail } from './email';
 import { createGeoapifyGeocoder, createMemoryRateLimiter } from './places';
 import { createS3Storage } from '@globetrot/storage';
 import { createDeepSeekAi } from './ai';
+import { createStripePayments, createStripeWebhook } from './stripe';
 
 /** Adapter: the application's `UserReader` port over the `user` table. Selects only what the port names. */
 export function createUserReader(db: Database): UserReader {
@@ -78,14 +80,29 @@ export function createServices(
     readonly storage?: StoragePort;
     readonly ai?: AiPort;
     readonly payments?: PaymentsPort;
+    /** Stands in for Stripe's HTTP API in tests. */
+    readonly stripeFetch?: typeof fetch;
   } = {},
 ) {
   const email = overrides.email ?? createSmtpEmail(config.email);
+  const billing = createBillingRepository(db);
+  const payments =
+    overrides.payments ??
+    createStripePayments(config.stripe, billing, { fetch: overrides.stripeFetch });
+  const users = createUserReader(db);
+  const unitOfWork = createUnitOfWork(db);
+  const clock = { now: () => new Date() };
+  const ids = { newId: () => uuidV7(Date.now(), crypto.getRandomValues(new Uint8Array(10))) };
+  const webhook = createStripeWebhook(
+    config.stripe,
+    createPaymentEvents({ users, billing, unitOfWork, clock, ids }),
+    { fetch: overrides.stripeFetch },
+  );
   const auth = createAuth(db, config.auth, { email });
   const app = createApp({
     auth: toAuthService(auth),
     application: createApplication({
-      users: createUserReader(db),
+      users,
       trips: createTripRepository(db),
       destinations: createDestinationRepository(db),
       expenses: createExpenseRepository(db),
@@ -98,17 +115,14 @@ export function createServices(
       media: createMediaRepository(db),
       account: createAccountRepository(db),
       assistant: createAssistantRepository(db),
-      billing: createBillingRepository(db),
-      // Stripe plugs in here once its keys are set (ADR-0019); until then checkout answers 503.
-      payments: overrides.payments ?? {
-        checkoutUrl: async () => null,
-        portalUrl: async () => null,
-      },
+      billing,
+      // Without Stripe settings, checkout answers 503 (ADR-0019).
+      payments,
       ai: overrides.ai ?? createDeepSeekAi(config.ai),
       storage: overrides.storage ?? createS3Storage(config.storage),
-      unitOfWork: createUnitOfWork(db),
-      clock: { now: () => new Date() },
-      ids: { newId: () => uuidV7(Date.now(), crypto.getRandomValues(new Uint8Array(10))) },
+      unitOfWork,
+      clock,
+      ids,
       geocoding: overrides.geocoding ?? createGeoapifyGeocoder(config.geoapifyKey),
       rateLimiter: createMemoryRateLimiter(),
     }),
@@ -118,6 +132,7 @@ export function createServices(
       return true;
     },
     enabledProviders: config.auth.google ? ['google'] : [],
+    paymentWebhook: config.stripe ? (raw, signature) => webhook.handle(raw, signature) : undefined,
   });
   return { auth, app };
 }

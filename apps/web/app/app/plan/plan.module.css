@@ -247,3 +247,12 @@
     grid-template-columns: 1fr 1fr;
   }
 }
+
+.thanks {
+  margin: 0;
+  padding: 14px 18px;
+  border: 1px solid var(--gt-semantic-color-confirmed);
+  border-radius: 16px;
+  background: var(--gt-semantic-color-surface-card);
+  font-weight: 700;
+}

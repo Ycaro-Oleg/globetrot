@@ -95,3 +95,15 @@ describe.each(SUPPORTED_LOCALES)('free-week line (%s)', (locale) => {
     expect(wrap(locale, <PlanBanner billing={null} />)).toBe('');
   });
 });
+
+describe.each(SUPPORTED_LOCALES)('back from checkout (%s)', (locale) => {
+  it('thanks the person while Stripe confirms the payment', () => {
+    const copy = catalogs[locale].planPage;
+    expect(wrap(locale, <PlanView billing={trial} paid="plan" />)).toContain(
+      copy.thanksPlan.slice(0, 12),
+    );
+    expect(wrap(locale, <PlanView billing={trial} paid="top-up" />)).toContain(
+      copy.thanksTopUp.slice(0, 12),
+    );
+  });
+});

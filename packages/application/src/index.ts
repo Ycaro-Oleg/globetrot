@@ -24,6 +24,12 @@ export const PACKAGE_NAME = '@globetrot/application' as const;
 export type { Actor } from './actor';
 export { assertOwner } from './authorization';
 export { billingSchema } from './billing/operations';
+export {
+  createPaymentEvents,
+  type PaymentEvent,
+  type PaymentEvents,
+  type PaymentOutcome,
+} from './billing/payment-events';
 export { canonicalJson } from './canonical-json';
 export {
   ApplicationError,

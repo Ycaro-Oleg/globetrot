@@ -46,8 +46,37 @@ const envSchema = z.object({
   DEEPSEEK_API_KEY: z.string().optional(),
   DEEPSEEK_BASE_URL: z.url().default('https://api.deepseek.com'),
   DEEPSEEK_MODEL: z.string().default('deepseek-chat'),
+  STRIPE_SECRET_KEY: z.string().optional(),
+  STRIPE_WEBHOOK_SECRET: z.string().optional(),
+  STRIPE_PRICE_EXPLORER_MONTHLY: z.string().optional(),
+  STRIPE_PRICE_EXPLORER_YEARLY: z.string().optional(),
+  STRIPE_PRICE_VOYAGER_MONTHLY: z.string().optional(),
+  STRIPE_PRICE_VOYAGER_YEARLY: z.string().optional(),
+  STRIPE_PRICE_TOP_UP: z.string().optional(),
   PORT: number(4000, 1, 65535),
 });
+
+const STRIPE_SETTINGS = [
+  'STRIPE_SECRET_KEY',
+  'STRIPE_WEBHOOK_SECRET',
+  'STRIPE_PRICE_EXPLORER_MONTHLY',
+  'STRIPE_PRICE_EXPLORER_YEARLY',
+  'STRIPE_PRICE_VOYAGER_MONTHLY',
+  'STRIPE_PRICE_VOYAGER_YEARLY',
+  'STRIPE_PRICE_TOP_UP',
+] as const;
+
+export interface StripeConfig {
+  readonly secretKey: string;
+  readonly webhookSecret: string;
+  readonly prices: {
+    readonly explorer: { readonly month: string; readonly year: string };
+    readonly voyager: { readonly month: string; readonly year: string };
+    readonly topUp: string;
+  };
+  /** The public web origin: where checkout returns the person. */
+  readonly returnOrigin: string;
+}
 
 export interface AuthConfig {
   readonly secret: string;
@@ -97,6 +126,8 @@ export interface ApiConfig {
   readonly ai: { readonly apiKey: string; readonly baseUrl: string; readonly model: string } | null;
   /** S3-compatible storage for uploaded images (SeaweedFS locally). */
   readonly storage: StorageConfig;
+  /** Stripe (ADR-0019); `null` keeps payments off (checkout answers 503). */
+  readonly stripe: StripeConfig | null;
   /** True when no secret was provided and the public development one is in use (never in production). */
   readonly usingInsecureSecret: boolean;
 }
@@ -198,6 +229,44 @@ export function loadApiConfig(
   const baseOrigin = new URL(values.BETTER_AUTH_URL).origin;
   const trustedOrigins = [...new Set([baseOrigin, ...parseOrigins(values.TRUSTED_ORIGINS)])];
 
+  // Payments are all or nothing: half a Stripe setup would take money it cannot record.
+  const stripeSet = STRIPE_SETTINGS.filter((name) => values[name] !== undefined);
+  if (stripeSet.length > 0 && stripeSet.length < STRIPE_SETTINGS.length) {
+    const missing = STRIPE_SETTINGS.filter((name) => values[name] === undefined);
+    throw new ApiConfigError(`Stripe needs every setting; missing: ${missing.join(', ')}`);
+  }
+  let stripe: StripeConfig | null = null;
+  if (stripeSet.length === STRIPE_SETTINGS.length) {
+    const secretKey = values.STRIPE_SECRET_KEY!;
+    if (!/^(sk|rk)_(test|live)_/.test(secretKey)) {
+      throw new ApiConfigError('STRIPE_SECRET_KEY is not a Stripe secret or restricted key');
+    }
+    if (secretKey.includes('_live_') && !isProduction) {
+      throw new ApiConfigError('A live STRIPE_SECRET_KEY is only accepted in production');
+    }
+    if (!values.STRIPE_WEBHOOK_SECRET!.startsWith('whsec_')) {
+      throw new ApiConfigError(
+        'STRIPE_WEBHOOK_SECRET must be the endpoint signing secret (whsec_…)',
+      );
+    }
+    stripe = {
+      secretKey,
+      webhookSecret: values.STRIPE_WEBHOOK_SECRET!,
+      prices: {
+        explorer: {
+          month: values.STRIPE_PRICE_EXPLORER_MONTHLY!,
+          year: values.STRIPE_PRICE_EXPLORER_YEARLY!,
+        },
+        voyager: {
+          month: values.STRIPE_PRICE_VOYAGER_MONTHLY!,
+          year: values.STRIPE_PRICE_VOYAGER_YEARLY!,
+        },
+        topUp: values.STRIPE_PRICE_TOP_UP!,
+      },
+      returnOrigin: new URL(values.BETTER_AUTH_URL).origin,
+    };
+  }
+
   return {
     nodeEnv,
     isProduction,
@@ -213,6 +282,7 @@ export function loadApiConfig(
             model: values.DEEPSEEK_MODEL,
           },
     storage,
+    stripe,
     usingInsecureSecret: secret === INSECURE_DEV_SECRET,
     auth: {
       secret,
