@@ -41,7 +41,7 @@ export function buildOpenApiDocument() {
         countCommentsSince: unreachable,
       },
       media: { findById: unreachable, findMany: unreachable },
-      storage: { put: unreachable, get: unreachable, delete: unreachable },
+      storage: { put: unreachable, get: unreachable, delete: unreachable, list: unreachable },
       account: { exportFor: unreachable },
       assistant: {
         findProposal: unreachable,

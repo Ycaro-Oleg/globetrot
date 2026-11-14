@@ -14,7 +14,7 @@ The monorepo uses pnpm workspaces and Turborepo. Architecture and rationale: [`.
 apps/
   web/      @globetrot/web      Next.js 16 App Router (account screens, settings, the app). Standalone output for Docker
   api/      @globetrot/api      Hono + OpenAPI HTTP adapter and Better Auth. Bundled with tsup into dist/
-  worker/   @globetrot/worker   Background jobs. A placeholder today (pg-boss later). Bundled with tsup into dist/
+  worker/   @globetrot/worker   Background housekeeping (ADR-0017): an hourly round behind an advisory lock. Bundled with tsup into dist/
 packages/
   config/       @globetrot/config       Shared tsconfig presets (base, library, nextjs)
   domain/       @globetrot/domain       Pure domain rules. Relative imports only (lint-enforced)
@@ -24,6 +24,7 @@ packages/
   tokens/       @globetrot/tokens       Design tokens (DTCG source to CSS variables and TypeScript)
   ui/           @globetrot/ui           Web components (React Aria + Tailwind) + Storybook
   i18n/         @globetrot/i18n         ICU message catalogs (en, pt-BR) and locale helpers
+  storage/      @globetrot/storage      S3-compatible StoragePort adapter and settings reader (API and worker)
 eslint.config.mjs   One flat ESLint config for the repo, including the architecture boundary rules
 turbo.json          Task graph: build, dev, lint, typecheck, test, test:int. apps/web/turbo.json makes the web build wait for the tokens build and for the web typecheck (they share `.next`), and dev wait for the tokens build; neither waits for the Storybook build of @globetrot/ui
 compose.yaml        Local services (Postgres + PostGIS, S3 storage, Mailpit). See local-development.md

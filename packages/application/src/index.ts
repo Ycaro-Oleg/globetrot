@@ -291,6 +291,14 @@ export {
 } from './media/schemas';
 export { mediaKey } from './media/operations';
 export {
+  createMaintenance,
+  IDEMPOTENCY_KEEP_DAYS,
+  STRAY_OBJECT_HOURS,
+  UNPLACED_MEDIA_HOURS,
+  type MaintenanceReport,
+  type MaintenanceStore,
+} from './maintenance/maintenance';
+export {
   applyProposalFields,
   askPipFields,
   pipChangeSchema,

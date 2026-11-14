@@ -26,3 +26,4 @@ ADRs 0010 to 0012 were written after the work they describe (#53 to #61), which 
 | [0014](0014-photos-and-storage.md) | Photos: S3-compatible storage, metadata cut out without decoding, served behind the API | Accepted |
 | [0015](0015-account-export-and-deletion.md) | Account export and deletion, and deleting archived trips | Accepted |
 | [0016](0016-pip-on-deepseek.md) | Pip v1 on DeepSeek, through a small JSON port | Accepted (supersedes the provider choice in 0007) |
+| [0017](0017-worker-housekeeping.md) | The worker: hourly housekeeping behind an advisory lock | Accepted |

@@ -8,7 +8,7 @@ import { createTestDatabase, type TestDatabase } from '@globetrot/db/testing';
 import { eq } from 'drizzle-orm';
 import { afterEach, describe, expect, it } from 'vitest';
 import { loadApiConfig } from './config';
-import { createMemoryStorage } from './storage';
+import { createMemoryStorage } from '@globetrot/storage';
 import { createServices } from './wire';
 
 const PASSWORD = 'correct horse battery staple';

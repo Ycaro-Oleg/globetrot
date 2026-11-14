@@ -62,15 +62,15 @@ importers:
       '@globetrot/i18n':
         specifier: workspace:*
         version: link:../../packages/i18n
+      '@globetrot/storage':
+        specifier: workspace:*
+        version: link:../../packages/storage
       '@hono/node-server':
         specifier: 2.1.6
         version: 2.1.6(hono@4.13.17)
       '@hono/zod-openapi':
         specifier: 1.6.3
         version: 1.6.3(hono@4.13.17)(zod@4.6.7)
-      aws4fetch:
-        specifier: 1.0.20
-        version: 1.0.20
       better-auth:
         specifier: 1.7.18
         version: 1.7.18(drizzle-kit@0.31.11)(drizzle-orm@0.45.4(@types/pg@8.23.1)(kysely@0.29.8)(pg@8.23.1))(next@16.4.5(@babel/core@7.29.13)(@types/node@24.19.2)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(pg@8.23.1)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(vitest@5.1.0)
@@ -169,6 +169,12 @@ importers:
       '@globetrot/application':
         specifier: workspace:*
         version: link:../../packages/application
+      '@globetrot/db':
+        specifier: workspace:*
+        version: link:../../packages/db
+      '@globetrot/storage':
+        specifier: workspace:*
+        version: link:../../packages/storage
     devDependencies:
       '@globetrot/config':
         specifier: workspace:*
@@ -266,6 +272,22 @@ importers:
       tsx:
         specifier: 4.23.15
         version: 4.23.15
+
+  packages/storage:
+    dependencies:
+      '@globetrot/application':
+        specifier: workspace:*
+        version: link:../application
+      aws4fetch:
+        specifier: 1.0.20
+        version: 1.0.20
+      zod:
+        specifier: 4.6.7
+        version: 4.6.7
+    devDependencies:
+      '@globetrot/config':
+        specifier: workspace:*
+        version: link:../config
 
   packages/tokens:
     devDependencies:

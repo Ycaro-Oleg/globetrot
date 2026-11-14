@@ -29,3 +29,10 @@ export function uuidV7(timestampMs: number, random: Uint8Array): string {
   const hex = Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
   return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
 }
+
+/** When a UUIDv7 was made (its first 48 bits are milliseconds since 1970), or null for anything else. */
+export function uuidV7Time(id: string): Date | null {
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id))
+    return null;
+  return new Date(Number.parseInt(id.replace(/-/g, '').slice(0, 12), 16));
+}

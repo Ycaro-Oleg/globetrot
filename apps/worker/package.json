@@ -2,7 +2,7 @@
   "name": "@globetrot/worker",
   "version": "0.0.0",
   "private": true,
-  "description": "Background job consumers (pg-boss) calling @globetrot/application",
+  "description": "Background jobs: hourly housekeeping (unplaced uploads, stray stored images, old idempotency records)",
   "type": "module",
   "scripts": {
     "dev": "tsx watch --env-file-if-exists=../../.env src/index.ts",
@@ -13,7 +13,9 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@globetrot/application": "workspace:*"
+    "@globetrot/application": "workspace:*",
+    "@globetrot/db": "workspace:*",
+    "@globetrot/storage": "workspace:*"
   },
   "devDependencies": {
     "@globetrot/config": "workspace:*",

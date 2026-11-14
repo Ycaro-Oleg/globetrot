@@ -7,6 +7,12 @@ export default defineConfig({
   platform: 'node',
   target: 'node24',
   noExternal: [/.*/],
+  // `pg` loads the optional native binding lazily and falls back to pure JS when it is absent.
+  external: ['pg-native'],
   clean: true,
   sourcemap: true,
+  // Bundled CommonJS dependencies (pg) call `require` for Node built-ins: give the ESM bundle one.
+  banner: {
+    js: "import { createRequire as __createRequire } from 'node:module'; const require = __createRequire(import.meta.url);",
+  },
 });

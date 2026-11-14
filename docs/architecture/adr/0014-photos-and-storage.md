@@ -19,6 +19,6 @@ Posts (design handoff v2, "Community") and the pin card's "Photos" petal need ph
 - **Signed public URLs from storage:** less load on the API, but the access check would be frozen into the URL until it expires, and storage would need public reachability.
 
 ## Consequences
-- An upload that is never placed stays in storage: there is no cleanup job yet (no worker). Listed in `current-state.md`.
+- An upload that is never placed is removed by the worker after 24 hours ([ADR-0017](0017-worker-housekeeping.md)).
 - No thumbnails: the browser receives the uploaded size (at most 2048 px from the web app).
 - A JPEG uploaded straight to the API loses its orientation flag with the rest of EXIF; the web app applies orientation before upload.
