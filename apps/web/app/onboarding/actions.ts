@@ -4,6 +4,7 @@ import { idempotencyKeySchema } from '@globetrot/application';
 import { getTranslations } from 'next-intl/server';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
+import { PLAN_DRAFT_COOKIE } from '../../lib/plan-draft';
 import { apiInternalUrl } from '../../lib/api-proxy';
 import { createServerApiClient, sessionCookieHeader } from '../../lib/stored-preferences';
 import { SELECTED_TRIP_COOKIE } from '../../lib/trips';
@@ -107,5 +108,7 @@ export async function finishOnboarding(input: OnboardingInput): Promise<{ error:
     body: { saved: input.saved || '0', monthly: input.monthly || '0' },
   });
   if (!route.data || !cost.data || !savings.data) return { error: true };
+  // The landing's numbers have done their job.
+  store.delete(PLAN_DRAFT_COOKIE);
   redirect('/app/board');
 }

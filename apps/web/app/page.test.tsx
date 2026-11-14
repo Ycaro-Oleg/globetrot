@@ -68,9 +68,37 @@ describe('Globetrot landing page', () => {
   it('has one coral call to action in the hero, the Pip demo and the FAQ as native disclosures', () => {
     const html = render('en');
     expect(visibleText(html)).toContain(catalogs.en.landing.approve);
-    expect(html.match(/<details/g)).toHaveLength(4);
+    expect(html.match(/<details/g)).toHaveLength(8);
     expect(html).toContain('/world-halftone-blue.svg');
   });
+
+  it.each(SUPPORTED_LOCALES)(
+    'answers "Can I go?" with the savings rule before anyone types, and leads to sign-up (%s)',
+    (locale) => {
+      const html = render(locale);
+      const copy = catalogs[locale].landing;
+      const text = visibleText(html);
+      expect(text).toContain(copy.calc.title);
+      // US$3,000 trip, US$500 saved, US$300 a month: 9 months to go.
+      expect(text).toContain(copy.calc.yes);
+      expect(text).toMatch(/9/);
+      expect(text).toContain(copy.calc.note);
+      expect(html).toContain('href="/signup"');
+      expect(html).toMatch(/type="range"/);
+    },
+  );
+
+  it.each(SUPPORTED_LOCALES)(
+    'closes with a call to action, honest facts and the questions that hold people back (%s)',
+    (locale) => {
+      const text = visibleText(render(locale));
+      const copy = catalogs[locale].landing;
+      for (const key of ['closeTitle', 'fact1Title', 'fact5Title', 'faq5Q', 'faq6Q'] as const) {
+        expect(text).toContain(copy[key]);
+      }
+      expect(text).not.toContain('Most popular');
+    },
+  );
 
   it('opens a copyable example trip from each card', () => {
     const html = render('en');

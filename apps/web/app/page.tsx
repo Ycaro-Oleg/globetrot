@@ -6,7 +6,9 @@ import { getLocale, getTranslations } from 'next-intl/server';
 import { siteOrigin } from '../lib/site-url';
 import { setScaffoldLocale } from './actions';
 import { PipAvatar } from './app/_components/pip-avatar';
+import { AnswerCalculator } from './landing-calculator';
 import { PipDemo, Pricing } from './landing-interactive';
+import { StickyCta } from './landing-sticky-cta';
 import { SITE_NAME } from './site';
 import styles from './landing.module.css';
 
@@ -125,6 +127,9 @@ export default function HomePage() {
             <Link href="/login" className={styles.login}>
               {t('navLogin')}
             </Link>
+            <Link href="/signup" className={styles.navCta}>
+              {t('navStart')}
+            </Link>
           </div>
         </header>
 
@@ -144,16 +149,27 @@ export default function HomePage() {
         </div>
 
         <div className={styles.world} aria-hidden="true">
-          <img src="/world-halftone-blue.svg" alt="" width={1322} height={654} />
+          {/* eslint-disable-next-line @next/next/no-img-element -- a decorative SVG, already the right size */}
+          <img
+            src="/world-halftone-blue.svg"
+            alt=""
+            width={1322}
+            height={654}
+            fetchPriority="high"
+            decoding="async"
+          />
         </div>
-        <div className={styles.sample}>
-          <span className={styles.sampleYes}>✓ {t('sampleYes')}</span>
-          <div>
-            <strong>{t('sampleLine')}</strong>
-            <span>{t('sampleSub')}</span>
-          </div>
-        </div>
+        <AnswerCalculator signupHref="/signup" />
       </section>
+
+      <ul className={styles.facts} aria-label={t('factsLabel')}>
+        {(['fact1', 'fact2', 'fact3', 'fact4', 'fact5'] as const).map((key) => (
+          <li key={key}>
+            <strong>{t(`${key}Title`)}</strong>
+            <span>{t(`${key}Body`)}</span>
+          </li>
+        ))}
+      </ul>
 
       <main>
         <section className={styles.section} id="how" aria-labelledby="how-title">
@@ -228,7 +244,7 @@ export default function HomePage() {
         <section className={styles.band} id="faq" aria-labelledby="faq-title">
           <div className={styles.faq}>
             <h2 id="faq-title">{t('faqTitle')}</h2>
-            {([1, 2, 3, 4] as const).map((n) => (
+            {([5, 6, 1, 7, 2, 8, 4, 3] as const).map((n) => (
               <details key={n} className={styles.question}>
                 <summary>
                   {t(`faq${n}Q`)}
@@ -239,7 +255,22 @@ export default function HomePage() {
             ))}
           </div>
         </section>
+
+        <section className={styles.closing} id="start" aria-labelledby="start-title">
+          <h2 id="start-title">{t('closeTitle')}</h2>
+          <p>{t('closeBody')}</p>
+          <div className={styles.heroActions}>
+            <Link href="/signup" className={styles.cta}>
+              {t('heroCta')} <span aria-hidden="true">→</span>
+            </Link>
+            <Link href="/login" className={styles.heroGhost}>
+              {t('closeLogin')}
+            </Link>
+          </div>
+          <span className={styles.heroNote}>{t('heroNote')}</span>
+        </section>
       </main>
+      <StickyCta label={t('heroCta')} note={t('stickyNote')} />
 
       <footer className={styles.footer}>
         <div className={styles.footerInner}>

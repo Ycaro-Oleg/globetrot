@@ -14,6 +14,8 @@ This is the authoritative list. The prototype's executable spec is `design/refer
 
 ## Onboarding (the first trip)
 
+- **From the landing page:** the “Can I go?” calculator works for anyone, with the same savings rule as the app; “Save this plan” keeps the three numbers (cost, saved, monthly, plain amounts only) in the `globetrot.plan_draft` cookie for 30 days so the money step starts with them after sign-up. Finishing onboarding clears it.
+
 - Seven steps (welcome, home city, destination, month and length, money, Pip, the answer). Every step can be changed later, and nothing is charged.
 - **The cost is the person's own rough guess**, never ours: it is stored as one cost with status `estimate` ("Rough trip estimate") in the trip's currency (the preferred currency), and replaced by real costs later. Globetrot does not show invented typical ranges.
 - The answer uses the savings plan rule (below) on that guess, the amount saved, the monthly amount and the first day of the chosen month.

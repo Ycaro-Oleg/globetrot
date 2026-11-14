@@ -5,6 +5,7 @@ import { apiInternalUrl } from '../../lib/api-proxy';
 import { fetchCurrentUser } from '../../lib/current-user';
 import { fetchStoredPreferences, sessionCookieHeader } from '../../lib/stored-preferences';
 import { SITE_NAME } from '../site';
+import { PLAN_DRAFT_COOKIE, readDraft } from '../../lib/plan-draft';
 import { OnboardingFlow } from './onboarding-flow';
 
 // Depends on the visitor's cookies, so it is rendered per request.
@@ -25,11 +26,14 @@ export default async function OnboardingPage() {
     options ? fetchStoredPreferences(options) : Promise.resolve(null),
   ]);
   if (!user) redirect('/login?next=%2Fonboarding');
+  // The numbers someone tried in the landing page's "Can I go?" start the money step (plain digits only).
+  const draft = readDraft(store.get(PLAN_DRAFT_COOKIE)?.value);
   return (
     <OnboardingFlow
       currency={preferences?.currency ?? 'USD'}
       homeCity={preferences?.homeCity ?? ''}
       pipOptIn={preferences?.pipOptIn ?? false}
+      draft={draft}
     />
   );
 }
