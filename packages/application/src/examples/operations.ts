@@ -1,3 +1,4 @@
+import { assertTripRoom } from '../billing/rules';
 import { DEFAULT_CURRENCY, DEFAULT_TRIP_STATUS, DEFAULT_TRIP_VISIBILITY } from '@globetrot/domain';
 import { z } from 'zod';
 import { canonicalJson } from '../canonical-json';
@@ -44,6 +45,7 @@ export function createCreateTripFromExample(deps: Pick<Ports, 'unitOfWork' | 'cl
           if (start.state === 'mismatch') throw new IdempotencyKeyReusedError();
           if (start.state === 'replay') return tripSchema.parse(start.response);
         }
+        await assertTripRoom(tx, actor, now);
         const trip = await tx.trips.insert({
           id: deps.ids.newId(),
           ownerId: actor.userId,

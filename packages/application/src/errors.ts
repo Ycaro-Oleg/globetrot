@@ -79,3 +79,17 @@ export class UnavailableError extends ApplicationError {
     this.name = 'UnavailableError';
   }
 }
+
+/**
+ * The account's plan does not allow this (HTTP 402). `code` says which limit: the trial is over and there is no
+ * plan (`PLAN_REQUIRED`), the plan's active trips are all used (`TRIP_LIMIT_REACHED`), or Pip credits are spent
+ * (`OUT_OF_CREDITS`). Nothing was changed; the person can see, export or delete everything.
+ */
+export class PlanLimitError extends ApplicationError {
+  readonly code: 'PLAN_REQUIRED' | 'TRIP_LIMIT_REACHED' | 'OUT_OF_CREDITS';
+  constructor(code: PlanLimitError['code'], message: string) {
+    super(message);
+    this.name = 'PlanLimitError';
+    this.code = code;
+  }
+}

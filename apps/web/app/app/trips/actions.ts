@@ -33,6 +33,17 @@ export async function openTrip(formData: FormData): Promise<void> {
   redirect(`/app/trips/${data.id}`);
 }
 
+/** A plan limit sends the person to the message that explains it, with the way to the plans. */
+function planLimitStatus(error: unknown): string | null {
+  const code =
+    typeof error === 'object' && error !== null && 'code' in error ? String(error.code) : '';
+  return code === 'TRIP_LIMIT_REACHED'
+    ? 'trip-limit'
+    : code === 'PLAN_REQUIRED'
+      ? 'plan-required'
+      : null;
+}
+
 export async function createTrip(formData: FormData): Promise<void> {
   const title = formData.get('title');
   const rawDate = formData.get('startDate');
@@ -47,11 +58,11 @@ export async function createTrip(formData: FormData): Promise<void> {
     redirect('/app/trips?status=create-error');
 
   const { store, client } = await apiClient();
-  const { data } = await client.POST('/v1/trips', {
+  const { data, error } = await client.POST('/v1/trips', {
     body: { title, currency, startDate: rawDate || null },
     headers: { 'Idempotency-Key': idempotencyKey.data },
   });
-  if (!data) redirect('/app/trips?status=create-error');
+  if (!data) redirect(`/app/trips?status=${planLimitStatus(error) ?? 'create-error'}`);
   store.set(SELECTED_TRIP_COOKIE, data.id, cookieOptions());
   redirect(`/app/trips/${data.id}`);
 }
@@ -76,11 +87,11 @@ export async function undoArchiveTrip(formData: FormData): Promise<void> {
   const id = formData.get('tripId');
   if (typeof id !== 'string' || !id) redirect('/app/trips?status=error');
   const { store, client } = await apiClient();
-  const { data } = await client.PATCH('/v1/trips/{id}', {
+  const { data, error } = await client.PATCH('/v1/trips/{id}', {
     params: { path: { id } },
     body: { status: 'active' },
   });
-  if (!data) redirect('/app/trips?status=error');
+  if (!data) redirect(`/app/trips?status=${planLimitStatus(error) ?? 'error'}`);
   store.set(SELECTED_TRIP_COOKIE, data.id, cookieOptions());
   redirect(`/app/trips/${data.id}`);
 }
@@ -103,11 +114,11 @@ export async function copyExampleTrip(formData: FormData): Promise<void> {
   if (!exampleId || !idempotencyKey.success) redirect('/app/trips?status=example-error');
   const t = await getTranslations('tripWorkspace.example.trips');
   const { store, client } = await apiClient();
-  const { data } = await client.POST('/v1/trips/from-example', {
+  const { data, error } = await client.POST('/v1/trips/from-example', {
     body: { exampleId, title: t(exampleId) },
     headers: { 'Idempotency-Key': idempotencyKey.data },
   });
-  if (!data) redirect('/app/trips?status=example-error');
+  if (!data) redirect(`/app/trips?status=${planLimitStatus(error) ?? 'example-error'}`);
   store.set(SELECTED_TRIP_COOKIE, data.id, cookieOptions());
   redirect('/app/board');
 }

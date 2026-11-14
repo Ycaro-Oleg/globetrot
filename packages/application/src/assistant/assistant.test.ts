@@ -1,8 +1,9 @@
-import { PIP_REQUESTS_PER_DAY } from '@globetrot/domain';
+import { PIP_DAILY_CAP, TRIAL_TERMS } from '@globetrot/domain';
 import { describe, expect, it } from 'vitest';
 import {
   createApplication,
   NotFoundError,
+  PlanLimitError,
   RateLimitedError,
   UnavailableError,
   ValidationError,
@@ -94,13 +95,35 @@ describe('asking Pip', () => {
     expect((await ask()).changes).toEqual([]);
   });
 
-  it('says when Pip is not available, and limits requests a day', async () => {
-    const { ask, ai } = await setup();
+  it('says when Pip is not available (costing no credit), and caps requests a day on any plan', async () => {
+    const { ask, ai, state, ports } = await setup();
     ai.next = null;
     await expect(ask()).rejects.toThrow(UnavailableError);
+    expect(state.aiUsage).toHaveLength(0);
     ai.next = '{"summary":"","changes":[]}';
-    for (let n = 0; n < PIP_REQUESTS_PER_DAY; n++) await ask();
+    await ports.billing.findAccount(ana.id);
+    state.subscriptions.set(ana.id, {
+      plan: 'voyager',
+      interval: 'month',
+      status: 'active',
+      startedAt: new Date('2026-11-01T00:00:00Z'),
+      currentPeriodEnd: new Date('2026-12-01T00:00:00Z'),
+      providerCustomerId: null,
+      providerSubscriptionId: null,
+    });
+    for (let n = 0; n < PIP_DAILY_CAP; n++) await ask();
     await expect(ask()).rejects.toThrow(RateLimitedError);
+  });
+
+  it('spends trial credits first, then bought ones, then stops', async () => {
+    const { ask, state } = await setup();
+    for (let n = 0; n < TRIAL_TERMS.credits; n++) await ask();
+    await expect(ask()).rejects.toMatchObject({ code: 'OUT_OF_CREDITS' });
+    state.credits.push({ userId: ana.id, delta: 2, reason: 'top-up', ref: 'pay_1' });
+    await ask();
+    await ask();
+    expect(state.credits.filter((line) => line.reason === 'pip')).toHaveLength(2);
+    await expect(ask()).rejects.toThrow(PlanLimitError);
   });
 
   it('only works on one’s own trip', async () => {

@@ -87,7 +87,12 @@ export default async function TripsPage({
           ? t('requestError')
           : query.status === 'example-error'
             ? t('example.copyError')
-            : null;
+            : query.status === 'trip-limit'
+              ? t('tripLimit')
+              : query.status === 'plan-required'
+                ? t('planRequired')
+                : null;
+  const planLink = query.status === 'trip-limit' || query.status === 'plan-required';
   const example = query.example ? findExampleTrip(query.example) : undefined;
   const archivedTrip = query.archived ? trips.find((trip) => trip.id === query.archived) : null;
   const deleting = query.confirmDelete
@@ -177,6 +182,12 @@ export default async function TripsPage({
       {statusMessage ? (
         <p className={styles.banner} role="alert">
           {statusMessage}
+          {planLink ? (
+            <>
+              {' '}
+              <Link href="/app/plan">{t('seePlans')}</Link>
+            </>
+          ) : null}
         </p>
       ) : null}
       {query.status === 'deleted' ? (

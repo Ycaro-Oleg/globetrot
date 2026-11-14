@@ -265,8 +265,8 @@
         "p": "O Globetrot ajuda você a planejar viagens: um mapa, dias, um orçamento com resposta de poupança, listas, um passaporte de vistos comemorativos, um companheiro de IA opcional (Pip) e uma comunidade. É oferecido por [dono: razão social]. Usar o app significa aceitar estes termos."
       },
       "s2": {
-        "h": "Grátis, por enquanto",
-        "p": "Planejar é grátis. Os preços na página inicial são provisórios: nada é vendido ou cobrado até que os planos pagos sejam anunciados, com termos próprios."
+        "h": "Planos e teste grátis",
+        "p": "Toda conta começa com um teste grátis de 7 dias, sem cartão. Depois dele, os planos pagos (Explorer e Voyager) são cobrados por mês ou por ano pelo nosso provedor de pagamento; você pode cancelar quando quiser e mantém o plano até o fim do período pago. Sem plano, a conta fica somente leitura: você ainda pode ver, exportar e excluir seus dados. Créditos extras do Pip nunca expiram. [owner: política de reembolso e termos do provedor de pagamento]"
       },
       "s3": {
         "h": "Estimativas, não reservas",
@@ -309,7 +309,8 @@
       "globalLabel": "Globetrot",
       "profile": "Perfil",
       "profileMenu": "Perfil e Meu Pip",
-      "community": "Comunidade"
+      "community": "Comunidade",
+      "plan": "Plano e créditos"
     },
     "account": {
       "menu": "Menu da conta de {name}",
@@ -331,6 +332,13 @@
       "title": "Algo deu errado",
       "description": "Não foi possível carregar esta página. Tente de novo ou volte para o início.",
       "retry": "Tentar de novo"
+    },
+    "plan": {
+      "trial": "{days, plural, one {Último dia da sua semana grátis} other {Faltam # dias da sua semana grátis}}",
+      "trialCta": "Ver planos",
+      "expired": "Sua semana grátis acabou. Suas viagens estão seguras: veja e exporte quando quiser.",
+      "expiredCta": "Escolher um plano para continuar",
+      "label": "Seu plano"
     }
   },
   "tripWorkspace": {
@@ -414,35 +422,14 @@
     "deleteBody": "As paradas, custos, poupança, listas e o roteiro por dia vão junto. Não dá para desfazer.",
     "deleteCancel": "Cancelar",
     "deleteConfirm": "Excluir para sempre",
-    "deletedMessage": "Viagem excluída."
+    "deletedMessage": "Viagem excluída.",
+    "tripLimit": "Este plano mantém 10 viagens ativas. Arquive uma, ou passe para o Voyager e tenha viagens ilimitadas.",
+    "planRequired": "Sua semana grátis acabou: escolha um plano para criar ou mudar viagens.",
+    "seePlans": "Ver planos"
   },
   "landing": {
     "metaTitle": "Globetrot · Planeje a viagem com que você sempre sonha",
-    "metaDescription": "Marque a rota num mapa-múndi, veja quanto custa na sua moeda e descubra quando você consegue pagar. Grátis para começar, em português e inglês.",
-    "plans": {
-      "free": {
-        "name": "Grátis",
-        "tagline": "Planeje uma viagem por vez.",
-        "f1": "2 viagens ativas",
-        "f2": "Mapa, dias, orçamento e listas",
-        "f3": "Inglês e português"
-      },
-      "explorer": {
-        "name": "Explorador",
-        "tagline": "Para a viagem que você está juntando dinheiro.",
-        "f1": "10 viagens ativas",
-        "f2": "Mais rascunhos do Pip por mês",
-        "f3": "Pacote off-line da viagem (em breve)"
-      },
-      "voyager": {
-        "name": "Viajante",
-        "tagline": "Para quem está sempre planejando a próxima.",
-        "f1": "Viagens ilimitadas",
-        "f2": "O máximo de rascunhos do Pip",
-        "f3": "Extras do passaporte"
-      }
-    },
-    "pricingPlaceholder": "Preços provisórios · nada é cobrado",
+    "metaDescription": "Marque a rota num mapa-múndi, veja quanto custa na sua moeda e descubra quando você consegue pagar. 7 dias grátis, em português e inglês.",
     "mapAttribution": "Mapa: Natural Earth · Rotas ilustrativas.",
     "trip1Length": "7 DIAS · PORTUGAL",
     "trip1Title": "Sete dias em <accent>Portugal</accent>",
@@ -462,9 +449,9 @@
     "kicker": "Planejador de viagens no mapa",
     "heroTitle": "Planeje a viagem no mapa. <accent>Saiba quando dá para ir.</accent>",
     "heroLead": "Marque os lugares, veja a rota, anote quanto custa. O Globetrot responde a pergunta que importa — dá para pagar, e quando — em qualquer moeda.",
-    "heroCta": "Começar a planejar grátis",
+    "heroCta": "Começar minha semana grátis",
     "heroCta2": "Como funciona",
-    "heroNote": "Grátis para começar. Sem cartão. Estimativas, nunca cotações ao vivo.",
+    "heroNote": "7 dias grátis. Sem cartão. Estimativas, nunca cotações ao vivo.",
     "howKicker": "Como funciona",
     "howTitle": "Três passos do sonho até a data.",
     "step1Title": "Marque o mapa",
@@ -498,17 +485,7 @@
     "examplesTitle": "Copie uma viagem e deixe do seu jeito.",
     "examplesUse": "Copiar esta viagem",
     "pricingKicker": "Preços",
-    "pricingTitle": "Comece grátis. Assine quando a viagem ficar séria.",
-    "mockPrices": "preços provisórios",
-    "billing": "Período de cobrança",
-    "monthly": "Mensal",
-    "annual": "Anual",
-    "perMonth": "/ mês",
-    "perYear": "/ ano",
-    "annualNote": "Dois meses grátis, cobrado por ano.",
-    "popular": "Para uma grande viagem",
-    "freeNote": "Grátis para sempre.",
-    "choosePlan": "Começar com {plan}",
+    "pricingTitle": "Teste tudo grátis por uma semana. Depois escolha seu plano.",
     "faqTitle": "Perguntas",
     "faq1Q": "O Globetrot guarda ou movimenta meu dinheiro?",
     "faq1A": "Não. A poupança é um registro seu. O Globetrot nunca guarda dinheiro nem cobra por uma viagem.",
@@ -522,10 +499,10 @@
     "footTerms": "Termos",
     "footPrivacy": "Privacidade",
     "metaHeadline": "Planeje a viagem no mapa. Saiba quando dá para ir.",
-    "navStart": "Começar grátis",
+    "navStart": "Testar grátis",
     "factsLabel": "O que você ganha",
-    "fact1Title": "Grátis para começar",
-    "fact1Body": "Sem cartão, nada é cobrado.",
+    "fact1Title": "7 dias grátis",
+    "fact1Body": "Sem cartão para começar.",
     "fact2Title": "Qualquer moeda",
     "fact2Body": "USD por padrão, nunca adivinhada.",
     "fact3Title": "Português e English",
@@ -537,9 +514,9 @@
     "closeTitle": "Sua próxima viagem tem data. Descubra qual.",
     "closeBody": "Marque a rota, some os custos e veja o mês em que você pode ir. Leva poucos minutos.",
     "closeLogin": "Já tenho conta",
-    "stickyNote": "Grátis · sem cartão",
-    "faq5Q": "É grátis mesmo?",
-    "faq5A": "Sim. Planejar viagens é grátis e não pede cartão. Os planos pagos ainda não estão à venda: os preços nesta página são provisórios e nada é cobrado.",
+    "stickyNote": "7 dias grátis · sem cartão",
+    "faq5Q": "Quanto custa?",
+    "faq5A": "Os primeiros 7 dias são grátis, com tudo incluído e sem cartão. Depois, o Explorer custa US$ 4,99 por mês (US$ 39,99 por ano) e o Voyager US$ 9,99 por mês (US$ 79,99 por ano). Se você não escolher um plano, suas viagens continuam suas para ver e exportar.",
     "faq6Q": "Minhas viagens são privadas?",
     "faq6A": "Sim. As viagens são privadas por padrão e ninguém mais consegue abri-las. Em Configurações você baixa todos os seus dados ou exclui sua conta quando quiser.",
     "faq7Q": "Funciona no celular e na minha moeda?",
@@ -1357,14 +1334,18 @@
     "errors": {
       "RATE_LIMITED": "O Pip precisa descansar: você pediu bastante hoje. Tente amanhã.",
       "SERVICE_UNAVAILABLE": "O Pip não está disponível agora. Tudo funciona sem o Pip; tente mais tarde.",
-      "UNKNOWN": "Não funcionou. Tente de novo."
+      "UNKNOWN": "Não funcionou. Tente de novo.",
+      "OUT_OF_CREDITS": "Seus créditos do Pip acabaram por enquanto. Todas as ferramentas funcionam sem o Pip.",
+      "PLAN_REQUIRED": "Sua semana grátis acabou. Escolha um plano para continuar planejando com o Pip."
     },
     "askFrom": {
       "board": "Pergunte ao Pip sobre a rota",
       "days": "Peça lugares ao Pip",
       "budget": "Peça uma estimativa ao Pip",
       "lists": "Pergunte ao Pip o que levar"
-    }
+    },
+    "creditsLeft": "{count, plural, one {# crédito do Pip restante} other {# créditos do Pip restantes}}",
+    "seePlans": "Ver planos"
   },
   "tripHub": {
     "metaTitle": "Viagem",
@@ -1478,5 +1459,66 @@
     "errorTitle": "Algo deu errado",
     "errorBody": "Não foi culpa sua. Tente de novo ou volte à página inicial.",
     "retry": "Tentar de novo"
+  },
+  "plans": {
+    "billing": "Período de cobrança",
+    "monthly": "Mensal",
+    "annual": "Anual",
+    "perMonth": "/ mês",
+    "perYear": "/ ano",
+    "annualNote": "{monthly} por mês, cobrado por ano. Economize 33%.",
+    "popular": "Para uma grande viagem",
+    "trial": {
+      "name": "Teste grátis",
+      "price": "7 dias grátis",
+      "tagline": "Tudo incluído. Sem cartão.",
+      "f1": "Mapa, dias, orçamento e listas",
+      "f2": "15 créditos do Pip",
+      "f3": "Até 10 viagens ativas",
+      "cta": "Começar minha semana grátis"
+    },
+    "explorer": {
+      "name": "Explorer",
+      "tagline": "Para a viagem que você está juntando dinheiro.",
+      "f1": "10 viagens ativas",
+      "f2": "100 créditos do Pip por mês",
+      "f3": "Tudo do teste grátis",
+      "cta": "Comece grátis, depois Explorer"
+    },
+    "voyager": {
+      "name": "Voyager",
+      "tagline": "Para quem sempre está planejando a próxima.",
+      "f1": "Viagens ilimitadas",
+      "f2": "400 créditos do Pip por mês",
+      "f3": "Tudo do Explorer",
+      "cta": "Comece grátis, depois Voyager"
+    },
+    "topUp": "Precisa de mais Pip? {credits, number} créditos extras por {price}, e eles nunca expiram.",
+    "credit": "1 crédito = 1 pedido ao Pip. O Pip é opcional: todas as ferramentas funcionam sem ele.",
+    "after": "Depois da semana grátis, suas viagens continuam suas para ver e exportar. Escolha um plano para continuar planejando."
+  },
+  "planPage": {
+    "title": "Plano e créditos",
+    "trialTitle": "{days, plural, =0 {Sua semana grátis termina hoje} one {Falta # dia da sua semana grátis} other {Faltam # dias da sua semana grátis}}",
+    "trialBody": "Tudo está incluído até {date}. Escolha um plano agora e continue planejando sem pausa.",
+    "expiredTitle": "Sua semana grátis acabou",
+    "expiredBody": "Suas viagens, orçamento e listas continuam aqui. Você pode ver, exportar ou excluir; escolha um plano para voltar a editar.",
+    "paidTitle": "Você está no {plan}",
+    "renews": "Renova em {date}.",
+    "ends": "Termina em {date}.",
+    "pastDue": "O último pagamento não foi aprovado. Atualize para manter seu plano.",
+    "creditsTitle": "Créditos do Pip",
+    "creditsMeter": "{left, number} de {total, number} restantes neste período",
+    "creditsReset": "Mais créditos em {date}.",
+    "topUpLeft": "{count, plural, one {# crédito extra} other {# créditos extras}} que nunca expiram",
+    "trips": "{max, select, none {{count, number} viagens ativas (sem limite)} other {{count, number} de {max} viagens ativas}}",
+    "choose": "Escolher {plan}",
+    "current": "Seu plano",
+    "checkoutSoon": "Os pagamentos estão sendo ativados. Sua semana grátis continua, e nada é cobrado ainda.",
+    "manage": "Gerenciar pagamento",
+    "perMonthShort": "{price}/mês",
+    "tripsTitle": "Viagens ativas",
+    "choosePlans": "Escolha seu plano",
+    "failed": "Não deu certo. Tente de novo em instantes."
   }
 }

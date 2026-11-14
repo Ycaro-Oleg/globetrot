@@ -912,6 +912,66 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/me/billing": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The caller’s plan, trial and Pip credits
+         * @description Whether the account is in its 7-day trial, on Explorer or Voyager, or read-only after the trial; the active-trip limit; and Pip credits left this period (monthly first, then bought ones). Commands refused by the plan answer `402` with `PLAN_REQUIRED`, `TRIP_LIMIT_REACHED` or `OUT_OF_CREDITS` (ADR-0019).
+         */
+        get: operations["getBilling"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me/billing/checkout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * A hosted checkout for a plan or extra Pip credits
+         * @description Answers the payment provider’s checkout URL for Explorer or Voyager (monthly or yearly) or a top-up of Pip credits. Works when the account is read-only. `503` while payments are not switched on.
+         */
+        post: operations["startCheckout"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me/billing/portal": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * The payment provider’s page to manage the plan
+         * @description Change the card, switch or cancel. `404` before the first payment, `503` while payments are off.
+         */
+        post: operations["openBillingPortal"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1516,6 +1576,29 @@ export interface operations {
                     };
                 };
             };
+            /** @description The plan’s active trips are used (`TRIP_LIMIT_REACHED`) or the trial is over (`PLAN_REQUIRED`). */
+            402: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
             /** @description The Idempotency-Key was already used with a different request. */
             409: {
                 headers: {
@@ -1624,6 +1707,29 @@ export interface operations {
             };
             /** @description No valid session. */
             401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description The plan’s active trips are used (`TRIP_LIMIT_REACHED`) or the trial is over (`PLAN_REQUIRED`). */
+            402: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -8674,6 +8780,29 @@ export interface operations {
                     };
                 };
             };
+            /** @description Pip credits are used up (`OUT_OF_CREDITS`) or the trial is over (`PLAN_REQUIRED`). */
+            402: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
             /** @description No such trip or proposal, or it belongs to someone else. */
             404: {
                 headers: {
@@ -9271,6 +9400,263 @@ export interface operations {
             };
             /** @description Already decided (`already_decided`) or no longer undoable (`not_undoable`). */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    getBilling: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The plan facts. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        access: "trial" | "explorer" | "voyager" | "expired";
+                        readOnly: boolean;
+                        trialEndsAt: string;
+                        trialDaysLeft: number;
+                        /** @enum {string|null} */
+                        plan: "explorer" | "voyager" | null;
+                        /** @enum {string|null} */
+                        interval: "month" | "year" | null;
+                        /** @enum {string|null} */
+                        status: "active" | "past_due" | "canceled" | null;
+                        renewsAt: string | null;
+                        maxActiveTrips: number | null;
+                        activeTrips: number;
+                        credits: {
+                            monthly: number;
+                            monthlyLeft: number;
+                            topUpLeft: number;
+                            total: number;
+                            periodEnd: string;
+                            dailyCap: number;
+                        };
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    startCheckout: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @enum {string} */
+                    item: "explorer" | "voyager" | "top-up";
+                    /** @enum {string} */
+                    interval?: "month" | "year";
+                };
+            };
+        };
+        responses: {
+            /** @description Where to send the person. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        url: string;
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description The body is not valid. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description Payments are not switched on yet. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    openBillingPortal: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Where to send the person. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        url: string;
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description Nothing has been paid yet. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description Payments are not switched on yet. */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };

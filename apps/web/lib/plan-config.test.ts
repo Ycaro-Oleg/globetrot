@@ -1,11 +1,18 @@
 import { describe, expect, it } from 'vitest';
-import { MOCK_PLANS, PLAN_IDS } from './plan-config';
+import { monthlyOfAnnual, PLAN_CARDS } from './plan-config';
 
-describe('mock plans', () => {
-  it('lists every plan once, in USD, all marked as placeholders, with exactly one free plan', () => {
-    expect(MOCK_PLANS.map((plan) => plan.id)).toEqual([...PLAN_IDS]);
-    expect(MOCK_PLANS.every((plan) => plan.currency === 'USD' && plan.placeholder)).toBe(true);
-    expect(MOCK_PLANS.filter((plan) => plan.monthlyMinor === 0n)).toHaveLength(1);
-    expect(MOCK_PLANS.filter((plan) => plan.highlighted)).toHaveLength(1);
+describe('plan cards', () => {
+  it('shows the trial and the two plans, with the approved prices', () => {
+    expect(PLAN_CARDS.map((plan) => plan.id)).toEqual(['trial', 'explorer', 'voyager']);
+    expect(PLAN_CARDS.map((plan) => [plan.monthlyMinor, plan.annualMinor, plan.credits])).toEqual([
+      [0n, 0n, 15],
+      [499n, 3999n, 100],
+      [999n, 7999n, 400],
+    ]);
+    expect(PLAN_CARDS.filter((plan) => plan.highlighted)).toHaveLength(1);
+  });
+
+  it('turns a yearly price into a monthly one', () => {
+    expect(monthlyOfAnnual(3999n)).toBe(333n);
   });
 });

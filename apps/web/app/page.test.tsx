@@ -108,14 +108,16 @@ describe('Globetrot landing page', () => {
   });
 
   it.each(SUPPORTED_LOCALES)(
-    'shows the mock plans in USD, labelled as placeholder pricing (%s)',
+    'shows the free week and the two plans at their real prices, in USD (%s)',
     (locale) => {
       const text = visibleText(render(locale));
-      const copy = catalogs[locale].landing;
-      expect(text).toContain(copy.pricingPlaceholder);
-      expect(text).toContain(copy.mockPrices);
-      expect(text).toContain(copy.plans.explorer.name);
+      const plans = catalogs[locale].plans;
+      expect(text).toContain(plans.trial.price);
+      expect(text).toContain(plans.explorer.name);
+      expect(text).toContain(plans.voyager.name);
       expect(text).toMatch(locale === 'en' ? /\$4\.99/ : /US\$\s?4,99/);
+      expect(text).toMatch(locale === 'en' ? /\$9\.99/ : /US\$\s?9,99/);
+      expect(text).not.toMatch(/placeholder|provisório/i);
     },
   );
 

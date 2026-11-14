@@ -206,9 +206,18 @@ Migration `0017_pip`. Rules: [business rules](../product/business-rules.md#ai-pi
 | Table | What | Rules |
 |---|---|---|
 | `ai_proposal` | One change list Pip proposed for a trip | `owner_id` (`user`, cascade), `trip_id` (`trip`, cascade), `request` (1–500, personal: never logged or audited), `summary`, `changes` (jsonb array of validated changes), `status` in `PROPOSAL_STATUSES`, `applied` (indexes), `undo` (route and monthly amount before, ids created), `decided_at` |
-| `ai_usage` | Tokens per request | `user_id` (cascade), `provider`, `model`, `input_tokens`, `output_tokens`. Counts toward the daily limit |
+| `ai_usage` | Tokens per request | `user_id` (cascade), `provider`, `model`, `input_tokens`, `output_tokens`. Counts toward the daily cap and the period's credits |
 
 - Audit: `pip.propose` (number and kinds of changes), `pip.apply` (applied and offered counts), `pip.discard`, `pip.undo`. Never the request or the changes' text.
+
+## Plans and credits
+
+Migration `0018_billing`. Rules: [business rules](../product/business-rules.md#plans-trial-and-pip-credits), [ADR-0019](adr/0019-plans-trial-and-pip-credits.md). The trial has no table: it runs from `user.created_at`.
+
+| Table | What | Rules |
+|---|---|---|
+| `subscription` | The paid plan, one per account at most | `user_id` (primary key, `user`, cascade), `plan` in `PAID_PLANS`, `interval` (`month`, `year`), `status` (`active`, `past_due`, `canceled`), `started_at` (monthly credits count from here), `current_period_end`, `provider_customer_id`, `provider_subscription_id` (unique) |
+| `credit_ledger` | Bought Pip credits in, credits spent from them out | `user_id` (cascade), `delta` (non-zero), `reason` (`top-up`, `pip`, `grant`), `ref` (unique, so a payment is applied once). The balance is the sum |
 
 ## Extensions
 

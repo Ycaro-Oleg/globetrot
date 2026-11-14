@@ -28,3 +28,4 @@ ADRs 0010 to 0012 were written after the work they describe (#53 to #61), which 
 | [0016](0016-pip-on-deepseek.md) | Pip v1 on DeepSeek, through a small JSON port | Accepted (supersedes the provider choice in 0007) |
 | [0017](0017-worker-housekeeping.md) | The worker: hourly housekeeping behind an advisory lock | Accepted |
 | [0018](0018-launch-measurement-and-consent.md) | Launch measurement: cookieless analytics, and the Meta Pixel only with consent | Accepted |
+| [0019](0019-plans-trial-and-pip-credits.md) | Plans, the free week and Pip credits: read-only after the trial, credits per request, payments behind a port | Accepted |

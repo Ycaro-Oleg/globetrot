@@ -1424,6 +1424,64 @@
               }
             }
           },
+          "402": {
+            "description": "The plan’s active trips are used (`TRIP_LIMIT_REACHED`) or the trial is over (`PLAN_REQUIRED`).",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "description": "A URN identifying the kind of problem."
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "integer"
+                    },
+                    "code": {
+                      "type": "string",
+                      "description": "Stable machine-readable code. Clients switch on this."
+                    },
+                    "detail": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "field": {
+                            "type": "string"
+                          },
+                          "code": {
+                            "type": "string"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "field",
+                          "code",
+                          "message"
+                        ]
+                      },
+                      "description": "Per-field problems, present for VALIDATION_FAILED."
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "title",
+                    "status",
+                    "code"
+                  ]
+                }
+              }
+            }
+          },
           "409": {
             "description": "The Idempotency-Key was already used with a different request.",
             "content": {
@@ -1669,6 +1727,64 @@
           },
           "401": {
             "description": "No valid session.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "description": "A URN identifying the kind of problem."
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "integer"
+                    },
+                    "code": {
+                      "type": "string",
+                      "description": "Stable machine-readable code. Clients switch on this."
+                    },
+                    "detail": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "field": {
+                            "type": "string"
+                          },
+                          "code": {
+                            "type": "string"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "field",
+                          "code",
+                          "message"
+                        ]
+                      },
+                      "description": "Per-field problems, present for VALIDATION_FAILED."
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "title",
+                    "status",
+                    "code"
+                  ]
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "The plan’s active trips are used (`TRIP_LIMIT_REACHED`) or the trial is over (`PLAN_REQUIRED`).",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -20533,6 +20649,64 @@
               }
             }
           },
+          "402": {
+            "description": "Pip credits are used up (`OUT_OF_CREDITS`) or the trial is over (`PLAN_REQUIRED`).",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "description": "A URN identifying the kind of problem."
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "integer"
+                    },
+                    "code": {
+                      "type": "string",
+                      "description": "Stable machine-readable code. Clients switch on this."
+                    },
+                    "detail": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "field": {
+                            "type": "string"
+                          },
+                          "code": {
+                            "type": "string"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "field",
+                          "code",
+                          "message"
+                        ]
+                      },
+                      "description": "Per-field problems, present for VALIDATION_FAILED."
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "title",
+                    "status",
+                    "code"
+                  ]
+                }
+              }
+            }
+          },
           "404": {
             "description": "No such trip or proposal, or it belongs to someone else.",
             "content": {
@@ -22938,6 +23112,652 @@
           },
           "422": {
             "description": "Already decided (`already_decided`) or no longer undoable (`not_undoable`).",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "description": "A URN identifying the kind of problem."
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "integer"
+                    },
+                    "code": {
+                      "type": "string",
+                      "description": "Stable machine-readable code. Clients switch on this."
+                    },
+                    "detail": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "field": {
+                            "type": "string"
+                          },
+                          "code": {
+                            "type": "string"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "field",
+                          "code",
+                          "message"
+                        ]
+                      },
+                      "description": "Per-field problems, present for VALIDATION_FAILED."
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "title",
+                    "status",
+                    "code"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/me/billing": {
+      "get": {
+        "operationId": "getBilling",
+        "tags": [
+          "Account"
+        ],
+        "summary": "The caller’s plan, trial and Pip credits",
+        "description": "Whether the account is in its 7-day trial, on Explorer or Voyager, or read-only after the trial; the active-trip limit; and Pip credits left this period (monthly first, then bought ones). Commands refused by the plan answer `402` with `PLAN_REQUIRED`, `TRIP_LIMIT_REACHED` or `OUT_OF_CREDITS` (ADR-0019).",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The plan facts.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "access": {
+                      "type": "string",
+                      "enum": [
+                        "trial",
+                        "explorer",
+                        "voyager",
+                        "expired"
+                      ]
+                    },
+                    "readOnly": {
+                      "type": "boolean"
+                    },
+                    "trialEndsAt": {
+                      "type": "string"
+                    },
+                    "trialDaysLeft": {
+                      "type": "integer"
+                    },
+                    "plan": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "enum": [
+                        "explorer",
+                        "voyager",
+                        null
+                      ]
+                    },
+                    "interval": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "enum": [
+                        "month",
+                        "year",
+                        null
+                      ]
+                    },
+                    "status": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "enum": [
+                        "active",
+                        "past_due",
+                        "canceled",
+                        null
+                      ]
+                    },
+                    "renewsAt": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "maxActiveTrips": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    },
+                    "activeTrips": {
+                      "type": "integer"
+                    },
+                    "credits": {
+                      "type": "object",
+                      "properties": {
+                        "monthly": {
+                          "type": "integer"
+                        },
+                        "monthlyLeft": {
+                          "type": "integer"
+                        },
+                        "topUpLeft": {
+                          "type": "integer"
+                        },
+                        "total": {
+                          "type": "integer"
+                        },
+                        "periodEnd": {
+                          "type": "string"
+                        },
+                        "dailyCap": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "monthly",
+                        "monthlyLeft",
+                        "topUpLeft",
+                        "total",
+                        "periodEnd",
+                        "dailyCap"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "access",
+                    "readOnly",
+                    "trialEndsAt",
+                    "trialDaysLeft",
+                    "plan",
+                    "interval",
+                    "status",
+                    "renewsAt",
+                    "maxActiveTrips",
+                    "activeTrips",
+                    "credits"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid session.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "description": "A URN identifying the kind of problem."
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "integer"
+                    },
+                    "code": {
+                      "type": "string",
+                      "description": "Stable machine-readable code. Clients switch on this."
+                    },
+                    "detail": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "field": {
+                            "type": "string"
+                          },
+                          "code": {
+                            "type": "string"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "field",
+                          "code",
+                          "message"
+                        ]
+                      },
+                      "description": "Per-field problems, present for VALIDATION_FAILED."
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "title",
+                    "status",
+                    "code"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/me/billing/checkout": {
+      "post": {
+        "operationId": "startCheckout",
+        "tags": [
+          "Account"
+        ],
+        "summary": "A hosted checkout for a plan or extra Pip credits",
+        "description": "Answers the payment provider’s checkout URL for Explorer or Voyager (monthly or yearly) or a top-up of Pip credits. Works when the account is read-only. `503` while payments are not switched on.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "item": {
+                    "type": "string",
+                    "enum": [
+                      "explorer",
+                      "voyager",
+                      "top-up"
+                    ]
+                  },
+                  "interval": {
+                    "type": "string",
+                    "enum": [
+                      "month",
+                      "year"
+                    ]
+                  }
+                },
+                "required": [
+                  "item"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Where to send the person.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "url": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "url"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid session.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "description": "A URN identifying the kind of problem."
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "integer"
+                    },
+                    "code": {
+                      "type": "string",
+                      "description": "Stable machine-readable code. Clients switch on this."
+                    },
+                    "detail": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "field": {
+                            "type": "string"
+                          },
+                          "code": {
+                            "type": "string"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "field",
+                          "code",
+                          "message"
+                        ]
+                      },
+                      "description": "Per-field problems, present for VALIDATION_FAILED."
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "title",
+                    "status",
+                    "code"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The body is not valid.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "description": "A URN identifying the kind of problem."
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "integer"
+                    },
+                    "code": {
+                      "type": "string",
+                      "description": "Stable machine-readable code. Clients switch on this."
+                    },
+                    "detail": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "field": {
+                            "type": "string"
+                          },
+                          "code": {
+                            "type": "string"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "field",
+                          "code",
+                          "message"
+                        ]
+                      },
+                      "description": "Per-field problems, present for VALIDATION_FAILED."
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "title",
+                    "status",
+                    "code"
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Payments are not switched on yet.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "description": "A URN identifying the kind of problem."
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "integer"
+                    },
+                    "code": {
+                      "type": "string",
+                      "description": "Stable machine-readable code. Clients switch on this."
+                    },
+                    "detail": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "field": {
+                            "type": "string"
+                          },
+                          "code": {
+                            "type": "string"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "field",
+                          "code",
+                          "message"
+                        ]
+                      },
+                      "description": "Per-field problems, present for VALIDATION_FAILED."
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "title",
+                    "status",
+                    "code"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/me/billing/portal": {
+      "post": {
+        "operationId": "openBillingPortal",
+        "tags": [
+          "Account"
+        ],
+        "summary": "The payment provider’s page to manage the plan",
+        "description": "Change the card, switch or cancel. `404` before the first payment, `503` while payments are off.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Where to send the person.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "url": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "url"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid session.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "description": "A URN identifying the kind of problem."
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "integer"
+                    },
+                    "code": {
+                      "type": "string",
+                      "description": "Stable machine-readable code. Clients switch on this."
+                    },
+                    "detail": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "field": {
+                            "type": "string"
+                          },
+                          "code": {
+                            "type": "string"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "field",
+                          "code",
+                          "message"
+                        ]
+                      },
+                      "description": "Per-field problems, present for VALIDATION_FAILED."
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "title",
+                    "status",
+                    "code"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Nothing has been paid yet.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "description": "A URN identifying the kind of problem."
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "integer"
+                    },
+                    "code": {
+                      "type": "string",
+                      "description": "Stable machine-readable code. Clients switch on this."
+                    },
+                    "detail": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "field": {
+                            "type": "string"
+                          },
+                          "code": {
+                            "type": "string"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "field",
+                          "code",
+                          "message"
+                        ]
+                      },
+                      "description": "Per-field problems, present for VALIDATION_FAILED."
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "title",
+                    "status",
+                    "code"
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Payments are not switched on yet.",
             "content": {
               "application/problem+json": {
                 "schema": {

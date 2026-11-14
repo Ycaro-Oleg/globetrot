@@ -8,6 +8,7 @@ import type {
 import { and, asc, count, desc, eq, gte, inArray, ne, sql, type SQL } from 'drizzle-orm';
 import { createAccountRepository, type AccountRepository } from './account-repository';
 import { createAssistantRepository, type AssistantRepository } from './assistant-repository';
+import { createBillingRepository, type BillingRepository } from './billing-repository';
 import { createCommunityRepository, type CommunityRepository } from './community-repository';
 import type { Database } from './client';
 import {
@@ -735,6 +736,7 @@ export interface Transaction {
   readonly media: MediaRepository;
   readonly account: AccountRepository;
   readonly assistant: AssistantRepository;
+  readonly billing: BillingRepository;
   readonly audit: AuditLog;
   readonly idempotency: IdempotencyStore;
 }
@@ -757,6 +759,7 @@ export function createUnitOfWork(db: Database) {
           media: createMediaRepository(tx),
           account: createAccountRepository(tx),
           assistant: createAssistantRepository(tx),
+          billing: createBillingRepository(tx),
           audit: createAuditLog(tx),
           idempotency: createIdempotencyStore(tx),
         }),

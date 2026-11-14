@@ -431,6 +431,16 @@ async function journey(browser, { width, height, locale }) {
 
     // ---- checklists: start from the suggested list, check an item, see the stamp count move, remove one
     const listsCopy = CATALOGS[locale].listsPage;
+    await go('/app/plan');
+    await axe('plan & credits');
+    expect(
+      (await page.getByRole('meter').count()) === 1,
+      'the plan page shows the Pip credits meter',
+    );
+    expect(
+      (await page.getByText(CATALOGS[locale].plans.voyager.name, { exact: true }).count()) >= 1,
+      'the plan page offers Voyager',
+    );
     await go('/app/lists');
     await axe('lists (empty)');
     await page.getByRole('button', { name: listsCopy.startButton, exact: true }).click();

@@ -145,9 +145,33 @@ Decision record: [ADR-0013](../architecture/adr/0013-community.md).
 - Output is a structured **change list**, never free prose that edits data.
 - Proposals are previewed (pencilled pins, dotted routes) and can be partially applied. Applying them creates an undoable record.
 - Pip never invents confirmed bookings, prices, availability or entry/visa rules. Entry rules always link to official sources.
-- Usage is metered per user. Limits come from the plan's entitlements; until then, **20 requests a day**.
+- Usage is metered per user: one credit per answered request, from the plan's monthly credits first, then bought ones, and at most **40 requests a day** on any plan (see [Plans, trial and Pip credits](#plans-trial-and-pip-credits)).
 - **Pip v1** ([ADR-0016](../architecture/adr/0016-pip-on-deepseek.md)): the person asks in their own words; Pip (DeepSeek) answers up to 12 changes of these kinds: add, remove or reorder stops, change nights, add a place to "No day", add a checklist item, add a cost (always `≈ estimate`, in the trip's currency) and set the monthly savings amount. Every change is ticked by default and can be unticked; **Apply** runs the ticked ones together, **Discard** changes nothing, **Undo** (24 hours) puts the trip back as it was before applying. While a proposal waits, its new stops are pencilled on the map (dashed, not real stops) and the route panel says so; “Ask Pip” on each trip tool only writes an idea into the box, nothing is sent until the person asks.
 - **What leaves Globetrot:** only the trip's plan (title, dates, stops, nights, places, checklist labels, cost totals, savings amounts), never the person's name, email, home city or other trips. The Pip screen says so.
+
+## Plans, trial and Pip credits
+
+Decided in [ADR-0019](../architecture/adr/0019-plans-trial-and-pip-credits.md). Prices are in USD and come from `PLAN_TERMS` in the domain.
+
+| | Free trial | Explorer | Voyager |
+|---|---|---|---|
+| Price | 7 days from sign-up, no card | US$4.99 a month or US$39.99 a year | US$9.99 a month or US$79.99 a year |
+| Pip credits | 15 for the week | 100 a month | 400 a month |
+| Active trips | 10 | 10 | Unlimited |
+
+- **One credit is one answered Pip request.** Monthly credits reset each month from the plan's start (yearly plans too) and do not roll over.
+- **Top-up:** 200 credits for US$2.99. They never expire and are spent after the monthly ones.
+- **Daily cap:** 40 Pip requests a day on any plan.
+- **Active trips** are trips that are not archived. Archiving frees a place; restoring a trip takes one.
+- **After the trial without a plan the account is read-only.**
+  - Everything can be seen and exported, and trips or the whole account deleted.
+  - Settings, the community handle, deleting own posts and comments, reporting and muting stay open.
+  - Creating or changing anything else is refused, with the way to the plans.
+  - Data is never deleted for lack of a plan.
+- **Canceling** keeps the plan until the end of the paid period.
+- **A failed renewal** keeps it 3 more days, then the account is read-only.
+- The app shows the days left in the trial on every signed-in page, and the plan, credits and active trips on **Plan & credits** (`/app/plan`).
+- Payment is by Stripe's hosted checkout. Until it is switched on, choosing a plan says so and charges nothing.
 
 ## Privacy (applies from day one)
 

@@ -48,6 +48,12 @@ export function buildOpenApiDocument() {
         listProposals: unreachable,
         countRequestsSince: unreachable,
       },
+      billing: {
+        findAccount: unreachable,
+        findUserByProviderSubscription: unreachable,
+        findProviderCustomer: unreachable,
+      },
+      payments: { checkoutUrl: unreachable, portalUrl: unreachable },
       ai: { completeJson: unreachable },
       unitOfWork: { run: unreachable },
       clock: { now: unreachable },

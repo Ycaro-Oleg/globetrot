@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import type { ReactNode } from 'react';
 import { apiInternalUrl } from '../../../lib/api-proxy';
 import { loginRedirect } from '../../../lib/app-gate';
+import { fetchBilling } from '../../../lib/billing';
 import { fetchCurrentUser } from '../../../lib/current-user';
 import { isPipEnabled } from '../../../lib/flags';
 import { fetchStoredPreferences, sessionCookieHeader } from '../../../lib/stored-preferences';
@@ -23,10 +24,11 @@ export async function SignedInFrame({
   const store = await cookies();
   const cookieHeader = sessionCookieHeader(store.getAll());
   const options = cookieHeader ? { cookieHeader, apiUrl: apiInternalUrl() } : null;
-  const [user, fetchedTrips, preferences] = await Promise.all([
+  const [user, fetchedTrips, preferences, billing] = await Promise.all([
     options ? fetchCurrentUser(options) : Promise.resolve(null),
     options ? fetchTrips(options) : Promise.resolve(null),
     options ? fetchStoredPreferences(options) : Promise.resolve(null),
+    options ? fetchBilling(options) : Promise.resolve(null),
   ]);
   if (!user) redirect(loginRedirect(returnTo));
 
@@ -42,6 +44,7 @@ export async function SignedInFrame({
       activeTripId={activeTrip?.id ?? null}
       pipLook={preferences?.pipLook ?? null}
       pipName={preferences?.pipName ?? null}
+      billing={billing}
     >
       {children}
     </AppShell>

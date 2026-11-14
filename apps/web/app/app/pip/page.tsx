@@ -5,6 +5,7 @@ import { apiInternalUrl } from '../../../lib/api-proxy';
 import { isPipEnabled } from '../../../lib/flags';
 import { createServerApiClient, sessionCookieHeader } from '../../../lib/stored-preferences';
 import { fetchDestinations, fetchTrips, SELECTED_TRIP_COOKIE } from '../../../lib/trips';
+import { fetchBilling } from '../../../lib/billing';
 import { SITE_NAME } from '../../site';
 import { PipView } from './pip-view';
 
@@ -34,6 +35,7 @@ export default async function PipPage({
   const trips = options ? ((await fetchTrips(options)) ?? []) : [];
   const savedId = store.get(SELECTED_TRIP_COOKIE)?.value;
   const trip = trips.find((candidate) => candidate.id === savedId) ?? trips[0] ?? null;
+  const billing = options ? await fetchBilling(options) : null;
   const [stops, proposals] =
     options && trip
       ? await Promise.all([
@@ -50,6 +52,7 @@ export default async function PipPage({
       stops={(stops ?? []).map((stop) => ({ id: stop.id, name: stop.name }))}
       initial={proposals}
       idea={idea}
+      credits={billing?.credits.total ?? null}
     />
   );
 }
