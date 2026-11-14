@@ -242,11 +242,11 @@
       },
       "s3": {
         "h": "Para quê",
-        "p": "Para fazer o app funcionar: salvar e mostrar seus planos, calcular sua resposta de poupança, enviar e-mails da conta (confirmação e troca de senha) e manter o serviço seguro (limites de uso e um registro de alterações sem valores pessoais)."
+        "p": "Para fazer o app funcionar: salvar e mostrar seus planos, calcular sua resposta de poupança, enviar e-mails da conta (confirmação, troca de senha e os dois e-mails sobre sua semana grátis) e manter o serviço seguro (limites de uso e um registro de alterações sem valores pessoais)."
       },
       "s4": {
         "h": "Quem mais trata os dados",
-        "p": "Hospedagem e banco de dados: [dono: provedor e região]. E-mail: [dono: provedor]. Armazenamento de fotos: [dono: provedor]. Pip: quando você pergunta ao Pip, o plano daquela viagem (título, datas, paradas, noites, lugares, itens da checklist, totais de custos e valores de poupança) vai para a DeepSeek para rascunhar sugestões; nunca seu nome, e-mail ou outras viagens. Login com Google, se você usar. Medição: Plausible (sem cookies, agregada) e, só se você aceitar, o Meta Pixel."
+        "p": "Hospedagem e banco de dados: [dono: provedor e região]. E-mail: [dono: provedor]. Armazenamento de fotos: [dono: provedor]. Pip: quando você pergunta ao Pip, o plano daquela viagem (título, datas, paradas, noites, lugares, itens da checklist, totais de custos e valores de poupança) vai para a DeepSeek para rascunhar sugestões; nunca seu nome, e-mail ou outras viagens. Login com Google, se você usar. Medição: Plausible (sem cookies, agregada) e, só se você aceitar, o Meta Pixel. Pagamentos: Stripe, que recebe seu e-mail e cuida do cartão; nunca vemos números de cartão."
       },
       "s5": {
         "h": "Cookies",
@@ -254,7 +254,7 @@
       },
       "s6": {
         "h": "O que os outros veem",
-        "p": "As viagens são privadas. Posts da comunidade são vistos por todos ou só por seus seguidores, como você escolher; seu nome, @ e Pip aparecem com eles. Um roteiro compartilhado é uma cópia das paradas e noites naquele momento, sem valores, a menos que você escolha mostrá-los."
+        "p": "As viagens são privadas. Posts da comunidade são vistos por todos ou só por seus seguidores, como você escolher; seu nome, @ e Pip aparecem com eles. Um roteiro compartilhado é uma cópia das paradas e noites naquele momento, sem valores, a menos que você escolha mostrá-los. Uma viagem que você compartilha por link pode ser aberta por qualquer pessoa com esse link: título, paradas, países, noites, o mês da partida e quanto da poupança já foi feito, e valores só se você escolher. Nunca seu nome nem as datas exatas. Parar de compartilhar encerra o link de vez."
       },
       "s7": {
         "h": "Por quanto tempo",
@@ -1473,7 +1473,8 @@
       "stop": "Parar de compartilhar",
       "on": "O link está ativo.",
       "off": "O link foi desativado. O endereço antigo não abre mais.",
-      "error": "Não deu certo. Tente de novo."
+      "error": "Não deu certo. Tente de novo.",
+      "shareMoment": "Compartilhar minha viagem"
     }
   },
   "consent": {

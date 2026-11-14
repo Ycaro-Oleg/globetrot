@@ -2,6 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { useEffect, useId, useState, useTransition } from 'react';
+import { track } from '../../../../lib/analytics';
 import { setTripShare, type ShareState } from '../../_components/trip-actions';
 import styles from './trip-hub.module.css';
 
@@ -37,6 +38,7 @@ export function ShareCard({
     startTransition(async () => {
       const next = await setTripShare(tripId, on, showAmounts);
       if (!next) return setStatus(t('error'));
+      if (next.slug && !share.slug) track('trip_shared');
       setShare(next);
       setStatus(next.slug ? t('on') : t('off'));
     });
