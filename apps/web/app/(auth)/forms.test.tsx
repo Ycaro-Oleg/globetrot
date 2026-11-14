@@ -86,6 +86,18 @@ describe.each(SUPPORTED_LOCALES)('auth screens in %s', (locale) => {
       expect(tag).toContain('target="_blank"');
     }
     expect(html).toMatch(/autocomplete="new-password"/i);
+    // No checkbox to tick: creating the account is the acceptance, said next to the button.
+    expect(html).not.toMatch(/type="checkbox"/);
+  });
+
+  it('sign up: repeats the plan saved on the landing, only when there is one', () => {
+    const note = 'Saved plan note';
+    expect(
+      visible(render(locale, <SignupForm next="/app" googleEnabled={false} planNote={note} />)),
+    ).toContain(note);
+    expect(visible(render(locale, <SignupForm next="/app" googleEnabled={false} />))).not.toContain(
+      note,
+    );
   });
 
   it('recover: explains itself, asks for the email and offers the way back', () => {

@@ -264,12 +264,6 @@
   font-weight: 650;
 }
 
-.fieldNote {
-  margin: 0;
-  color: var(--gt-semantic-color-danger);
-  font-size: 0.875rem;
-}
-
 .language {
   display: flex;
   justify-content: center;
@@ -440,4 +434,42 @@
 .forgotRow {
   margin: calc(-1 * var(--gt-primitive-space-8)) 0 0;
   text-align: end;
+}
+
+.legal {
+  margin: 0;
+  color: #475569;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  text-align: center;
+}
+
+.legal a {
+  color: inherit;
+  text-decoration: underline;
+}
+
+.ctaLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  min-height: 52px;
+  padding: 0 24px;
+  border-radius: 999px;
+  background: var(--gt-semantic-color-cta);
+  color: var(--gt-semantic-color-on-cta);
+  box-shadow: var(--gt-primitive-shadow-cta);
+  font-size: 1.0625rem;
+  font-weight: 750;
+  text-decoration: none;
+}
+
+.ctaLink:hover {
+  filter: brightness(1.05);
+}
+
+.ctaLink:focus-visible {
+  outline: 3px solid var(--auth-blue);
+  outline-offset: 3px;
 }

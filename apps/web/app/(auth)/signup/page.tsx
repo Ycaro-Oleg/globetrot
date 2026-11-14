@@ -1,6 +1,9 @@
+import { formatMoney, money } from '@globetrot/domain';
 import type { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
+import { cookies } from 'next/headers';
+import { getLocale, getTranslations } from 'next-intl/server';
 import { apiInternalUrl } from '../../../lib/api-proxy';
+import { PLAN_DRAFT_COOKIE, readDraft } from '../../../lib/plan-draft';
 import { fetchEnabledProviders } from '../../../lib/providers';
 import { safeNext } from '../../../lib/safe-next';
 import { SITE_NAME } from '../../site';
@@ -18,7 +21,31 @@ export default async function SignupPage({
 }: {
   searchParams: Promise<{ next?: string | string[] }>;
 }) {
-  const query = await searchParams;
+  const [query, store, locale, t] = await Promise.all([
+    searchParams,
+    cookies(),
+    getLocale(),
+    getTranslations('auth.signup'),
+  ]);
   const providers = await fetchEnabledProviders({ apiUrl: apiInternalUrl() });
-  return <SignupForm next={safeNext(query.next)} googleEnabled={providers.includes('google')} />;
+  // Someone who saved a plan in the landing's "Can I go?" sees it again here, so the story continues.
+  const draft = readDraft(store.get(PLAN_DRAFT_COOKIE)?.value);
+  const usd = (amount: string) =>
+    formatMoney(money(BigInt(Math.round(Number(amount) * 100)), 'USD'), locale, {
+      precision: 'whole',
+    });
+  const planNote = draft
+    ? t('planSaved', {
+        cost: usd(draft.cost),
+        saved: usd(draft.saved),
+        monthly: usd(draft.monthly),
+      })
+    : null;
+  return (
+    <SignupForm
+      next={safeNext(query.next)}
+      googleEnabled={providers.includes('google')}
+      planNote={planNote}
+    />
+  );
 }

@@ -32,12 +32,26 @@ describe('place search', () => {
       ValidationError,
     );
     fake.places.offline = true;
-    await expect(app.searchPlaces.execute(ana, { query: 'kyoto' })).rejects.toBeInstanceOf(
+    // A small place the built-in list does not know: search says it is unavailable.
+    await expect(app.searchPlaces.execute(ana, { query: 'Shirakawa-go' })).rejects.toBeInstanceOf(
       UnavailableError,
     );
     await expect(
       app.reversePlace.execute(ana, { latitude: 35, longitude: 135 }),
     ).rejects.toBeInstanceOf(UnavailableError);
+  });
+
+  it('falls back to popular destinations when the provider is down, named in the person’s language', async () => {
+    const fake = createFakePorts({ users });
+    const app = createApplication(fake.ports);
+    fake.places.offline = true;
+    const { places } = await app.searchPlaces.execute(ana, { query: 'lisb', language: 'pt-BR' });
+    expect(places[0]).toMatchObject({
+      key: 'gt:lisbon',
+      name: 'Lisboa',
+      countryCode: 'PT',
+      attribution: 'Globetrot',
+    });
   });
 
   it('limits how often one person can look places up', async () => {

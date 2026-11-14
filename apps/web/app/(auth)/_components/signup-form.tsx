@@ -1,7 +1,7 @@
 'use client';
 
 import { PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from '@globetrot/domain';
-import { Button, Checkbox, TextField } from '@globetrot/ui';
+import { Button, TextField } from '@globetrot/ui';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { track } from '../../../lib/analytics';
@@ -25,10 +25,17 @@ type FieldErrors = {
   name?: MessageRef;
   email?: MessageRef;
   password?: MessageRef;
-  terms?: MessageRef;
 };
 
-export function SignupForm({ next, googleEnabled }: { next: string; googleEnabled: boolean }) {
+export function SignupForm({
+  next,
+  googleEnabled,
+  planNote = null,
+}: {
+  next: string;
+  googleEnabled: boolean;
+  planNote?: string | null;
+}) {
   const t = useTranslations('auth');
   const router = useRouter();
   const text = useAuthMessage();
@@ -38,7 +45,6 @@ export function SignupForm({ next, googleEnabled }: { next: string; googleEnable
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [terms, setTerms] = useState(false);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [banner, setBanner] = useState<MessageRef | null>(null);
   const [offerLogin, setOfferLogin] = useState(false);
@@ -59,7 +65,6 @@ export function SignupForm({ next, googleEnabled }: { next: string; googleEnable
     } else if (password.length > PASSWORD_MAX_LENGTH) {
       found.password = { key: 'errors.passwordTooLong', values: { max: PASSWORD_MAX_LENGTH } };
     }
-    if (!terms) found.terms = { key: 'errors.requiredTerms' };
     setErrors(found);
     setBanner(null);
     setOfferLogin(false);
@@ -96,7 +101,7 @@ export function SignupForm({ next, googleEnabled }: { next: string; googleEnable
   return (
     <>
       {sentTo !== null && (
-        <>
+        <div className={styles.view}>
           <h1 className={styles.title}>{t('signup.sentTitle')}</h1>
           <p className={styles.lead} role="status">
             {t('signup.sentBody', { email: sentTo })}
@@ -108,10 +113,11 @@ export function SignupForm({ next, googleEnabled }: { next: string; googleEnable
           <p className={styles.links}>
             <Link href="/login">{t('signup.toLogin')}</Link>
           </p>
-        </>
+        </div>
       )}
       <div className={styles.view} hidden={sentTo !== null}>
         <h1 className={styles.title}>{t('signup.title')}</h1>
+        {planNote && <p className={styles.lead}>{planNote}</p>}
 
         {googleEnabled && (
           <>
@@ -164,37 +170,24 @@ export function SignupForm({ next, googleEnabled }: { next: string; googleEnable
             errorMessage={errors.password && text(errors.password)}
           />
 
-          <div>
-            <Checkbox
-              isSelected={terms}
-              onChange={setTerms}
-              isInvalid={errors.terms !== undefined}
-              {...(errors.terms ? { 'aria-describedby': 'terms-error' } : {})}
-            >
-              {t.rich('signup.terms', {
-                terms: (chunks) => (
-                  <Link href="/terms" target="_blank" rel="noopener">
-                    {chunks}
-                  </Link>
-                ),
-                privacy: (chunks) => (
-                  <Link href="/privacy" target="_blank" rel="noopener">
-                    {chunks}
-                  </Link>
-                ),
-              })}
-            </Checkbox>
-            {errors.terms && (
-              <p id="terms-error" className={styles.fieldNote}>
-                {text(errors.terms)}
-              </p>
-            )}
-          </div>
-
           <Button type="submit" variant="thread" size="lg" isPending={pending}>
             {t('signup.submit')}
           </Button>
           <PendingStatus pending={pending} label={t('signup.pending')} />
+          <p className={styles.legal}>
+            {t.rich('signup.terms', {
+              terms: (chunks) => (
+                <Link href="/terms" target="_blank" rel="noopener">
+                  {chunks}
+                </Link>
+              ),
+              privacy: (chunks) => (
+                <Link href="/privacy" target="_blank" rel="noopener">
+                  {chunks}
+                </Link>
+              ),
+            })}
+          </p>
         </form>
 
         <p className={styles.links}>

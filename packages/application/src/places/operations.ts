@@ -1,3 +1,4 @@
+import { searchPopularPlaces } from '@globetrot/domain';
 import { z } from 'zod';
 import { RateLimitedError, UnavailableError } from '../errors';
 import { defineOperation } from '../operation';
@@ -51,8 +52,24 @@ export function createSearchPlaces(deps: Pick<Ports, 'geocoding' | 'rateLimiter'
         language: provider(input.language),
         limit: 8,
       });
-      if (places === null) throw new UnavailableError('Place search is not available right now');
-      return { places };
+      if (places !== null) return { places };
+      // The provider is not configured or did not answer: popular destinations still work, so a first trip and
+      // most searches never dead-end. Smaller places need the provider.
+      const popular = searchPopularPlaces(input.query, 8);
+      if (popular.length === 0) {
+        throw new UnavailableError('Place search is not available right now');
+      }
+      return {
+        places: popular.map((place) => ({
+          key: place.key,
+          name: input.language === 'pt-BR' ? place.pt : place.en,
+          countryCode: place.countryCode,
+          region: null,
+          latitude: place.latitude,
+          longitude: place.longitude,
+          attribution: 'Globetrot',
+        })),
+      };
     },
   });
 }

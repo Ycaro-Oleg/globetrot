@@ -314,9 +314,22 @@ function Board({
           <StartDateForm tripId={tripId} startDate={null} compact />
         </div>
       ) : null}
-      <p className={styles.how}>
-        <strong>{t('how')}</strong> {t('howText')}
-      </p>
+      {places.length === 0 ? (
+        <div className={styles.start}>
+          <h2>{t('startTitle', { days: days.length })}</h2>
+          <p>{t('startText')}</p>
+          <div className={styles.startActions}>
+            <button type="button" className={styles.cta} onClick={() => setAdding(true)}>
+              + {t('startCta')}
+            </button>
+            {pipEnabled ? <AskPipLink topic="days" /> : null}
+          </div>
+        </div>
+      ) : (
+        <p className={styles.how}>
+          <strong>{t('how')}</strong> {t('howText')}
+        </p>
+      )}
 
       {/* Scrolls sideways on wide screens: focusable, so the keyboard can scroll it too. */}
       <div className={styles.board} role="region" aria-label={t('title')} tabIndex={0}>
@@ -335,7 +348,9 @@ function Board({
             <span className={styles.columnSub}>{t('traySub')}</span>
           </div>
           {board.tray.map((place) => card(place, null, null))}
-          {board.tray.length === 0 ? <p className={styles.empty}>{t('trayEmpty')}</p> : null}
+          {board.tray.length === 0 ? (
+            <p className={styles.empty}>{places.length === 0 ? t('trayFirst') : t('trayEmpty')}</p>
+          ) : null}
         </section>
 
         {board.days.map((day) => (
