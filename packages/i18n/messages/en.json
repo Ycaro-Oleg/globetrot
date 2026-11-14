@@ -144,15 +144,16 @@
       "accountDeleted": "Your account was deleted. Everything in it is gone."
     },
     "signup": {
-      "title": "Start a board.",
+      "title": "Your trip starts here.",
       "submit": "Create my account",
       "pending": "Creating your account…",
       "haveAccount": "Already have an account?",
       "toLogin": "Log in",
-      "terms": "I accept the <terms>Terms of use</terms> and the <privacy>Privacy policy</privacy>.",
+      "terms": "By creating your account you accept the <terms>Terms of use</terms> and the <privacy>Privacy policy</privacy>.",
       "passwordHint": "At least {min, number} characters. A few random words make a strong password.",
       "sentTitle": "Check your inbox",
-      "sentBody": "We sent a confirmation link to {email}. Open it to finish creating your account."
+      "sentBody": "We sent a confirmation link to {email}. Open it to finish creating your account.",
+      "planSaved": "Your plan is saved: {cost} trip, {saved} saved, {monthly} a month. Create your account to keep it."
     },
     "strength": {
       "label": "Password strength",
@@ -187,8 +188,8 @@
     },
     "verified": {
       "title": "Email confirmed",
-      "body": "Your email address is confirmed and you are signed in.",
-      "continue": "Continue",
+      "body": "Your email address is confirmed and you are signed in. Your board is a minute away.",
+      "continue": "Start planning my trip",
       "errorTitle": "That link did not work",
       "errorBody": "It has expired or was already used. Enter your email and we will send a new one.",
       "sendNew": "Send a new link"
@@ -204,7 +205,6 @@
       "requiredEmail": "Enter your email address.",
       "requiredPassword": "Enter your password.",
       "requiredName": "Enter your first name.",
-      "requiredTerms": "Accept the terms to create an account.",
       "passwordTooShort": "Use at least {min, number} characters.",
       "passwordTooLong": "Use at most {max, number} characters.",
       "invalidToken": "This link has expired or was already used. Ask for a new one.",
@@ -754,7 +754,11 @@
       "other": "Travel"
     },
     "emptyTitle": "No stops yet",
-    "tryExample": "Start from an example"
+    "tryExample": "Start from an example",
+    "startTitle": "{days, plural, one {Your day is open} other {Your # days are open}}. What can’t you miss?",
+    "startText": "Add the places you want to see: a café, a viewpoint, a museum. They land in “No day” first, then you move each one onto a day.",
+    "startCta": "Add your first place",
+    "trayFirst": "Places you add land here first."
   },
   "budgetPage": {
     "title": "Budget & savings",
@@ -895,7 +899,6 @@
     "progress": "{done, number} of {total, number} done",
     "emptyGroup": "Nothing here yet.",
     "addLabel": "Add to {group}",
-    "addPlaceholder": "For example: Travel insurance",
     "add": "Add",
     "removeItem": "Remove {label}",
     "startTitle": "Start with a suggested list",
@@ -949,7 +952,13 @@
     "celebrationBody": "“{name}” is on this trip’s visa page. A keepsake, not an official document.",
     "continue": "Continue",
     "seePassport": "See passport",
-    "actionError": "That did not work. The lists may be full (100 items) or the text empty."
+    "actionError": "That did not work. The lists may be full (100 items) or the text empty.",
+    "placeholders": {
+      "documents": "For example: Driving permit",
+      "money": "For example: Bank app",
+      "bookings": "For example: Museum tickets",
+      "packing": "For example: Sunglasses"
+    }
   },
   "onboarding": {
     "title": "Plan your first trip",
@@ -1024,7 +1033,8 @@
     "none": "—",
     "estimateCost": "Rough trip estimate (onboarding)",
     "finishError": "We could not create the trip. Check the amounts and try again.",
-    "useTyped": "Continue with “{name}” — pin it on the map later"
+    "useTyped": "Continue with “{name}” — pin it on the map later",
+    "popular": "Popular right now"
   },
   "profilePage": {
     "title": "Profile",

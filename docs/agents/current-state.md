@@ -1,6 +1,6 @@
 # Current state
 
-_Last updated: 2026-11-13, launch readiness. Code state: `develop` includes #83 to #105; launch readiness is in an open PR. The [launch runbook](../engineering/launch-runbook.md) lists what the owner must provide._
+_Last updated: 2026-11-14, first-run polish. Code state: `develop` includes #83 to #107; the first-run polish (a full new-user walkthrough and its fixes) is in an open PR. The [launch runbook](../engineering/launch-runbook.md) lists what the owner must provide._
 
 Read this first. It says where the project is, what exists, what is open, what only the owner can unblock and what to do next. Procedure for working: [`playbook.md`](playbook.md). Feature-by-feature progress: [`../product/progress.md`](../product/progress.md). Milestones and exit criteria: [`../product/roadmap.md`](../product/roadmap.md).
 
@@ -14,6 +14,7 @@ Read this first. It says where the project is, what exists, what is open, what o
 - **Checklists and the visa page work** (`/app/lists`): four lists per trip (add, check, remove, a suggested starter list) and the nine readiness stamps as they stand now. The budget (costs, conversion, savings answer) and the Days page work too.
 - **The passport screen works** (`/app/passport`): the account's commemorative visas, newest first, with country, city and date, an empty state that leads to the board, and the "not an official document" note.
 - **Pip v1 works behind `FEATURE_PIP`** on DeepSeek (ADR-0016): ask, review a change list, apply, undo.
+- **First run, walked as a new user** (landing calculator → sign-up → email → onboarding → board → every tool): the sign-up repeats the saved landing plan and has no terms checkbox; the confirmed-email page has one clear call to action; onboarding offers popular destinations in one tap and place search falls back to built-in popular cities, so the first trip always has a stop; the new trip starts with the suggested checklist; an empty Days plan invites the first place. **Owner decision for conversion:** set `REQUIRE_VERIFIED_EMAIL=false` in production so people go straight in after sign-up (ADR-0012 leaves it to the owner).
 - **What does not exist yet:** a staff review queue for community reports, blocking, visa privacy, billing, deployment. The trip's page shows the nine stamps and the next steps; the start date can be set there and on Days.
 - **Branches:** `main` has no release yet; `develop` is the integration branch. All work goes through `feature/*` or `docs/*` PRs into `develop`.
 

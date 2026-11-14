@@ -128,4 +128,15 @@ describe('days without what they need', () => {
   it('says so when the plan cannot be read', () => {
     expect(render('en', { places: null })).toContain('role="alert"');
   });
+
+  it.each(SUPPORTED_LOCALES)('invites the first place when the plan is empty (%s)', (locale) => {
+    const copy = catalogs[locale].daysPage;
+    const empty = text(render(locale, { places: [] }));
+    expect(empty).toContain(copy.startCta);
+    expect(empty).toContain(copy.trayFirst);
+    expect(empty).not.toContain(copy.howText);
+    const full = text(render(locale));
+    expect(full).not.toContain(copy.startCta);
+    expect(full).toContain(copy.how);
+  });
 });

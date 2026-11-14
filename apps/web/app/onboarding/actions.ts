@@ -2,6 +2,7 @@
 
 import { idempotencyKeySchema } from '@globetrot/application';
 import { getTranslations } from 'next-intl/server';
+import { CHECKLIST_GROUPS } from '@globetrot/domain';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { PLAN_DRAFT_COOKIE } from '../../lib/plan-draft';
@@ -107,6 +108,21 @@ export async function finishOnboarding(input: OnboardingInput): Promise<{ error:
     params: { path: { id: tripId } },
     body: { saved: input.saved || '0', monthly: input.monthly || '0' },
   });
+  // The first trip starts with the suggested lists in the person's language, so Lists is useful at once.
+  const suggestions = await getTranslations('listsPage.suggestions');
+  await client
+    .POST('/v1/trips/{id}/checklist', {
+      params: { path: { id: tripId } },
+      body: {
+        items: CHECKLIST_GROUPS.flatMap((group) =>
+          Object.values(suggestions.raw(group) as Record<string, string>).map((label) => ({
+            group,
+            label,
+          })),
+        ),
+      },
+    })
+    .catch(() => null);
   if (!route.data || !cost.data || !savings.data) return { error: true };
   // The landing's numbers have done their job.
   store.delete(PLAN_DRAFT_COOKIE);

@@ -1,6 +1,13 @@
 'use client';
 
-import { formatMoney, money, toLocalDate, type Money } from '@globetrot/domain';
+import {
+  formatMoney,
+  money,
+  POPULAR_PICKS,
+  popularPlaceByKey,
+  toLocalDate,
+  type Money,
+} from '@globetrot/domain';
 import { formatYearMonth, type SupportedLocale } from '@globetrot/i18n';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
@@ -509,6 +516,38 @@ function PlaceSearch({
         >
           {t('useTyped', { name: query.trim() })}
         </button>
+      ) : null}
+      {!chosen && query.trim().length < 2 ? (
+        <div className={styles.picks}>
+          <span>{t('popular')}</span>
+          <ul>
+            {(POPULAR_PICKS[locale === 'pt-BR' ? 'pt-BR' : 'en'] ?? []).map((key) => {
+              const place = popularPlaceByKey(key);
+              if (!place) return null;
+              const name = locale === 'pt-BR' ? place.pt : place.en;
+              return (
+                <li key={key}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onChoose({
+                        key: place.key,
+                        name,
+                        countryCode: place.countryCode,
+                        region: null,
+                        latitude: place.latitude,
+                        longitude: place.longitude,
+                      });
+                      setQuery(name);
+                    }}
+                  >
+                    {name}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
       ) : null}
       {results.length ? (
         <ul className={styles.results}>

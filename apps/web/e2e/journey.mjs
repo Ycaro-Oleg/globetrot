@@ -182,7 +182,6 @@ async function journey(browser, { width, height, locale }) {
     await page.getByLabel(copy.auth.firstName, { exact: true }).fill('Ana');
     await page.getByLabel(copy.auth.email, { exact: true }).fill(email);
     await page.getByLabel(copy.auth.password, { exact: true }).fill(PASSWORD);
-    await page.locator('.gt-checkbox .gt-choice__mark').click();
     await page.getByRole('button', { name: copy.auth.signup.submit, exact: true }).click();
     await page
       .getByRole('heading', { name: copy.auth.signup.sentTitle })

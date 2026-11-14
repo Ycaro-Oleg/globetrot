@@ -144,15 +144,16 @@
       "accountDeleted": "Sua conta foi excluída. Tudo o que havia nela foi apagado."
     },
     "signup": {
-      "title": "Comece seu mapa.",
+      "title": "Sua viagem começa aqui.",
       "submit": "Criar minha conta",
       "pending": "Criando sua conta…",
       "haveAccount": "Já tem uma conta?",
       "toLogin": "Entrar",
-      "terms": "Aceito os <terms>Termos de uso</terms> e a <privacy>Política de privacidade</privacy>.",
+      "terms": "Ao criar sua conta você aceita os <terms>Termos de uso</terms> e a <privacy>Política de privacidade</privacy>.",
       "passwordHint": "No mínimo {min, number} caracteres. Algumas palavras aleatórias fazem uma senha forte.",
       "sentTitle": "Confira sua caixa de entrada",
-      "sentBody": "Enviamos um link de confirmação para {email}. Abra-o para concluir a criação da sua conta."
+      "sentBody": "Enviamos um link de confirmação para {email}. Abra-o para concluir a criação da sua conta.",
+      "planSaved": "Seu plano está salvo: viagem de {cost}, {saved} guardados, {monthly} por mês. Crie sua conta para não perdê-lo."
     },
     "strength": {
       "label": "Força da senha",
@@ -187,8 +188,8 @@
     },
     "verified": {
       "title": "E-mail confirmado",
-      "body": "Seu endereço de e-mail está confirmado e você já entrou na conta.",
-      "continue": "Continuar",
+      "body": "Seu e-mail está confirmado e você já entrou. Seu quadro está a um minuto.",
+      "continue": "Começar a planejar minha viagem",
       "errorTitle": "Esse link não funcionou",
       "errorBody": "Ele expirou ou já foi usado. Informe seu e-mail e enviaremos um novo.",
       "sendNew": "Enviar um novo link"
@@ -204,7 +205,6 @@
       "requiredEmail": "Informe seu endereço de e-mail.",
       "requiredPassword": "Informe sua senha.",
       "requiredName": "Informe seu primeiro nome.",
-      "requiredTerms": "Aceite os termos para criar uma conta.",
       "passwordTooShort": "Use pelo menos {min, number} caracteres.",
       "passwordTooLong": "Use no máximo {max, number} caracteres.",
       "invalidToken": "Este link expirou ou já foi usado. Peça um novo.",
@@ -754,7 +754,11 @@
       "other": "Deslocamento"
     },
     "emptyTitle": "Ainda sem paradas",
-    "tryExample": "Começar de um exemplo"
+    "tryExample": "Começar de um exemplo",
+    "startTitle": "{days, plural, one {Seu dia está livre} other {Seus # dias estão livres}}. O que você não pode perder?",
+    "startText": "Adicione os lugares que quer conhecer: um café, um mirante, um museu. Eles entram primeiro em “Sem dia” e depois você move cada um para um dia.",
+    "startCta": "Adicionar o primeiro lugar",
+    "trayFirst": "Os lugares que você adicionar aparecem aqui primeiro."
   },
   "budgetPage": {
     "title": "Orçamento e poupança",
@@ -895,7 +899,6 @@
     "progress": "{done, number} de {total, number} feitos",
     "emptyGroup": "Nada aqui ainda.",
     "addLabel": "Adicionar em {group}",
-    "addPlaceholder": "Por exemplo: Seguro viagem",
     "add": "Adicionar",
     "removeItem": "Remover {label}",
     "startTitle": "Comece com uma lista sugerida",
@@ -949,7 +952,13 @@
     "celebrationBody": "“{name}” está na página de vistos desta viagem. Uma lembrança, não um documento oficial.",
     "continue": "Continuar",
     "seePassport": "Ver passaporte",
-    "actionError": "Não deu certo. As listas podem estar cheias (100 itens) ou o texto vazio."
+    "actionError": "Não deu certo. As listas podem estar cheias (100 itens) ou o texto vazio.",
+    "placeholders": {
+      "documents": "Por exemplo: Permissão para dirigir",
+      "money": "Por exemplo: App do banco",
+      "bookings": "Por exemplo: Ingressos de museu",
+      "packing": "Por exemplo: Óculos de sol"
+    }
   },
   "onboarding": {
     "title": "Planeje sua primeira viagem",
@@ -1024,7 +1033,8 @@
     "none": "—",
     "estimateCost": "Estimativa da viagem (onboarding)",
     "finishError": "Não foi possível criar a viagem. Confira os valores e tente de novo.",
-    "useTyped": "Continuar com “{name}” — marque no mapa depois"
+    "useTyped": "Continuar com “{name}” — marque no mapa depois",
+    "popular": "Populares agora"
   },
   "profilePage": {
     "title": "Perfil",

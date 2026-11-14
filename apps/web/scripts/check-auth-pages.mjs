@@ -652,7 +652,7 @@ try {
       async (page) => {
         await go(page, `${base}/signup`);
         await button(page, copy.signup.submit).click();
-        await page.getByText(copy.errors.requiredTerms).waitFor();
+        await page.getByText(copy.errors.requiredEmail).first().waitFor();
       },
     ],
     [
@@ -672,7 +672,6 @@ try {
         await field(page, copy.firstName).fill('Ana');
         await fillEmail(page, copy, 'taken@example.com');
         await field(page, copy.password).fill('correct horse battery staple');
-        await page.locator('.gt-checkbox .gt-choice__mark').click();
         await button(page, copy.signup.submit).click();
         await page.getByText(copy.errors.emailTaken).waitFor();
       },
@@ -685,7 +684,6 @@ try {
         await field(page, copy.firstName).fill('Ana');
         await fillEmail(page, copy, 'new@example.com');
         await field(page, copy.password).fill('correct horse battery staple');
-        await page.locator('.gt-checkbox .gt-choice__mark').click();
         await button(page, copy.signup.submit).click();
         await page.getByRole('heading', { name: copy.signup.sentTitle }).waitFor();
       },
@@ -1214,10 +1212,6 @@ try {
 
     await field(page, copy.firstName).fill('Ana');
     await fillEmail(page, copy, 'taken@example.com');
-    await button(page, copy.signup.submit).click();
-    await page.getByText(copy.errors.requiredTerms).waitFor();
-
-    await page.locator('.gt-checkbox .gt-choice__mark').click();
     await button(page, copy.signup.submit).click();
     await page.getByText(copy.errors.emailTaken).waitFor();
     check(

@@ -19,7 +19,7 @@ This is the authoritative list. The prototype's executable spec is `design/refer
 - Seven steps (welcome, home city, destination, month and length, money, Pip, the answer). Every step can be changed later, and nothing is charged.
 - **The cost is the person's own rough guess**, never ours: it is stored as one cost with status `estimate` ("Rough trip estimate") in the trip's currency (the preferred currency), and replaced by real costs later. Globetrot does not show invented typical ranges.
 - The answer uses the savings plan rule (below) on that guess, the amount saved, the monthly amount and the first day of the chosen month.
-- "Open my map" creates the trip through the same API as everything else: the trip (titled with the destination, starting on the first of the chosen month), its first stop with the nights when the place was found by the search, the estimate cost and the savings; then the board opens. When place search is unavailable the person can continue with the typed name, and the trip starts without a stop.
+- "Open my map" creates the trip through the same API as everything else: the trip (titled with the destination, starting on the first of the chosen month), its first stop with the nights when the place was found by the search, the estimate cost and the savings; then the board opens. The place step also offers eight popular destinations as one-tap choices (built in, so they always give a real stop), and place search falls back to the same built-in list of about 110 popular cities when the provider is not configured or not answering. Only a name that matches neither can be continued as typed, and that trip starts without a stop. The new trip's checklist starts with the suggested items in the person's language (documents, money, bookings, packing), which they can tick or remove.
 - A signed-in person with no trip who opens the app lands on the onboarding.
 
 ## Accounts and sign-in
@@ -33,7 +33,7 @@ Implemented in #53, #54, #57 and #58. Mechanics: [`../architecture/authenticatio
 - **Recovery never reveals whether an address has an account.** The answer is the same for both, and so is the wait: at most one email of each kind per address every 30 seconds.
 - **Sessions** last 30 days and are renewed daily when used. The cookie is `HttpOnly`, `SameSite=Lax` and belongs to the web origin.
 - **Language at sign-up:** the language the person was using is recorded as their language. Currency, country, nationality and time zone are not inferred from it.
-- **Terms and privacy:** the sign-up form requires accepting them. Acceptance is not stored yet, and the legal text is a draft the owner has to write.
+- **Terms and privacy:** creating the account is the acceptance, stated next to the submit button with links to both (no checkbox to tick). Acceptance is not stored yet, and the legal text is a draft the owner has to write.
 - **Email** is transactional only (verification and reset): plain, in the person's language, with no tracking and no remote images. Marketing email needs explicit consent and does not exist.
 - **Every mutation is audited** with the names of the fields it changed, never their values. Another user's data is reported as not found.
 

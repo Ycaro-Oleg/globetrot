@@ -530,3 +530,34 @@
   margin: 0;
   font-weight: 600;
 }
+
+.start {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0 0 16px;
+  padding: 18px;
+  border: 1px solid #bfdbfe;
+  border-radius: 18px;
+  background: #eff6ff;
+}
+
+.start h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  line-height: 1.2;
+}
+
+.start p {
+  margin: 0;
+  color: #334155;
+  line-height: 1.5;
+}
+
+.startActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
+}

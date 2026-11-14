@@ -44,9 +44,9 @@ export default async function EmailVerifiedPage({
         <Banner tone="success" role="status">
           {t('body')}
         </Banner>
-        <p className={styles.links}>
-          <Link href="/app">{t('continue')}</Link>
-        </p>
+        <Link href="/app" className={styles.ctaLink}>
+          {t('continue')} <span aria-hidden="true">→</span>
+        </Link>
       </>
     );
   }

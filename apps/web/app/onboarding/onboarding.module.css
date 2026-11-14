@@ -269,6 +269,44 @@
   cursor: pointer;
 }
 
+.picks {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.picks > span {
+  color: #475569;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.picks ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.picks button {
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid #cbd2da;
+  border-radius: 99px;
+  background: #fff;
+  color: #1e293b;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.picks button:hover {
+  border-color: #2563eb;
+}
+
 .choices {
   margin: 0;
   padding: 0;
@@ -466,7 +504,8 @@
 
 .panel a:focus-visible,
 .panel button:focus-visible,
-.panel input:focus-visible {
+.panel input:focus-visible,
+.picks button:focus-visible {
   outline: 3px solid #2563eb;
   outline-offset: 2px;
 }

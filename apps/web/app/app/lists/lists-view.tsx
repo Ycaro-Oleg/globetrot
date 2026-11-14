@@ -269,7 +269,7 @@ function Lists({
                     value={draft}
                     maxLength={120}
                     autoComplete="off"
-                    placeholder={t('addPlaceholder')}
+                    placeholder={t(`placeholders.${group}`)}
                     aria-label={t('addLabel', { group: name })}
                     onChange={(event) =>
                       setDrafts((current) => ({ ...current, [group]: event.target.value }))

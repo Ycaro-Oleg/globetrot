@@ -111,7 +111,7 @@ describe('the board against a real database', () => {
     expect(bad.response.status).toBe(422);
   });
 
-  it('searches places through the port, needs a session, and answers 503 when the provider is down', async () => {
+  it('searches places through the port, needs a session, and falls back to popular cities when the provider is down', async () => {
     let down = false;
     const geocoding: GeocodingPort = {
       search: async () => (down ? null : [KYOTO]),
@@ -127,9 +127,15 @@ describe('the board against a real database', () => {
     expect((await call(ana.cookie, 'GET', '/v1/places/search?query=k')).response.status).toBe(422);
     expect((await call(null, 'GET', '/v1/places/search?query=kyoto')).response.status).toBe(401);
     down = true;
-    expect((await call(ana.cookie, 'GET', '/v1/places/search?query=kyoto')).response.status).toBe(
-      503,
-    );
+    // With the provider down, popular cities still answer from the built-in list; anything else is a 503.
+    const fallback = await call(ana.cookie, 'GET', '/v1/places/search?query=kyoto&language=pt-BR');
+    expect(fallback.response.status).toBe(200);
+    expect(fallback.json).toMatchObject({
+      places: [{ key: 'gt:kyoto', name: 'Quioto', countryCode: 'JP', attribution: 'Globetrot' }],
+    });
+    expect(
+      (await call(ana.cookie, 'GET', '/v1/places/search?query=Shirakawa-go')).response.status,
+    ).toBe(503);
   });
 
   it('stores spots, todos and visited, stamps one visa per country and lists only the caller’s visas', async () => {
