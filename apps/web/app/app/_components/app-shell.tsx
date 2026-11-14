@@ -4,7 +4,9 @@ import type { ReactNode } from 'react';
 import type { TripView } from '../../../lib/trips';
 import { SITE_NAME } from '../../site';
 import { DEFAULT_PIP_LOOK, type PipLook } from '@globetrot/domain';
+import type { BillingView } from '../../../lib/billing';
 import { AccountMenu } from './account-menu';
+import { PlanBanner } from './plan-banner';
 import { PipLookProvider } from './pip-look';
 import { BottomBar, GlobalNav, TripTabs } from './nav-links';
 import { TripSwitcher } from './trip-switcher';
@@ -22,6 +24,7 @@ export function AppShell({
   activeTripId = null,
   pipLook = null,
   pipName = null,
+  billing = null,
   children,
 }: {
   userName: string;
@@ -31,6 +34,8 @@ export function AppShell({
   /** The person's own Pip; the default look until they dress it. */
   pipLook?: PipLook | null;
   pipName?: string | null;
+  /** The plan facts for the free-week line; null shows nothing. */
+  billing?: BillingView | null;
   children: ReactNode;
 }) {
   const t = useTranslations('shell');
@@ -55,6 +60,7 @@ export function AppShell({
             <AccountMenu name={userName} />
           </header>
           <TripTabs variant="row" />
+          <PlanBanner billing={billing} />
         </div>
 
         <main id="main" tabIndex={-1} className={styles.main}>

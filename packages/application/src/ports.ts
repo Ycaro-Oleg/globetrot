@@ -4,6 +4,7 @@ import type {
   ReportReason,
   MotionChoice,
   ThemeChoice,
+  SubscriptionState,
   TripStatus,
   TripVisibility,
   UnitSystem,
@@ -700,6 +701,57 @@ export interface IdempotencyStore {
   complete(ownerId: string, key: string, response: unknown): Promise<void>;
 }
 
+// --- Billing (ADR-0019) --------------------------------------------------------------------------------
+
+export interface BillingAccount {
+  /** When the account was created: the trial runs from here. */
+  readonly signedUpAt: Date;
+  readonly subscription: SubscriptionState | null;
+  /** Bought credits left (the ledger's sum). */
+  readonly topUpBalance: number;
+}
+
+export interface SubscriptionRecord extends SubscriptionState {
+  readonly providerCustomerId: string | null;
+  readonly providerSubscriptionId: string | null;
+}
+
+export interface BillingReader {
+  findAccount(userId: string): Promise<BillingAccount | null>;
+  /** The account a provider subscription belongs to, for webhooks. */
+  findUserByProviderSubscription(providerSubscriptionId: string): Promise<string | null>;
+  /** The provider's customer id for the account, once it has paid for anything. */
+  findProviderCustomer(userId: string): Promise<string | null>;
+}
+
+export interface BillingWriter extends BillingReader {
+  /** Adds a ledger line; false (and nothing added) when `ref` was already used. */
+  addCredits(row: {
+    readonly id: string;
+    readonly userId: string;
+    readonly delta: number;
+    readonly reason: 'top-up' | 'pip' | 'grant';
+    readonly ref: string | null;
+    readonly createdAt: Date;
+  }): Promise<boolean>;
+  saveSubscription(userId: string, record: SubscriptionRecord, updatedAt: Date): Promise<void>;
+}
+
+export type CheckoutItem = 'explorer' | 'voyager' | 'top-up';
+
+/** The payment provider (Stripe, ADR-0019). `null` from a method means payments are not configured. */
+export interface PaymentsPort {
+  /** A hosted checkout page for a plan or a credit top-up; the caller sends the person there. */
+  checkoutUrl(input: {
+    readonly userId: string;
+    readonly email: string;
+    readonly item: CheckoutItem;
+    readonly interval: 'month' | 'year';
+  }): Promise<string | null>;
+  /** The provider's page to change the card, switch or cancel the plan. */
+  portalUrl(input: { readonly providerCustomerId: string }): Promise<string | null>;
+}
+
 // --- Transactions, time and ids ------------------------------------------------------------------------
 
 /** What a mutation may touch. Everything in one `UnitOfWork.run` commits or rolls back together. */
@@ -716,6 +768,7 @@ export interface Transaction {
   readonly media: MediaWriter;
   readonly account: AccountWriter;
   readonly assistant: AssistantWriter;
+  readonly billing: BillingWriter;
   readonly audit: AuditLog;
   readonly idempotency: IdempotencyStore;
 }
@@ -749,6 +802,8 @@ export interface Ports {
   readonly storage: StoragePort;
   readonly account: AccountReader;
   readonly assistant: AssistantReader;
+  readonly billing: BillingReader;
+  readonly payments: PaymentsPort;
   readonly ai: AiPort;
   readonly unitOfWork: UnitOfWork;
   readonly clock: Clock;

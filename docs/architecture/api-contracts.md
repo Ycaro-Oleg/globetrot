@@ -40,6 +40,9 @@ Every error response, including 404 for an unknown route and 500, is RFC 9457 pr
 | `code` | Status | Meaning |
 |---|---|---|
 | `UNAUTHENTICATED` | 401 | No valid session |
+| `PLAN_REQUIRED` | 402 | The trial is over and there is no plan: the account is read-only ([ADR-0019](adr/0019-plans-trial-and-pip-credits.md)) |
+| `TRIP_LIMIT_REACHED` | 402 | The plan's active trips are all used |
+| `OUT_OF_CREDITS` | 402 | Pip credits for the period, and bought ones, are spent |
 | `FORBIDDEN` | 403 | Known actor lacking a permission |
 | `INVALID_ORIGIN` | 403 | Untrusted `Origin` on a state-changing request |
 | `IDEMPOTENCY_KEY_REUSED` | 409 | An `Idempotency-Key` was already used with a different request |
@@ -67,6 +70,9 @@ Today:
 | `getCurrentUser` | `GET /v1/me` | `{ id, email, name, emailVerified }` of the caller and nothing else |
 | `listAuthProviders` | `GET /v1/auth/providers` | **Public** (before sign-in). The social providers that are configured, so a screen never offers a button that cannot work. Empty until Google is set up (#55) |
 | `getPreferences` | `GET /v1/me/preferences` | The caller's settings. A user who saved nothing gets `en`, `USD`, no country, nationality or time zone, `metric`, theme `system`, motion `full` |
+| `getBilling` | `GET /v1/me/billing` | The trial or plan (`access`: `trial`, `explorer`, `voyager`, `expired`), `readOnly`, trial end and days left, renewal, active trips and their limit, and Pip credits (`monthly`, `monthlyLeft`, `topUpLeft`, `total`, `periodEnd`, `dailyCap`) ([ADR-0019](adr/0019-plans-trial-and-pip-credits.md)) |
+| `startCheckout` | `POST /v1/me/billing/checkout` | `item` (`explorer`, `voyager`, `top-up`), `interval` (`month`, `year`). The payment provider's checkout URL. Open when read-only. `503` while payments are off |
+| `openBillingPortal` | `POST /v1/me/billing/portal` | The provider's page to change the card, switch or cancel. `404` before the first payment, `503` while payments are off |
 | `updatePreferences` | `PATCH /v1/me/preferences` | Only the fields sent change, and none affects another. `null` clears `homeCountry`, `nationality` or `timeZone`; `locale`, `currency`, `units`, `theme` and `motion` cannot be cleared. At least one field. Audited (`preferences.update`, field names only). Also `homeCity` (1 to 120 characters, `null` clears it) `pipOptIn` (boolean), `pipLook` (`{hat, outfit, bag, bagColor}`, each from its closed list, all four together) and `pipName` (1 to 16 characters after trimming, `null` brings back "Pip") |
 | `listTrips` | `GET /v1/trips[?includeArchived=true]` | The caller's trips, newest first, at most 200 (no pagination yet). Archived ones only on request |
 | `createTrip` | `POST /v1/trips` | `201`. Private and active, USD unless a currency is given. Honours `Idempotency-Key` |
@@ -76,7 +82,7 @@ Today:
 | `listDestinations` | `GET /v1/trips/{id}/destinations` | The trip's route in order. A trip that is missing or someone else's is the same `404` |
 | `replaceDestinations` | `PUT /v1/trips/{id}/destinations` | Replaces the whole route with the list sent (at most 100 stops; an empty list clears it). The server assigns positions and ids; a stop keeps its id across saves (matched by `placeKey`). Atomic and audited (`destination.replace`, the count only). Each stop may carry `note` and `legMode` (the leg to the next stop; dropped on the last one), `visited`, and its own `spots` (`{ name, latitude?, longitude?, done }`, at most 30), `todos` (`{ text, done }`, at most 30) and `photos` (`{ mediaId, alt }` of the caller's uploads, at most 12). The answer adds `stampedVisas`: the commemorative visas this change stamped (the first visited stop per country, once per person), audited as `visa.stamp` with the count only |
 | `listVisas` | `GET /v1/visas` | The caller's commemorative visas (`countryCode`, `city`, `stampedAt`), newest first. Decorative, never an official document |
-| `askPip` | `POST /v1/trips/{id}/pip/proposals` | `request` (1–500). Sends the trip's plan to the AI provider and answers a stored proposal (`summary`, `changes`, `currency`, `status: proposed`). `429` after 20 a day, `503` when Pip is not configured or the model did not answer ([ADR-0016](adr/0016-pip-on-deepseek.md)) |
+| `askPip` | `POST /v1/trips/{id}/pip/proposals` | `request` (1–500). Sends the trip's plan to the AI provider and answers a stored proposal (`summary`, `changes`, `currency`, `status: proposed`). `402 OUT_OF_CREDITS` when the period's and bought credits are spent, `429` after 40 a day, `503` when Pip is not configured or the model did not answer ([ADR-0016](adr/0016-pip-on-deepseek.md)) |
 | `listProposals` | `GET /v1/trips/{id}/pip/proposals` | The trip's last ten proposals, newest first, each with `undoable` |
 | `applyProposal` / `discardProposal` / `undoProposal` | `POST /v1/pip/proposals/{proposalId}/apply` (`include`: indexes), `…/discard`, `…/undo` | Apply in one transaction; undo within 24 hours. `422 already_decided` / `not_undoable`; another person's proposal is `404` |
 | `uploadMedia` | `POST /v1/media` | The raw bytes of a JPEG, PNG or WebP as the body (8 MB, 8192 px). The type is read from the bytes; metadata is removed before storing. Answers `{ id, contentType, width, height }`. `413` over 8 MB, `422 unsupported_image`, `429` after 100 a day |

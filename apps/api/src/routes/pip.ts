@@ -36,6 +36,9 @@ const askRoute = createRoute({
   responses: {
     201: proposal,
     401: problemResponse('No valid session.'),
+    402: problemResponse(
+      'Pip credits are used up (`OUT_OF_CREDITS`) or the trial is over (`PLAN_REQUIRED`).',
+    ),
     404: notFound,
     422: problemResponse('The request is empty or too long.'),
     429: problemResponse('Too many requests to Pip today.'),

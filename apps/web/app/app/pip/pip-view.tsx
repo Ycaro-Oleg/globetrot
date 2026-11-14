@@ -27,12 +27,15 @@ export function PipView({
   stops,
   initial,
   idea = null,
+  credits = null,
 }: {
   trip: { id: string; title: string; currency: string } | null;
   stops: readonly { id: string; name: string }[];
   initial: readonly ProposalData[];
   /** An idea that fits the screen the person came from, written into the box (not sent). */
   idea?: (typeof SUGGESTIONS)[number] | null;
+  /** Pip credits left (monthly plus bought), or null when unknown. */
+  credits?: number | null;
 }) {
   const t = useTranslations('pipPage');
   const locale = useLocale();
@@ -47,6 +50,8 @@ export function PipView({
   );
   const [step, setStep] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [planNeeded, setPlanNeeded] = useState(false);
+  const [left, setLeft] = useState(credits);
   const [status, setStatus] = useState('');
   const [pending, startTransition] = useTransition();
   const stepTimer = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -88,6 +93,7 @@ export function PipView({
     event?.preventDefault();
     if (!text.trim() || !trip) return;
     setError(null);
+    setPlanNeeded(false);
     setStatus(t('steps.read'));
     setStep(0);
     if (stepTimer.current) clearInterval(stepTimer.current);
@@ -97,8 +103,11 @@ export function PipView({
       if (stepTimer.current) clearInterval(stepTimer.current);
       if ('error' in result) {
         setStatus('');
+        setPlanNeeded(result.error === 'OUT_OF_CREDITS' || result.error === 'PLAN_REQUIRED');
+        if (result.error === 'OUT_OF_CREDITS') setLeft(0);
         return setError(t(`errors.${result.error}`));
       }
+      setLeft((value) => (value === null ? null : Math.max(0, value - 1)));
       remember(result);
       setCurrent(result);
       setPicked(new Set(result.changes.map((_, index) => index)));
@@ -191,7 +200,17 @@ export function PipView({
           ))}
         </div>
         <div className={styles.row}>
-          <p className={styles.note}>{t('privacy')}</p>
+          <p className={styles.note}>
+            {t('privacy')}
+            {left !== null ? (
+              <>
+                {' '}
+                <Link href="/app/plan" className={styles.credits}>
+                  {t('creditsLeft', { count: left })}
+                </Link>
+              </>
+            ) : null}
+          </p>
           <button type="submit" className={styles.cta} disabled={pending || !request.trim()}>
             {pending ? t('asking') : t('ask')}
           </button>
@@ -204,6 +223,12 @@ export function PipView({
       {error ? (
         <p className={styles.error} role="alert">
           {error}
+          {planNeeded ? (
+            <>
+              {' '}
+              <Link href="/app/plan">{t('seePlans')}</Link>
+            </>
+          ) : null}
         </p>
       ) : null}
 

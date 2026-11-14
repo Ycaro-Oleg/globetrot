@@ -2,6 +2,7 @@ import {
   createApplication,
   type EmailPort,
   type AiPort,
+  type PaymentsPort,
   type GeocodingPort,
   type StoragePort,
   type UserReader,
@@ -9,6 +10,7 @@ import {
 import {
   createAccountRepository,
   createAssistantRepository,
+  createBillingRepository,
   createCommunityRepository,
   createDestinationRepository,
   createMediaRepository,
@@ -75,6 +77,7 @@ export function createServices(
     readonly geocoding?: GeocodingPort;
     readonly storage?: StoragePort;
     readonly ai?: AiPort;
+    readonly payments?: PaymentsPort;
   } = {},
 ) {
   const email = overrides.email ?? createSmtpEmail(config.email);
@@ -95,6 +98,12 @@ export function createServices(
       media: createMediaRepository(db),
       account: createAccountRepository(db),
       assistant: createAssistantRepository(db),
+      billing: createBillingRepository(db),
+      // Stripe plugs in here once its keys are set (ADR-0019); until then checkout answers 503.
+      payments: overrides.payments ?? {
+        checkoutUrl: async () => null,
+        portalUrl: async () => null,
+      },
       ai: overrides.ai ?? createDeepSeekAi(config.ai),
       storage: overrides.storage ?? createS3Storage(config.storage),
       unitOfWork: createUnitOfWork(db),

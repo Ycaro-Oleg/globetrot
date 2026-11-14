@@ -21,6 +21,7 @@ export const PROBLEM_CONTENT_TYPE = 'application/problem+json';
 const TITLES: Readonly<Record<number, string>> = {
   400: 'Bad request',
   401: 'Authentication required',
+  402: 'Plan required',
   403: 'Forbidden',
   404: 'Not found',
   409: 'Conflict',
@@ -33,7 +34,7 @@ const TITLES: Readonly<Record<number, string>> = {
 
 /** Builds a problem+json response. Never pass stack traces, SQL, tokens or other users' data in `detail`. */
 export function problem(
-  status: 400 | 401 | 403 | 404 | 409 | 413 | 422 | 429 | 500 | 503,
+  status: 400 | 401 | 402 | 403 | 404 | 409 | 413 | 422 | 429 | 500 | 503,
   code: string,
   extra: { detail?: string; errors?: readonly FieldIssue[] } = {},
 ): Response {
@@ -51,8 +52,11 @@ export function problem(
   });
 }
 
-const STATUS_BY_CODE: Readonly<Record<string, 401 | 403 | 404 | 409 | 422 | 429 | 503>> = {
+const STATUS_BY_CODE: Readonly<Record<string, 401 | 402 | 403 | 404 | 409 | 422 | 429 | 503>> = {
   UNAUTHENTICATED: 401,
+  PLAN_REQUIRED: 402,
+  TRIP_LIMIT_REACHED: 402,
+  OUT_OF_CREDITS: 402,
   FORBIDDEN: 403,
   NOT_FOUND: 404,
   IDEMPOTENCY_KEY_REUSED: 409,

@@ -4,7 +4,8 @@ import {
   fromDecimal,
   MoneyError,
   PIP_CHANGES_MAX,
-  PIP_REQUESTS_PER_DAY,
+  PIP_DAILY_CAP,
+  creditBalance,
   PROPOSAL_STATUSES,
   type ProposalStatus,
 } from '@globetrot/domain';
@@ -13,7 +14,14 @@ import type { Actor } from '../actor';
 import { budgetOf } from '../budget/operations';
 import { CHECKLIST_MAX_ITEMS } from '../checklists/schemas';
 import { DAY_PLACES_MAX } from '../days/schemas';
-import { NotFoundError, RateLimitedError, UnavailableError, ValidationError } from '../errors';
+import { loadRights } from '../billing/rules';
+import {
+  NotFoundError,
+  PlanLimitError,
+  RateLimitedError,
+  UnavailableError,
+  ValidationError,
+} from '../errors';
 import { defineOperation } from '../operation';
 import type {
   DestinationRecord,
@@ -226,6 +234,7 @@ export function createAskPip(
     | 'savings'
     | 'preferences'
     | 'assistant'
+    | 'billing'
   >,
 ) {
   return defineOperation({
@@ -240,8 +249,17 @@ export function createAskPip(
         actor.userId,
         new Date(now.getTime() - DAY_MS),
       );
-      if (used >= PIP_REQUESTS_PER_DAY)
-        throw new RateLimitedError('Pip needs a rest: try tomorrow');
+      if (used >= PIP_DAILY_CAP) throw new RateLimitedError('Pip needs a rest: try tomorrow');
+      // One credit per answered request: monthly (or trial) credits first, then bought ones.
+      const { account, rights } = await loadRights(deps.billing, actor, now);
+      const balance = creditBalance({
+        entitlements: rights,
+        usedInPeriod: await deps.assistant.countRequestsSince(actor.userId, rights.periodStart),
+        topUpBalance: account.topUpBalance,
+      });
+      if (balance.next === null) {
+        throw new PlanLimitError('OUT_OF_CREDITS', 'Pip credits are used up for this period');
+      }
       const locale = (await deps.preferences.find(actor.userId))?.locale ?? 'en';
       const { context, refs } = await contextFor(deps, trip, now);
       const answer = await deps.ai.completeJson({
@@ -260,6 +278,16 @@ export function createAskPip(
       const summary = typeof parsed.summary === 'string' ? parsed.summary.trim().slice(0, 300) : '';
       const id = deps.ids.newId();
       return deps.unitOfWork.run(async (tx) => {
+        if (balance.next === 'top-up') {
+          await tx.billing.addCredits({
+            id: deps.ids.newId(),
+            userId: actor.userId,
+            delta: -1,
+            reason: 'pip',
+            ref: null,
+            createdAt: now,
+          });
+        }
         await tx.assistant.recordUsage({
           id: deps.ids.newId(),
           userId: actor.userId,

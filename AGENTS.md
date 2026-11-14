@@ -17,7 +17,7 @@ Vision: [`docs/product/vision.md`](docs/product/vision.md) · MVP scope: [`docs/
 4. **Map actions always have a non-map path**: list, search or form. Every drag-and-drop has a keyboard alternative.
 5. **Accessibility target: WCAG 2.2 AA** in light and dark themes. Never encode status by colour alone.
 6. **Honesty.** Estimates are labelled as estimates. The passport is decorative, never an official document. A visit is never shown as "verified" without a real mechanism.
-7. **Pricing is mocked** until approved. No real Stripe charges, and no production deployment before the Production Readiness milestone.
+7. **Pricing is approved** ([ADR-0019](docs/architecture/adr/0019-plans-trial-and-pip-credits.md)): a 7-day trial, Explorer and Voyager, Pip credits. Prices come from `PLAN_TERMS` in the domain, never from components. No real Stripe charges until the owner switches on live keys.
 8. **Security basics.** The actor comes only from the verified session, never from a request field. Another user's data is answered as "not found". Secrets, tokens, passwords and personal data never go into logs, audit events, tests, docs or handoffs. See [`docs/product/business-rules.md`](docs/product/business-rules.md#accounts-and-sign-in) and [ADR-0011](docs/architecture/adr/0011-idempotency-audit-and-units-of-work.md).
 
 Full rules: [`docs/product/business-rules.md`](docs/product/business-rules.md)
@@ -109,7 +109,7 @@ Account screens and `proxy.ts` also need `pnpm turbo run build --filter=@globetr
 - Commit secrets, credentials, private keys, `.env` files or real user data, including in docs and handoffs.
 - Use the public Nominatim API or public OSM tile servers in the product.
 - Hardcode prices, currencies or user-facing copy in components.
-- Mark mock pricing as a real offer, or activate Stripe live mode.
+- Activate Stripe live mode, or change prices without the owner.
 - Rewrite history on shared branches (`main`, `develop`).
 
 ## 11. Language policy

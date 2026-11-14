@@ -4,7 +4,7 @@ import { formatMoney, money } from '@globetrot/domain';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import { useState } from 'react';
-import { MOCK_PLANS } from '../lib/plan-config';
+import { monthlyOfAnnual, PLAN_CARDS, TOP_UP } from '../lib/plan-config';
 import styles from './landing.module.css';
 
 type Decision = 'pending' | 'approved' | 'dismissed';
@@ -62,9 +62,10 @@ export function PipDemo() {
   );
 }
 
-/** The mock plans (placeholder prices, never charged) with a monthly / annual switch. */
+/** The free week and the two plans, with a monthly / yearly switch. Everyone starts with the trial. */
 export function Pricing() {
   const t = useTranslations('landing');
+  const p = useTranslations('plans');
   const locale = useLocale();
   const [annual, setAnnual] = useState(false);
   const price = (minor: bigint) =>
@@ -74,25 +75,21 @@ export function Pricing() {
     <>
       <div className={styles.pricingHead}>
         <div className={styles.heading}>
-          <div className={styles.kickerRow}>
-            <span className={styles.kicker}>{t('pricingKicker')}</span>
-            <span className={styles.mockBadge}>{t('mockPrices')}</span>
-          </div>
+          <span className={styles.kicker}>{t('pricingKicker')}</span>
           <h2 id="pricing-title">{t('pricingTitle')}</h2>
         </div>
-        <div className={styles.billing} role="group" aria-label={t('billing')}>
+        <div className={styles.billing} role="group" aria-label={p('billing')}>
           <button type="button" aria-pressed={!annual} onClick={() => setAnnual(false)}>
-            {t('monthly')}
+            {p('monthly')}
           </button>
           <button type="button" aria-pressed={annual} onClick={() => setAnnual(true)}>
-            {t('annual')}
+            {p('annual')}
           </button>
         </div>
       </div>
       <ul className={styles.plans}>
-        {MOCK_PLANS.map((plan) => {
-          const name = t(`plans.${plan.id}.name`);
-          const free = plan.monthlyMinor === 0n;
+        {PLAN_CARDS.map((plan) => {
+          const trial = plan.id === 'trial';
           return (
             <li
               key={plan.id}
@@ -100,33 +97,41 @@ export function Pricing() {
               data-highlighted={plan.highlighted || undefined}
             >
               <div className={styles.planTop}>
-                <h3>{name}</h3>
-                {plan.highlighted ? <span className={styles.popular}>{t('popular')}</span> : null}
+                <h3>{p(`${plan.id}.name`)}</h3>
+                {plan.highlighted ? <span className={styles.popular}>{p('popular')}</span> : null}
               </div>
               <p className={styles.planPrice}>
-                <strong>{price(annual ? plan.annualMinor : plan.monthlyMinor)}</strong>
-                <span>{annual ? t('perYear') : t('perMonth')}</span>
+                {trial ? (
+                  <strong>{p('trial.price')}</strong>
+                ) : (
+                  <>
+                    <strong>{price(annual ? plan.annualMinor : plan.monthlyMinor)}</strong>
+                    <span>{annual ? p('perYear') : p('perMonth')}</span>
+                  </>
+                )}
               </p>
               <p className={styles.planNote}>
-                {free ? t('freeNote') : annual ? t('annualNote') : t(`plans.${plan.id}.tagline`)}
+                {!trial && annual
+                  ? p('annualNote', { monthly: price(monthlyOfAnnual(plan.annualMinor)) })
+                  : p(`${plan.id}.tagline`)}
               </p>
               <ul className={styles.features}>
                 {(['f1', 'f2', 'f3'] as const).map((feature) => (
                   <li key={feature}>
                     <span aria-hidden="true">✓</span>
-                    {t(`plans.${plan.id}.${feature}`)}
+                    {p(`${plan.id}.${feature}`)}
                   </li>
                 ))}
               </ul>
               <Link href="/signup" className={styles.planCta}>
-                {t('choosePlan', { plan: name })}
+                {p(`${plan.id}.cta`)}
               </Link>
             </li>
           );
         })}
       </ul>
       <p className={styles.placeholderNote}>
-        <strong>{t('pricingPlaceholder')}</strong>
+        {p('topUp', { credits: TOP_UP.credits, price: price(TOP_UP.priceMinor) })} {p('credit')}
       </p>
     </>
   );

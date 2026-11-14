@@ -1,3 +1,4 @@
+import { assertTripRoom } from '../billing/rules';
 import {
   DEFAULT_CURRENCY,
   DEFAULT_TRIP_STATUS,
@@ -106,6 +107,7 @@ export function createCreateTrip(deps: TripDeps) {
           if (start.state === 'replay') return tripSchema.parse(start.response);
         }
 
+        await assertTripRoom(tx, actor, now);
         const trip = await tx.trips.insert({
           id: deps.ids.newId(),
           ownerId: actor.userId,
@@ -156,6 +158,14 @@ export function createUpdateTrip(deps: Pick<Ports, 'unitOfWork' | 'clock' | 'ids
 
       return deps.unitOfWork.run(async (tx) => {
         const current = await loadOwnedTrip(tx.trips, actor, input.id);
+        // Bringing a trip back from the archive takes one of the plan's active trips.
+        if (
+          current.status === 'archived' &&
+          input.status !== undefined &&
+          input.status !== 'archived'
+        ) {
+          await assertTripRoom(tx, actor, now);
+        }
         // Amounts are stored in the trip's currency: changing it under existing costs or savings would silently
         // change what they mean. It can be changed while the trip has no money in it.
         if (input.currency !== undefined && input.currency !== current.currency) {

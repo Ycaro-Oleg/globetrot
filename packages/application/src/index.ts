@@ -3,6 +3,12 @@
  * (ADR-0006). No HTTP, database or UI imports: adapters pass their implementations in through `Ports`.
  */
 import { createGetPreferences, createUpdatePreferences } from './preferences/operations';
+import {
+  createGetBilling,
+  createOpenBillingPortal,
+  createStartCheckout,
+  guardReadOnly,
+} from './billing/operations';
 import type { Ports } from './ports';
 import { createGetCurrentUser } from './queries/get-current-user';
 import {
@@ -17,12 +23,14 @@ export const PACKAGE_NAME = '@globetrot/application' as const;
 
 export type { Actor } from './actor';
 export { assertOwner } from './authorization';
+export { billingSchema } from './billing/operations';
 export { canonicalJson } from './canonical-json';
 export {
   ApplicationError,
   ForbiddenError,
   IdempotencyKeyReusedError,
   NotFoundError,
+  PlanLimitError,
   RateLimitedError,
   UnauthenticatedError,
   UnavailableError,
@@ -107,6 +115,12 @@ export type {
   AccountReader,
   AccountWriter,
   AiPort,
+  BillingAccount,
+  BillingReader,
+  BillingWriter,
+  CheckoutItem,
+  PaymentsPort,
+  SubscriptionRecord,
   AssistantReader,
   AssistantWriter,
   ProposalRecord,
@@ -316,7 +330,7 @@ export {
 
 /** Composition root: every operation, wired to the given ports. */
 export function createApplication(ports: Ports) {
-  return {
+  const operations = {
     getCurrentUser: createGetCurrentUser({ users: ports.users }),
     listTrips: createListTrips(ports),
     getTrip: createGetTrip(ports),
@@ -375,6 +389,13 @@ export function createApplication(ports: Ports) {
     applyProposal: createApplyProposal(ports),
     discardProposal: createDiscardProposal(ports),
     undoProposal: createUndoProposal(ports),
+    getBilling: createGetBilling(ports),
+    startCheckout: createStartCheckout(ports),
+    openBillingPortal: createOpenBillingPortal(ports),
   };
+  // After the trial, without a plan, the account is read-only: every command but a few passes this guard.
+  return Object.fromEntries(
+    Object.entries(operations).map(([name, operation]) => [name, guardReadOnly(operation, ports)]),
+  ) as typeof operations;
 }
 export type Application = ReturnType<typeof createApplication>;

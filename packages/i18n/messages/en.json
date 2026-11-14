@@ -265,8 +265,8 @@
         "p": "Globetrot helps you plan trips: a map, days, a budget with a savings answer, lists, a passport of keepsake visas, an optional AI companion (Pip) and a community. It is offered by [owner: legal name]. Using it means you accept these terms."
       },
       "s2": {
-        "h": "Free, for now",
-        "p": "Planning is free. Prices shown on the home page are placeholders: nothing is sold or charged until paid plans are announced, with their own terms."
+        "h": "Plans and the free trial",
+        "p": "Every account starts with a 7-day free trial with no card. After it, paid plans (Explorer and Voyager) are billed monthly or yearly by our payment provider; you can cancel at any time and keep your plan until the end of the period paid. Without a plan the account becomes read-only: you can still see, export and delete your data. Extra Pip credits never expire. [owner: refund policy and the payment provider’s terms]"
       },
       "s3": {
         "h": "Estimates, not bookings",
@@ -309,7 +309,8 @@
       "globalLabel": "Globetrot",
       "profile": "Profile",
       "profileMenu": "Profile & My Pip",
-      "community": "Community"
+      "community": "Community",
+      "plan": "Plan & credits"
     },
     "account": {
       "menu": "Account menu for {name}",
@@ -331,6 +332,13 @@
       "title": "Something went wrong",
       "description": "This page could not be loaded. Try again, or go back to the home page.",
       "retry": "Try again"
+    },
+    "plan": {
+      "trial": "{days, plural, one {Last day of your free week} other {# days left in your free week}}",
+      "trialCta": "See plans",
+      "expired": "Your free week is over. Your trips are safe: see and export them any time.",
+      "expiredCta": "Choose a plan to keep planning",
+      "label": "Your plan"
     }
   },
   "tripWorkspace": {
@@ -414,35 +422,14 @@
     "deleteBody": "Its stops, costs, savings, lists and day plan go with it. This cannot be undone.",
     "deleteCancel": "Cancel",
     "deleteConfirm": "Delete forever",
-    "deletedMessage": "Trip deleted."
+    "deletedMessage": "Trip deleted.",
+    "tripLimit": "This plan keeps 10 active trips. Archive one, or move to Voyager for unlimited trips.",
+    "planRequired": "Your free week is over: choose a plan to add or change trips.",
+    "seePlans": "See plans"
   },
   "landing": {
     "metaTitle": "Globetrot · Plan the trip you keep dreaming about",
-    "metaDescription": "Pin your route on a world map, see what it costs in your currency, and find out when you can afford it. Free to start, in English and Portuguese.",
-    "plans": {
-      "free": {
-        "name": "Free",
-        "tagline": "Plan one trip at a time.",
-        "f1": "2 active trips",
-        "f2": "Board, days, budget and lists",
-        "f3": "English and Portuguese"
-      },
-      "explorer": {
-        "name": "Explorer",
-        "tagline": "For the trip you are saving for.",
-        "f1": "10 active trips",
-        "f2": "More Pip drafts each month",
-        "f3": "Offline trip pack (coming later)"
-      },
-      "voyager": {
-        "name": "Voyager",
-        "tagline": "For people always planning the next one.",
-        "f1": "Unlimited trips",
-        "f2": "The most Pip drafts",
-        "f3": "Passport extras"
-      }
-    },
-    "pricingPlaceholder": "Placeholder pricing · nothing is charged",
+    "metaDescription": "Pin your route on a world map, see what it costs in your currency, and find out when you can afford it. 7 days free, in English and Portuguese.",
     "mapAttribution": "Map data: Natural Earth · Map lines are illustrative.",
     "trip1Length": "7 DAYS · PORTUGAL",
     "trip1Title": "Seven days in <accent>Portugal</accent>",
@@ -462,9 +449,9 @@
     "kicker": "Map-first trip planner",
     "heroTitle": "Plan the trip on a map. <accent>Know when you can go.</accent>",
     "heroLead": "Pin the places, see the route, add what it costs. Globetrot answers the real question — can you afford it, and when — in any currency.",
-    "heroCta": "Start planning free",
+    "heroCta": "Start your free week",
     "heroCta2": "How it works",
-    "heroNote": "Free to start. No card. Estimates, never live quotes.",
+    "heroNote": "7 days free. No card. Estimates, never live quotes.",
     "howKicker": "How it works",
     "howTitle": "Three steps from a dream to a date.",
     "step1Title": "Pin the map",
@@ -498,17 +485,7 @@
     "examplesTitle": "Copy a trip, then make it yours.",
     "examplesUse": "Copy this trip",
     "pricingKicker": "Pricing",
-    "pricingTitle": "Start free. Upgrade when the trip gets real.",
-    "mockPrices": "placeholder prices",
-    "billing": "Billing period",
-    "monthly": "Monthly",
-    "annual": "Annual",
-    "perMonth": "/ month",
-    "perYear": "/ year",
-    "annualNote": "Two months free, billed yearly.",
-    "popular": "For one big trip",
-    "freeNote": "Free forever.",
-    "choosePlan": "Start with {plan}",
+    "pricingTitle": "Try everything free for a week. Then pick your plan.",
     "faqTitle": "Questions",
     "faq1Q": "Does Globetrot hold or move my money?",
     "faq1A": "No. Savings are a record you keep. Globetrot never holds funds and never charges for a trip.",
@@ -522,10 +499,10 @@
     "footTerms": "Terms",
     "footPrivacy": "Privacy",
     "metaHeadline": "Plan the trip on a map. Know when you can go.",
-    "navStart": "Start free",
+    "navStart": "Try free",
     "factsLabel": "What you get",
-    "fact1Title": "Free to start",
-    "fact1Body": "No card, nothing charged.",
+    "fact1Title": "7 days free",
+    "fact1Body": "No card to start.",
     "fact2Title": "Any currency",
     "fact2Body": "USD by default, never guessed.",
     "fact3Title": "English and Português",
@@ -537,9 +514,9 @@
     "closeTitle": "Your next trip has a date. Find it.",
     "closeBody": "Pin the route, add what it costs, and see the month you can go. It takes a few minutes.",
     "closeLogin": "I already have an account",
-    "stickyNote": "Free · no card",
-    "faq5Q": "Is it really free?",
-    "faq5A": "Yes. Planning trips is free and needs no card. Paid plans are not on sale yet: the prices on this page are placeholders and nothing is charged.",
+    "stickyNote": "7 days free · no card",
+    "faq5Q": "How much does it cost?",
+    "faq5A": "The first 7 days are free with everything included and no card. Then Explorer is US$4.99 a month (US$39.99 a year) and Voyager US$9.99 a month (US$79.99 a year). If you don’t choose a plan, your trips stay yours to see and export.",
     "faq6Q": "Are my trips private?",
     "faq6A": "Yes. Trips are private by default and nobody else can open them. In Settings you can download all your data or delete your account at any time.",
     "faq7Q": "Does it work on my phone, in my currency?",
@@ -1357,14 +1334,18 @@
     "errors": {
       "RATE_LIMITED": "Pip needs a rest: you asked a lot today. Try again tomorrow.",
       "SERVICE_UNAVAILABLE": "Pip is not available right now. Everything works without Pip; try again later.",
-      "UNKNOWN": "That did not work. Try again."
+      "UNKNOWN": "That did not work. Try again.",
+      "OUT_OF_CREDITS": "Your Pip credits are used up for now. Every tool still works without Pip.",
+      "PLAN_REQUIRED": "Your free week is over. Choose a plan to keep planning with Pip."
     },
     "askFrom": {
       "board": "Ask Pip about the route",
       "days": "Ask Pip for places",
       "budget": "Ask Pip to estimate",
       "lists": "Ask Pip what to pack"
-    }
+    },
+    "creditsLeft": "{count, plural, one {# Pip credit left} other {# Pip credits left}}",
+    "seePlans": "See plans"
   },
   "tripHub": {
     "metaTitle": "Trip",
@@ -1478,5 +1459,66 @@
     "errorTitle": "Something went wrong",
     "errorBody": "It was not your fault. Try again, or go back to the home page.",
     "retry": "Try again"
+  },
+  "plans": {
+    "billing": "Billing period",
+    "monthly": "Monthly",
+    "annual": "Yearly",
+    "perMonth": "/ month",
+    "perYear": "/ year",
+    "annualNote": "{monthly} a month, billed yearly. Save 33%.",
+    "popular": "For one big trip",
+    "trial": {
+      "name": "Free trial",
+      "price": "7 days free",
+      "tagline": "Everything included. No card.",
+      "f1": "Map, days, budget and lists",
+      "f2": "15 Pip credits",
+      "f3": "Up to 10 active trips",
+      "cta": "Start your free week"
+    },
+    "explorer": {
+      "name": "Explorer",
+      "tagline": "For the trip you are saving for.",
+      "f1": "10 active trips",
+      "f2": "100 Pip credits a month",
+      "f3": "Everything in the trial",
+      "cta": "Start free, then Explorer"
+    },
+    "voyager": {
+      "name": "Voyager",
+      "tagline": "For people always planning the next one.",
+      "f1": "Unlimited trips",
+      "f2": "400 Pip credits a month",
+      "f3": "Everything in Explorer",
+      "cta": "Start free, then Voyager"
+    },
+    "topUp": "Need more Pip? {credits, number} extra credits for {price}, and they never expire.",
+    "credit": "1 credit = 1 Pip request. Pip is optional: every tool works without it.",
+    "after": "After the free week, your trips stay yours to see and export. Choose a plan to keep planning."
+  },
+  "planPage": {
+    "title": "Plan & credits",
+    "trialTitle": "{days, plural, =0 {Your free week ends today} one {# day left in your free week} other {# days left in your free week}}",
+    "trialBody": "Everything is included until {date}. Pick a plan now and keep planning without a break.",
+    "expiredTitle": "Your free week is over",
+    "expiredBody": "Your trips, budget and lists are all still here. You can see, export or delete them; choose a plan to change them again.",
+    "paidTitle": "You are on {plan}",
+    "renews": "Renews on {date}.",
+    "ends": "Ends on {date}.",
+    "pastDue": "The last payment did not go through. Update it to keep your plan.",
+    "creditsTitle": "Pip credits",
+    "creditsMeter": "{left, number} of {total, number} left this period",
+    "creditsReset": "More credits on {date}.",
+    "topUpLeft": "{count, plural, one {# extra credit} other {# extra credits}} that never expire",
+    "trips": "{max, select, none {{count, number} active trips (no limit)} other {{count, number} of {max} active trips}}",
+    "choose": "Choose {plan}",
+    "current": "Your plan",
+    "checkoutSoon": "Payments are being switched on. Your free week keeps running, and nothing is charged yet.",
+    "manage": "Manage payment",
+    "perMonthShort": "{price}/month",
+    "tripsTitle": "Active trips",
+    "choosePlans": "Choose your plan",
+    "failed": "That did not work. Try again in a moment."
   }
 }

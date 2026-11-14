@@ -1,46 +1,32 @@
-/**
- * Mock plans for the landing page (docs/integrations/stripe.md, "Landing pricing"). Placeholder data until the owner
- * approves pricing (M10): nothing here is charged, and components read prices only from this module. Amounts are
- * minor units in USD, the default currency.
- */
-export const PLAN_IDS = ['free', 'explorer', 'voyager'] as const;
-export type PlanId = (typeof PLAN_IDS)[number];
+import { PLAN_TERMS, TOP_UP, TRIAL_TERMS, type PaidPlan } from '@globetrot/domain';
 
-export interface PlanConfig {
-  readonly id: PlanId;
+/**
+ * The plans as the pages show them (ADR-0019). Prices and credits come from the domain (`PLAN_TERMS`), never
+ * from components; names, taglines and features are in the `plans` catalog. Amounts are USD minor units.
+ */
+export type PlanCardId = 'trial' | PaidPlan;
+
+export interface PlanCard {
+  readonly id: PlanCardId;
   readonly monthlyMinor: bigint;
-  /** A year paid at once: two months free. Placeholder like the rest. */
   readonly annualMinor: bigint;
-  readonly currency: 'USD';
-  /** Shown as the suggested plan. */
+  readonly credits: number;
   readonly highlighted: boolean;
-  /** Always true until pricing is approved: the page must say these are placeholders. */
-  readonly placeholder: true;
 }
 
-export const MOCK_PLANS: readonly PlanConfig[] = [
+export const PLAN_CARDS: readonly PlanCard[] = [
   {
-    id: 'free',
+    id: 'trial',
     monthlyMinor: 0n,
     annualMinor: 0n,
-    currency: 'USD',
+    credits: TRIAL_TERMS.credits,
     highlighted: false,
-    placeholder: true,
   },
-  {
-    id: 'explorer',
-    monthlyMinor: 499n,
-    annualMinor: 4990n,
-    currency: 'USD',
-    highlighted: true,
-    placeholder: true,
-  },
-  {
-    id: 'voyager',
-    monthlyMinor: 999n,
-    annualMinor: 9990n,
-    currency: 'USD',
-    highlighted: false,
-    placeholder: true,
-  },
+  { id: 'explorer', ...PLAN_TERMS.explorer, highlighted: true },
+  { id: 'voyager', ...PLAN_TERMS.voyager, highlighted: false },
 ];
+
+export { TOP_UP };
+
+/** A yearly price as a monthly one, rounded down to the cent. */
+export const monthlyOfAnnual = (annualMinor: bigint) => annualMinor / 12n;

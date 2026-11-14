@@ -319,3 +319,9 @@
   outline: var(--gt-component-focus-width) solid var(--gt-semantic-color-focus);
   outline-offset: 2px;
 }
+
+.credits {
+  color: #1d4ed8;
+  font-weight: 700;
+  white-space: nowrap;
+}

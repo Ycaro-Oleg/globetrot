@@ -1,3 +1,4 @@
+import { assertTripRoom } from '../billing/rules';
 import {
   canSeePost,
   COMMENTS_PER_DAY,
@@ -796,6 +797,7 @@ export function createCopyRoute(deps: Writes) {
         const post = await loadVisiblePost(tx.community, actor.userId, input.postId);
         if (post.attachment?.kind !== 'route') throw new NotFoundError();
         const route = post.attachment;
+        await assertTripRoom(tx, actor, now);
         const trip = await tx.trips.insert({
           id: deps.ids.newId(),
           ownerId: actor.userId,

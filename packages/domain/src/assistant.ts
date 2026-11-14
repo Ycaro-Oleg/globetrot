@@ -22,8 +22,6 @@ export type ProposalStatus = (typeof PROPOSAL_STATUSES)[number];
 export const PIP_REQUEST_MAX = 500;
 /** Most changes one proposal may carry. */
 export const PIP_CHANGES_MAX = 12;
-/** Requests one person may make in a rolling day (until plans set their own). */
-export const PIP_REQUESTS_PER_DAY = 20;
 /** How long after applying a proposal it can be undone. */
 export const PIP_UNDO_HOURS = 24;
 

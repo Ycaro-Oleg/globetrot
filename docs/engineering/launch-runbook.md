@@ -15,7 +15,7 @@ Nothing below can be done by an agent; each blocks the public launch.
 | Pip | A new DeepSeek key (rotate the one shared in chat) as a Coolify secret; decide whether `FEATURE_PIP=true` at launch |
 | Measurement | A Plausible site and, for ads, a Meta Pixel ID ([ADR-0018](../architecture/adr/0018-launch-measurement-and-consent.md)) |
 | Legal | Fill the `[bracketed]` facts in the Terms and Privacy drafts (`legal.*` in the catalogs) and have them reviewed; then drop the draft banner |
-| Pricing on the landing | Keep the placeholder plans (labelled, nothing charged) or hide them for the launch |
+| Payments | Stripe account (Brazil), test keys first; the Price IDs for Explorer and Voyager (monthly and yearly) and the top-up; live keys only when ready to charge ([ADR-0019](../architecture/adr/0019-plans-trial-and-pip-credits.md)) |
 
 ## 2. Services in Coolify
 

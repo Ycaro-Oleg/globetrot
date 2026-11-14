@@ -24,11 +24,15 @@ async function apiClient(timeoutMs?: number) {
 }
 
 /** The API's problem code on failure, so the screen can say the right thing. */
-export type PipFailure = { error: 'RATE_LIMITED' | 'SERVICE_UNAVAILABLE' | 'UNKNOWN' };
+export type PipFailure = {
+  error: 'RATE_LIMITED' | 'SERVICE_UNAVAILABLE' | 'OUT_OF_CREDITS' | 'PLAN_REQUIRED' | 'UNKNOWN';
+};
+const KNOWN = ['RATE_LIMITED', 'SERVICE_UNAVAILABLE', 'OUT_OF_CREDITS', 'PLAN_REQUIRED'] as const;
 const failure = (error: unknown): PipFailure => {
   const code =
     typeof error === 'object' && error !== null && 'code' in error ? String(error.code) : '';
-  return { error: code === 'RATE_LIMITED' || code === 'SERVICE_UNAVAILABLE' ? code : 'UNKNOWN' };
+  const known = KNOWN.find((candidate) => candidate === code);
+  return { error: known ?? 'UNKNOWN' };
 };
 
 export async function askPip(tripId: string, request: string): Promise<ProposalData | PipFailure> {

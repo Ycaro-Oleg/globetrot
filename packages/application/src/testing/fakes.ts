@@ -26,7 +26,9 @@ import type {
   MediaWriter,
   AccountWriter,
   AssistantWriter,
+  BillingWriter,
   ProposalRecord,
+  SubscriptionRecord,
 } from '../ports';
 import {
   createFakeCommunity,
@@ -50,6 +52,10 @@ export interface FakeState {
   media: Map<string, MediaRecord>;
   proposals: Map<string, ProposalRecord>;
   aiUsage: { userId: string; createdAt: Date }[];
+  /** When each account signed up; an account not listed signed up "now" (in its trial). */
+  signedUpAt: Map<string, Date>;
+  subscriptions: Map<string, SubscriptionRecord>;
+  credits: { userId: string; delta: number; reason: string; ref: string | null }[];
   audit: AuditEventInput[];
   idempotency: Map<string, { fingerprint: string; response: unknown }>;
 }
@@ -64,6 +70,8 @@ export function createFakePorts(options: FakeOptions = {}) {
   let time = options.now ?? new Date('2026-11-07T12:00:00.000Z');
   let counter = 0;
   const faults = { auditFails: false };
+  /** Whether the fake payment provider is configured. */
+  const payments = { enabled: false };
   const places = {
     offline: false,
     hits: new Map<string, number>(),
@@ -92,6 +100,9 @@ export function createFakePorts(options: FakeOptions = {}) {
     media: new Map(),
     proposals: new Map(),
     aiUsage: [],
+    signedUpAt: new Map(),
+    subscriptions: new Map(),
+    credits: [],
     audit: [],
     idempotency: new Map(),
   };
@@ -423,6 +434,41 @@ export function createFakePorts(options: FakeOptions = {}) {
     },
   };
 
+  const billingWriter: BillingWriter = {
+    async findAccount(userId) {
+      if (!users.some((user) => user.id === userId)) return null;
+      return {
+        signedUpAt: state.signedUpAt.get(userId) ?? time,
+        subscription: state.subscriptions.get(userId) ?? null,
+        topUpBalance: state.credits
+          .filter((line) => line.userId === userId)
+          .reduce((sum, line) => sum + line.delta, 0),
+      };
+    },
+    async findProviderCustomer(userId) {
+      return state.subscriptions.get(userId)?.providerCustomerId ?? null;
+    },
+    async findUserByProviderSubscription(id) {
+      for (const [userId, record] of state.subscriptions) {
+        if (record.providerSubscriptionId === id) return userId;
+      }
+      return null;
+    },
+    async addCredits(row) {
+      if (row.ref !== null && state.credits.some((line) => line.ref === row.ref)) return false;
+      state.credits.push({
+        userId: row.userId,
+        delta: row.delta,
+        reason: row.reason,
+        ref: row.ref,
+      });
+      return true;
+    },
+    async saveSubscription(userId, record) {
+      state.subscriptions.set(userId, record);
+    },
+  };
+
   const transaction: Transaction = {
     trips: tripWriter,
     expenses: expenseWriter,
@@ -436,6 +482,7 @@ export function createFakePorts(options: FakeOptions = {}) {
     media: mediaWriter,
     account: accountWriter,
     assistant: assistantWriter,
+    billing: billingWriter,
     audit: {
       async record(event) {
         if (faults.auditFails) throw new Error('audit store is down');
@@ -495,6 +542,19 @@ export function createFakePorts(options: FakeOptions = {}) {
     },
     account: accountWriter,
     assistant: assistantWriter,
+    billing: billingWriter,
+    payments: {
+      async checkoutUrl(input) {
+        return payments.enabled
+          ? `https://pay.example.test/checkout?item=${input.item}&interval=${input.interval}`
+          : null;
+      },
+      async portalUrl(input) {
+        return payments.enabled
+          ? `https://pay.example.test/portal/${input.providerCustomerId}`
+          : null;
+      },
+    },
     ai: {
       async completeJson(input) {
         ai.requests.push({ system: input.system, user: input.user });
@@ -524,6 +584,9 @@ export function createFakePorts(options: FakeOptions = {}) {
           media: new Map(state.media),
           proposals: new Map(state.proposals),
           aiUsage: [...state.aiUsage],
+          signedUpAt: new Map(state.signedUpAt),
+          subscriptions: new Map(state.subscriptions),
+          credits: [...state.credits],
           audit: [...state.audit],
           idempotency: new Map(
             [...state.idempotency].map(([key, value]) => [key, { ...value }] as const),
@@ -544,6 +607,9 @@ export function createFakePorts(options: FakeOptions = {}) {
           state.media = before.media;
           state.proposals = before.proposals;
           state.aiUsage = before.aiUsage;
+          state.signedUpAt = before.signedUpAt;
+          state.subscriptions = before.subscriptions;
+          state.credits = before.credits;
           state.audit = before.audit;
           state.idempotency = before.idempotency;
           throw error;
@@ -586,6 +652,7 @@ export function createFakePorts(options: FakeOptions = {}) {
     /** Live view of what is stored. Reassigned on rollback, so read it through this object. */
     state,
     faults,
+    payments,
     places,
     ai,
     setNow(date: Date) {

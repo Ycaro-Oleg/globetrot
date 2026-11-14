@@ -1,6 +1,6 @@
 # Stripe (commercial architecture)
 
-Status: **planned for M10.** No live payments, and no real prices, before pricing is approved.
+Status: **prices approved (2026-11-13), plans and credits built ([ADR-0019](../architecture/adr/0019-plans-trial-and-pip-credits.md)); the Stripe adapter and webhooks come next.** No live payments until the owner sets the live keys.
 
 ## Facts and decisions
 
@@ -26,6 +26,13 @@ Status: **planned for M10.** No live payments, and no real prices, before pricin
 - **Failed payments:** Stripe Smart Retries, a grace period, then a downgrade to the free entitlements. User data is never deleted.
 - Test mode only until the commercial milestone is approved.
 
-## Landing pricing (before M10)
+## What is built, and what the adapter has to do
 
-The pricing section renders mock tiers (provisional names: Free / Explorer / Voyager) from config, shown in USD and clearly labelled as placeholder pricing. Nothing on it is actually charged. The config is `apps/web/lib/plan-config.ts` (`MOCK_PLANS`: id, monthly and annual price in minor units, `placeholder: true`; the landing has a monthly / annual switch, annual being two months free, all placeholder); names, taglines and features are in the `landing.plans` catalog. Moving it to the real `PlanConfig` is part of M10.
+- Plans, prices and credits are data in the domain (`PLAN_TERMS`, `TRIAL_TERMS`, `TOP_UP`). The landing and `/app/plan` read them through `apps/web/lib/plan-config.ts`, and copy lives in the `plans` catalog.
+- `PaymentsPort` (`checkoutUrl`, `portalUrl`) answers `null` today, so checkout says payments are being switched on.
+- The Stripe adapter implements the port:
+  - Checkout Sessions in `subscription` mode for Explorer and Voyager (monthly and yearly Prices), and `payment` mode for the top-up.
+  - The Customer Portal.
+- The webhook handler writes through `BillingWriter`:
+  - `saveSubscription` keeps plan, interval, status, start and period end, and the provider ids.
+  - `addCredits` gets the payment id as `ref`, so a redelivered event adds nothing.
