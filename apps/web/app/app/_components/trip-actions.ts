@@ -94,3 +94,21 @@ export async function setTripShare(
     return null;
   }
 }
+
+/** The trip's public link, turned on if it was off (keeping the amounts choice if it was on). */
+export async function ensureTripShare(tripId: string): Promise<string | null> {
+  const { api } = await client();
+  if (!api) return null;
+  const path = { params: { path: { id: tripId } } };
+  try {
+    const { data: current } = await api.GET('/v1/trips/{id}/share', path);
+    if (current?.slug) return current.slug;
+    const { data } = await api.PUT('/v1/trips/{id}/share', {
+      ...path,
+      body: { showAmounts: false },
+    });
+    return data?.slug ?? null;
+  } catch {
+    return null;
+  }
+}

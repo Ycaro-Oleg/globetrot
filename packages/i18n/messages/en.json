@@ -242,11 +242,11 @@
       },
       "s3": {
         "h": "Why",
-        "p": "To run the app you asked for: save and show your plans, compute your savings answer, send account emails (confirmation and password reset), and keep the service safe (rate limits, an audit log of changes without personal values)."
+        "p": "To run the app you asked for: save and show your plans, compute your savings answer, send account emails (confirmation, password reset and the two emails about your free week), and keep the service safe (rate limits, an audit log of changes without personal values)."
       },
       "s4": {
         "h": "Who else handles it",
-        "p": "Hosting and database: [owner: provider and region]. Email: [owner: provider]. Photo storage: [owner: provider]. Pip: when you ask Pip, the plan of that trip (title, dates, stops, nights, places, checklist labels, cost totals and savings amounts) is sent to DeepSeek to draft suggestions; never your name, email or other trips. Sign in with Google, if you use it. Measurement: Plausible (cookieless, aggregate) and, only if you accept, the Meta Pixel."
+        "p": "Hosting and database: [owner: provider and region]. Email: [owner: provider]. Photo storage: [owner: provider]. Pip: when you ask Pip, the plan of that trip (title, dates, stops, nights, places, checklist labels, cost totals and savings amounts) is sent to DeepSeek to draft suggestions; never your name, email or other trips. Sign in with Google, if you use it. Measurement: Plausible (cookieless, aggregate) and, only if you accept, the Meta Pixel. Payments: Stripe, which receives your email and handles your card; we never see card numbers."
       },
       "s5": {
         "h": "Cookies",
@@ -254,7 +254,7 @@
       },
       "s6": {
         "h": "What others see",
-        "p": "Trips are private. Community posts are seen by everyone or only your followers, as you choose; your name, handle and Pip are shown with them. A shared route is a copy of the stops and nights at that moment, without amounts unless you chose to show them."
+        "p": "Trips are private. Community posts are seen by everyone or only your followers, as you choose; your name, handle and Pip are shown with them. A shared route is a copy of the stops and nights at that moment, without amounts unless you chose to show them. A trip you share by link can be opened by anyone with that link: its title, stops, countries, nights, the month you leave and how far your savings are, and amounts only if you choose. Never your name or exact dates. Stopping the share ends the link for good."
       },
       "s7": {
         "h": "How long",
@@ -1473,7 +1473,8 @@
       "stop": "Stop sharing",
       "on": "The link is on.",
       "off": "The link is off. The old address no longer opens.",
-      "error": "That did not work. Try again."
+      "error": "That did not work. Try again.",
+      "shareMoment": "Share my trip"
     }
   },
   "consent": {

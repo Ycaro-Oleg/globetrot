@@ -155,6 +155,7 @@ Decision record: [ADR-0013](../architecture/adr/0013-community.md).
 - The page shows the trip's title, the route (stops in order, their countries and nights, drawn as a sketch), the **month** of departure (never the day, so nobody learns when a house is empty), and the savings answer as a percentage and a ready month.
 - **Amounts** (cost, saved, monthly) show only if the owner ticks "Show the amounts". The person's name, email, notes, places, photos and checklist never show.
 - **Stopping** deletes the link: the old address answers "not found" for good, and a new link gets a new address. Stopping works even when the account is read-only; turning sharing on needs the trial or a plan.
+- When a change earns a stamp, the celebration offers **Share my trip**: it turns the link on if needed and opens the phone's share sheet (or copies the link).
 - An archived trip's link answers "not found" too. The page invites visitors to plan their own trip (the free week).
 
 ## Plans, trial and Pip credits

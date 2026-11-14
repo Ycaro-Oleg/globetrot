@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import type { ChecklistData, VisaData } from '../../../lib/trips';
+import { ShareTripButton } from '../_components/share-trip-button';
 import { PipAvatar } from '../_components/pip-avatar';
 import { addItem, addSuggestions, removeItem, setItemDone } from './actions';
 import { AskPipLink } from '../_components/ask-pip-link';
@@ -89,6 +90,7 @@ export function ListsView({
   return (
     <Lists
       tripId={trip.id}
+      tripTitle={trip.title}
       initial={checklist}
       visas={visas}
       routeCountries={routeCountries}
@@ -100,6 +102,7 @@ export function ListsView({
 
 function Lists({
   tripId,
+  tripTitle,
   initial,
   visas,
   routeCountries,
@@ -108,6 +111,7 @@ function Lists({
 }: {
   pipEnabled: boolean;
   tripId: string;
+  tripTitle: string;
   initial: ChecklistData;
   visas: readonly VisaData[];
   routeCountries: readonly string[];
@@ -328,6 +332,7 @@ function Lists({
           name={names(celebrating)}
           number={MILESTONES.indexOf(celebrating) + 1}
           ink={STAMP_INK[celebrating]}
+          trip={{ id: tripId, title: tripTitle }}
           onClose={() => setCelebrating(null)}
           onPassport={() => {
             setCelebrating(null);
@@ -410,12 +415,14 @@ function Celebration({
   name,
   number,
   ink,
+  trip,
   onClose,
   onPassport,
 }: {
   name: string;
   number: number;
   ink: string;
+  trip: { id: string; title: string };
   onClose: () => void;
   onPassport: () => void;
 }) {
@@ -479,6 +486,7 @@ function Celebration({
           <button ref={continueButton} type="button" className={styles.cta} onClick={onClose}>
             {t('continue')}
           </button>
+          <ShareTripButton tripId={trip.id} title={trip.title} className={styles.ghost} />
           <button type="button" className={styles.ghost} onClick={onPassport}>
             {t('seePassport')}
           </button>

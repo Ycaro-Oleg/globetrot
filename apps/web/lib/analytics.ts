@@ -9,13 +9,14 @@ export const CONSENT_COOKIE = 'globetrot.consent';
 export type Consent = 'granted' | 'denied';
 
 /** The moments a campaign optimises for. */
-export type ConversionEvent = 'cta_click' | 'plan_saved' | 'sign_up' | 'first_trip';
+export type ConversionEvent = 'cta_click' | 'plan_saved' | 'sign_up' | 'first_trip' | 'trip_shared';
 
 const META_EVENTS: Record<ConversionEvent, [method: 'track' | 'trackCustom', name: string]> = {
   cta_click: ['trackCustom', 'StartPlanningClick'],
   plan_saved: ['track', 'Lead'],
   sign_up: ['track', 'CompleteRegistration'],
   first_trip: ['trackCustom', 'FirstTripCreated'],
+  trip_shared: ['trackCustom', 'TripShared'],
 };
 
 export const analyticsConfig = () => ({
