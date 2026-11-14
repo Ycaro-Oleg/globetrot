@@ -37,10 +37,13 @@ export function OnboardingFlow({
   currency,
   homeCity: initialHomeCity,
   pipOptIn: initialPip,
+  draft = null,
 }: {
   currency: string;
   homeCity: string;
   pipOptIn: boolean;
+  /** Numbers tried on the landing page's "Can I go?", to start the money step with. */
+  draft?: { cost: string; saved: string; monthly: string } | null;
 }) {
   const t = useTranslations('onboarding');
   const locale = useLocale() as SupportedLocale;
@@ -49,9 +52,9 @@ export function OnboardingFlow({
   const [destination, setDestination] = useState<OnboardingPlace | null>(null);
   const [month, setMonth] = useState<string | null>(null);
   const [nights, setNights] = useState(10);
-  const [estimate, setEstimate] = useState('');
-  const [saved, setSaved] = useState('0');
-  const [monthly, setMonthly] = useState('300');
+  const [estimate, setEstimate] = useState(draft?.cost ?? '');
+  const [saved, setSaved] = useState(draft?.saved ?? '0');
+  const [monthly, setMonthly] = useState(draft?.monthly ?? '300');
   const [pip, setPip] = useState(initialPip);
   const [error, setError] = useState<string | null>(null);
   const [today] = useState(todayLocal);
