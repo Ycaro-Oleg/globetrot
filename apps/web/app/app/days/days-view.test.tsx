@@ -172,4 +172,13 @@ describe('days without what they need', () => {
       expect(text(render(locale, { ideas: { stops: [] } }))).not.toContain(copy.ideasTitle);
     },
   );
+
+  it.each(SUPPORTED_LOCALES)(
+    'offers the calendar file only once the trip has dates (%s)',
+    (locale) => {
+      const copy = catalogs[locale].daysPage;
+      expect(text(render(locale))).toContain(copy.calendar);
+      expect(text(render(locale, { days: days(null) }))).not.toContain(copy.calendar);
+    },
+  );
 });

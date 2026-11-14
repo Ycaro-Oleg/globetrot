@@ -640,3 +640,21 @@
   color: var(--gt-semantic-color-text-tertiary);
   font-size: 12px;
 }
+
+.calendarButton {
+  min-height: var(--gt-component-hit-target);
+  padding: 0 18px;
+  border: 1px solid var(--gt-semantic-color-input-border);
+  border-radius: var(--gt-primitive-radius-pill);
+  background: var(--gt-semantic-color-surface-card);
+  color: var(--gt-semantic-color-text);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.calendarButton:focus-visible {
+  outline: 3px solid var(--gt-semantic-color-focus);
+  outline-offset: 2px;
+}

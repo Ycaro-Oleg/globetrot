@@ -757,7 +757,10 @@
     "ideasBuiltIn": "Escolhas populares do Globetrot. Confira os horários antes de ir.",
     "minutes": "{minutes} min",
     "hoursMinutes": "{hours} h {minutes}",
-    "ideaAddHint": ", adicionar em “Sem dia”"
+    "ideaAddHint": ", adicionar em “Sem dia”",
+    "calendar": "Adicionar à agenda",
+    "calendarSummary": "Dia {index} · {stop} — {trip}",
+    "calendarDone": "Arquivo da agenda pronto: abra para adicionar os dias à sua agenda."
   },
   "budgetPage": {
     "title": "Orçamento e poupança",
