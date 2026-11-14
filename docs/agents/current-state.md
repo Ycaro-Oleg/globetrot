@@ -1,6 +1,6 @@
 # Current state
 
-_Last updated: 2026-11-13, worker. Code state: `develop` includes #83 to #102; the worker housekeeping is in an open PR._
+_Last updated: 2026-11-13, usability pass. Code state: `develop` includes #83 to #103; the landing conversion pass (#104) and the usability pass are in open PRs._
 
 Read this first. It says where the project is, what exists, what is open, what only the owner can unblock and what to do next. Procedure for working: [`playbook.md`](playbook.md). Feature-by-feature progress: [`../product/progress.md`](../product/progress.md). Milestones and exit criteria: [`../product/roadmap.md`](../product/roadmap.md).
 
@@ -14,7 +14,7 @@ Read this first. It says where the project is, what exists, what is open, what o
 - **Checklists and the visa page work** (`/app/lists`): four lists per trip (add, check, remove, a suggested starter list) and the nine readiness stamps as they stand now. The budget (costs, conversion, savings answer) and the Days page work too.
 - **The passport screen works** (`/app/passport`): the account's commemorative visas, newest first, with country, city and date, an empty state that leads to the board, and the "not an official document" note.
 - **Pip v1 works behind `FEATURE_PIP`** on DeepSeek (ADR-0016): ask, review a change list, apply, undo.
-- **What does not exist yet:** a staff review queue for community reports, blocking, visa privacy, billing, deployment. The journey stage and the next steps are in the domain but not on a screen yet.
+- **What does not exist yet:** a staff review queue for community reports, blocking, visa privacy, billing, deployment. The trip's page shows the nine stamps and the next steps; the start date can be set there and on Days.
 - **Branches:** `main` has no release yet; `develop` is the integration branch. All work goes through `feature/*` or `docs/*` PRs into `develop`.
 
 ## Milestone board

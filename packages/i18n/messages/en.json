@@ -319,7 +319,8 @@
       "empty": "Create a trip to start planning.",
       "manage": "Manage trips",
       "aria": "Change current trip. Selected: {title}",
-      "ariaEmpty": "Choose a trip or create one"
+      "ariaEmpty": "Choose a trip or create one",
+      "details": "Trip details and progress"
     },
     "boardAvailable": "Your world map is ready. Pin places to start building this trip route.",
     "openMap": "Open the world map",
@@ -628,8 +629,8 @@
     "noStops": "Your route is empty. Pin places on the board to get started.",
     "noNights": "Your stops have no nights yet. Add nights to a stop on the board and its days appear here.",
     "starts": "Starts {date}.",
-    "noStartDate": "No start date yet, so the days are numbered only.",
-    "goBoard": "Open the board",
+    "noStartDate": "No start date yet, so the days are numbered only. Add one to see real dates.",
+    "goBoard": "Add your first stop",
     "goTrips": "Go to your trips",
     "nights": "{count, plural, =0 {Day trip} one {# night} other {# nights}}",
     "day": "Day {index}",
@@ -673,7 +674,9 @@
       "boat": "Boat",
       "walk": "Walk",
       "other": "Travel"
-    }
+    },
+    "emptyTitle": "No stops yet",
+    "tryExample": "Start from an example"
   },
   "budgetPage": {
     "title": "Budget & savings",
@@ -1267,6 +1270,103 @@
       "RATE_LIMITED": "Pip needs a rest: you asked a lot today. Try again tomorrow.",
       "SERVICE_UNAVAILABLE": "Pip is not available right now. Everything works without Pip; try again later.",
       "UNKNOWN": "That did not work. Try again."
+    }
+  },
+  "tripHub": {
+    "metaTitle": "Trip",
+    "backToTrips": "All trips",
+    "notFoundTitle": "Trip not found",
+    "notFound": "This trip does not exist or is not yours.",
+    "rename": "Rename",
+    "nameLabel": "Trip name",
+    "saveName": "Save name",
+    "cancel": "Cancel",
+    "nameError": "Give the trip a name.",
+    "status": {
+      "active": "Active",
+      "traveling": "Traveling",
+      "completed": "Completed",
+      "archived": "Archived"
+    },
+    "stops": "{count, plural, =0 {No stops} one {# stop} other {# stops}}",
+    "nights": "{count, plural, =0 {no nights} one {# night} other {# nights}}",
+    "archivedNote": "This trip is archived: it is hidden from your list.",
+    "restore": "Restore",
+    "nextTitle": "What to do next",
+    "progressLabel": "Stamps on this trip",
+    "progressError": "The progress could not be read. Try again in a moment.",
+    "allDone": "Every stamp is earned. Have a great trip!",
+    "next": {
+      "dest": {
+        "title": "Choose where you are going",
+        "body": "Search a city on the map and pin it.",
+        "action": "Open the map"
+      },
+      "route": {
+        "title": "Add a second stop",
+        "body": "Two stops draw your route.",
+        "action": "Open the map"
+      },
+      "budget": {
+        "title": "Add a first cost",
+        "body": "A rough estimate is fine; mark it ≈.",
+        "action": "Open the budget"
+      },
+      "saved": {
+        "title": "Say what you have saved",
+        "body": "The answer tells you the month you can go.",
+        "action": "Open the budget"
+      },
+      "itin": {
+        "title": "Give every day a plan",
+        "body": "Drag places onto days.",
+        "action": "Open the days"
+      },
+      "stays": {
+        "title": "Find a bed for every night",
+        "body": "Add the stays to the budget.",
+        "action": "Open the budget"
+      },
+      "docs": {
+        "title": "Check your documents",
+        "body": "Passport, visas, insurance.",
+        "action": "Open the lists"
+      },
+      "check": {
+        "title": "Finish your checklist",
+        "body": "Tick off what is done.",
+        "action": "Open the lists"
+      },
+      "ready": {
+        "title": "Get the trip ready",
+        "body": "The last stamp comes with all the others.",
+        "action": "Open the lists"
+      }
+    },
+    "whenTitle": "When",
+    "whenHint": "With a start date, days get real dates and the budget tells you whether you will be ready in time.",
+    "answer": {
+      "noCosts": "Add a cost to see when you can afford it.",
+      "ready": "You have it all saved.",
+      "by": "Saved up by {month} at your current pace.",
+      "notYet": "Not yet: set a monthly amount in the budget."
+    },
+    "toolsTitle": "This trip",
+    "tools": {
+      "board": "Map",
+      "days": "Days",
+      "budget": "Budget",
+      "lists": "Lists",
+      "pip": "Ask Pip"
+    },
+    "archive": "Archive this trip",
+    "archiveHint": "Hides it from your list; you can restore it.",
+    "date": {
+      "label": "Start date",
+      "save": "Save date",
+      "saving": "Saving…",
+      "saved": "Date saved.",
+      "error": "That did not save. Try again."
     }
   }
 }

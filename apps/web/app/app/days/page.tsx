@@ -47,7 +47,7 @@ export default async function DaysPage() {
   });
   return (
     <DaysView
-      trip={trip ? { id: trip.id, title: trip.title } : null}
+      trip={trip ? { id: trip.id, title: trip.title, startDate } : null}
       stops={stops}
       days={days}
       places={plan?.places ?? null}

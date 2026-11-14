@@ -1,0 +1,279 @@
+/* A trip's own page: name and date, progress and next steps, the tools. */
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  max-width: 64rem;
+  margin: 0 auto;
+}
+
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  min-height: var(--gt-component-hit-target);
+  color: var(--gt-semantic-color-primary);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.titleRow,
+.titleForm {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.title {
+  margin: 0;
+  font-size: var(--gt-primitive-type-page);
+  font-weight: 800;
+  letter-spacing: var(--gt-primitive-type-page-tracking);
+  line-height: 1.05;
+  overflow-wrap: anywhere;
+}
+
+.titleForm input {
+  flex: 1 1 16rem;
+  min-height: 52px;
+  padding: 0 14px;
+  border: var(--gt-primitive-border-1) solid var(--gt-semantic-color-input-border);
+  border-radius: 14px;
+  background: var(--gt-semantic-color-input-surface);
+  color: var(--gt-semantic-color-text);
+  font: inherit;
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  align-items: center;
+  margin: 0;
+  color: var(--gt-semantic-color-text-secondary);
+  font-size: 15px;
+}
+
+.chip {
+  padding: 3px 12px;
+  border-radius: var(--gt-primitive-radius-pill);
+  background: var(--gt-semantic-color-primary-tint);
+  color: var(--gt-semantic-color-text);
+  font-weight: 700;
+}
+
+.notice {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: var(--gt-semantic-color-warning-tint);
+  color: var(--gt-semantic-color-warning-ink);
+  font-weight: 600;
+}
+
+.grid {
+  display: grid;
+  gap: 18px;
+}
+
+.side {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px;
+  border: var(--gt-primitive-border-1) solid var(--gt-semantic-color-hairline);
+  border-radius: var(--gt-component-card-radius);
+  background: var(--gt-semantic-color-surface-card);
+}
+
+.card h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.card p {
+  margin: 0;
+}
+
+.progressText {
+  color: var(--gt-semantic-color-text-secondary);
+}
+
+.bar {
+  height: 10px;
+  overflow: hidden;
+  border-radius: 99px;
+  background: var(--gt-semantic-color-track);
+}
+
+.bar span {
+  display: block;
+  height: 100%;
+  border-radius: 99px;
+  background: var(--gt-semantic-color-savings);
+}
+
+.steps {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.steps li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px;
+  border-radius: 16px;
+  background: var(--gt-semantic-color-surface-page);
+}
+
+.steps li > span {
+  display: flex;
+  flex: 1 1 14rem;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.steps small {
+  color: var(--gt-semantic-color-text-secondary);
+  font-size: 14px;
+}
+
+.done {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  font-weight: 700;
+}
+
+.answer {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.hint {
+  color: var(--gt-semantic-color-text-secondary);
+  font-size: 14px;
+}
+
+.tools {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tool {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 52px;
+  padding: 0 16px;
+  border: var(--gt-primitive-border-1) solid var(--gt-semantic-color-input-border);
+  border-radius: 14px;
+  background: var(--gt-semantic-color-input-surface);
+  color: var(--gt-semantic-color-text);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.archive {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  align-items: center;
+  color: var(--gt-semantic-color-text-secondary);
+  font-size: 14px;
+}
+
+.primary,
+.ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: var(--gt-component-hit-target);
+  padding: 0 18px;
+  border-radius: var(--gt-primitive-radius-pill);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.primary {
+  border: 0;
+  background: var(--gt-semantic-color-primary);
+  color: var(--gt-semantic-color-on-primary);
+}
+
+.ghost {
+  border: var(--gt-primitive-border-1) solid var(--gt-semantic-color-input-border);
+  background: transparent;
+  color: var(--gt-semantic-color-text);
+}
+
+.error {
+  width: 100%;
+  margin: 0;
+  color: var(--gt-semantic-color-danger);
+  font-weight: 700;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.page a:focus-visible,
+.page button:focus-visible,
+.page input:focus-visible {
+  outline: var(--gt-component-focus-width) solid var(--gt-semantic-color-focus);
+  outline-offset: 2px;
+}
+
+@media (min-width: 900px) {
+  .grid {
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+    align-items: start;
+  }
+}
