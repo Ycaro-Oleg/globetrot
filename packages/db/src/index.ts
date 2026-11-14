@@ -49,6 +49,7 @@ export { createAccountRepository, type AccountRepository } from './account-repos
 export { createMaintenanceRepository, type MaintenanceRepository } from './maintenance-repository';
 export { createBillingRepository, type BillingRepository } from './billing-repository';
 export { createNoticeRepository, type NoticeRepository } from './notice-repository';
+export { createShareRepository, type ShareRepository } from './share-repository';
 export {
   createAssistantRepository,
   type AssistantRepository,

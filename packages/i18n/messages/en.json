@@ -439,7 +439,8 @@
     "deletedMessage": "Trip deleted.",
     "tripLimit": "This plan keeps 10 active trips. Archive one, or move to Voyager for unlimited trips.",
     "planRequired": "Your free week is over: choose a plan to add or change trips.",
-    "seePlans": "See plans"
+    "seePlans": "See plans",
+    "routeSummary": "{route} · {nights, plural, one {# night} other {# nights}}"
   },
   "landing": {
     "metaTitle": "Globetrot · Plan the trip you keep dreaming about",
@@ -1456,6 +1457,23 @@
       "saving": "Saving…",
       "saved": "Date saved.",
       "error": "That did not save. Try again."
+    },
+    "share": {
+      "title": "Share this trip",
+      "hint": "A private link anyone can open: the route, the month and whether you can go. Never your name or exact dates.",
+      "start": "Create a link",
+      "linkLabel": "Link to this trip",
+      "copy": "Copy",
+      "copied": "Link copied.",
+      "copyFailed": "Could not copy: select the link and copy it.",
+      "send": "Send…",
+      "postX": "Post on X",
+      "postText": "Planning {title} on Globetrot ✈️",
+      "showAmounts": "Show the amounts (cost and savings)",
+      "stop": "Stop sharing",
+      "on": "The link is on.",
+      "off": "The link is off. The old address no longer opens.",
+      "error": "That did not work. Try again."
     }
   },
   "consent": {
@@ -1536,5 +1554,26 @@
     "failed": "That did not work. Try again in a moment.",
     "thanksPlan": "Thank you! Your payment went through. Your plan switches on in a moment; reload if it still shows the trial.",
     "thanksTopUp": "Thank you! Your extra Pip credits arrive in a moment."
+  },
+  "sharedTrip": {
+    "kicker": "A trip planned on Globetrot",
+    "meta": "{month} · {nights, plural, one {# night} other {# nights}} · {stops, plural, one {# stop} other {# stops}}",
+    "noDate": "No date yet",
+    "nights": "{count, plural, =0 {Day trip} one {# night} other {# nights}}",
+    "routeLabel": "The route",
+    "mapLabel": "Sketch of the route",
+    "answerTitle": "Can they go?",
+    "ready": "Ready to go in {month}",
+    "saved": "Fully saved. Bags packed.",
+    "noPlan": "Still working out the money.",
+    "progress": "{percent, number}% saved",
+    "amounts": "{saved} of {total} saved · {monthly} a month",
+    "ctaTitle": "Plan your own trip like this",
+    "ctaBody": "Pin your route, see what it costs in your currency, and find out the month you can go. 7 days free, no card.",
+    "cta": "Start your free week",
+    "note": "Shared by the person planning it. Only the month is shown, never the exact dates.",
+    "metaDescription": "{title}: {nights, plural, one {# night} other {# nights}}, planned on Globetrot.",
+    "ogReady": "Ready in {month}",
+    "ogNights": "{nights, plural, one {# night} other {# nights}}"
   }
 }

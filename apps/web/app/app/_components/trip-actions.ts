@@ -73,3 +73,24 @@ export async function openTripAt(formData: FormData): Promise<void> {
   });
   redirect(to);
 }
+
+export type ShareState = { slug: string | null; showAmounts: boolean };
+
+/** Turns a trip's public link on (with or without amounts) or off. `null` when it did not work. */
+export async function setTripShare(
+  tripId: string,
+  on: boolean,
+  showAmounts = false,
+): Promise<ShareState | null> {
+  const { api } = await client();
+  if (!api) return null;
+  const path = { params: { path: { id: tripId } } };
+  try {
+    const { data } = on
+      ? await api.PUT('/v1/trips/{id}/share', { ...path, body: { showAmounts } })
+      : await api.DELETE('/v1/trips/{id}/share', path);
+    return data ?? null;
+  } catch {
+    return null;
+  }
+}

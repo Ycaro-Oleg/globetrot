@@ -208,4 +208,23 @@ describe('billing against a real database', () => {
     });
     expect((await call(ana.cookie, 'POST', '/v1/me/billing/portal')).status).toBe(200);
   });
+
+  it('shares a trip publicly by link, with no session, and stops it for good', async () => {
+    const { signUp, call } = await harness();
+    const ana = await signUp('ana@example.com');
+    const trip = await call(ana.cookie, 'POST', '/v1/trips', {
+      title: 'Lisbon',
+      startDate: '2027-03-14',
+    });
+    const tripId = trip.json.id as string;
+    const shared = await call(ana.cookie, 'PUT', `/v1/trips/${tripId}/share`, {});
+    const slug = shared.json.slug as string;
+    expect(slug).toMatch(/^[A-Za-z0-9_-]{22}$/);
+    const visitor = await call('', 'GET', `/v1/shared/${slug}`);
+    expect(visitor.status).toBe(200);
+    expect(visitor.json).toMatchObject({ title: 'Lisbon', startMonth: '2027-03', amounts: null });
+    expect(JSON.stringify(visitor.json)).not.toContain('ana@example.com');
+    await call(ana.cookie, 'DELETE', `/v1/trips/${tripId}/share`);
+    expect((await call('', 'GET', `/v1/shared/${slug}`)).status).toBe(404);
+  });
 });

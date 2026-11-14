@@ -24,6 +24,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/shared/{slug}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * A shared trip, for anyone with the link
+         * @description No session. An unknown, malformed or stopped link and an archived trip all answer 404 the same way.
+         */
+        get: operations["getSharedTrip"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/me": {
         parameters: {
             query?: never;
@@ -972,6 +992,31 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/trips/{id}/share": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Whether the trip has a public link */
+        get: operations["getTripShare"];
+        /**
+         * Turn the public link on, or change whether amounts show
+         * @description Keeps the same address when the link is already on. The page shows the route, the month and the savings answer, and amounts only with `showAmounts`; never the person’s name or the exact dates.
+         */
+        put: operations["shareTrip"];
+        post?: never;
+        /**
+         * Turn the public link off for good
+         * @description The old address answers 404 from now on. Works even when the account is read-only.
+         */
+        delete: operations["unshareTrip"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1002,6 +1047,94 @@ export interface operations {
                     "application/json": {
                         /** @description The social sign-in providers that are configured and can be offered. */
                         providers: "google"[];
+                    };
+                };
+            };
+        };
+    };
+    getSharedTrip: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The public view. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        title: string;
+                        startMonth: string | null;
+                        totalNights: number;
+                        stops: {
+                            name: string;
+                            countryCode: string | null;
+                            nights: number;
+                            latitude: number;
+                            longitude: number;
+                        }[];
+                        savings: {
+                            /** @enum {string} */
+                            status: "no-costs" | "saving" | "fully-saved";
+                            progressBasisPoints: number;
+                            readyMonth: string | null;
+                        };
+                        amounts: {
+                            total: {
+                                /**
+                                 * @description Major units, exact.
+                                 * @example 1250.00
+                                 */
+                                amount: string;
+                                currency: string;
+                            };
+                            saved: {
+                                /**
+                                 * @description Major units, exact.
+                                 * @example 1250.00
+                                 */
+                                amount: string;
+                                currency: string;
+                            };
+                            monthly: {
+                                /**
+                                 * @description Major units, exact.
+                                 * @example 1250.00
+                                 */
+                                amount: string;
+                                currency: string;
+                            };
+                        } | null;
+                    };
+                };
+            };
+            /** @description No such link. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
                     };
                 };
             };
@@ -9657,6 +9790,248 @@ export interface operations {
             };
             /** @description Payments are not switched on yet. */
             503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    getTripShare: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The link, or `slug: null`. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        slug: string | null;
+                        showAmounts: boolean;
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description No such trip, or not yours. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    shareTrip: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    showAmounts?: boolean;
+                };
+            };
+        };
+        responses: {
+            /** @description The link. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        slug: string | null;
+                        showAmounts: boolean;
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description The trial is over (`PLAN_REQUIRED`). */
+            402: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description No such trip, or not yours. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    unshareTrip: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `slug: null`. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        slug: string | null;
+                        showAmounts: boolean;
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description No such trip, or not yours. */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };

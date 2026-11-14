@@ -1,6 +1,6 @@
 # Current state
 
-_Last updated: 2026-11-14, trial emails. Code state: `develop` includes #83 to #110; the trial emails are in an open PR. The [launch runbook](../engineering/launch-runbook.md) lists what the owner must provide._
+_Last updated: 2026-11-14, sharing a trip. Code state: `develop` includes #83 to #111; sharing a trip is in an open PR. The [launch runbook](../engineering/launch-runbook.md) lists what the owner must provide._
 
 Read this first. It says where the project is, what exists, what is open, what only the owner can unblock and what to do next. Procedure for working: [`playbook.md`](playbook.md). Feature-by-feature progress: [`../product/progress.md`](../product/progress.md). Milestones and exit criteria: [`../product/roadmap.md`](../product/roadmap.md).
 
@@ -15,6 +15,7 @@ Read this first. It says where the project is, what exists, what is open, what o
 - **The passport screen works** (`/app/passport`): the account's commemorative visas, newest first, with country, city and date, an empty state that leads to the board, and the "not an official document" note.
 - **Pip v1 works behind `FEATURE_PIP`** on DeepSeek (ADR-0016): ask, review a change list, apply, undo.
 - **Plans and credits are built** (ADR-0019): a 7-day trial from sign-up, Explorer (US$4.99/US$39.99) and Voyager (US$9.99/US$79.99), Pip credits per request with top-ups, read-only after the trial, `/app/plan`, the free-week line on every signed-in page, and two trial emails from the worker. **Stripe is built** (Checkout, Portal, webhooks) and off until the `STRIPE_*` settings are set (**owner:** the [steps](../integrations/stripe.md#switching-it-on-the-owner-in-the-stripe-dashboard-test-mode-first), test mode first).
+- **Trips can be shared** by a private link (`/t/{slug}`) with a social image for X and chats; month only, amounts only when chosen, stop for good.
 - **First run, walked as a new user** (landing calculator → sign-up → email → onboarding → board → every tool): the sign-up repeats the saved landing plan and has no terms checkbox; the confirmed-email page has one clear call to action; onboarding offers popular destinations in one tap and place search falls back to built-in popular cities, so the first trip always has a stop; the new trip starts with the suggested checklist; an empty Days plan invites the first place. **Owner decision for conversion:** set `REQUIRE_VERIFIED_EMAIL=false` in production so people go straight in after sign-up (ADR-0012 leaves it to the owner).
 - **What does not exist yet:** a staff review queue for community reports, blocking, visa privacy, deployment (billing is built and waits for the owner's Stripe settings: ADR-0019). The trip's page shows the nine stamps and the next steps; the start date can be set there and on Days.
 - **Branches:** `main` has no release yet; `develop` is the integration branch. All work goes through `feature/*` or `docs/*` PRs into `develop`.

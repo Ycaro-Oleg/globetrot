@@ -3,6 +3,7 @@
  * (ADR-0006). No HTTP, database or UI imports: adapters pass their implementations in through `Ports`.
  */
 import { createGetPreferences, createUpdatePreferences } from './preferences/operations';
+import { createGetTripShare, createShareTrip, createUnshareTrip } from './trips/share';
 import {
   createGetBilling,
   createOpenBillingPortal,
@@ -24,6 +25,12 @@ export const PACKAGE_NAME = '@globetrot/application' as const;
 export type { Actor } from './actor';
 export { assertOwner } from './authorization';
 export { billingSchema } from './billing/operations';
+export {
+  createSharedTrips,
+  sharedTripSchema,
+  tripShareSchema,
+  type SharedTripView,
+} from './trips/share';
 export {
   createPaymentEvents,
   type PaymentEvent,
@@ -132,6 +139,9 @@ export type {
   BillingWriter,
   CheckoutItem,
   PaymentsPort,
+  ShareReader,
+  ShareWriter,
+  TripShareRecord,
   SubscriptionRecord,
   AssistantReader,
   AssistantWriter,
@@ -404,6 +414,9 @@ export function createApplication(ports: Ports) {
     getBilling: createGetBilling(ports),
     startCheckout: createStartCheckout(ports),
     openBillingPortal: createOpenBillingPortal(ports),
+    getTripShare: createGetTripShare(ports),
+    shareTrip: createShareTrip(ports),
+    unshareTrip: createUnshareTrip(ports),
   };
   // After the trial, without a plan, the account is read-only: every command but a few passes this guard.
   return Object.fromEntries(
