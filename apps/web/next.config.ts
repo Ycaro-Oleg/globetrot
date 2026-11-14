@@ -37,6 +37,14 @@ const config: NextConfig = {
           { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains' },
         ],
       },
+      // Files in `public/` keep their names, so they are cached for a day and refreshed in the background
+      // (the hashed `/_next/static` files are already cached for a year by Next).
+      ...['/world-halftone-blue.svg', '/fonts/:path*', '/geo/:path*'].map((source) => ({
+        source,
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=86400, stale-while-revalidate=604800' },
+        ],
+      })),
     ];
   },
 };

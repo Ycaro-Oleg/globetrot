@@ -39,6 +39,14 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
+        {/* The headline font, fetched with the page so the first words do not jump when it arrives. */}
+        <link
+          rel="preload"
+          href="/fonts/plus-jakarta-sans/latin.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin=""
+        />
       </head>
       <body>
         <NextIntlClientProvider>
