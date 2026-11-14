@@ -1,0 +1,262 @@
+import { createHmac } from 'node:crypto';
+import { createPaymentEvents, type UserRecord } from '@globetrot/application';
+import { createFakePorts } from '@globetrot/application/testing';
+import { describe, expect, it } from 'vitest';
+import type { StripeConfig } from './config';
+import {
+  createStripePayments,
+  createStripeWebhook,
+  toSubscriptionRecord,
+  verifyStripeSignature,
+} from './stripe';
+
+const config: StripeConfig = {
+  secretKey: 'sk_test_fake',
+  webhookSecret: 'whsec_test_secret',
+  prices: {
+    explorer: { month: 'price_em', year: 'price_ey' },
+    voyager: { month: 'price_vm', year: 'price_vy' },
+    topUp: 'price_top',
+  },
+  returnOrigin: 'https://globetrot.example',
+};
+const NOW = 1_794_000_000;
+const sign = (body: string, t = NOW, secret = config.webhookSecret) =>
+  `t=${t},v1=${createHmac('sha256', secret).update(`${t}.${body}`).digest('hex')}`;
+
+const subscription = (patch: Record<string, unknown> = {}) => ({
+  id: 'sub_1',
+  status: 'active',
+  customer: 'cus_1',
+  start_date: NOW - 86_400,
+  current_period_end: NOW + 29 * 86_400,
+  metadata: { userId: 'u-ana' },
+  items: { data: [{ price: { id: 'price_vy' } }] },
+  ...patch,
+});
+
+/** Stands in for Stripe's API: records calls, answers the subscription. */
+function stripeApi(answer: Record<string, unknown> = subscription()) {
+  const calls: { url: string; method: string; body: string }[] = [];
+  const call: typeof fetch = async (input, init) => {
+    calls.push({
+      url: String(input),
+      method: init?.method ?? 'GET',
+      body: String(init?.body ?? ''),
+    });
+    const url = String(input);
+    const json = url.includes('/subscriptions/')
+      ? answer
+      : {
+          url: url.includes('billing_portal')
+            ? 'https://billing.stripe.test/p'
+            : 'https://checkout.stripe.test/c',
+        };
+    return new Response(JSON.stringify(json), { status: 200 });
+  };
+  return { call, calls };
+}
+
+describe('the Stripe signature', () => {
+  const body = '{"type":"ping"}';
+  it('accepts Stripe’s signature and refuses anything else', () => {
+    expect(verifyStripeSignature(body, sign(body), config.webhookSecret, NOW)).toBe(true);
+    expect(
+      verifyStripeSignature(body, sign(body, NOW, 'whsec_other'), config.webhookSecret, NOW),
+    ).toBe(false);
+    expect(verifyStripeSignature(`${body} `, sign(body), config.webhookSecret, NOW)).toBe(false);
+    expect(verifyStripeSignature(body, null, config.webhookSecret, NOW)).toBe(false);
+    expect(verifyStripeSignature(body, 't=1', config.webhookSecret, NOW)).toBe(false);
+  });
+
+  it('refuses an old signature (a replay)', () => {
+    expect(verifyStripeSignature(body, sign(body, NOW - 301), config.webhookSecret, NOW)).toBe(
+      false,
+    );
+  });
+});
+
+describe('a Stripe subscription as ours', () => {
+  it('maps the price to the plan and the interval, and the status', () => {
+    expect(toSubscriptionRecord(subscription(), config.prices)).toEqual({
+      plan: 'voyager',
+      interval: 'year',
+      status: 'active',
+      startedAt: new Date((NOW - 86_400) * 1000),
+      currentPeriodEnd: new Date((NOW + 29 * 86_400) * 1000),
+      providerCustomerId: 'cus_1',
+      providerSubscriptionId: 'sub_1',
+    });
+    expect(toSubscriptionRecord(subscription({ status: 'unpaid' }), config.prices)?.status).toBe(
+      'past_due',
+    );
+    expect(toSubscriptionRecord(subscription({ status: 'canceled' }), config.prices)?.status).toBe(
+      'canceled',
+    );
+  });
+
+  it('reads the period end from the item in newer API shapes, and grants nothing for unknown prices or incomplete', () => {
+    const newer = subscription({
+      current_period_end: undefined,
+      items: { data: [{ price: { id: 'price_em' }, current_period_end: NOW + 100 }] },
+    });
+    expect(toSubscriptionRecord(newer, config.prices)).toMatchObject({
+      plan: 'explorer',
+      interval: 'month',
+    });
+    expect(
+      toSubscriptionRecord(
+        subscription({ items: { data: [{ price: { id: 'price_x' } }] } }),
+        config.prices,
+      ),
+    ).toBeNull();
+    expect(toSubscriptionRecord(subscription({ status: 'incomplete' }), config.prices)).toBeNull();
+  });
+});
+
+describe('checkout and the portal', () => {
+  it('opens a subscription checkout for the plan’s price, tied to the account', async () => {
+    const api = stripeApi();
+    const payments = createStripePayments(
+      config,
+      { findProviderCustomer: async () => null },
+      { fetch: api.call },
+    );
+    expect(
+      await payments.checkoutUrl({
+        userId: 'u-ana',
+        email: 'ana@example.com',
+        item: 'explorer',
+        interval: 'year',
+      }),
+    ).toBe('https://checkout.stripe.test/c');
+    const sent = new URLSearchParams(api.calls[0]!.body);
+    expect(api.calls[0]!.url).toBe('https://api.stripe.com/v1/checkout/sessions');
+    expect(sent.get('mode')).toBe('subscription');
+    expect(sent.get('line_items[0][price]')).toBe('price_ey');
+    expect(sent.get('client_reference_id')).toBe('u-ana');
+    expect(sent.get('subscription_data[metadata][userId]')).toBe('u-ana');
+    expect(sent.get('customer_email')).toBe('ana@example.com');
+    expect(sent.get('success_url')).toBe('https://globetrot.example/app/plan?paid=explorer');
+  });
+
+  it('opens a one-off payment for a top-up, reusing the customer', async () => {
+    const api = stripeApi();
+    const payments = createStripePayments(
+      config,
+      { findProviderCustomer: async () => 'cus_9' },
+      { fetch: api.call },
+    );
+    await payments.checkoutUrl({
+      userId: 'u-ana',
+      email: 'ana@example.com',
+      item: 'top-up',
+      interval: 'month',
+    });
+    const sent = new URLSearchParams(api.calls[0]!.body);
+    expect(sent.get('mode')).toBe('payment');
+    expect(sent.get('line_items[0][price]')).toBe('price_top');
+    expect(sent.get('customer')).toBe('cus_9');
+    expect(sent.has('customer_email')).toBe(false);
+    expect(await payments.portalUrl({ providerCustomerId: 'cus_9' })).toBe(
+      'https://billing.stripe.test/p',
+    );
+  });
+
+  it('is off without settings', async () => {
+    const payments = createStripePayments(null, { findProviderCustomer: async () => null });
+    expect(
+      await payments.checkoutUrl({ userId: 'u', email: 'e', item: 'voyager', interval: 'month' }),
+    ).toBeNull();
+  });
+});
+
+describe('the webhook', () => {
+  const ana: UserRecord = {
+    id: 'u-ana',
+    email: 'ana@example.com',
+    name: 'Ana',
+    emailVerified: true,
+  };
+  function setup(answer?: Record<string, unknown>) {
+    const fake = createFakePorts({ users: [ana] });
+    const api = stripeApi(answer);
+    const webhook = createStripeWebhook(config, createPaymentEvents(fake.ports), {
+      fetch: api.call,
+      now: () => NOW * 1000,
+    });
+    const send = (event: unknown) => {
+      const body = JSON.stringify(event);
+      return webhook.handle(body, sign(body));
+    };
+    return { ...fake, api, webhook, send };
+  }
+
+  it('records the plan from a completed subscription checkout, reading the subscription from Stripe', async () => {
+    const { send, state, api } = setup();
+    const status = await send({
+      type: 'checkout.session.completed',
+      data: {
+        object: { mode: 'subscription', subscription: 'sub_1', client_reference_id: 'u-ana' },
+      },
+    });
+    expect(status).toBe(200);
+    expect(api.calls[0]!.url).toBe('https://api.stripe.com/v1/subscriptions/sub_1');
+    expect(state.subscriptions.get('u-ana')).toMatchObject({ plan: 'voyager', status: 'active' });
+  });
+
+  it('follows later changes and failed invoices', async () => {
+    const { send, state } = setup(subscription({ status: 'past_due' }));
+    await send({
+      type: 'customer.subscription.updated',
+      data: { object: { id: 'sub_1', metadata: { userId: 'u-ana' } } },
+    });
+    expect(state.subscriptions.get('u-ana')?.status).toBe('past_due');
+    expect(
+      await send({ type: 'invoice.payment_failed', data: { object: { subscription: 'sub_1' } } }),
+    ).toBe(200);
+  });
+
+  it('adds top-up credits once, only when paid', async () => {
+    const { send, state } = setup();
+    const paid = {
+      type: 'checkout.session.completed',
+      data: {
+        object: {
+          id: 'cs_1',
+          mode: 'payment',
+          payment_status: 'paid',
+          payment_intent: 'pi_1',
+          client_reference_id: 'u-ana',
+          metadata: { item: 'top-up', userId: 'u-ana' },
+        },
+      },
+    };
+    await send(paid);
+    await send(paid);
+    await send({
+      ...paid,
+      data: { object: { ...paid.data.object, payment_intent: 'pi_2', payment_status: 'unpaid' } },
+    });
+    expect(state.credits).toEqual([{ userId: 'u-ana', delta: 200, reason: 'top-up', ref: 'pi_1' }]);
+  });
+
+  it('refuses a bad signature, ignores other events, and asks Stripe to retry when it cannot read', async () => {
+    const { webhook, send } = setup();
+    expect(await webhook.handle('{"type":"x"}', 't=1,v1=00')).toBe(400);
+    expect(await send({ type: 'customer.created', data: { object: {} } })).toBe(200);
+    const failing = createStripeWebhook(
+      config,
+      createPaymentEvents(createFakePorts({ users: [ana] }).ports),
+      {
+        fetch: async () => new Response('{}', { status: 500 }),
+        now: () => NOW * 1000,
+      },
+    );
+    const body = JSON.stringify({
+      type: 'invoice.paid',
+      data: { object: { subscription: 'sub_1' } },
+    });
+    expect(await failing.handle(body, sign(body))).toBe(500);
+  });
+});

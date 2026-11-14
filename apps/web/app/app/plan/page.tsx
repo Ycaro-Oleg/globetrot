@@ -12,11 +12,23 @@ export async function generateMetadata() {
 }
 
 /** The account's plan: the free week or the paid plan, Pip credits, active trips, and the way to pay. */
-export default async function PlanPage() {
+export default async function PlanPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ paid?: string }>;
+}) {
+  const { paid } = await searchParams;
   const store = await cookies();
   const cookieHeader = sessionCookieHeader(store.getAll());
   const billing = cookieHeader
     ? await fetchBilling({ cookieHeader, apiUrl: apiInternalUrl() })
     : null;
-  return <PlanView billing={billing} />;
+  return (
+    <PlanView
+      billing={billing}
+      paid={
+        paid === 'top-up' ? 'top-up' : paid === 'explorer' || paid === 'voyager' ? 'plan' : null
+      }
+    />
+  );
 }

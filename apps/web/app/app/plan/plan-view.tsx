@@ -11,7 +11,14 @@ import styles from './plan.module.css';
 type Interval = 'month' | 'year';
 
 /** Plan & credits: where the person stands, what Pip has left, and the two plans to choose from. */
-export function PlanView({ billing }: { billing: BillingView | null }) {
+export function PlanView({
+  billing,
+  paid = null,
+}: {
+  billing: BillingView | null;
+  /** Back from a paid checkout: Stripe confirms it to us a moment later. */
+  paid?: 'plan' | 'top-up' | null;
+}) {
   const t = useTranslations('planPage');
   const p = useTranslations('plans');
   const locale = useLocale();
@@ -48,7 +55,7 @@ export function PlanView({ billing }: { billing: BillingView | null }) {
     );
   }
 
-  const paid = billing.access === 'explorer' || billing.access === 'voyager';
+  const onPlan = billing.access === 'explorer' || billing.access === 'voyager';
   const share = billing.credits.monthly
     ? Math.round((billing.credits.monthlyLeft / billing.credits.monthly) * 100)
     : 0;
@@ -59,16 +66,22 @@ export function PlanView({ billing }: { billing: BillingView | null }) {
         {t('title')}
       </h1>
 
+      {paid ? (
+        <p className={styles.thanks} role="status">
+          {t(paid === 'plan' ? 'thanksPlan' : 'thanksTopUp')}
+        </p>
+      ) : null}
+
       <div
         className={styles.status}
-        data-tone={billing.readOnly ? 'expired' : paid ? 'paid' : 'trial'}
+        data-tone={billing.readOnly ? 'expired' : onPlan ? 'paid' : 'trial'}
       >
         {billing.readOnly ? (
           <>
             <h2>{t('expiredTitle')}</h2>
             <p>{t('expiredBody')}</p>
           </>
-        ) : paid ? (
+        ) : onPlan ? (
           <>
             <h2>{t('paidTitle', { plan: p(`${billing.access}.name`) })}</h2>
             {billing.status === 'past_due' ? <p>{t('pastDue')}</p> : null}
@@ -116,7 +129,7 @@ export function PlanView({ billing }: { billing: BillingView | null }) {
           >
             <span style={{ width: `${share}%` }} />
           </div>
-          {paid ? (
+          {onPlan ? (
             <p className={styles.small}>
               {t('creditsReset', { date: date(billing.credits.periodEnd) })}
             </p>
@@ -165,7 +178,7 @@ export function PlanView({ billing }: { billing: BillingView | null }) {
 
       <ul className={styles.plans}>
         {PLAN_CARDS.filter((plan) => plan.id !== 'trial').map((plan) => {
-          const current = paid && billing.access === plan.id && billing.interval === interval;
+          const current = onPlan && billing.access === plan.id && billing.interval === interval;
           const yearly = interval === 'year';
           return (
             <li

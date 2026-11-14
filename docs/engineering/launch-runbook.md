@@ -15,7 +15,7 @@ Nothing below can be done by an agent; each blocks the public launch.
 | Pip | A new DeepSeek key (rotate the one shared in chat) as a Coolify secret; decide whether `FEATURE_PIP=true` at launch |
 | Measurement | A Plausible site and, for ads, a Meta Pixel ID ([ADR-0018](../architecture/adr/0018-launch-measurement-and-consent.md)) |
 | Legal | Fill the `[bracketed]` facts in the Terms and Privacy drafts (`legal.*` in the catalogs) and have them reviewed; then drop the draft banner |
-| Payments | Stripe account (Brazil), test keys first; the Price IDs for Explorer and Voyager (monthly and yearly) and the top-up; live keys only when ready to charge ([ADR-0019](../architecture/adr/0019-plans-trial-and-pip-credits.md)) |
+| Payments | Stripe account (Brazil), test keys first; the Price IDs for Explorer and Voyager (monthly and yearly) and the top-up; the webhook endpoint; live keys only when ready to charge ([steps](../integrations/stripe.md#switching-it-on-the-owner-in-the-stripe-dashboard-test-mode-first)) |
 
 ## 2. Services in Coolify
 
@@ -34,7 +34,7 @@ Only the web service is public. The browser reaches `/api/auth/*` and `/v1/*` th
 - **API:** `DATABASE_URL`, `BETTER_AUTH_SECRET` (32+ characters, not the dev one), `BETTER_AUTH_URL` (https, the public web origin), `SMTP_HOST`, `EMAIL_FROM`, `S3_ENDPOINT`, `S3_BUCKET`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY` (not the dev pair).
 - **Worker:** `DATABASE_URL` and the same `S3_*`.
 - **Web:** `API_INTERNAL_URL`.
-- Optional: `GEOAPIFY_API_KEY` (place search; without it search says it is unavailable) and `NEXT_PUBLIC_GEOAPIFY_API_KEY` (map tiles, restricted to the domain), `DEEPSEEK_API_KEY`, `GOOGLE_CLIENT_ID` + `GOOGLE_CLIENT_SECRET`, `NEXT_PUBLIC_PLAUSIBLE_DOMAIN`, `NEXT_PUBLIC_META_PIXEL_ID`.
+- Optional: `GEOAPIFY_API_KEY` (place search; without it search says it is unavailable) and `NEXT_PUBLIC_GEOAPIFY_API_KEY` (map tiles, restricted to the domain), `DEEPSEEK_API_KEY`, the `STRIPE_*` group, `GOOGLE_CLIENT_ID` + `GOOGLE_CLIENT_SECRET`, `NEXT_PUBLIC_PLAUSIBLE_DOMAIN`, `NEXT_PUBLIC_META_PIXEL_ID`.
 
 ## 4. First deploy, in order
 

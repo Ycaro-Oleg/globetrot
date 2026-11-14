@@ -1519,6 +1519,8 @@
     "perMonthShort": "{price}/month",
     "tripsTitle": "Active trips",
     "choosePlans": "Choose your plan",
-    "failed": "That did not work. Try again in a moment."
+    "failed": "That did not work. Try again in a moment.",
+    "thanksPlan": "Thank you! Your payment went through. Your plan switches on in a moment; reload if it still shows the trial.",
+    "thanksTopUp": "Thank you! Your extra Pip credits arrive in a moment."
   }
 }

@@ -1,6 +1,6 @@
 // Plans and Pip credits against a real PostgreSQL: the trial from sign-up, read-only after it, a plan opening it
 // again, the active-trip limit, bought credits applied once, and checkout while payments are off (ADR-0019).
-import { randomBytes } from 'node:crypto';
+import { createHmac, randomBytes } from 'node:crypto';
 import { createBillingRepository, schema } from '@globetrot/db';
 import { createFakeEmail } from '@globetrot/application/testing';
 import { createTestDatabase, type TestDatabase } from '@globetrot/db/testing';
@@ -18,7 +18,7 @@ afterEach(async () => {
 let addressCounter = 0;
 const nextAddress = () => `198.18.4.${++addressCounter}`;
 
-async function harness() {
+async function harness(extraEnv: Record<string, string> = {}, stripeFetch?: typeof fetch) {
   const database = await createTestDatabase();
   databases.push(database);
   const config = loadApiConfig({
@@ -26,8 +26,12 @@ async function harness() {
     DATABASE_URL: database.url,
     BETTER_AUTH_SECRET: randomBytes(32).toString('hex'),
     REQUIRE_VERIFIED_EMAIL: 'false',
+    ...extraEnv,
   });
-  const { app } = createServices(database.db, config, { email: createFakeEmail().port });
+  const { app } = createServices(database.db, config, {
+    email: createFakeEmail().port,
+    ...(stripeFetch ? { stripeFetch } : {}),
+  });
   const origin = config.auth.baseURL;
   async function signUp(email: string) {
     const response = await app.request(`${origin}/api/auth/sign-up/email`, {
@@ -57,7 +61,13 @@ async function harness() {
     });
     return { status: response.status, json: (await response.json()) as Record<string, unknown> };
   };
-  return { db: database.db, signUp, call };
+  const webhook = (body: string, signature: string) =>
+    app.request(`${origin}/v1/webhooks/stripe`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'stripe-signature': signature },
+      body,
+    });
+  return { db: database.db, signUp, call, webhook };
 }
 
 describe('billing against a real database', () => {
@@ -146,5 +156,56 @@ describe('billing against a real database', () => {
       item: 'explorer',
     });
     expect(checkout.status).toBe(503);
+  });
+
+  it('takes Stripe’s signed webhook without a session, records the plan and checks out through Stripe', async () => {
+    const stripeEnv = {
+      STRIPE_SECRET_KEY: 'sk_test_integration',
+      STRIPE_WEBHOOK_SECRET: 'whsec_integration',
+      STRIPE_PRICE_EXPLORER_MONTHLY: 'price_em',
+      STRIPE_PRICE_EXPLORER_YEARLY: 'price_ey',
+      STRIPE_PRICE_VOYAGER_MONTHLY: 'price_vm',
+      STRIPE_PRICE_VOYAGER_YEARLY: 'price_vy',
+      STRIPE_PRICE_TOP_UP: 'price_top',
+    };
+    const now = Math.floor(Date.now() / 1000);
+    const stripeFetch: typeof fetch = async (input) =>
+      new Response(
+        JSON.stringify(
+          String(input).includes('/subscriptions/')
+            ? {
+                id: 'sub_int',
+                status: 'active',
+                customer: 'cus_int',
+                start_date: now,
+                current_period_end: now + 30 * 86_400,
+                items: { data: [{ price: { id: 'price_vm' } }] },
+              }
+            : { url: 'https://checkout.stripe.test/session' },
+        ),
+        { status: 200 },
+      );
+    const { signUp, call, webhook } = await harness(stripeEnv, stripeFetch);
+    const ana = await signUp('ana@example.com');
+
+    expect(await call(ana.cookie, 'POST', '/v1/me/billing/checkout', { item: 'voyager' })).toEqual({
+      status: 200,
+      json: { url: 'https://checkout.stripe.test/session' },
+    });
+
+    const body = JSON.stringify({
+      type: 'checkout.session.completed',
+      data: {
+        object: { mode: 'subscription', subscription: 'sub_int', client_reference_id: ana.id },
+      },
+    });
+    const signature = `t=${now},v1=${createHmac('sha256', 'whsec_integration').update(`${now}.${body}`).digest('hex')}`;
+    expect((await webhook(body, 't=1,v1=bad')).status).toBe(400);
+    expect((await webhook(body, signature)).status).toBe(200);
+    expect((await call(ana.cookie, 'GET', '/v1/me/billing')).json).toMatchObject({
+      access: 'voyager',
+      maxActiveTrips: null,
+    });
+    expect((await call(ana.cookie, 'POST', '/v1/me/billing/portal')).status).toBe(200);
   });
 });
