@@ -120,6 +120,20 @@
       "action": "Choose a new password",
       "expiry": "This link can be used once and expires in {hours, plural, one {# hour} other {# hours}}.",
       "ignore": "If you did not ask for this, ignore this email: your password stays as it is. Resetting it signs you out of your other devices."
+    },
+    "trialEnding": {
+      "subject": "Your free week ends in 2 days",
+      "body": "Your Globetrot free week ends soon. Your trips, budget and lists are all there; pick a plan now and keep planning without a break. Explorer starts at US$4.99 a month.",
+      "action": "See plans",
+      "expiry": "Your free week ends in {hours, plural, one {# hour} other {# hours}}.",
+      "ignore": "If you do nothing, your trips stay safe and you can still see and export them."
+    },
+    "trialEnded": {
+      "subject": "Your free week is over: your trips are safe",
+      "body": "Your Globetrot free week has ended. Everything you planned is still there, read-only. Choose a plan to keep changing it, or export it any time.",
+      "action": "Choose a plan",
+      "expiry": "We send this once. Nothing is charged unless you choose a plan.",
+      "ignore": "You can delete your account from Settings whenever you like."
     }
   },
   "auth": {

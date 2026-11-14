@@ -171,6 +171,7 @@ Decided in [ADR-0019](../architecture/adr/0019-plans-trial-and-pip-credits.md). 
 - **Canceling** keeps the plan until the end of the paid period.
 - **A failed renewal** keeps it 3 more days, then the account is read-only.
 - The app shows the days left in the trial on every signed-in page, and the plan, credits and active trips on **Plan & credits** (`/app/plan`).
+- **Emails about the trial:** two days before it ends ("ends in 2 days"), and once after it ended ("your trips are safe"), in the person's language, only to a verified address without a paid plan. Each is sent at most once.
 - Payment is by Stripe's hosted checkout. Until it is switched on, choosing a plan says so and charges nothing.
 
 ## Privacy (applies from day one)

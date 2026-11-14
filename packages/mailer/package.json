@@ -1,0 +1,22 @@
+{
+  "name": "@globetrot/mailer",
+  "version": "0.0.0",
+  "private": true,
+  "description": "SMTP adapter for the application's EmailPort (API and worker)",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@globetrot/application": "workspace:*",
+    "nodemailer": "10.3.1"
+  },
+  "devDependencies": {
+    "@globetrot/config": "workspace:*",
+    "@types/nodemailer": "8.0.2"
+  }
+}

@@ -2,7 +2,16 @@
 // once are a ledger, so a webhook delivered twice adds nothing twice (`ref` is unique).
 import { BILLING_INTERVALS, PAID_PLANS, SUBSCRIPTION_STATUSES } from '@globetrot/domain';
 import { sql } from 'drizzle-orm';
-import { check, index, integer, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import {
+  check,
+  index,
+  integer,
+  pgTable,
+  primaryKey,
+  text,
+  timestamp,
+  uuid,
+} from 'drizzle-orm/pg-core';
 import { user } from './auth';
 
 const instant = (name: string) => timestamp(name, { withTimezone: true });
@@ -50,5 +59,21 @@ export const creditLedger = pgTable(
     index('credit_ledger_user_id_idx').on(table.userId, table.createdAt),
     check('credit_ledger_reason_valid', sql`${table.reason} in ('top-up', 'pip', 'grant')`),
     check('credit_ledger_delta_nonzero', sql`${table.delta} <> 0`),
+  ],
+);
+
+/** One-time account emails already sent (the trial reminders), so the worker never sends one twice. */
+export const accountNotice = pgTable(
+  'account_notice',
+  {
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    kind: text('kind').notNull(),
+    sentAt: instant('sent_at').defaultNow().notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.userId, table.kind] }),
+    check('account_notice_kind_valid', sql`${table.kind} in ('trial-ending', 'trial-ended')`),
   ],
 );

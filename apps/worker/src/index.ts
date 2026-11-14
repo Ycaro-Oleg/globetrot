@@ -1,5 +1,10 @@
-import { createMaintenance } from '@globetrot/application';
-import { connectDatabase, createMaintenanceRepository } from '@globetrot/db';
+import { createMaintenance, createTrialReminders } from '@globetrot/application';
+import {
+  connectDatabase,
+  createMaintenanceRepository,
+  createNoticeRepository,
+} from '@globetrot/db';
+import { createSmtpEmail } from '@globetrot/mailer';
 import { createS3Storage } from '@globetrot/storage';
 import { loadWorkerConfig } from './config';
 import { startWorker } from './worker';
@@ -13,6 +18,13 @@ const maintenance = createMaintenance({
   store: createMaintenanceRepository(database.db),
   storage: createS3Storage(config.storage),
   clock: { now: () => new Date() },
+});
+
+const reminders = createTrialReminders({
+  store: createNoticeRepository(database.db),
+  email: createSmtpEmail(config.email),
+  clock: { now: () => new Date() },
+  appUrl: config.appUrl,
 });
 
 const worker = startWorker({
@@ -31,6 +43,8 @@ const worker = startWorker({
         console.log(
           `maintenance: ${report.unplacedMedia} unplaced uploads, ${report.strayObjects} stray objects, ${report.idempotencyKeys} idempotency records removed`,
         );
+        const notices = await reminders.run();
+        console.log(`trial emails: ${notices.ending} ending soon, ${notices.ended} ended`);
       } finally {
         await client.query('select pg_advisory_unlock($1)', [MAINTENANCE_LOCK]);
       }

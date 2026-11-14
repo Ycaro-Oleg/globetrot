@@ -15,6 +15,7 @@
   "dependencies": {
     "@globetrot/application": "workspace:*",
     "@globetrot/db": "workspace:*",
+    "@globetrot/mailer": "workspace:*",
     "@globetrot/storage": "workspace:*"
   },
   "devDependencies": {

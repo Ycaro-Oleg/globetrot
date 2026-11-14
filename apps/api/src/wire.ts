@@ -31,7 +31,7 @@ import { eq, sql } from 'drizzle-orm';
 import { createApp, type AuthService } from './app';
 import { createAuth, type Auth } from './auth';
 import type { ApiConfig } from './config';
-import { createSmtpEmail } from './email';
+import { createSmtpEmail } from '@globetrot/mailer';
 import { createGeoapifyGeocoder, createMemoryRateLimiter } from './places';
 import { createS3Storage } from '@globetrot/storage';
 import { createDeepSeekAi } from './ai';

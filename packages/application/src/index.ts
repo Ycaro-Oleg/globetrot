@@ -30,6 +30,12 @@ export {
   type PaymentEvents,
   type PaymentOutcome,
 } from './billing/payment-events';
+export {
+  createTrialReminders,
+  type TrialNoticeKind,
+  type TrialNoticeStore,
+  type TrialNoticeTarget,
+} from './billing/trial-reminders';
 export { canonicalJson } from './canonical-json';
 export {
   ApplicationError,

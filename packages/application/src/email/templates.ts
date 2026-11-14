@@ -1,7 +1,7 @@
 import { formatMessage, type SupportedLocale } from '@globetrot/i18n';
 
 /** The transactional emails the product sends. A new template needs its strings in every catalog. */
-export type EmailTemplate = 'verifyEmail' | 'resetPassword';
+export type EmailTemplate = 'verifyEmail' | 'resetPassword' | 'trialEnding' | 'trialEnded';
 
 export interface EmailData {
   /** The single-use link the email exists for. Must be an http(s) URL. */

@@ -14,6 +14,7 @@ Three earlier decisions left work for "a job runner, later": uploads that are ne
   2. stored images under `media/` whose row is gone and whose id (UUIDv7) is older than **1 hour**, so an upload in progress is never touched;
   3. idempotency records older than **7 days**.
   Logs carry counts only.
+- **Trial emails** run in the same round since [ADR-0019](0019-plans-trial-and-pip-credits.md): the worker reads the `SMTP_*` settings and `BETTER_AUTH_URL` too, through `@globetrot/mailer` (the SMTP adapter, moved out of the API).
 - **The S3 adapter moves to `@globetrot/storage`**, shared by the API and the worker, with `list` added (ListObjectsV2). Its settings reader (`storageConfigFromEnv`) holds the production rules in one place.
 - **pg-boss is not added** until there is real queued work (emails in bulk, imports, notifications).
 

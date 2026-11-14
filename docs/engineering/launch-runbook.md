@@ -32,7 +32,7 @@ Only the web service is public. The browser reaches `/api/auth/*` and `/v1/*` th
 ## 3. Settings that production refuses to start without
 
 - **API:** `DATABASE_URL`, `BETTER_AUTH_SECRET` (32+ characters, not the dev one), `BETTER_AUTH_URL` (https, the public web origin), `SMTP_HOST`, `EMAIL_FROM`, `S3_ENDPOINT`, `S3_BUCKET`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY` (not the dev pair).
-- **Worker:** `DATABASE_URL` and the same `S3_*`.
+- **Worker:** `DATABASE_URL`, the same `S3_*`, `SMTP_HOST`, `EMAIL_FROM` and an https `BETTER_AUTH_URL` (the trial emails).
 - **Web:** `API_INTERNAL_URL`.
 - Optional: `GEOAPIFY_API_KEY` (place search; without it search says it is unavailable) and `NEXT_PUBLIC_GEOAPIFY_API_KEY` (map tiles, restricted to the domain), `DEEPSEEK_API_KEY`, the `STRIPE_*` group, `GOOGLE_CLIENT_ID` + `GOOGLE_CLIENT_SECRET`, `NEXT_PUBLIC_PLAUSIBLE_DOMAIN`, `NEXT_PUBLIC_META_PIXEL_ID`.
 

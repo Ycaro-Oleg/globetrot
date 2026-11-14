@@ -120,6 +120,20 @@
       "action": "Escolher uma nova senha",
       "expiry": "Este link só pode ser usado uma vez e expira em {hours, plural, one {# hora} other {# horas}}.",
       "ignore": "Se você não pediu isso, ignore este e-mail: sua senha continua a mesma. Redefinir a senha encerra a sessão nos seus outros dispositivos."
+    },
+    "trialEnding": {
+      "subject": "Sua semana grátis termina em 2 dias",
+      "body": "Sua semana grátis no Globetrot está acabando. Suas viagens, orçamento e listas estão lá; escolha um plano agora e continue planejando sem pausa. O Explorer começa em US$ 4,99 por mês.",
+      "action": "Ver planos",
+      "expiry": "Sua semana grátis termina em {hours, plural, one {# hora} other {# horas}}.",
+      "ignore": "Se você não fizer nada, suas viagens continuam seguras e você ainda pode vê-las e exportá-las."
+    },
+    "trialEnded": {
+      "subject": "Sua semana grátis acabou: suas viagens estão seguras",
+      "body": "Sua semana grátis no Globetrot terminou. Tudo o que você planejou continua lá, somente leitura. Escolha um plano para continuar editando, ou exporte quando quiser.",
+      "action": "Escolher um plano",
+      "expiry": "Enviamos este e-mail uma vez só. Nada é cobrado a menos que você escolha um plano.",
+      "ignore": "Você pode excluir sua conta em Configurações quando quiser."
     }
   },
   "auth": {

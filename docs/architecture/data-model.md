@@ -217,6 +217,7 @@ Migration `0018_billing`. Rules: [business rules](../product/business-rules.md#p
 | Table | What | Rules |
 |---|---|---|
 | `subscription` | The paid plan, one per account at most | `user_id` (primary key, `user`, cascade), `plan` in `PAID_PLANS`, `interval` (`month`, `year`), `status` (`active`, `past_due`, `canceled`), `started_at` (monthly credits count from here), `current_period_end`, `provider_customer_id`, `provider_subscription_id` (unique) |
+| `account_notice` | One-time account emails already sent (migration `0019_account_notice`) | `user_id` (cascade) and `kind` (`trial-ending`, `trial-ended`) as the primary key, `sent_at`. Claimed before sending, removed if sending failed |
 | `credit_ledger` | Bought Pip credits in, credits spent from them out | `user_id` (cascade), `delta` (non-zero), `reason` (`top-up`, `pip`, `grant`), `ref` (unique, so a payment is applied once). The balance is the sum |
 
 ## Extensions
