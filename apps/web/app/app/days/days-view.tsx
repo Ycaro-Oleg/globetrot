@@ -6,6 +6,8 @@ import { Banner } from '@globetrot/ui';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import { useEffect, useId, useRef, useState, type DragEvent, type FormEvent } from 'react';
+import { PipAvatar } from '../_components/pip-avatar';
+import { StartDateForm } from '../_components/start-date-form';
 import { addPlace, movePlace, removePlace } from './actions';
 import {
   buildBoard,
@@ -30,7 +32,7 @@ export function DaysView({
   days,
   places,
 }: {
-  trip: { readonly id: string; readonly title: string } | null;
+  trip: { readonly id: string; readonly title: string; readonly startDate?: string | null } | null;
   stops: readonly BoardStop[];
   days: readonly TripDay[];
   places: readonly BoardPlace[] | null;
@@ -52,10 +54,19 @@ export function DaysView({
     return (
       <section className={styles.page}>
         <h1 className={styles.title}>{t('title')}</h1>
-        <p className={styles.sub}>{t('noStops')}</p>
-        <Link className={styles.secondary} href="/app/board">
-          {t('goBoard')}
-        </Link>
+        <div className={styles.emptyCard}>
+          <PipAvatar size={88} />
+          <h2>{t('emptyTitle')}</h2>
+          <p>{t('noStops')}</p>
+          <div className={styles.emptyActions}>
+            <Link className={styles.cta} href="/app/board">
+              {t('goBoard')}
+            </Link>
+            <Link className={styles.secondary} href="/app/trips?example=japan">
+              {t('tryExample')}
+            </Link>
+          </div>
+        </div>
       </section>
     );
   }
@@ -69,16 +80,26 @@ export function DaysView({
       </section>
     );
   }
-  return <Board tripId={trip.id} stops={stops} days={days} initial={places} />;
+  return (
+    <Board
+      tripId={trip.id}
+      startDate={trip.startDate ?? null}
+      stops={stops}
+      days={days}
+      initial={places}
+    />
+  );
 }
 
 function Board({
   tripId,
+  startDate,
   stops,
   days,
   initial,
 }: {
   tripId: string;
+  startDate: string | null;
   stops: readonly BoardStop[];
   days: readonly TripDay[];
   initial: readonly BoardPlace[];
@@ -280,6 +301,12 @@ function Board({
           + {t('addPlace')}
         </button>
       </header>
+      {startDate === null ? (
+        <div className={styles.dateBanner}>
+          <p>{t('noStartDate')}</p>
+          <StartDateForm tripId={tripId} startDate={null} compact />
+        </div>
+      ) : null}
       <p className={styles.how}>
         <strong>{t('how')}</strong> {t('howText')}
       </p>

@@ -5,6 +5,8 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 
 vi.mock('./actions', () => ({ addPlace: vi.fn(), movePlace: vi.fn(), removePlace: vi.fn() }));
+vi.mock('../_components/trip-actions', () => ({ updateTripFields: vi.fn() }));
+vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh: vi.fn() }) }));
 
 import type { BoardPlace, BoardStop } from './day-board';
 import { DaysView } from './days-view';
@@ -92,6 +94,30 @@ describe('days without what they need', () => {
   it('leads to the trips, or to the board when the route is empty', () => {
     expect(render('en', { trip: null })).toContain('href="/app/trips"');
     expect(render('en', { stops: [], days: [] })).toContain('href="/app/board"');
+  });
+
+  it('offers an example trip next to the board when the route is empty', () => {
+    const html = render('en', { stops: [], days: [] });
+    expect(text(html)).toContain(catalogs.en.daysPage.emptyTitle);
+    expect(html).toContain('href="/app/trips?example=japan"');
+  });
+
+  it.each(SUPPORTED_LOCALES)('lets you set the start date right on the board (%s)', (locale) => {
+    const copy = catalogs[locale];
+    const without = render(locale, {
+      trip: { id: '0193c0a8-7b1e-7c4a-9e2f-3d5a6b7c8d99', title: 'Japan 2027', startDate: null },
+      days: days(null),
+    });
+    expect(text(without)).toContain(copy.daysPage.noStartDate);
+    expect(without).toContain('type="date"');
+    const withDate = render(locale, {
+      trip: {
+        id: '0193c0a8-7b1e-7c4a-9e2f-3d5a6b7c8d99',
+        title: 'Japan 2027',
+        startDate: '2027-04-03',
+      },
+    });
+    expect(withDate).not.toContain('type="date"');
   });
 
   it('says so when the plan cannot be read', () => {

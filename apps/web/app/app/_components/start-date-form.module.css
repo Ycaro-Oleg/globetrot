@@ -1,0 +1,60 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form label {
+  color: var(--gt-semantic-color-text-secondary);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.row input {
+  box-sizing: border-box;
+  min-height: var(--gt-component-hit-target);
+  padding: 0 12px;
+  border: var(--gt-primitive-border-1) solid var(--gt-semantic-color-input-border);
+  border-radius: 12px;
+  background: var(--gt-semantic-color-input-surface);
+  color: var(--gt-semantic-color-text);
+  font: inherit;
+  font-size: 16px;
+}
+
+.save {
+  min-height: var(--gt-component-hit-target);
+  padding: 0 18px;
+  border: 0;
+  border-radius: var(--gt-primitive-radius-pill);
+  background: var(--gt-semantic-color-primary);
+  color: var(--gt-semantic-color-on-primary);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.save:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.status {
+  min-height: 1.2em;
+  margin: 0;
+  color: var(--gt-semantic-color-text-secondary);
+  font-size: 13px;
+}
+
+.row input:focus-visible,
+.save:focus-visible {
+  outline: var(--gt-component-focus-width) solid var(--gt-semantic-color-focus);
+  outline-offset: 2px;
+}
