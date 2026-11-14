@@ -30,7 +30,7 @@ import { createAuth, type Auth } from './auth';
 import type { ApiConfig } from './config';
 import { createSmtpEmail } from './email';
 import { createGeoapifyGeocoder, createMemoryRateLimiter } from './places';
-import { createS3Storage } from './storage';
+import { createS3Storage } from '@globetrot/storage';
 import { createDeepSeekAi } from './ai';
 
 /** Adapter: the application's `UserReader` port over the `user` table. Selects only what the port names. */

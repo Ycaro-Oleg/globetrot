@@ -1,4 +1,5 @@
 import { loadDatabaseConfig } from '@globetrot/db';
+import { storageConfigFromEnv, StorageConfigError, type StorageConfig } from '@globetrot/storage';
 import { z } from 'zod';
 
 /**
@@ -45,12 +46,6 @@ const envSchema = z.object({
   DEEPSEEK_API_KEY: z.string().optional(),
   DEEPSEEK_BASE_URL: z.url().default('https://api.deepseek.com'),
   DEEPSEEK_MODEL: z.string().default('deepseek-chat'),
-  S3_ENDPOINT: z.url().default('http://localhost:8333'),
-  S3_REGION: z.string().default('us-east-1'),
-  S3_BUCKET: z.string().default('globetrot-media'),
-  S3_ACCESS_KEY_ID: z.string().optional(),
-  S3_SECRET_ACCESS_KEY: z.string().optional(),
-  S3_FORCE_PATH_STYLE: z.enum(['true', 'false']).default('true'),
   PORT: number(4000, 1, 65535),
 });
 
@@ -88,20 +83,6 @@ export interface EmailConfig {
   readonly user: string | undefined;
   readonly password: string | undefined;
 }
-
-export interface StorageConfig {
-  readonly endpoint: string;
-  readonly region: string;
-  readonly bucket: string;
-  readonly accessKeyId: string;
-  readonly secretAccessKey: string;
-  /** `bucket` in the path (SeaweedFS, most self-hosted S3) rather than in the host name. */
-  readonly forcePathStyle: boolean;
-}
-
-/** The local storage's credentials from `.env.example`. Production refuses them. */
-const DEV_STORAGE_KEY = 'globetrot-dev';
-const DEV_STORAGE_SECRET = 'globetrot-dev-secret';
 
 export interface ApiConfig {
   readonly nodeEnv: 'production' | 'test' | 'development';
@@ -195,19 +176,6 @@ export function loadApiConfig(
       throw new ApiConfigError('SMTP_HOST is required in production');
     if (present.EMAIL_FROM === undefined)
       throw new ApiConfigError('EMAIL_FROM is required in production');
-    // Photos must not land in a local bucket or use the published development credentials.
-    for (const name of ['S3_ENDPOINT', 'S3_BUCKET', 'S3_ACCESS_KEY_ID', 'S3_SECRET_ACCESS_KEY']) {
-      if (present[name] === undefined)
-        throw new ApiConfigError(`${name} is required in production`);
-    }
-    if (
-      present.S3_ACCESS_KEY_ID === DEV_STORAGE_KEY ||
-      present.S3_SECRET_ACCESS_KEY === DEV_STORAGE_SECRET
-    ) {
-      throw new ApiConfigError(
-        'S3 credentials must not be the local development ones in production',
-      );
-    }
   }
 
   // Google is on only with both values; one without the other is a mistake worth stopping for.
@@ -218,6 +186,14 @@ export function loadApiConfig(
     values.GOOGLE_CLIENT_ID !== undefined && values.GOOGLE_CLIENT_SECRET !== undefined
       ? { clientId: values.GOOGLE_CLIENT_ID, clientSecret: values.GOOGLE_CLIENT_SECRET }
       : null;
+
+  let storage: StorageConfig;
+  try {
+    storage = storageConfigFromEnv(present, isProduction);
+  } catch (error) {
+    if (error instanceof StorageConfigError) throw new ApiConfigError(error.message);
+    throw error;
+  }
 
   const baseOrigin = new URL(values.BETTER_AUTH_URL).origin;
   const trustedOrigins = [...new Set([baseOrigin, ...parseOrigins(values.TRUSTED_ORIGINS)])];
@@ -236,14 +212,7 @@ export function loadApiConfig(
             baseUrl: values.DEEPSEEK_BASE_URL,
             model: values.DEEPSEEK_MODEL,
           },
-    storage: {
-      endpoint: values.S3_ENDPOINT,
-      region: values.S3_REGION,
-      bucket: values.S3_BUCKET,
-      accessKeyId: values.S3_ACCESS_KEY_ID ?? DEV_STORAGE_KEY,
-      secretAccessKey: values.S3_SECRET_ACCESS_KEY ?? DEV_STORAGE_SECRET,
-      forcePathStyle: values.S3_FORCE_PATH_STYLE === 'true',
-    },
+    storage,
     usingInsecureSecret: secret === INSECURE_DEV_SECRET,
     auth: {
       secret,

@@ -538,6 +538,8 @@ export interface StoragePort {
   get(key: string): Promise<Uint8Array | null>;
   /** Removes the object; a missing one is not an error. */
   delete(key: string): Promise<void>;
+  /** Keys under a prefix, a page at a time (`next` continues; null at the end). */
+  list(prefix: string, after?: string): Promise<{ keys: string[]; next: string | null }>;
 }
 
 // --- Account (export and deletion) --------------------------------------------------------------------

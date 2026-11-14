@@ -1,6 +1,6 @@
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
-import { uuidV7 } from './uuid-v7';
+import { uuidV7, uuidV7Time } from './uuid-v7';
 
 const UUID_V7 = /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 const bytes = (value: number) => new Uint8Array(10).fill(value);
@@ -49,5 +49,14 @@ describe('uuidV7', () => {
 
   it('refuses too few random bytes', () => {
     expect(() => uuidV7(1, new Uint8Array(9))).toThrow(RangeError);
+  });
+});
+
+describe('uuidV7Time', () => {
+  it('reads back the time a UUIDv7 was made, and refuses anything else', () => {
+    const at = Date.UTC(2026, 10, 13, 12, 0, 0);
+    expect(uuidV7Time(uuidV7(at, new Uint8Array(10)))?.getTime()).toBe(at);
+    expect(uuidV7Time('not-an-id')).toBeNull();
+    expect(uuidV7Time('0193c0a8-7b1e-4c4a-9e2f-3d5a6b7c8d01')).toBeNull();
   });
 });

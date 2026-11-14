@@ -46,6 +46,7 @@ export {
   type TripRow,
 } from './repositories';
 export { createAccountRepository, type AccountRepository } from './account-repository';
+export { createMaintenanceRepository, type MaintenanceRepository } from './maintenance-repository';
 export {
   createAssistantRepository,
   type AssistantRepository,

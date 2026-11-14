@@ -6,7 +6,7 @@ import { createFakeEmail } from '@globetrot/application/testing';
 import { createTestDatabase, type TestDatabase } from '@globetrot/db/testing';
 import { afterEach, describe, expect, it } from 'vitest';
 import { loadApiConfig } from './config';
-import { createMemoryStorage, createS3Storage } from './storage';
+import { createMemoryStorage, createS3Storage } from '@globetrot/storage';
 import { createServices } from './wire';
 
 const PASSWORD = 'correct horse battery staple';
@@ -151,5 +151,10 @@ describe.skipIf(!s3Up)('S3 adapter (local SeaweedFS)', () => {
     await storage.put(key, PNG, 'image/png');
     expect(Buffer.from((await storage.get(key))!)).toEqual(Buffer.from(PNG));
     expect(await storage.get(`test/${crypto.randomUUID()}`)).toBeNull();
+    const listed = await storage.list('test/');
+    expect(listed.keys).toContain(key);
+    await storage.delete(key);
+    expect(await storage.get(key)).toBeNull();
+    expect((await storage.list('test/')).keys).not.toContain(key);
   });
 });

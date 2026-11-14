@@ -1,1 +1,1 @@
-export { uuidV7 } from './uuid-v7';
+export { uuidV7, uuidV7Time } from './uuid-v7';

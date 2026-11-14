@@ -1,6 +1,6 @@
 # Current state
 
-_Last updated: 2026-11-13, Pip v1. Code state: `develop` includes #83 to #99; account data (#100) and Pip v1 are in open PRs._
+_Last updated: 2026-11-13, worker. Code state: `develop` includes #83 to #102; the worker housekeeping is in an open PR._
 
 Read this first. It says where the project is, what exists, what is open, what only the owner can unblock and what to do next. Procedure for working: [`playbook.md`](playbook.md). Feature-by-feature progress: [`../product/progress.md`](../product/progress.md). Milestones and exit criteria: [`../product/roadmap.md`](../product/roadmap.md).
 
@@ -74,12 +74,12 @@ These cannot be finished by an agent. Do not work around them, and do not mark t
 
 Honest list of what is missing or deliberately simple, so nobody assumes otherwise.
 
-- **Account export and deletion** exist (ADR-0015). Open points: legal review of keeping the audit log, a fresh-session check before deleting, a cleanup job for stored images whose deletion failed.
-- **Photos:** no thumbnails, no cleanup of uploads never placed (no job runner), no production storage provider chosen (owner).
+- **Account export and deletion** exist (ADR-0015). Open points: legal review of keeping the audit log, a fresh-session check before deleting.
+- **Photos:** no thumbnails; no production storage provider chosen (owner). Unplaced uploads and stray objects are swept by the worker.
 - **Community:** no staff review queue for `post_report` (three reports hide a post until then), no blocking, no notifications or unread badge, no search. Handles are created on first action; nobody is listed before that.
 - **Terms acceptance is not stored** (needs the final legal text and a version).
 - **Trips: no pagination** (a list returns at most 200), delete only after archiving, and visibility is always `private`.
-- **Idempotency keys are never cleaned up**, and there is no job runner yet (`apps/worker` is a placeholder).
+- **The worker runs hourly housekeeping** (ADR-0017); there is no queue yet (pg-boss when queued work appears).
 - **No production migration step.** Nothing in the API image runs migrations or ships the `migrations` folder; locally `pnpm --filter @globetrot/db migrate` does it. How migrations run on deploy (app start or a release step) is decided in M11 ([`data-model.md`](../architecture/data-model.md#migrations)).
 - **`/health` is shallow:** it answers `ok` without checking the database or the mail server. Add readiness checks with the deployment work (M11).
 - **No seed or demo data.** There are no example trips yet (M8) and no script that creates a test account; create one through `/signup` and Mailpit.

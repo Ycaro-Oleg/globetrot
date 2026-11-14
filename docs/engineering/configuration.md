@@ -56,6 +56,14 @@ Semantics, error codes and the trust model for the client address: [`authenticat
 | `HOSTNAME` | `0.0.0.0` in the image | — | Bind address of the standalone server |
 | `NEXT_TELEMETRY_DISABLED` | `1` in the image | — | Disables Next.js telemetry |
 
+## Worker (`apps/worker`)
+
+| Variable | Default | Production | What it does |
+|---|---|---|---|
+| `DATABASE_URL` | local compose database | **required** | Same database as the API |
+| `S3_*` | as for the API | **required**, as for the API | Where stored images are swept ([ADR-0017](../architecture/adr/0017-worker-housekeeping.md)) |
+| `MAINTENANCE_INTERVAL_MINUTES` | `60` | optional | Minutes between housekeeping rounds (1 to 1440) |
+
 ## Database tooling (`packages/db`)
 
 | Variable | Default | What it does |

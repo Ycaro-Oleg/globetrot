@@ -68,7 +68,7 @@ Migration `0002_trips` (and `0003_audit_event_append_only`). Code: `packages/db/
 - **The database enforces the rules too,** not only the application: title trimmed and 1–120 characters, `currency` matches `^[A-Z]{3}$`, `status` and `visibility` are in their lists (built from the same `as const` arrays as the domain, so they cannot drift). `visibility` only allows `private` until sharing is specified; widening a CHECK is a one-line migration.
 - **`status` is stored, the journey `stage` never is** (it is derived, [`business-rules.md`](../product/business-rules.md#trips)).
 - **`audit_event` cannot be changed:** a trigger rejects `UPDATE`, `DELETE` and `TRUNCATE` (a superuser can still disable triggers; the guard is against the application's own connection). `actor_id` has **no foreign key** on purpose, so the history survives the account. `metadata` carries field names, never values: no personal data.
-- **`idempotency_key` rows are written in the transaction of the work they guard.** A visible key therefore always has its response, and two concurrent requests with the same key serialize on the unique row. Old rows are only useful for a retry window and can be cleaned by a job later.
+- **`idempotency_key` rows are written in the transaction of the work they guard.** A visible key therefore always has its response, and two concurrent requests with the same key serialize on the unique row. Old rows are only useful for a retry window; the worker deletes them after **7 days** ([ADR-0017](adr/0017-worker-housekeeping.md)).
 
 ## User preferences
 
@@ -197,7 +197,7 @@ Migration `0016_photos`. Rules: [business rules](../product/business-rules.md#ph
 | `post.photos`, `destination.photos` | jsonb arrays of `{ mediaId, alt }` (CHECK: an array). At most 4 on a post, 12 on a stop, checked in the application along with ownership |
 
 - Audit: `media.upload` with the content type only. Descriptions are personal and never logged.
-- Uploads that are never placed are not cleaned up yet (no job runner).
+- The worker removes uploads that no post or stop shows after **24 hours**, and stored images without a row once their id is over an hour old ([ADR-0017](adr/0017-worker-housekeeping.md)).
 
 ## Pip (AI proposals and usage)
 

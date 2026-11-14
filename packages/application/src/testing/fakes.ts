@@ -486,6 +486,12 @@ export function createFakePorts(options: FakeOptions = {}) {
       async delete(key) {
         storage.delete(key);
       },
+      async list(prefix) {
+        return {
+          keys: [...storage.keys()].filter((key) => key.startsWith(prefix)).sort(),
+          next: null,
+        };
+      },
     },
     account: accountWriter,
     assistant: assistantWriter,

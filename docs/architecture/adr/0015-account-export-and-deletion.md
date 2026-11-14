@@ -19,5 +19,5 @@ LGPD and GDPR require that people can get a copy of their data and delete their 
 
 ## Consequences
 - The web signs the person out (the session rows are gone and the cookie is cleared) and shows a confirmation on the log-in page.
-- If deleting stored bytes fails, the object is unreachable (no row points to it); a cleanup job should sweep orphans when a worker exists.
+- If deleting stored bytes fails, the object is unreachable (no row points to it); the worker sweeps such objects ([ADR-0017](0017-worker-housekeeping.md)).
 - The export is assembled in one request; it is bounded by the existing per-trip and per-person limits, and history is capped at 10 000 events.
