@@ -120,6 +120,11 @@ describe('days without what they need', () => {
     expect(withDate).not.toContain('type="date"');
   });
 
+  it('offers "Ask Pip" with an idea for the days only when Pip is on', () => {
+    expect(render('en', { pipEnabled: true })).toContain('href="/app/pip?topic=days"');
+    expect(render('en')).not.toContain('/app/pip');
+  });
+
   it('says so when the plan cannot be read', () => {
     expect(render('en', { places: null })).toContain('role="alert"');
   });

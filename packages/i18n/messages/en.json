@@ -692,7 +692,13 @@
       "continue": "Continue",
       "see": "See passport"
     },
-    "back": "Route"
+    "back": "Route",
+    "pip": {
+      "suggestionsTitle": "Pip has {count, plural, one {# suggestion} other {# suggestions}} for this trip",
+      "suggestionsBody": "{count, plural, =0 {Pencilled on the map before you decide.} one {# new stop is pencilled on the map.} other {# new stops are pencilled on the map.}}",
+      "review": "Review",
+      "pencilled": "Suggested by Pip: {name}"
+    }
   },
   "daysPage": {
     "title": "Days",
@@ -1342,6 +1348,12 @@
       "RATE_LIMITED": "Pip needs a rest: you asked a lot today. Try again tomorrow.",
       "SERVICE_UNAVAILABLE": "Pip is not available right now. Everything works without Pip; try again later.",
       "UNKNOWN": "That did not work. Try again."
+    },
+    "askFrom": {
+      "board": "Ask Pip about the route",
+      "days": "Ask Pip for places",
+      "budget": "Ask Pip to estimate",
+      "lists": "Ask Pip what to pack"
     }
   },
   "tripHub": {

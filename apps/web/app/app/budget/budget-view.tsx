@@ -25,6 +25,7 @@ import type { BudgetData, ExpenseData } from '../../../lib/trips';
 import type { Option } from '../../settings/options';
 import { addExpense, removeExpense, saveSavings, type ExpenseInput } from './actions';
 import { chartBars, livePlan, parseAmount } from './budget-plan';
+import { AskPipLink } from '../_components/ask-pip-link';
 import styles from './budget.module.css';
 
 /** Status glyphs (business rules: a status always shows a glyph and a word, never colour alone). */
@@ -57,7 +58,9 @@ export function BudgetView({
   budget,
   expenses,
   currencies,
+  pipEnabled = false,
 }: {
+  pipEnabled?: boolean;
   trip: Trip | null;
   budget: BudgetData | null;
   expenses: readonly ExpenseData[];
@@ -86,7 +89,15 @@ export function BudgetView({
       </section>
     );
   }
-  return <Board trip={trip} budget={budget} expenses={expenses} currencies={currencies} />;
+  return (
+    <Board
+      trip={trip}
+      budget={budget}
+      expenses={expenses}
+      currencies={currencies}
+      pipEnabled={pipEnabled}
+    />
+  );
 }
 
 function Board({
@@ -94,7 +105,9 @@ function Board({
   budget,
   expenses,
   currencies,
+  pipEnabled,
 }: {
+  pipEnabled: boolean;
   trip: Trip;
   budget: BudgetData;
   expenses: readonly ExpenseData[];
@@ -191,6 +204,7 @@ function Board({
               : ''}
           </span>
         </div>
+        {pipEnabled ? <AskPipLink topic="budget" /> : null}
         <button
           ref={openButton}
           type="button"

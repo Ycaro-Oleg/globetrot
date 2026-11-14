@@ -26,15 +26,18 @@ export function PipView({
   trip,
   stops,
   initial,
+  idea = null,
 }: {
   trip: { id: string; title: string; currency: string } | null;
   stops: readonly { id: string; name: string }[];
   initial: readonly ProposalData[];
+  /** An idea that fits the screen the person came from, written into the box (not sent). */
+  idea?: (typeof SUGGESTIONS)[number] | null;
 }) {
   const t = useTranslations('pipPage');
   const locale = useLocale();
   const id = useId();
-  const [request, setRequest] = useState('');
+  const [request, setRequest] = useState(() => (idea ? t(`suggestions.${idea}`) : ''));
   const [proposals, setProposals] = useState<ProposalData[]>([...initial]);
   const [current, setCurrent] = useState<ProposalData | null>(
     initial[0]?.status === 'proposed' ? initial[0] : null,

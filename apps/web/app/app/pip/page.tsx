@@ -17,8 +17,17 @@ export async function generateMetadata() {
  * Pip, the optional companion: ask in your own words, review a change list, apply what you want, undo it.
  * Only behind the `FEATURE_PIP` flag; with the flag off it is a plain 404.
  */
-export default async function PipPage() {
+const TOPIC_IDEAS = { board: 'slower', days: 'places', budget: 'costs', lists: 'packing' } as const;
+
+export default async function PipPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ topic?: string }>;
+}) {
   if (!isPipEnabled()) notFound();
+  const { topic } = await searchParams;
+  const idea =
+    topic && topic in TOPIC_IDEAS ? TOPIC_IDEAS[topic as keyof typeof TOPIC_IDEAS] : null;
   const store = await cookies();
   const cookieHeader = sessionCookieHeader(store.getAll());
   const options = cookieHeader ? { cookieHeader, apiUrl: apiInternalUrl() } : null;
@@ -40,6 +49,7 @@ export default async function PipPage() {
       trip={trip ? { id: trip.id, title: trip.title, currency: trip.currency } : null}
       stops={(stops ?? []).map((stop) => ({ id: stop.id, name: stop.name }))}
       initial={proposals}
+      idea={idea}
     />
   );
 }

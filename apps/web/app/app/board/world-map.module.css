@@ -1596,3 +1596,80 @@
     display: none;
   }
 }
+
+/* Pip's suggestions: pencilled pins (dashed, see-through) and the note in the route panel. */
+.pencilPin {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  pointer-events: none;
+}
+
+.pencilHead {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 2.5px dashed #ffffff;
+  border-radius: 50% 50% 50% 4px;
+  background: rgb(37 99 235 / 0.55);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 800;
+  transform: rotate(-45deg);
+}
+
+.pencilLabel {
+  padding: 2px 8px;
+  border: 1.5px dashed #2563eb;
+  border-radius: 8px;
+  background: rgb(255 255 255 / 0.9);
+  color: #1e3a8a;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.pipNote {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 12px;
+  padding: 12px 14px;
+  border: 1.5px dashed rgb(147 197 253 / 0.7);
+  border-radius: 16px;
+}
+
+.pipNote > span {
+  display: flex;
+  flex: 1 1 12rem;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pipNote small {
+  color: #cbd5e1;
+  font-size: 13px;
+}
+
+.pipReview {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: 99px;
+  background: #2563eb;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.pipReview:focus-visible {
+  outline: 3px solid #93c5fd;
+  outline-offset: 2px;
+}

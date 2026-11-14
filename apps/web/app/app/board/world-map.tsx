@@ -29,6 +29,7 @@ import {
 } from './map-canvas';
 import { MAP_STYLES, SWATCHES, type MapStyleName } from './map-styles';
 import { kitCounts, PinCard } from './pin-card';
+import { AskPipLink } from '../_components/ask-pip-link';
 import { VisaOverlay, type StampedVisa } from './visa-overlay';
 import styles from './world-map.module.css';
 
@@ -118,12 +119,26 @@ function readStyle(): MapStyleName {
   }
 }
 
+const NO_PENCILLED: PipSuggestion['stops'] = [];
+
+export interface PipSuggestion {
+  readonly count: number;
+  readonly stops: readonly {
+    readonly name: string;
+    readonly latitude: number;
+    readonly longitude: number;
+    readonly nights: number;
+  }[];
+}
+
 export function WorldMapBoard({
   tripId,
   tripTitle,
   startDate,
   initialRoute,
   initialVisas,
+  pipEnabled = false,
+  pipSuggestion = null,
 }: {
   /** The trip the route belongs to, or `null` when there is no trip yet (the board then works unsaved). */
   tripId: string | null;
@@ -132,6 +147,9 @@ export function WorldMapBoard({
   initialRoute: RouteStop[];
   /** Countries with a commemorative visa already. */
   initialVisas: string[];
+  pipEnabled?: boolean;
+  /** Pip's proposal waiting for a decision: how many changes, and the new stops to pencil on the map. */
+  pipSuggestion?: PipSuggestion | null;
 }) {
   const t = useTranslations('mapBoard');
   const locale = useLocale();
@@ -545,6 +563,7 @@ export function WorldMapBoard({
     >
       <MapCanvas
         stops={mapStops}
+        pencilled={pipSuggestion?.stops ?? NO_PENCILLED}
         selectedId={selected}
         styleName={styleName}
         locale={locale}
@@ -560,6 +579,7 @@ export function WorldMapBoard({
           error: t('mapError'),
           petal: petalNames,
           stop: (name, index) => t('stopAria', { place: name, index }),
+          pencilled: (name) => t('pip.pencilled', { name }),
         }}
         onSelect={select}
         onOpenCard={openCard}
@@ -947,6 +967,19 @@ export function WorldMapBoard({
                   .filter(Boolean)
                   .join(' · ')}
               </span>
+              {pipSuggestion ? (
+                <div className={styles.pipNote}>
+                  <span>
+                    <strong>{t('pip.suggestionsTitle', { count: pipSuggestion.count })}</strong>
+                    <small>{t('pip.suggestionsBody', { count: pipSuggestion.stops.length })}</small>
+                  </span>
+                  <Link href="/app/pip" className={styles.pipReview}>
+                    {t('pip.review')} <span aria-hidden="true">→</span>
+                  </Link>
+                </div>
+              ) : pipEnabled && tripId ? (
+                <AskPipLink topic="board" tone="dark" />
+              ) : null}
             </div>
             {stops.length ? (
               <ol className={styles.stops}>

@@ -692,7 +692,13 @@
       "continue": "Continuar",
       "see": "Ver passaporte"
     },
-    "back": "Rota"
+    "back": "Rota",
+    "pip": {
+      "suggestionsTitle": "O Pip tem {count, plural, one {# sugestão} other {# sugestões}} para esta viagem",
+      "suggestionsBody": "{count, plural, =0 {Rascunhadas no mapa antes de você decidir.} one {# parada nova está rascunhada no mapa.} other {# paradas novas estão rascunhadas no mapa.}}",
+      "review": "Revisar",
+      "pencilled": "Sugerido pelo Pip: {name}"
+    }
   },
   "daysPage": {
     "title": "Dias",
@@ -1342,6 +1348,12 @@
       "RATE_LIMITED": "O Pip precisa descansar: você pediu bastante hoje. Tente amanhã.",
       "SERVICE_UNAVAILABLE": "O Pip não está disponível agora. Tudo funciona sem o Pip; tente mais tarde.",
       "UNKNOWN": "Não funcionou. Tente de novo."
+    },
+    "askFrom": {
+      "board": "Pergunte ao Pip sobre a rota",
+      "days": "Peça lugares ao Pip",
+      "budget": "Peça uma estimativa ao Pip",
+      "lists": "Pergunte ao Pip o que levar"
     }
   },
   "tripHub": {

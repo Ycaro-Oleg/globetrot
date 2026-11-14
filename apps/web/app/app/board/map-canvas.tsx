@@ -43,6 +43,8 @@ export type MapStop = RouteStop & { label: string; counts: Record<KitTab, string
 
 type Props = {
   stops: MapStop[];
+  /** Pip's suggested stops, drawn dashed and see-through until the person applies them. */
+  pencilled: readonly { name: string; latitude: number; longitude: number; nights: number }[];
   selectedId: string | null;
   styleName: MapStyleName;
   locale: string;
@@ -58,6 +60,7 @@ type Props = {
     error: string;
     petal: Record<KitTab, string>;
     stop: (name: string, index: number) => string;
+    pencilled: (name: string) => string;
   };
   controllerRef: MutableRefObject<BoardMapController | null>;
   onSelect: (id: string) => void;
@@ -123,6 +126,7 @@ export function MapCanvas(props: Props) {
   const markerClass = useRef<typeof MapLibreMarker | null>(null);
   const pins = useRef(new Map<string, PinMarker>());
   const legBadges = useRef<MapLibreMarker[]>([]);
+  const pencilMarks = useRef<MapLibreMarker[]>([]);
   const segments = useRef(new Map<string, { coords: [number, number][]; born: number }>());
   const routeDirty = useRef(false);
   const poiLayers = useRef<string[]>([]);
@@ -784,7 +788,39 @@ export function MapCanvas(props: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [apiKey]);
 
-  const { stops, selectedId, styleName, locale, tool, visitedCountries, inset } = props;
+  const { stops, selectedId, styleName, locale, tool, visitedCountries, inset, pencilled } = props;
+
+  // Pip's suggested stops: dashed, see-through pins with their name, until the proposal is applied. The route
+  // panel lists the same suggestions in words, so these are decoration for pointer and screen alike.
+  useEffect(() => {
+    const map = mapRef.current;
+    const Marker = markerClass.current;
+    pencilMarks.current.forEach((marker) => marker.remove());
+    pencilMarks.current = [];
+    if (!ready || !map || !Marker) return;
+    for (const stop of pencilled) {
+      const el = document.createElement('div');
+      el.className = styles.pencilPin ?? '';
+      el.setAttribute('aria-hidden', 'true');
+      el.title = latest.current.text.pencilled(stop.name);
+      const head = document.createElement('span');
+      head.className = styles.pencilHead ?? '';
+      head.textContent = '✎';
+      const label = document.createElement('span');
+      label.className = styles.pencilLabel ?? '';
+      label.textContent = stop.name;
+      el.append(head, label);
+      pencilMarks.current.push(
+        new Marker({ element: el, anchor: 'bottom' })
+          .setLngLat([stop.longitude, stop.latitude])
+          .addTo(map),
+      );
+    }
+    return () => {
+      pencilMarks.current.forEach((marker) => marker.remove());
+      pencilMarks.current = [];
+    };
+  }, [ready, pencilled]);
 
   useEffect(() => {
     if (!ready) return;

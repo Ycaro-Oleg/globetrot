@@ -1554,14 +1554,14 @@ try {
         const off = await open('en', { signedIn: true, viewport });
         await go(off.page, `${base}/app/budget`);
         check(
-          (await off.page.getByRole('link', { name: shell.pip.ask }).count()) === 0,
+          (await off.page.getByRole('link', { name: shell.pip.ask, exact: true }).count()) === 0,
           `the Pip entry point shows at ${viewport.width}px while the flag is off`,
         );
         await off.context.close();
 
         const on = await open('en', { signedIn: true, viewport });
         await go(on.page, `${pipBase}/app/budget`);
-        const entry = on.page.getByRole('link', { name: shell.pip.ask });
+        const entry = on.page.getByRole('link', { name: shell.pip.ask, exact: true });
         check(
           (await entry.count()) === 1,
           `the Pip entry point is missing at ${viewport.width}px with the flag on`,
