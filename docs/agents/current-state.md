@@ -1,6 +1,6 @@
 # Current state
 
-_Last updated: 2026-11-14, calendar export. Code state: `develop` includes #83 to #115; the calendar file is in an open PR. The [launch runbook](../engineering/launch-runbook.md) lists what the owner must provide._
+_Last updated: 2026-11-14, Pip's poses. Code state: `develop` includes #83 to #116; Pip's six poses are in an open PR. The [launch runbook](../engineering/launch-runbook.md) lists what the owner must provide._
 
 Read this first. It says where the project is, what exists, what is open, what only the owner can unblock and what to do next. Procedure for working: [`playbook.md`](playbook.md). Feature-by-feature progress: [`../product/progress.md`](../product/progress.md). Milestones and exit criteria: [`../product/roadmap.md`](../product/roadmap.md).
 
@@ -15,9 +15,10 @@ Read this first. It says where the project is, what exists, what is open, what o
 - **The passport screen works** (`/app/passport`): the account's commemorative visas, newest first, with country, city and date, an empty state that leads to the board, and the "not an official document" note.
 - **Pip v1 works behind `FEATURE_PIP`** on DeepSeek (ADR-0016): ask, review a change list, apply, undo.
 - **Plans and credits are built** (ADR-0019): a 7-day trial from sign-up, Explorer (US$4.99/US$39.99) and Voyager (US$9.99/US$79.99), Pip credits per request with top-ups, read-only after the trial, `/app/plan`, the free-week line on every signed-in page, and two trial emails from the worker. **Stripe is built** (Checkout, Portal, webhooks) and off until the `STRIPE_*` settings are set (**owner:** the [steps](../integrations/stripe.md#switching-it-on-the-owner-in-the-stripe-dashboard-test-mode-first), test mode first).
+- **Pip has its six states** drawn in code (idle, research, draft, deliver, celebrate, unsure) and used where they fit; commissioning final Rive art stays the owner's choice (#9).
 - **Days suggests places** near each stop (Geoapify when the key is set, a built-in list for popular cities otherwise), one tap each, and exports the days to a calendar file.
 - **Trips can be shared** by a private link (`/t/{slug}`) with a social image for X and chats; month only, amounts only when chosen, stop for good.
-- **First run, walked as a new user** (landing calculator → sign-up → email → onboarding → board → every tool): the sign-up repeats the saved landing plan and has no terms checkbox; the confirmed-email page has one clear call to action; onboarding offers popular destinations in one tap and place search falls back to built-in popular cities, so the first trip always has a stop; the new trip starts with the suggested checklist; an empty Days plan invites the first place. **Owner decision for conversion:** set `REQUIRE_VERIFIED_EMAIL=false` in production so people go straight in after sign-up (ADR-0012 leaves it to the owner).
+- **First run, walked as a new user** (landing calculator → sign-up → email → onboarding → board → every tool): the sign-up repeats the saved landing plan and has no terms checkbox; the confirmed-email page has one clear call to action; onboarding offers popular destinations in one tap and place search falls back to built-in popular cities, so the first trip always has a stop; the new trip starts with the suggested checklist; an empty Days plan invites the first place.  The owner confirmed `REQUIRE_VERIFIED_EMAIL=true` (2026-11-14): a password sign-in needs a confirmed email.
 - **What does not exist yet:** a staff review queue for community reports, blocking, visa privacy, deployment (billing is built and waits for the owner's Stripe settings: ADR-0019). The trip's page shows the nine stamps and the next steps; the start date can be set there and on Days.
 - **Branches:** `main` has no release yet; `develop` is the integration branch. All work goes through `feature/*` or `docs/*` PRs into `develop`.
 
@@ -58,7 +59,6 @@ These cannot be finished by an agent. Do not work around them, and do not mark t
 
 | Item | What is needed from the owner | Blocks |
 |---|---|---|
-| **Confirm the verified-email policy** ([ADR-0012](../architecture/adr/0012-email-delivery-and-verified-sign-in.md)) | Say whether a password sign-in must require a verified email (current default, Google counts as verified), or unverified accounts may enter with a banner | Nothing now; it is a one-line change if the answer is "banner" |
 | **Google sign-in credentials (#55)** | A Google OAuth client for a test environment, with the callback URL, supplied through environment variables (never in the repo), and a real-provider smoke test | #55's real-provider verification. The code can be written and tested without them |
 | **Component and screen-reader review (#6)** | Manual keyboard and screen-reader pass on the Storybook components | Closing #6 |
 | **Usability test (#8)** | Five real participants (en and pt-BR) following [`usability-01.md`](../product/research/usability-01.md) | Closing M1; informs the board design |

@@ -61,7 +61,7 @@ export function DaysView({
       <section className={styles.page}>
         <h1 className={styles.title}>{t('title')}</h1>
         <div className={styles.emptyCard}>
-          <PipAvatar size={88} />
+          <PipAvatar size={88} pose="research" />
           <h2>{t('emptyTitle')}</h2>
           <p>{t('noStops')}</p>
           <div className={styles.emptyActions}>

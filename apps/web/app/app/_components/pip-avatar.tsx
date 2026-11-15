@@ -13,6 +13,7 @@ import {
 import { mountAvatar, subscribeFrames, type MountedAvatar } from 'open-bot-avatar/dom';
 import { useEffect, useId, useRef } from 'react';
 import { usePipLook } from './pip-look';
+import { moodOfPose, PipPoseProps, type PipPose } from './pip-pose';
 import styles from './pip-avatar.module.css';
 
 /**
@@ -69,13 +70,16 @@ function reducedMotion(): boolean {
 export function PipAvatar({
   size = 96,
   look: lookProp,
-  mood = 'idle',
+  pose = 'idle',
+  mood: moodProp,
   followPointer = false,
   still = false,
   className,
 }: {
   size?: number;
   look?: PipLook;
+  /** One of the six states of the character brief; it also sets the mood unless `mood` is given. */
+  pose?: PipPose;
   mood?: PipMood;
   followPointer?: boolean;
   still?: boolean;
@@ -83,6 +87,7 @@ export function PipAvatar({
 }) {
   // A page may dress Pip itself; otherwise it wears the person's own look (or the default outside the app).
   const saved = usePipLook();
+  const mood = moodProp ?? moodOfPose(pose);
   const look = lookProp ?? saved.look;
   const clip = `pip-${useId().replace(/[^a-zA-Z0-9]/g, '')}`;
   const host = useRef<HTMLSpanElement>(null);
@@ -207,6 +212,11 @@ export function PipAvatar({
           </g>
         </g>
       </svg>
+      {size >= 40 && pose !== 'idle' ? (
+        <svg className={styles.pose} viewBox="0 0 100 100" data-pose={pose}>
+          <PipPoseProps pose={pose} />
+        </svg>
+      ) : null}
     </span>
   );
 }

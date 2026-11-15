@@ -179,7 +179,7 @@ export default async function TripHub({ params }: { params: Promise<{ id: string
                 </ol>
               ) : (
                 <p className={styles.done}>
-                  <PipAvatar size={48} still /> {t('allDone')}
+                  <PipAvatar size={48} pose="celebrate" still /> {t('allDone')}
                 </p>
               )}
             </>
