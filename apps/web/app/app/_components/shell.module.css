@@ -525,9 +525,9 @@
   justify-content: center;
   gap: 4px 12px;
   padding: 8px 16px;
-  border-bottom: 1px solid #bfdbfe;
-  background: #eff6ff;
-  color: #1e3a8a;
+  border-bottom: 1px solid var(--gt-semantic-color-primary-soft);
+  background: var(--gt-semantic-color-primary-tint);
+  color: var(--gt-semantic-color-text);
   font-size: 14px;
   text-align: center;
 }
@@ -537,15 +537,15 @@
 }
 
 .planBanner[data-tone='soon'] {
-  border-color: #fdba74;
-  background: #fff7ed;
-  color: #7c2d12;
+  border-color: var(--gt-semantic-color-warning);
+  background: var(--gt-semantic-color-warning-tint);
+  color: var(--gt-semantic-color-warning-ink);
 }
 
 .planBanner[data-tone='expired'] {
   padding: 12px 16px;
-  border-color: #0f172a;
-  background: #0f172a;
+  border-color: var(--gt-semantic-color-deep);
+  background: var(--gt-semantic-color-deep);
   color: #f8fafc;
 }
 
@@ -570,6 +570,6 @@
 
 .planBannerLink:focus-visible,
 .planBannerCta:focus-visible {
-  outline: 3px solid #2563eb;
+  outline: 3px solid var(--gt-semantic-color-focus);
   outline-offset: 2px;
 }

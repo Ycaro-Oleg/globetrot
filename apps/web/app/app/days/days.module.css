@@ -537,9 +537,9 @@
   gap: 8px;
   margin: 0 0 16px;
   padding: 18px;
-  border: 1px solid #bfdbfe;
+  border: 1px solid var(--gt-semantic-color-primary-soft);
   border-radius: 18px;
-  background: #eff6ff;
+  background: var(--gt-semantic-color-primary-tint);
 }
 
 .start h2 {
@@ -550,7 +550,7 @@
 
 .start p {
   margin: 0;
-  color: #334155;
+  color: var(--gt-semantic-color-text-secondary);
   line-height: 1.5;
 }
 
@@ -642,6 +642,8 @@
 }
 
 .calendarButton {
+  /* Sits with "Add place" on the right, not in the middle of the header. */
+  margin-inline-start: auto;
   min-height: var(--gt-component-hit-target);
   padding: 0 18px;
   border: 1px solid var(--gt-semantic-color-input-border);
