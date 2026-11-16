@@ -11,6 +11,8 @@ export interface PlanCard {
   readonly monthlyMinor: bigint;
   readonly annualMinor: bigint;
   readonly credits: number;
+  /** Trips that are not archived; null for no limit. */
+  readonly maxActiveTrips: number | null;
   readonly highlighted: boolean;
 }
 
@@ -20,6 +22,7 @@ export const PLAN_CARDS: readonly PlanCard[] = [
     monthlyMinor: 0n,
     annualMinor: 0n,
     credits: TRIAL_TERMS.credits,
+    maxActiveTrips: TRIAL_TERMS.maxActiveTrips,
     highlighted: false,
   },
   { id: 'explorer', ...PLAN_TERMS.explorer, highlighted: true },
@@ -30,3 +33,9 @@ export { TOP_UP };
 
 /** A yearly price as a monthly one, rounded down to the cent. */
 export const monthlyOfAnnual = (annualMinor: bigint) => annualMinor / 12n;
+
+/** The numbers a plan's feature lines quote, so the catalog never repeats a limit the domain owns. */
+export const featureValues = (plan: PlanCard) => ({
+  credits: plan.credits,
+  trips: plan.maxActiveTrips ?? 0,
+});

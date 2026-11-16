@@ -1,4 +1,4 @@
-import { formatMoney, money } from '@globetrot/domain';
+import { formatMoney, money, PLAN_TERMS, TRIAL_TERMS } from '@globetrot/domain';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
@@ -57,6 +57,15 @@ export default function HomePage() {
   const locale = useLocale();
   const usd = (whole: number) =>
     formatMoney(money(BigInt(whole) * 100n, 'USD'), locale, { precision: 'whole' });
+  const price = (minor: bigint) => formatMoney(money(minor, 'USD'), locale, { precision: 'full' });
+  // Prices and the trial length come from the domain, so the answer cannot drift from the pricing table.
+  const faqValues = {
+    days: TRIAL_TERMS.days,
+    explorerMonthly: price(PLAN_TERMS.explorer.monthlyMinor),
+    explorerAnnual: price(PLAN_TERMS.explorer.annualMinor),
+    voyagerMonthly: price(PLAN_TERMS.voyager.monthlyMinor),
+    voyagerAnnual: price(PLAN_TERMS.voyager.annualMinor),
+  };
   const accent = (chunks: React.ReactNode) => <span className={styles.accent}>{chunks}</span>;
 
   const steps = [
@@ -66,9 +75,9 @@ export default function HomePage() {
       body: t('step1Body'),
       tone: 'light',
       demo: [
-        ['1', 'Tokyo', t('demoNights', { count: 4 })],
-        ['2', 'Kyoto', t('demoNights', { count: 4 })],
-        ['3', 'Osaka', t('demoNights', { count: 3 })],
+        ['1', t('demoCity1'), t('demoNights', { count: 4 })],
+        ['2', t('demoCity2'), t('demoNights', { count: 4 })],
+        ['3', t('demoCity3'), t('demoNights', { count: 3 })],
       ],
     },
     {
@@ -252,7 +261,7 @@ export default function HomePage() {
                   {t(`faq${n}Q`)}
                   <span aria-hidden="true">+</span>
                 </summary>
-                <p>{t(`faq${n}A`)}</p>
+                <p>{t(`faq${n}A`, faqValues)}</p>
               </details>
             ))}
           </div>
@@ -272,7 +281,7 @@ export default function HomePage() {
           <span className={styles.heroNote}>{t('heroNote')}</span>
         </section>
       </main>
-      <StickyCta label={t('heroCta')} note={t('stickyNote')} />
+      <StickyCta label={t('stickyCta')} note={t('stickyNote')} />
 
       <footer className={styles.footer}>
         <div className={styles.footerInner}>

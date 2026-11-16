@@ -4,7 +4,7 @@ import { formatMoney, money } from '@globetrot/domain';
 import { useLocale, useTranslations } from 'next-intl';
 import { useId, useState, useTransition } from 'react';
 import type { BillingView } from '../../../lib/billing';
-import { monthlyOfAnnual, PLAN_CARDS, TOP_UP } from '../../../lib/plan-config';
+import { featureValues, monthlyOfAnnual, PLAN_CARDS, TOP_UP } from '../../../lib/plan-config';
 import { openPortal, startCheckout } from './actions';
 import styles from './plan.module.css';
 
@@ -203,7 +203,7 @@ export function PlanView({
                 {(['f1', 'f2', 'f3'] as const).map((feature) => (
                   <li key={feature}>
                     <span aria-hidden="true">✓</span>
-                    {p(`${plan.id}.${feature}`)}
+                    {p(`${plan.id}.${feature}`, featureValues(plan))}
                   </li>
                 ))}
               </ul>

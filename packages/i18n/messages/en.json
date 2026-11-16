@@ -123,7 +123,7 @@
     },
     "trialEnding": {
       "subject": "Your free week ends in 2 days",
-      "body": "Your Globetrot free week ends soon. Your trips, budget and lists are all there; pick a plan now and keep planning without a break. Explorer starts at US$4.99 a month.",
+      "body": "Your Globetrot free week ends soon. Your trips, budget and lists are all there; pick a plan now and keep planning without a break. Explorer starts at {price} a month.",
       "action": "See plans",
       "expiry": "Your free week ends in {hours, plural, one {# hour} other {# hours}}.",
       "ignore": "If you do nothing, your trips stay safe and you can still see and export them."
@@ -437,7 +437,7 @@
     "deleteCancel": "Cancel",
     "deleteConfirm": "Delete forever",
     "deletedMessage": "Trip deleted.",
-    "tripLimit": "This plan keeps 10 active trips. Archive one, or move to Voyager for unlimited trips.",
+    "tripLimit": "This plan keeps {count} active trips. Archive one, or move to Voyager for unlimited trips.",
     "planRequired": "Your free week is over: choose a plan to add or change trips.",
     "seePlans": "See plans",
     "routeSummary": "{route} · {nights, plural, one {# night} other {# nights}}"
@@ -531,7 +531,7 @@
     "closeLogin": "I already have an account",
     "stickyNote": "7 days free · no card",
     "faq5Q": "How much does it cost?",
-    "faq5A": "The first 7 days are free with everything included and no card. Then Explorer is US$4.99 a month (US$39.99 a year) and Voyager US$9.99 a month (US$79.99 a year). If you don’t choose a plan, your trips stay yours to see and export.",
+    "faq5A": "The first {days} days are free with everything included and no card. Then Explorer is {explorerMonthly} a month ({explorerAnnual} a year) and Voyager {voyagerMonthly} a month ({voyagerAnnual} a year). If you don’t choose a plan, your trips stay yours to see and export.",
     "faq6Q": "Are my trips private?",
     "faq6A": "Yes. Trips are private by default and nobody else can open them. In Settings you can download all your data or delete your account at any time.",
     "faq7Q": "Does it work on my phone, in my currency?",
@@ -554,7 +554,11 @@
       "cta": "Save this plan — it’s free",
       "note": "An estimate from what you type. Globetrot never holds your money."
     },
-    "cookiePrefs": "Cookie preferences"
+    "cookiePrefs": "Cookie preferences",
+    "stickyCta": "Start free",
+    "demoCity1": "Tokyo",
+    "demoCity2": "Kyoto",
+    "demoCity3": "Osaka"
   },
   "mapBoard": {
     "legModes": {
@@ -1516,15 +1520,15 @@
       "price": "7 days free",
       "tagline": "Everything included. No card.",
       "f1": "Map, days, budget and lists",
-      "f2": "15 Pip credits",
-      "f3": "Up to 10 active trips",
+      "f2": "{credits} Pip credits",
+      "f3": "Up to {trips} active trips",
       "cta": "Start your free week"
     },
     "explorer": {
       "name": "Explorer",
       "tagline": "For the trip you are saving for.",
-      "f1": "10 active trips",
-      "f2": "100 Pip credits a month",
+      "f1": "{trips} active trips",
+      "f2": "{credits} Pip credits a month",
       "f3": "Everything in the trial",
       "cta": "Start free, then Explorer"
     },
@@ -1532,7 +1536,7 @@
       "name": "Voyager",
       "tagline": "For people always planning the next one.",
       "f1": "Unlimited trips",
-      "f2": "400 Pip credits a month",
+      "f2": "{credits} Pip credits a month",
       "f3": "Everything in Explorer",
       "cta": "Start free, then Voyager"
     },

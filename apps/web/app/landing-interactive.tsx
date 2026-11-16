@@ -4,7 +4,7 @@ import { formatMoney, money } from '@globetrot/domain';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import { useState } from 'react';
-import { monthlyOfAnnual, PLAN_CARDS, TOP_UP } from '../lib/plan-config';
+import { featureValues, monthlyOfAnnual, PLAN_CARDS, TOP_UP } from '../lib/plan-config';
 import styles from './landing.module.css';
 
 type Decision = 'pending' | 'approved' | 'dismissed';
@@ -119,7 +119,7 @@ export function Pricing() {
                 {(['f1', 'f2', 'f3'] as const).map((feature) => (
                   <li key={feature}>
                     <span aria-hidden="true">✓</span>
-                    {p(`${plan.id}.${feature}`)}
+                    {p(`${plan.id}.${feature}`, featureValues(plan))}
                   </li>
                 ))}
               </ul>

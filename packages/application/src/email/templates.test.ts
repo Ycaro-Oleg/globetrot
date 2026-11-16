@@ -1,3 +1,4 @@
+import { formatMoney, money, PLAN_TERMS } from '@globetrot/domain';
 import { catalogs, SUPPORTED_LOCALES } from '@globetrot/i18n';
 import { describe, expect, it } from 'vitest';
 import { renderEmail, type EmailData, type EmailTemplate } from './templates';
@@ -21,6 +22,12 @@ const words = (html: string) =>
 describe.each(SUPPORTED_LOCALES)('renderEmail in %s', (locale) => {
   const copy = catalogs[locale].email;
 
+  it('quotes the Explorer price from the pricing table', () => {
+    const { text } = renderEmail('trialEnding', locale, DATA);
+    expect(text).not.toContain('{price}');
+    expect(text.replace(/\s+/g, ' ')).toMatch(/4[.,]99/);
+  });
+
   it.each(TEMPLATES)('%s uses the catalog subject, in the right language', (template) => {
     expect(renderEmail(template, locale, DATA).subject).toBe(copy[template].subject);
   });
@@ -30,14 +37,17 @@ describe.each(SUPPORTED_LOCALES)('renderEmail in %s', (locale) => {
     const visible = words(html);
     const strings = [
       copy.greeting.replace('{name}', 'Ana'),
-      copy[template].body,
+      copy[template].body.replace(
+        '{price}',
+        formatMoney(money(PLAN_TERMS.explorer.monthlyMinor, 'USD'), locale, { precision: 'full' }),
+      ),
       copy[template].action,
       copy.footer,
       copy[template].ignore,
     ];
     for (const value of strings) {
       expect(text, value).toContain(value);
-      expect(visible, value).toContain(value);
+      expect(visible, value).toContain(value.replace(/\s+/g, ' '));
     }
     // Both versions give the link, and the expiry sentence in the same words.
     expect(text).toContain(URL_);
