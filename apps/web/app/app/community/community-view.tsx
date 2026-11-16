@@ -92,7 +92,7 @@ function Feed({
             load={(before) => loadFeed(feedName, before)}
             empty={
               <div className={styles.empty}>
-                <PipAvatar size={72} mood="thinking" still />
+                <PipAvatar size={72} pose="draft" still />
                 <h2>
                   {feedName === 'following' ? t('empty.followingTitle') : t('empty.allTitle')}
                 </h2>

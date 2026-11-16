@@ -165,7 +165,20 @@ export function PipView({
   return (
     <section className={styles.page} aria-labelledby={`${id}-title`}>
       <header className={styles.header}>
-        <PipAvatar size={88} mood={pending ? 'thinking' : current ? 'happy' : 'idle'} />
+        <PipAvatar
+          size={88}
+          pose={
+            pending
+              ? step === 0
+                ? 'research'
+                : 'draft'
+              : error
+                ? 'unsure'
+                : current
+                  ? 'deliver'
+                  : 'idle'
+          }
+        />
         <div>
           <p className={styles.eyebrow}>{t('eyebrow', { trip: trip.title })}</p>
           <h1 id={`${id}-title`}>{t('title')}</h1>

@@ -479,7 +479,7 @@ function Celebration({
           <strong>{name}</strong>
           <span>{today}</span>
         </div>
-        <PipAvatar size={104} mood="happy" />
+        <PipAvatar size={104} pose="celebrate" />
         <h2 id="celebration-title">{t('celebrationTitle')}</h2>
         <p id="celebration-body">{t('celebrationBody', { name })}</p>
         <div className={styles.celebrationActions}>

@@ -70,7 +70,7 @@ export function VisaOverlay({ visa, onClose }: { visa: StampedVisa; onClose: () 
           <strong>{country}</strong>
           <span>{date}</span>
         </div>
-        <PipAvatar size={112} mood="happy" />
+        <PipAvatar size={112} pose="celebrate" />
         <h2 id="visa-title">{t('title')}</h2>
         <p id="visa-body">
           {t('body', { country, city: visa.city })} <small>{t('disclaimer')}</small>
