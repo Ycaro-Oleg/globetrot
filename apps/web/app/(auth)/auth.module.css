@@ -375,6 +375,8 @@
 
   .panelInner {
     width: min(100%, 28rem);
+    /* Top of the panel on a phone, right under the picture, not floating in the middle of the screen. */
+    margin: 0 auto;
   }
 
   .brand {

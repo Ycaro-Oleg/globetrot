@@ -1,4 +1,6 @@
+import { isSupportedLocale } from '@globetrot/i18n';
 import { NextResponse, type NextRequest } from 'next/server';
+import { LOCALE_COOKIE, localeCookieOptions } from './i18n/locale';
 import { apiInternalUrl, apiProxyTarget } from './lib/api-proxy';
 import { isAppPath, isFlagGatedOff, loginRedirect } from './lib/app-gate';
 import { isPipEnabled } from './lib/flags';
@@ -15,9 +17,21 @@ import { sessionCookieHeader } from './lib/stored-preferences';
  *    `/login?next=<page they wanted>`. Having the cookie proves nothing (it may be stale), so the app's layout
  *    asks the API too; this only saves rendering for anonymous visitors.
  *    Pages behind a feature flag that is off (`FEATURE_PIP`, see lib/flags.ts) are a 404 for everyone.
+ * 3. A link may name its language (`/?lang=pt-BR`, for ads and posts aimed at one language). That is the
+ *    visitor's explicit choice, so it is stored like a click on the language switch, and this very page already
+ *    renders in it. Unsupported values are ignored.
  */
 export function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
+
+  const linked = request.nextUrl.searchParams.get('lang');
+  if (!isAppPath(pathname) && !isApiPath(pathname)) {
+    if (!isSupportedLocale(linked)) return NextResponse.next();
+    request.cookies.set(LOCALE_COOKIE, linked);
+    const response = NextResponse.next({ request: { headers: request.headers } });
+    response.cookies.set(LOCALE_COOKIE, linked, localeCookieOptions());
+    return response;
+  }
 
   if (isAppPath(pathname)) {
     if (sessionCookieHeader(request.cookies.getAll()) === null) {
@@ -43,5 +57,10 @@ export function proxy(request: NextRequest) {
   return NextResponse.rewrite(target);
 }
 
-// Constants only: Next analyses the matcher at build time.
-export const config = { matcher: ['/api/auth/:path*', '/v1/:path*', '/app/:path*'] };
+const isApiPath = (pathname: string) =>
+  pathname.startsWith('/api/auth/') || pathname === '/v1' || pathname.startsWith('/v1/');
+
+// Constants only: Next analyses the matcher at build time. The public entry pages are listed for `?lang=`.
+export const config = {
+  matcher: ['/api/auth/:path*', '/v1/:path*', '/app/:path*', '/', '/signup', '/login'],
+};

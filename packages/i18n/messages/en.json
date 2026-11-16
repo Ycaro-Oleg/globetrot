@@ -1586,5 +1586,11 @@
     "metaDescription": "{title}: {nights, plural, one {# night} other {# nights}}, planned on Globetrot.",
     "ogReady": "Ready in {month}",
     "ogNights": "{nights, plural, one {# night} other {# nights}}"
+  },
+  "languageSuggestion": {
+    "text": "Globetrot is also in English.",
+    "switch": "Switch to English",
+    "keep": "No, thanks",
+    "label": "Language"
   }
 }

@@ -4,20 +4,11 @@ import { isMotionChoice, isThemeChoice, UNIT_SYSTEMS } from '@globetrot/domain';
 import { isSupportedLocale } from '@globetrot/i18n';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { LOCALE_COOKIE } from '../i18n/locale';
+import { LOCALE_COOKIE, localeCookieOptions } from '../i18n/locale';
 import { apiInternalUrl } from '../lib/api-proxy';
 import { MOTION_COOKIE, THEME_COOKIE } from '../lib/appearance';
 import { createServerApiClient, sessionCookieHeader } from '../lib/stored-preferences';
 import { NOT_SET } from './settings/options';
-
-const localeCookieOptions = () =>
-  ({
-    httpOnly: true,
-    sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
-    path: '/',
-    maxAge: 60 * 60 * 24 * 365,
-  }) as const;
 
 /** Store only supported locale choices; this temporary scaffold does not alter other preferences. */
 export async function setScaffoldLocale(formData: FormData): Promise<void> {
