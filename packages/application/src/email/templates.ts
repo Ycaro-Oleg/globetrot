@@ -1,3 +1,4 @@
+import { formatMoney, money, PLAN_TERMS } from '@globetrot/domain';
 import { formatMessage, type SupportedLocale } from '@globetrot/i18n';
 
 /** The transactional emails the product sends. A new template needs its strings in every catalog. */
@@ -70,7 +71,12 @@ export function renderEmail(
     formatMessage(locale, key as never, values);
 
   const greeting = t('email.greeting', { name: data.name });
-  const body = t(`email.${template}.body`);
+  // The only price an email quotes comes from the pricing table, never from the catalog.
+  const body = t(`email.${template}.body`, {
+    price: formatMoney(money(PLAN_TERMS.explorer.monthlyMinor, 'USD'), locale, {
+      precision: 'full',
+    }),
+  });
   const action = t(`email.${template}.action`);
   const expiry = t(`email.${template}.expiry`, { hours });
   const ignore = t(`email.${template}.ignore`);

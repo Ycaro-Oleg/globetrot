@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { monthlyOfAnnual, PLAN_CARDS } from './plan-config';
+import { featureValues, monthlyOfAnnual, PLAN_CARDS } from './plan-config';
 
 describe('plan cards', () => {
   it('shows the trial and the two plans, with the approved prices', () => {
@@ -14,5 +14,15 @@ describe('plan cards', () => {
 
   it('turns a yearly price into a monthly one', () => {
     expect(monthlyOfAnnual(3999n)).toBe(333n);
+  });
+});
+
+describe('feature numbers', () => {
+  it('come from the domain terms, not the catalog', () => {
+    expect(PLAN_CARDS.map(featureValues)).toEqual([
+      { credits: 15, trips: 10 },
+      { credits: 100, trips: 10 },
+      { credits: 400, trips: 0 },
+    ]);
   });
 });

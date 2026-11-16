@@ -1,3 +1,4 @@
+import { PLAN_TERMS } from '@globetrot/domain';
 import { randomUUID } from 'node:crypto';
 import Link from 'next/link';
 import { getLocale, getTranslations } from 'next-intl/server';
@@ -108,7 +109,7 @@ export default async function TripsPage({
           : query.status === 'example-error'
             ? t('example.copyError')
             : query.status === 'trip-limit'
-              ? t('tripLimit')
+              ? t('tripLimit', { count: PLAN_TERMS.explorer.maxActiveTrips ?? 0 })
               : query.status === 'plan-required'
                 ? t('planRequired')
                 : null;

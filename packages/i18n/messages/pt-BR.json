@@ -123,7 +123,7 @@
     },
     "trialEnding": {
       "subject": "Sua semana grátis termina em 2 dias",
-      "body": "Sua semana grátis no Globetrot está acabando. Suas viagens, orçamento e listas estão lá; escolha um plano agora e continue planejando sem pausa. O Explorer começa em US$ 4,99 por mês.",
+      "body": "Sua semana grátis no Globetrot está acabando. Suas viagens, orçamento e listas estão lá; escolha um plano agora e continue planejando sem pausa. O Explorer começa em {price} por mês.",
       "action": "Ver planos",
       "expiry": "Sua semana grátis termina em {hours, plural, one {# hora} other {# horas}}.",
       "ignore": "Se você não fizer nada, suas viagens continuam seguras e você ainda pode vê-las e exportá-las."
@@ -437,7 +437,7 @@
     "deleteCancel": "Cancelar",
     "deleteConfirm": "Excluir para sempre",
     "deletedMessage": "Viagem excluída.",
-    "tripLimit": "Este plano mantém 10 viagens ativas. Arquive uma, ou passe para o Voyager e tenha viagens ilimitadas.",
+    "tripLimit": "Este plano mantém {count} viagens ativas. Arquive uma, ou passe para o Voyager e tenha viagens ilimitadas.",
     "planRequired": "Sua semana grátis acabou: escolha um plano para criar ou mudar viagens.",
     "seePlans": "Ver planos",
     "routeSummary": "{route} · {nights, plural, one {# noite} other {# noites}}"
@@ -531,7 +531,7 @@
     "closeLogin": "Já tenho conta",
     "stickyNote": "7 dias grátis · sem cartão",
     "faq5Q": "Quanto custa?",
-    "faq5A": "Os primeiros 7 dias são grátis, com tudo incluído e sem cartão. Depois, o Explorer custa US$ 4,99 por mês (US$ 39,99 por ano) e o Voyager US$ 9,99 por mês (US$ 79,99 por ano). Se você não escolher um plano, suas viagens continuam suas para ver e exportar.",
+    "faq5A": "Os primeiros {days} dias são grátis, com tudo incluído e sem cartão. Depois, o Explorer custa {explorerMonthly} por mês ({explorerAnnual} por ano) e o Voyager {voyagerMonthly} por mês ({voyagerAnnual} por ano). Se você não escolher um plano, suas viagens continuam suas para ver e exportar.",
     "faq6Q": "Minhas viagens são privadas?",
     "faq6A": "Sim. As viagens são privadas por padrão e ninguém mais consegue abri-las. Em Configurações você baixa todos os seus dados ou exclui sua conta quando quiser.",
     "faq7Q": "Funciona no celular e na minha moeda?",
@@ -551,10 +551,14 @@
       "needMonthly": "faltam {left}. Guarde algo por mês para ter uma data.",
       "check": "digite os valores só com números, como 2500.",
       "noCost": "diga quanto a viagem custa para ter uma data.",
-      "cta": "Salvar este plano — é grátis",
+      "cta": "Salvar plano — é grátis",
       "note": "Uma estimativa a partir do que você digita. O Globetrot nunca guarda seu dinheiro."
     },
-    "cookiePrefs": "Preferências de cookies"
+    "cookiePrefs": "Preferências de cookies",
+    "stickyCta": "Começar grátis",
+    "demoCity1": "Tóquio",
+    "demoCity2": "Quioto",
+    "demoCity3": "Osaka"
   },
   "mapBoard": {
     "legModes": {
@@ -1516,15 +1520,15 @@
       "price": "7 dias grátis",
       "tagline": "Tudo incluído. Sem cartão.",
       "f1": "Mapa, dias, orçamento e listas",
-      "f2": "15 créditos do Pip",
-      "f3": "Até 10 viagens ativas",
+      "f2": "{credits} créditos do Pip",
+      "f3": "Até {trips} viagens ativas",
       "cta": "Começar minha semana grátis"
     },
     "explorer": {
       "name": "Explorer",
       "tagline": "Para a viagem que você está juntando dinheiro.",
-      "f1": "10 viagens ativas",
-      "f2": "100 créditos do Pip por mês",
+      "f1": "{trips} viagens ativas",
+      "f2": "{credits} créditos do Pip por mês",
       "f3": "Tudo do teste grátis",
       "cta": "Comece grátis, depois Explorer"
     },
@@ -1532,7 +1536,7 @@
       "name": "Voyager",
       "tagline": "Para quem sempre está planejando a próxima.",
       "f1": "Viagens ilimitadas",
-      "f2": "400 créditos do Pip por mês",
+      "f2": "{credits} créditos do Pip por mês",
       "f3": "Tudo do Explorer",
       "cta": "Comece grátis, depois Voyager"
     },
