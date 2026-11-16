@@ -23,6 +23,16 @@ type FetchLike = (input: string, init: RequestInit) => Promise<Response>;
 
 /** Where the verification email's link leads once it has been followed. */
 export const VERIFIED_PAGE = '/email-verified';
+/**
+ * The verification link's landing page, remembering where the person was headed (a copied example, a shared trip)
+ * so the journey continues after they confirm. `next` must already be a safe path (`safeNext`).
+ */
+export function verifiedPage(next?: string): string {
+  return next && next !== '/app'
+    ? `${VERIFIED_PAGE}?next=${encodeURIComponent(next)}`
+    : VERIFIED_PAGE;
+}
+
 /** Where the reset email's link lands (Better Auth appends `?token=…` or `?error=INVALID_TOKEN`). */
 export const RESET_PAGE = '/reset-password';
 
@@ -67,16 +77,16 @@ export function createAuthClient(fetchImpl: FetchLike = (input, init) => fetch(i
       post<{ token?: string | null }>(fetchImpl, '/api/auth/sign-in/email', input),
 
     /** `data.token` is `null` while the address still has to be verified: no session was opened. */
-    signUp: (input: { name: string; email: string; password: string }) =>
+    signUp: (input: { name: string; email: string; password: string }, next?: string) =>
       post<{ token?: string | null }>(fetchImpl, '/api/auth/sign-up/email', {
         ...input,
-        callbackURL: VERIFIED_PAGE,
+        callbackURL: verifiedPage(next),
       }),
 
-    resendVerification: (input: { email: string }) =>
+    resendVerification: (input: { email: string }, next?: string) =>
       post(fetchImpl, '/api/auth/send-verification-email', {
         ...input,
-        callbackURL: VERIFIED_PAGE,
+        callbackURL: verifiedPage(next),
       }),
 
     /** The answer is the same for an address with an account and one without. */

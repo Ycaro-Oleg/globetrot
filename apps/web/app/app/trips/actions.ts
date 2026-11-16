@@ -1,7 +1,7 @@
 'use server';
 
 import { EXAMPLE_TRIP_IDS, idempotencyKeySchema } from '@globetrot/application';
-import { getTranslations } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { apiInternalUrl } from '../../../lib/api-proxy';
@@ -115,7 +115,11 @@ export async function copyExampleTrip(formData: FormData): Promise<void> {
   const t = await getTranslations('tripWorkspace.example.trips');
   const { store, client } = await apiClient();
   const { data, error } = await client.POST('/v1/trips/from-example', {
-    body: { exampleId, title: t(exampleId) },
+    body: {
+      exampleId,
+      title: t(exampleId),
+      locale: (await getLocale()) === 'pt-BR' ? 'pt-BR' : 'en',
+    },
     headers: { 'Idempotency-Key': idempotencyKey.data },
   });
   if (!data) redirect(`/app/trips?status=${planLimitStatus(error) ?? 'example-error'}`);

@@ -50,11 +50,11 @@ Policy (decided in #54, to be confirmed by the owner): **a password sign-in requ
 
 | Route | What | Notes |
 |---|---|---|
-| `/login` | Email and password, the Google button, "Forgot it?" | `?next=` is where to go afterwards (default `/app`) |
-| `/signup` | First name, email, password with a strength meter, required terms | After success: "Check your inbox" with a resend button |
+| `/login` | Email and password, the Google button, "Forgot it?" | `?next=` is where to go afterwards (default `/app`); the link to `/signup` keeps it |
+| `/signup` | First name, email, password with a strength meter, required terms | After success: "Check your inbox" with a resend button. `?next=` (through `safeNext`) rides along: the verification link's `callbackURL` becomes `/email-verified?next=…`, so a visitor who started from a landing example lands on it after confirming. A visitor already signed in is sent straight to `next` |
 | `/recover` | Email, then the same "Check your inbox" for any address | Resend with a countdown |
 | `/reset-password` | The page the reset email leads to (`?token=…` or `?error=INVALID_TOKEN`) | A bad, used or expired token shows the problem and "Ask for a new link" |
-| `/email-verified` | The page the verification email leads to | Success only when the visitor really is signed in with a verified address. An expired, tampered or already used link shows the problem and a form to ask for a new one |
+| `/email-verified` | The page the verification email leads to | Success only when the visitor really is signed in with a verified address; its button goes to `?next=` (default `/app`). An expired, tampered or already used link shows the problem and a form to ask for a new one |
 | `/terms`, `/privacy` | Placeholder pages marked **draft** | The real legal text is the owner's |
 | `/app` and `/app/*` | The signed-in shell around its pages; `/app` itself sends a signed-in visitor to `/app/board` ([design-system](../design/design-system.md#the-shell-as-built-design-handoff-v2-the-topbar)). Log out is in the account menu | An anonymous visitor goes to `/login?next=<page>` (`proxy.ts`); a stale or revoked session is caught by the layout, which asks the API. Both checks cover every page under `/app`, including ones that do not exist yet |
 

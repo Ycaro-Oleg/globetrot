@@ -8,6 +8,7 @@ import { track } from '../../../lib/analytics';
 import { useTranslations } from 'next-intl';
 import { useMemo, useRef, useState, type FormEvent } from 'react';
 import { createAuthClient } from '../../../lib/auth-client';
+import { withNext } from '../../../lib/safe-next';
 import { describeFailure, type MessageRef } from '../../../lib/auth-errors';
 import {
   EMAIL_PATTERN,
@@ -75,7 +76,7 @@ export function SignupForm({
     }
 
     setPending(true);
-    const result = await client.signUp({ name: name.trim(), email: email.trim(), password });
+    const result = await client.signUp({ name: name.trim(), email: email.trim(), password }, next);
     setPending(false);
     if (!result.ok) {
       const view = describeFailure(result, 'signup');
@@ -108,10 +109,10 @@ export function SignupForm({
           </p>
           <ResendControl
             form="resend"
-            onResend={() => client.resendVerification({ email: sentTo })}
+            onResend={() => client.resendVerification({ email: sentTo }, next)}
           />
           <p className={styles.links}>
-            <Link href="/login">{t('signup.toLogin')}</Link>
+            <Link href={withNext('/login', next)}>{t('signup.toLogin')}</Link>
           </p>
         </div>
       )}
@@ -155,7 +156,7 @@ export function SignupForm({
                   {offerLogin && (
                     <>
                       {' '}
-                      <Link href="/login">{t('signup.toLogin')}</Link>
+                      <Link href={withNext('/login', next)}>{t('signup.toLogin')}</Link>
                     </>
                   )}
                 </>
@@ -192,7 +193,7 @@ export function SignupForm({
 
         <p className={styles.links}>
           <span>{t('signup.haveAccount')}</span>
-          <Link href="/login">{t('signup.toLogin')}</Link>
+          <Link href={withNext('/login', next)}>{t('signup.toLogin')}</Link>
         </p>
       </div>
     </>

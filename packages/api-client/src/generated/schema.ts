@@ -1823,6 +1823,11 @@ export interface operations {
                      * @example Japan 2027
                      */
                     title?: string;
+                    /**
+                     * @description The language for the stops’ names (`pt-BR` uses Portuguese names). Defaults to English.
+                     * @enum {string}
+                     */
+                    locale?: "en" | "pt-BR";
                 };
             };
         };

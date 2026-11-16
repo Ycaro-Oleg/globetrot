@@ -43,7 +43,7 @@ Only the web service is public. The browser reaches `/api/auth/*` and `/v1/*` th
 3. Deploy the worker, then the web with its build arguments.
 4. Smoke test on the real domain: sign up with a real inbox, confirm the email, create a trip from the landing calculator, add a stop, a cost and a photo, ask Pip (if on), post in the community, export your data, delete a test account.
 5. Check that responses are compressed (`content-encoding: br` or `gzip` on `/` and `/world-halftone-blue.svg`; turn on Coolify's compression if not) and that the landing loads under 2.5 s on a phone.
-6. Point ads and posts aimed at Portuguese speakers to `https://<domain>/?lang=pt-BR` (and English ones to `?lang=en`): the page opens in that language with no extra click ([`i18n.md`](../architecture/i18n.md)).
+6. Point ads and posts aimed at Portuguese speakers to `https://<domain>/?lang=pt-BR`; an ad for one example can go straight to `https://<domain>/signup?next=%2Fapp%2Ftrips%3Fexample%3Dportugal&lang=pt-BR` (and English ones to `?lang=en`): the page opens in that language with no extra click ([`i18n.md`](../architecture/i18n.md)).
 7. Check response headers on `/` (`Strict-Transport-Security`, `X-Frame-Options`, `X-Content-Type-Options`) and that the consent banner appears only with a Pixel ID.
 
 ## 5. After launch

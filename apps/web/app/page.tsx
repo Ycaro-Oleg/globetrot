@@ -235,7 +235,10 @@ export default function HomePage() {
           <ul className={styles.examples}>
             {EXAMPLES.map(({ n, id }) => (
               <li key={id}>
-                <Link href={`/app/trips?example=${id}`} className={styles.example}>
+                <Link
+                  href={`/signup?next=${encodeURIComponent(`/app/trips?example=${id}`)}`}
+                  className={styles.example}
+                >
                   <span className={styles.exampleLength}>{t(`trip${n}Length`)}</span>
                   <strong>{t.rich(`trip${n}Title`, { accent })}</strong>
                   <span>{t(`trip${n}Body`)}</span>

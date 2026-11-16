@@ -242,6 +242,7 @@ export {
 export {
   EXAMPLE_TRIP_IDS,
   EXAMPLE_TRIPS,
+  exampleStopName,
   findExampleTrip,
   type ExampleStop,
   type ExampleTrip,
