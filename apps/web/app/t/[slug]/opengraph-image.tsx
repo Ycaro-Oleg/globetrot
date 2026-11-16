@@ -11,11 +11,10 @@ export const alt = SITE_NAME;
 /** The card a shared trip shows on Twitter and in chats: the title, the route drawn, the month and the answer. */
 export default async function SharedTripImage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const [trip, locale, t] = await Promise.all([
-    fetchSharedTrip(slug),
-    getLocale(),
-    getTranslations('sharedTrip'),
-  ]);
+  // The card speaks the owner's language, like the title they wrote: crawlers have no language of their own.
+  const trip = await fetchSharedTrip(slug);
+  const locale = trip?.locale ?? (await getLocale());
+  const t = await getTranslations({ locale, namespace: 'sharedTrip' });
   const points = trip ? routeSketch(trip.stops, 460, 420, 50) : [];
   const names = trip ? trip.stops.map((stop) => stop.name) : [];
   // One stop named like the trip would say the same word twice.

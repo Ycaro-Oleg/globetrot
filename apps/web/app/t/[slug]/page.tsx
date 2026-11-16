@@ -9,8 +9,10 @@ type Props = { params: Promise<{ slug: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const [trip, t] = await Promise.all([fetchSharedTrip(slug), getTranslations('sharedTrip')]);
+  const trip = await fetchSharedTrip(slug);
   if (!trip) return { title: SITE_NAME, robots: { index: false } };
+  // Link previews (X, WhatsApp) are read by crawlers: describe the trip in the owner's language.
+  const t = await getTranslations({ locale: trip.locale, namespace: 'sharedTrip' });
   const description = t('metaDescription', { title: trip.title, nights: trip.totalNights });
   return {
     title: `${trip.title} · ${SITE_NAME}`,

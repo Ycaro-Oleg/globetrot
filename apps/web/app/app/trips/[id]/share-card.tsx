@@ -1,6 +1,7 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
+import { sharedTripUrl } from '../../../../lib/share-url';
 import { useEffect, useId, useState, useTransition } from 'react';
 import { track } from '../../../../lib/analytics';
 import { setTripShare, type ShareState } from '../../_components/trip-actions';
@@ -20,6 +21,7 @@ export function ShareCard({
   initial: ShareState;
 }) {
   const t = useTranslations('tripHub.share');
+  const locale = useLocale();
   const id = useId();
   const [share, setShare] = useState(initial);
   const [status, setStatus] = useState('');
@@ -32,7 +34,7 @@ export function ShareCard({
     setOrigin(window.location.origin);
     setCanShare(typeof navigator.share === 'function');
   }, []);
-  const url = share.slug && origin ? `${origin}/t/${share.slug}` : null;
+  const url = share.slug && origin ? sharedTripUrl(origin, share.slug, locale) : null;
 
   const change = (on: boolean, showAmounts: boolean) =>
     startTransition(async () => {

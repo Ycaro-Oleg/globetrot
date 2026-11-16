@@ -43,6 +43,15 @@ async function setup() {
   return { ...fake, app, shared, trip };
 }
 
+describe('the shared page language', () => {
+  it('is the owner’s language, so the social card matches the title they wrote', async () => {
+    const { app, shared, trip } = await setup();
+    await app.updatePreferences.execute(as(ana), { locale: 'pt-BR' });
+    const { slug } = await app.shareTrip.execute(as(ana), { tripId: trip.id, showAmounts: false });
+    expect((await shared.view(slug!))?.locale).toBe('pt-BR');
+  });
+});
+
 describe('sharing a trip', () => {
   it('shows the route, the month only and the answer, never the name, and amounts only when chosen', async () => {
     const { app, shared, trip } = await setup();
@@ -50,6 +59,8 @@ describe('sharing a trip', () => {
     const page = await shared.view(slug!);
     expect(page).toMatchObject({
       title: 'Portugal',
+      // No saved preferences yet: the owner's language falls back to the default.
+      locale: 'en',
       startMonth: '2027-03',
       totalNights: 7,
       stops: [

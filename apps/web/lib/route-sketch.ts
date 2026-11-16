@@ -40,3 +40,22 @@ export function arcPath(a: { x: number; y: number }, b: { x: number; y: number }
   const midY = (a.y + b.y) / 2 - Math.max(20, Math.hypot(b.x - a.x, b.y - a.y) * 0.18);
   return `M${a.x} ${a.y} Q${Math.round(midX)} ${Math.round(midY)} ${b.x} ${b.y}`;
 }
+
+/**
+ * Which pins keep their name next to them in a small drawing: a name that would sit on top of an earlier one is
+ * left out (the numbered list beside the drawing still names every stop). `box` is roughly one label's size.
+ */
+export function visibleLabels(
+  points: readonly { x: number; y: number }[],
+  box: { readonly width: number; readonly height: number } = { width: 110, height: 26 },
+): boolean[] {
+  const shown: { x: number; y: number }[] = [];
+  return points.map((point) => {
+    const clash = shown.some(
+      (other) =>
+        Math.abs(other.x - point.x) < box.width && Math.abs(other.y - point.y) < box.height,
+    );
+    if (!clash) shown.push(point);
+    return !clash;
+  });
+}

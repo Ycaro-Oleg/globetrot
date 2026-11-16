@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { arcPath, routeSketch } from './route-sketch';
+import { arcPath, routeSketch, visibleLabels } from './route-sketch';
 
 describe('routeSketch', () => {
   it('puts one stop in the middle', () => {
@@ -26,5 +26,18 @@ describe('routeSketch', () => {
   it('draws nothing for no stops, and arcs upwards', () => {
     expect(routeSketch([], 100, 100)).toEqual([]);
     expect(arcPath({ x: 0, y: 50 }, { x: 100, y: 50 })).toBe('M0 50 Q50 30 100 50');
+  });
+});
+
+describe('visibleLabels', () => {
+  it('drops a name that would sit on an earlier one, keeps names that have room', () => {
+    expect(
+      visibleLabels([
+        { x: 100, y: 100 },
+        { x: 400, y: 100 },
+        { x: 130, y: 110 },
+        { x: 130, y: 160 },
+      ]),
+    ).toEqual([true, true, false, true]);
   });
 });

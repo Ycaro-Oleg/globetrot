@@ -85,6 +85,13 @@
                     "title": {
                       "type": "string"
                     },
+                    "locale": {
+                      "type": "string",
+                      "enum": [
+                        "en",
+                        "pt-BR"
+                      ]
+                    },
                     "startMonth": {
                       "type": [
                         "string",
@@ -221,6 +228,7 @@
                   },
                   "required": [
                     "title",
+                    "locale",
                     "startMonth",
                     "totalNights",
                     "stops",

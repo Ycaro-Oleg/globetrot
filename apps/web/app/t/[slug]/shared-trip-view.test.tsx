@@ -7,6 +7,7 @@ import { SharedTripView } from './shared-trip-view';
 
 const trip: SharedTrip = {
   title: 'Portugal',
+  locale: 'en',
   startMonth: '2027-03',
   totalNights: 7,
   stops: [
