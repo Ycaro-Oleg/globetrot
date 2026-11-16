@@ -157,8 +157,8 @@
 }
 
 .filter:hover {
-  background: #fff;
-  color: var(--gt-semantic-color-always-light-text);
+  background: var(--gt-semantic-color-surface-card);
+  color: var(--gt-semantic-color-text);
 }
 
 .filter[aria-current='page'] {
@@ -214,6 +214,8 @@
 }
 
 .tripStatus {
+  padding: 0 0.7rem;
+  border-radius: 999px;
   color: var(--gt-semantic-color-text-secondary);
 }
 
@@ -300,8 +302,8 @@
 .secondaryAction,
 .undoAction,
 .backLink {
-  background: #fff;
-  color: var(--gt-semantic-color-always-light-text);
+  background: var(--gt-semantic-color-surface-card);
+  color: var(--gt-semantic-color-text);
 }
 
 .primaryAction:focus-visible,
@@ -341,10 +343,10 @@
   width: 100%;
   min-height: 46px;
   padding: 0.55rem 0.7rem;
-  border: 1.5px solid rgba(29, 26, 53, 0.48);
+  border: 1.5px solid var(--gt-semantic-color-input-border);
   border-radius: 0.7rem;
-  background: #fff;
-  color: var(--gt-semantic-color-always-light-text);
+  background: var(--gt-semantic-color-input-surface);
+  color: var(--gt-semantic-color-text);
   font: 500 0.9rem/1.25 var(--gt-primitive-font-body);
 }
 

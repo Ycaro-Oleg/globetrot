@@ -127,6 +127,7 @@
   font-weight: 700;
 }
 .gt-field__control {
+  box-sizing: border-box;
   width: 100%;
   min-height: var(--gt-primitive-size-input);
   border: 1px solid var(--gt-semantic-color-hairline);
