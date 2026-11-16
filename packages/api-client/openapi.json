@@ -1887,6 +1887,14 @@
                     "maxLength": 120,
                     "description": "The trip’s title in the person’s language. Defaults to the example’s English title.",
                     "example": "Japan 2027"
+                  },
+                  "locale": {
+                    "type": "string",
+                    "enum": [
+                      "en",
+                      "pt-BR"
+                    ],
+                    "description": "The language for the stops’ names (`pt-BR` uses Portuguese names). Defaults to English."
                   }
                 },
                 "required": [

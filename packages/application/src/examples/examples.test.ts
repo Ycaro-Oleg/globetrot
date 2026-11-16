@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   createApplication,
   EXAMPLE_TRIPS,
+  exampleStopName,
   NotFoundError,
   type Actor,
   type UserRecord,
@@ -67,6 +68,19 @@ describe('example trips', () => {
     await expect(app.getTrip.execute(as(bruno), { id: trip.id })).rejects.toBeInstanceOf(
       NotFoundError,
     );
+  });
+
+  it('names the stops in Portuguese for a pt-BR copy', async () => {
+    const { app } = setup();
+    const trip = await app.createTripFromExample.execute(as(ana), {
+      exampleId: 'portugal',
+      title: 'Portugal de trem',
+      locale: 'pt-BR',
+    });
+    const { destinations } = await app.listDestinations.execute(as(ana), { tripId: trip.id });
+    expect(destinations.map((d) => d.name)).toEqual(['Lisboa', 'Sintra', 'Coimbra', 'Porto']);
+    expect(exampleStopName(EXAMPLE_TRIPS[0].stops[2], 'pt-BR')).toBe('Quioto');
+    expect(exampleStopName(EXAMPLE_TRIPS[0].stops[2], 'en')).toBe('Kyoto');
   });
 
   it('defaults the title, refuses an unknown example, and replays a retry with the same key', async () => {

@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useMemo, useRef, useState, type FormEvent } from 'react';
 import { createAuthClient } from '../../../lib/auth-client';
+import { withNext } from '../../../lib/safe-next';
 import { describeFailure, type MessageRef } from '../../../lib/auth-errors';
 import {
   EMAIL_PATTERN,
@@ -133,7 +134,7 @@ export function LoginForm({
 
       <p className={styles.links}>
         <span>{t('login.noAccount')}</span>
-        <Link href="/signup">{t('login.toSignup')}</Link>
+        <Link href={withNext('/signup', next)}>{t('login.toSignup')}</Link>
       </p>
     </section>
   );

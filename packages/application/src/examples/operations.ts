@@ -7,13 +7,18 @@ import { defineOperation } from '../operation';
 import type { Ports } from '../ports';
 import { idempotencyKeySchema } from '../trips/operations';
 import { createTripFields, toTripView, tripSchema } from '../trips/schemas';
-import { EXAMPLE_TRIP_IDS, findExampleTrip } from './catalog';
+import { EXAMPLE_TRIP_IDS, exampleStopName, findExampleTrip } from './catalog';
+import { SUPPORTED_LOCALES } from '@globetrot/i18n';
 
 export const createTripFromExampleFields = z.object({
   exampleId: z.enum(EXAMPLE_TRIP_IDS).meta({ description: 'Which example to copy.' }),
   title: createTripFields.shape.title.optional().meta({
     description:
       'The trip’s title in the person’s language. Defaults to the example’s English title.',
+  }),
+  locale: z.enum(SUPPORTED_LOCALES).optional().meta({
+    description:
+      'The language for the stops’ names (`pt-BR` uses Portuguese names). Defaults to English.',
   }),
 });
 
@@ -39,7 +44,7 @@ export function createCreateTripFromExample(deps: Pick<Ports, 'unitOfWork' | 'cl
           const start = await tx.idempotency.begin({
             ownerId: actor.userId,
             key,
-            fingerprint: `createTripFromExample ${canonicalJson({ exampleId: example.id, title })}`,
+            fingerprint: `createTripFromExample ${canonicalJson({ exampleId: example.id, title, locale: input.locale ?? null })}`,
             createdAt: now,
           });
           if (start.state === 'mismatch') throw new IdempotencyKeyReusedError();
@@ -60,7 +65,14 @@ export function createCreateTripFromExample(deps: Pick<Ports, 'unitOfWork' | 'cl
           trip.id,
           example.stops.map((stop) => ({
             id: deps.ids.newId(),
-            ...stop,
+            placeKey: stop.placeKey,
+            name: exampleStopName(stop, input.locale),
+            countryCode: stop.countryCode,
+            region: stop.region,
+            latitude: stop.latitude,
+            longitude: stop.longitude,
+            nights: stop.nights,
+            legMode: stop.legMode,
             note: null,
             visited: false,
             spots: [],

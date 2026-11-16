@@ -100,10 +100,10 @@ describe('Globetrot landing page', () => {
     },
   );
 
-  it('opens a copyable example trip from each card', () => {
+  it('sends each example card through sign-up, keeping the example', () => {
     const html = render('en');
     for (const id of ['portugal', 'japan', 'rio-de-la-plata']) {
-      expect(html).toContain(`href="/app/trips?example=${id}"`);
+      expect(html).toContain(`href="/signup?next=%2Fapp%2Ftrips%3Fexample%3D${id}"`);
     }
   });
 

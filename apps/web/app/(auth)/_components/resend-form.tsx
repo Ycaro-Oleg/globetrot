@@ -16,7 +16,7 @@ import { ResendControl } from './resend-control';
 import styles from '../auth.module.css';
 
 /** For a verification link that did not work: ask for a new one by email address. */
-export function ResendForm() {
+export function ResendForm({ next }: { readonly next?: string } = {}) {
   const t = useTranslations('auth');
   const text = useAuthMessage();
   const client = useMemo(() => createAuthClient(), []);
@@ -41,7 +41,7 @@ export function ResendForm() {
     }
     setError(undefined);
     setPending(true);
-    const result = await client.resendVerification({ email: email.trim() });
+    const result = await client.resendVerification({ email: email.trim() }, next);
     setPending(false);
     if (!result.ok) {
       setBanner(describeFailure(result, 'resend').banner);
@@ -60,7 +60,7 @@ export function ResendForm() {
           </p>
           <ResendControl
             form="resend"
-            onResend={() => client.resendVerification({ email: sentTo })}
+            onResend={() => client.resendVerification({ email: sentTo }, next)}
           />
         </>
       )}

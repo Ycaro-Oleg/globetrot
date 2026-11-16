@@ -1,6 +1,6 @@
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_AFTER_LOGIN, hasForbiddenCharacter, safeNext } from './safe-next';
+import { DEFAULT_AFTER_LOGIN, hasForbiddenCharacter, safeNext, withNext } from './safe-next';
 
 describe('safeNext', () => {
   it.each([
@@ -78,5 +78,14 @@ describe('safeNext', () => {
         },
       ),
     );
+  });
+});
+
+describe('withNext', () => {
+  it('keeps a destination other than the default, encoded', () => {
+    expect(withNext('/signup', '/app/trips?example=japan')).toBe(
+      '/signup?next=%2Fapp%2Ftrips%3Fexample%3Djapan',
+    );
+    expect(withNext('/login', DEFAULT_AFTER_LOGIN)).toBe('/login');
   });
 });

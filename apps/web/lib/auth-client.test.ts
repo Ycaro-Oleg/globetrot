@@ -49,6 +49,20 @@ describe('auth client requests', () => {
     expect(bodyOf(calls[1])).toEqual({ email: 'ana@example.com', callbackURL: '/email-verified' });
   });
 
+  it('keeps where the person was headed in the verification link', async () => {
+    const { client, calls } = clientWith(() => Response.json({ token: null }));
+    const next = '/app/trips?example=portugal';
+    await client.signUp(
+      { name: 'Ana', email: 'ana@example.com', password: 'a long passphrase' },
+      next,
+    );
+    expect(bodyOf(calls[0])).toMatchObject({
+      callbackURL: '/email-verified?next=%2Fapp%2Ftrips%3Fexample%3Dportugal',
+    });
+    await client.resendVerification({ email: 'ana@example.com' }, '/app');
+    expect(bodyOf(calls[1])).toMatchObject({ callbackURL: '/email-verified' });
+  });
+
   it('asks the reset link to land on this site’s reset page', async () => {
     const { client, calls } = clientWith(() => Response.json({ status: true }));
     await client.requestReset({ email: 'ana@example.com' }, 'https://app.example.test');

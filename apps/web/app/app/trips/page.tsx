@@ -7,7 +7,7 @@ import { apiInternalUrl } from '../../../lib/api-proxy';
 import { createServerApiClient, sessionCookieHeader } from '../../../lib/stored-preferences';
 import { fetchDestinations, fetchTrips, SELECTED_TRIP_COOKIE } from '../../../lib/trips';
 import { currencyOptions } from '../../settings/options';
-import { findExampleTrip } from '@globetrot/application';
+import { exampleStopName, findExampleTrip } from '@globetrot/application';
 import {
   archiveTrip,
   copyExampleTrip,
@@ -178,7 +178,7 @@ export default async function TripsPage({
           <h2 id="example-title">{t(`example.trips.${example.id}` as 'example.trips.japan')}</h2>
           <p>{t('example.body')}</p>
           <p className={styles.exampleRoute}>
-            {example.stops.map((stop) => stop.name).join(' → ')}
+            {example.stops.map((stop) => exampleStopName(stop, locale)).join(' → ')}
             <br />
             <small>
               {t('example.stops', {

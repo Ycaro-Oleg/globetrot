@@ -1,6 +1,11 @@
 /** Where a person goes after logging in when `next` is missing or not acceptable. */
 export const DEFAULT_AFTER_LOGIN = '/app';
 
+/** An auth page link that keeps where the person was headed (`next` must already be safe). */
+export function withNext(path: string, next: string): string {
+  return next === DEFAULT_AFTER_LOGIN ? path : `${path}?next=${encodeURIComponent(next)}`;
+}
+
 /**
  * Anything that a URL parser treats specially: C0 controls and DEL (a tab or newline inside "//" is dropped by
  * browsers, turning "/\t/evil.example" into "//evil.example"), and backslashes (read as "/").
