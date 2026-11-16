@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { catalogs } from '@globetrot/i18n';
-import { chooseLocale, resolveWebLocale } from './locale';
+import { chooseLocale, resolveWebLocale, suggestedLocale } from './locale';
 
 describe('web locale choice', () => {
   it('accepts the supported explicit choices', () => {
@@ -31,5 +31,19 @@ describe('chooseLocale', () => {
     expect(chooseLocale(undefined, null)).toBe('en');
     expect(chooseLocale('fr', null)).toBe('en');
     expect(chooseLocale('fr', { locale: 'de' })).toBe('en');
+  });
+});
+
+describe('the language offered to a visitor who has not chosen one', () => {
+  it('offers Portuguese to a browser that prefers it', () => {
+    expect(suggestedLocale('pt-BR,pt;q=0.9,en;q=0.8', 'en')).toBe('pt-BR');
+    expect(suggestedLocale('pt-PT', 'en')).toBe('pt-BR');
+  });
+
+  it('offers nothing when the page is already in that language, or nothing matches', () => {
+    expect(suggestedLocale('en-US,en;q=0.9', 'en')).toBeNull();
+    expect(suggestedLocale('de-DE', 'en')).toBeNull();
+    expect(suggestedLocale(null, 'en')).toBeNull();
+    expect(suggestedLocale('', 'en')).toBeNull();
   });
 });

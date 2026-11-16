@@ -39,7 +39,7 @@ export default async function EmailVerifiedPage({
 
   if (user?.emailVerified) {
     return (
-      <>
+      <section className={styles.view}>
         <h1 className={styles.title}>{t('title')}</h1>
         <Banner tone="success" role="status">
           {t('body')}
@@ -47,17 +47,17 @@ export default async function EmailVerifiedPage({
         <Link href="/app" className={styles.ctaLink}>
           {t('continue')} <span aria-hidden="true">→</span>
         </Link>
-      </>
+      </section>
     );
   }
 
   return (
-    <>
+    <section className={styles.view}>
       <h1 className={styles.title}>{t('errorTitle')}</h1>
       <Banner tone="error" role="alert">
         {t('errorBody')}
       </Banner>
       <ResendForm />
-    </>
+    </section>
   );
 }

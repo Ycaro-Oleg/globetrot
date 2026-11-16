@@ -68,3 +68,21 @@ describe('proxy: the API', () => {
     expect(response.headers.get('x-middleware-rewrite')).toBe('http://api.internal:4000/v1/me?x=1');
   });
 });
+
+describe('proxy: a link that names its language', () => {
+  it('stores the language and renders the page in it', () => {
+    const response = proxy(request('/?lang=pt-BR'));
+    expect(response.headers.get('x-middleware-next')).toBe('1');
+    expect(response.cookies.get('globetrot_locale')?.value).toBe('pt-BR');
+    expect(response.headers.get('x-middleware-override-headers')).toContain('cookie');
+    expect(response.headers.get('x-middleware-request-cookie')).toContain('globetrot_locale=pt-BR');
+  });
+
+  it('ignores unsupported values and plain visits', () => {
+    for (const path of ['/?lang=xx', '/signup', '/login?lang=']) {
+      const response = proxy(request(path));
+      expect(response.headers.get('x-middleware-next')).toBe('1');
+      expect(response.cookies.get('globetrot_locale')).toBeUndefined();
+    }
+  });
+});

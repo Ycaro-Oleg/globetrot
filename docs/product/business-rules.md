@@ -4,7 +4,7 @@ This is the authoritative list. The prototype's executable spec is `design/refer
 
 ## Locale and currency
 
-- The user's **language**, **home country**, **nationality**, **current location** and **preferred currency** are independent settings. None is inferred from another. Detected values are only suggestions the user confirms.
+- The user's **language**, **home country**, **nationality**, **current location** and **preferred currency** are independent settings. None is inferred from another. Detected values are only suggestions the user confirms. A visitor whose browser prefers another supported language is offered it once, in that language; a link may also name its language (`?lang=pt-BR`), which counts as the visitor's choice.
 - The default preferred currency is **USD**.
 - Each trip has a **trip currency** (budgeting currency). It defaults to the user's preferred currency and can be changed.
 - Each expense keeps its **original currency and amount**. Totals are computed in the trip currency using a recorded exchange rate. See [`../architecture/money.md`](../architecture/money.md).

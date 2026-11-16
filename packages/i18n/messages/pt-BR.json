@@ -1586,5 +1586,11 @@
     "metaDescription": "{title}: {nights, plural, one {# noite} other {# noites}}, planejada no Globetrot.",
     "ogReady": "Pronto em {month}",
     "ogNights": "{nights, plural, one {# noite} other {# noites}}"
+  },
+  "languageSuggestion": {
+    "text": "O Globetrot também está em português.",
+    "switch": "Ver em português",
+    "keep": "Agora não",
+    "label": "Idioma"
   }
 }
