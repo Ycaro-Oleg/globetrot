@@ -1,7 +1,6 @@
 'use server';
 
 import { cookies } from 'next/headers';
-import { apiInternalUrl } from '../../../lib/api-proxy';
 import type {
   CommentData,
   FeedData,
@@ -9,14 +8,10 @@ import type {
   PersonPageData,
   PostData,
 } from '../../../lib/community';
-import { createServerApiClient, sessionCookieHeader } from '../../../lib/stored-preferences';
+import { actionApiClient } from '../../../lib/action-client';
 import { SELECTED_TRIP_COOKIE } from '../../../lib/trips';
 
-async function apiClient() {
-  const store = await cookies();
-  const cookieHeader = sessionCookieHeader(store.getAll());
-  return cookieHeader ? createServerApiClient({ cookieHeader, apiUrl: apiInternalUrl() }) : null;
-}
+const apiClient = actionApiClient;
 
 /** What a failed write says: the API's problem code, so the screen can pick the right words. */
 export type Failure = { error: string };

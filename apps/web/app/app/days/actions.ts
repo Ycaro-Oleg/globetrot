@@ -1,8 +1,6 @@
 'use server';
 
-import { cookies } from 'next/headers';
-import { apiInternalUrl } from '../../../lib/api-proxy';
-import { createServerApiClient, sessionCookieHeader } from '../../../lib/stored-preferences';
+import { actionApiClient } from '../../../lib/action-client';
 import type { paths } from '@globetrot/api-client';
 import type { DayPlanData } from '../../../lib/trips';
 
@@ -10,11 +8,7 @@ export type DayIdeas =
   paths['/v1/trips/{id}/day-ideas']['get']['responses'][200]['content']['application/json'];
 export type DayIdea = DayIdeas['stops'][number]['ideas'][number];
 
-async function apiClient() {
-  const store = await cookies();
-  const cookieHeader = sessionCookieHeader(store.getAll());
-  return cookieHeader ? createServerApiClient({ cookieHeader, apiUrl: apiInternalUrl() }) : null;
-}
+const apiClient = actionApiClient;
 
 /** Each action answers with the whole plan after the change (or null when it did not work). */
 type Result = DayPlanData | null;

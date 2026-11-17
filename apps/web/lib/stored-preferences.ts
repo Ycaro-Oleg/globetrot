@@ -1,6 +1,7 @@
 import { createApiClient } from '@globetrot/api-client';
 import type { MotionChoice, ThemeChoice } from '@globetrot/domain';
 import { isSupportedLocale } from '@globetrot/i18n';
+import { isPlanRequired } from './plan-required';
 
 /** The session cookie set by the API: with the `__Secure-` prefix over https, without it in development. */
 export const SESSION_COOKIE_NAMES = [
@@ -49,6 +50,11 @@ export interface FetchOptions {
   readonly fetch?: typeof fetch;
   /** Rendering a page must not hang on the API. */
   readonly timeoutMs?: number;
+  /**
+   * Called (and expected to throw, e.g. Next's `redirect`) when the API refuses a change because the free week
+   * is over. Server actions pass it so every write in a read-only account leads to the plans.
+   */
+  readonly onPlanRequired?: () => never;
 }
 
 /** A client for server-side calls to the API as the signed-in user: it forwards the session cookie. */
@@ -57,6 +63,7 @@ export function createServerApiClient({
   apiUrl,
   fetch: fetchImpl = fetch,
   timeoutMs = 2000,
+  onPlanRequired,
 }: FetchOptions) {
   return createApiClient({
     baseUrl: apiUrl,
@@ -70,9 +77,12 @@ export function createServerApiClient({
           reject(new DOMException('The API request timed out.', 'TimeoutError'));
         }, timeoutMs);
       });
-      const response = Promise.resolve().then(() =>
-        fetchImpl(new Request(request, { signal: controller.signal })),
-      );
+      const response = Promise.resolve()
+        .then(() => fetchImpl(new Request(request, { signal: controller.signal })))
+        .then(async (answer) => {
+          if (onPlanRequired && (await isPlanRequired(answer))) onPlanRequired();
+          return answer;
+        });
       return Promise.race([response, timedOut]).finally(() => {
         if (timeout !== undefined) clearTimeout(timeout);
       });

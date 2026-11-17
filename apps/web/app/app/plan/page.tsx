@@ -15,9 +15,9 @@ export async function generateMetadata() {
 export default async function PlanPage({
   searchParams,
 }: {
-  searchParams: Promise<{ paid?: string }>;
+  searchParams: Promise<{ paid?: string; status?: string }>;
 }) {
-  const { paid } = await searchParams;
+  const { paid, status } = await searchParams;
   const store = await cookies();
   const cookieHeader = sessionCookieHeader(store.getAll());
   const billing = cookieHeader
@@ -26,6 +26,7 @@ export default async function PlanPage({
   return (
     <PlanView
       billing={billing}
+      planRequired={status === 'plan-required'}
       paid={
         paid === 'top-up' ? 'top-up' : paid === 'explorer' || paid === 'voyager' ? 'plan' : null
       }

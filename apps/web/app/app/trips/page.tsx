@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { getLocale, getTranslations } from 'next-intl/server';
 import { cookies } from 'next/headers';
 import { apiInternalUrl } from '../../../lib/api-proxy';
+import { fetchBilling } from '../../../lib/billing';
+import { PLAN_REQUIRED_PATH } from '../../../lib/plan-required';
 import { createServerApiClient, sessionCookieHeader } from '../../../lib/stored-preferences';
 import { fetchDestinations, fetchTrips, SELECTED_TRIP_COOKIE } from '../../../lib/trips';
 import { currencyOptions } from '../../settings/options';
@@ -56,7 +58,9 @@ export default async function TripsPage({
   ]);
   const cookieHeader = sessionCookieHeader(store.getAll());
   const options = cookieHeader ? { cookieHeader, apiUrl: apiInternalUrl() } : null;
-  const fetchedTrips = options ? await fetchTrips(options, true) : null;
+  const [fetchedTrips, billing] = options
+    ? await Promise.all([fetchTrips(options, true), fetchBilling(options)])
+    : [null, null];
   const preferences = options
     ? await createServerApiClient(options)
         .GET('/v1/me/preferences')
@@ -128,48 +132,58 @@ export default async function TripsPage({
           <h1>{t('title')}</h1>
           <p className={styles.description}>{t('description')}</p>
         </div>
-        <details
-          className={styles.createDetails}
-          id="create-trip-form"
-          open={query.status === 'create-error'}
-        >
-          <summary className={styles.primaryAction}>
+        {billing?.readOnly ? (
+          // Read-only after the free week: the form would only fail on save, so the button leads to the plans.
+          <Link href={PLAN_REQUIRED_PATH} className={styles.primaryAction}>
             <span className={styles.createPlus} aria-hidden="true">
               +
             </span>
             {t('create')}
-          </summary>
-          <div className={styles.createPopover}>
-            <h2>{t('createTitle')}</h2>
-            <p>{t('createDescription')}</p>
-            <form action={createTrip} className={styles.createForm} id="create-trip-form-body">
-              <input type="hidden" name="idempotencyKey" value={randomUUID()} />
-              <label className={styles.field}>
-                <span>{t('tripName')}</span>
-                <input name="title" required maxLength={120} autoComplete="off" />
-              </label>
-              <div className={styles.createFields}>
+          </Link>
+        ) : (
+          <details
+            className={styles.createDetails}
+            id="create-trip-form"
+            open={query.status === 'create-error'}
+          >
+            <summary className={styles.primaryAction}>
+              <span className={styles.createPlus} aria-hidden="true">
+                +
+              </span>
+              {t('create')}
+            </summary>
+            <div className={styles.createPopover}>
+              <h2>{t('createTitle')}</h2>
+              <p>{t('createDescription')}</p>
+              <form action={createTrip} className={styles.createForm} id="create-trip-form-body">
+                <input type="hidden" name="idempotencyKey" value={randomUUID()} />
                 <label className={styles.field}>
-                  <span>{t('startDate')}</span>
-                  <input type="date" name="startDate" />
+                  <span>{t('tripName')}</span>
+                  <input name="title" required maxLength={120} autoComplete="off" />
                 </label>
-                <label className={styles.field}>
-                  <span>{t('currency')}</span>
-                  <select name="currency" defaultValue={preferredCurrency} required>
-                    {currencies.map((currency) => (
-                      <option key={currency.id} value={currency.id}>
-                        {currency.label}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              </div>
-              <button type="submit" className={styles.primaryAction}>
-                {t('create')}
-              </button>
-            </form>
-          </div>
-        </details>
+                <div className={styles.createFields}>
+                  <label className={styles.field}>
+                    <span>{t('startDate')}</span>
+                    <input type="date" name="startDate" />
+                  </label>
+                  <label className={styles.field}>
+                    <span>{t('currency')}</span>
+                    <select name="currency" defaultValue={preferredCurrency} required>
+                      {currencies.map((currency) => (
+                        <option key={currency.id} value={currency.id}>
+                          {currency.label}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                </div>
+                <button type="submit" className={styles.primaryAction}>
+                  {t('create')}
+                </button>
+              </form>
+            </div>
+          </details>
+        )}
       </header>
 
       {example ? (

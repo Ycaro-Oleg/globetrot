@@ -1,16 +1,10 @@
 'use server';
 
 import { EXPENSE_CATEGORIES, EXPENSE_STATUSES } from '@globetrot/domain';
-import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
-import { apiInternalUrl } from '../../../lib/api-proxy';
-import { createServerApiClient, sessionCookieHeader } from '../../../lib/stored-preferences';
+import { actionApiClient } from '../../../lib/action-client';
 
-async function apiClient() {
-  const store = await cookies();
-  const cookieHeader = sessionCookieHeader(store.getAll());
-  return cookieHeader ? createServerApiClient({ cookieHeader, apiUrl: apiInternalUrl() }) : null;
-}
+const apiClient = actionApiClient;
 
 export interface ExpenseInput {
   readonly tripId: string;

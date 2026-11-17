@@ -4,8 +4,7 @@ import { EXAMPLE_TRIP_IDS, idempotencyKeySchema } from '@globetrot/application';
 import { getLocale, getTranslations } from 'next-intl/server';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { apiInternalUrl } from '../../../lib/api-proxy';
-import { createServerApiClient, sessionCookieHeader } from '../../../lib/stored-preferences';
+import { actionApiClient } from '../../../lib/action-client';
 import { SELECTED_TRIP_COOKIE } from '../../../lib/trips';
 
 const cookieOptions = () => ({
@@ -18,9 +17,9 @@ const cookieOptions = () => ({
 
 async function apiClient() {
   const store = await cookies();
-  const cookieHeader = sessionCookieHeader(store.getAll());
-  if (!cookieHeader) redirect('/login?next=%2Fapp%2Ftrips');
-  return { store, client: createServerApiClient({ cookieHeader, apiUrl: apiInternalUrl() }) };
+  const client = await actionApiClient();
+  if (!client) redirect('/login?next=%2Fapp%2Ftrips');
+  return { store, client };
 }
 
 export async function openTrip(formData: FormData): Promise<void> {
