@@ -178,7 +178,7 @@ Decided in [ADR-0019](../architecture/adr/0019-plans-trial-and-pip-credits.md). 
 - **After the trial without a plan the account is read-only.**
   - Everything can be seen and exported, and trips or the whole account deleted.
   - Settings, the community handle, deleting own posts and comments, reporting and muting stay open.
-  - Creating or changing anything else is refused, with the way to the plans.
+  - Creating or changing anything else is refused, with the way to the plans. In the web app a refused change opens the plan page, which says the change was not saved and why, with the plans right below; "Create trip" leads there directly instead of opening a form that could not be saved.
   - Data is never deleted for lack of a plan.
 - **Canceling** keeps the plan until the end of the paid period.
 - **A failed renewal** keeps it 3 more days, then the account is read-only.

@@ -1,17 +1,11 @@
 'use server';
 
 import { CHECKLIST_GROUPS, type ChecklistGroup } from '@globetrot/domain';
-import { cookies } from 'next/headers';
 import { getTranslations } from 'next-intl/server';
-import { apiInternalUrl } from '../../../lib/api-proxy';
-import { createServerApiClient, sessionCookieHeader } from '../../../lib/stored-preferences';
+import { actionApiClient } from '../../../lib/action-client';
 import type { ChecklistData } from '../../../lib/trips';
 
-async function apiClient() {
-  const store = await cookies();
-  const cookieHeader = sessionCookieHeader(store.getAll());
-  return cookieHeader ? createServerApiClient({ cookieHeader, apiUrl: apiInternalUrl() }) : null;
-}
+const apiClient = actionApiClient;
 
 /** Each action answers with the lists and stamps after the change, or null when it did not work. */
 type Result = ChecklistData | null;

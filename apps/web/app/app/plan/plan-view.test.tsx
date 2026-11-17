@@ -5,6 +5,8 @@ import { describe, expect, it, vi } from 'vitest';
 import type { BillingView } from '../../../lib/billing';
 
 vi.mock('./actions', () => ({ startCheckout: vi.fn(), openPortal: vi.fn() }));
+const navigation = vi.hoisted(() => ({ pathname: '/app/trips' }));
+vi.mock('next/navigation', () => ({ usePathname: () => navigation.pathname }));
 
 import { PlanBanner } from '../_components/plan-banner';
 import { PlanView } from './plan-view';
@@ -70,8 +72,19 @@ describe.each(SUPPORTED_LOCALES)('plan page (%s)', (locale) => {
   });
 
   it('says the account is read-only and the trips are safe once the trial is over', () => {
-    const shown = text(wrap(locale, <PlanView billing={expired} />));
-    expect(shown).toContain(copy.expiredTitle);
+    const html = wrap(locale, <PlanView billing={expired} />);
+    expect(text(html)).toContain(copy.expiredTitle);
+    expect(text(html)).toContain(copy.expiredBody);
+    // Without a plan, credits and trip counts are noise: the plans come right after the notice.
+    expect(html).not.toContain('role="meter"');
+    expect(text(html)).not.toContain(copy.tripsTitle);
+    expect(html.match(/class="[^"]*cta[^"]*"/g)).toHaveLength(2);
+  });
+
+  it('says why a change was not saved when the read-only account was sent here', () => {
+    const html = wrap(locale, <PlanView billing={expired} planRequired />);
+    expect(text(html)).toContain(copy.planRequiredBody);
+    expect(text(html)).not.toContain(copy.expiredBody);
   });
 
   it('marks the current plan and offers to manage the payment', () => {
@@ -93,6 +106,15 @@ describe.each(SUPPORTED_LOCALES)('free-week line (%s)', (locale) => {
     expect(text(wrap(locale, <PlanBanner billing={expired} />))).toContain(copy.expiredCta);
     expect(wrap(locale, <PlanBanner billing={voyager} />)).toBe('');
     expect(wrap(locale, <PlanBanner billing={null} />)).toBe('');
+  });
+
+  it('stays out of the plan page, which says the same thing in full', () => {
+    navigation.pathname = '/app/plan';
+    try {
+      expect(wrap(locale, <PlanBanner billing={expired} />)).toBe('');
+    } finally {
+      navigation.pathname = '/app/trips';
+    }
   });
 });
 

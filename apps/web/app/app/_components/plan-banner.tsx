@@ -1,15 +1,20 @@
+'use client';
+
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
+import { usePathname } from 'next/navigation';
 import type { BillingView } from '../../../lib/billing';
 import styles from './shell.module.css';
 
 /**
  * One line under the TopBar about the free week: the days left while it runs, and, once it is over without a
- * plan, that the account is read-only and the trips are safe. Nothing for a paid plan.
+ * plan, that the account is read-only and the trips are safe. Nothing for a paid plan, and nothing on the plan
+ * page itself, which says the same thing in full.
  */
 export function PlanBanner({ billing }: { billing: BillingView | null }) {
   const t = useTranslations('shell.plan');
-  if (!billing) return null;
+  const pathname = usePathname();
+  if (!billing || pathname === '/app/plan') return null;
   if (billing.readOnly) {
     return (
       <aside className={styles.planBanner} data-tone="expired" aria-label={t('label')}>

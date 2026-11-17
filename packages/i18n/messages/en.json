@@ -1550,6 +1550,7 @@
     "trialBody": "Everything is included until {date}. Pick a plan now and keep planning without a break.",
     "expiredTitle": "Your free week is over",
     "expiredBody": "Your trips, budget and lists are all still here. You can see, export or delete them; choose a plan to change them again.",
+    "planRequiredBody": "That change was not saved: your free week is over. Choose a plan to keep editing. Your trips, budget and lists are all still here.",
     "paidTitle": "You are on {plan}",
     "renews": "Renews on {date}.",
     "ends": "Ends on {date}.",

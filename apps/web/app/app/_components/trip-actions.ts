@@ -1,18 +1,13 @@
 'use server';
 
 import { cookies } from 'next/headers';
-import { redirect } from 'next/navigation';
-import { apiInternalUrl } from '../../../lib/api-proxy';
-import { createServerApiClient, sessionCookieHeader } from '../../../lib/stored-preferences';
+import { redirect, unstable_rethrow } from 'next/navigation';
+import { actionApiClient } from '../../../lib/action-client';
 import { SELECTED_TRIP_COOKIE } from '../../../lib/trips';
 
 async function client() {
   const store = await cookies();
-  const cookieHeader = sessionCookieHeader(store.getAll());
-  return {
-    store,
-    api: cookieHeader ? createServerApiClient({ cookieHeader, apiUrl: apiInternalUrl() }) : null,
-  };
+  return { store, api: await actionApiClient() };
 }
 
 /** Renames a trip or sets its start date (`null` clears it). `true` when it saved. */
@@ -32,7 +27,8 @@ export async function updateTripFields(
   try {
     const { data } = await api.PATCH('/v1/trips/{id}', { params: { path: { id: tripId } }, body });
     return data !== undefined;
-  } catch {
+  } catch (error) {
+    unstable_rethrow(error);
     return false;
   }
 }
@@ -90,7 +86,8 @@ export async function setTripShare(
       ? await api.PUT('/v1/trips/{id}/share', { ...path, body: { showAmounts } })
       : await api.DELETE('/v1/trips/{id}/share', path);
     return data ?? null;
-  } catch {
+  } catch (error) {
+    unstable_rethrow(error);
     return null;
   }
 }
@@ -108,7 +105,8 @@ export async function ensureTripShare(tripId: string): Promise<string | null> {
       body: { showAmounts: false },
     });
     return data?.slug ?? null;
-  } catch {
+  } catch (error) {
+    unstable_rethrow(error);
     return null;
   }
 }

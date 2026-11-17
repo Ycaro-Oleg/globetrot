@@ -4,6 +4,8 @@
  * origin's proxy. The API checks the bytes again and strips any metadata left.
  */
 
+import { isPlanRequired, PLAN_REQUIRED_PATH } from './plan-required';
+
 export const MAX_SIDE = 2048;
 export const ACCEPTED_TYPES = 'image/jpeg,image/png,image/webp,image/heic,image/heif';
 
@@ -51,6 +53,10 @@ export async function uploadPhoto(file: File): Promise<UploadedMedia | UploadErr
       credentials: 'same-origin',
     });
     if (response.status === 201) return (await response.json()) as UploadedMedia;
+    if (await isPlanRequired(response)) {
+      window.location.assign(PLAN_REQUIRED_PATH);
+      return 'failed';
+    }
     if (response.status === 429) return 'tooMany';
     if (response.status === 422 || response.status === 413) return 'unsupported';
     return 'failed';

@@ -32,6 +32,7 @@ import { kitCounts, PinCard } from './pin-card';
 import { AskPipLink } from '../_components/ask-pip-link';
 import { VisaOverlay, type StampedVisa } from './visa-overlay';
 import styles from './world-map.module.css';
+import { isPlanRequired, PLAN_REQUIRED_PATH } from '../../../lib/plan-required';
 
 /** Public browser key: map tiles only. Place search goes through the API (`/v1/places/*`), key on the server. */
 const API_KEY = process.env.NEXT_PUBLIC_GEOAPIFY_API_KEY ?? '';
@@ -287,6 +288,11 @@ export function WorldMapBoard({
           headers: { 'content-type': 'application/json' },
           body: `{"destinations":${body}}`,
         });
+        if (await isPlanRequired(response)) {
+          // The free week is over: the change cannot be kept, so the plans come next (with the reason).
+          window.location.assign(PLAN_REQUIRED_PATH);
+          return;
+        }
         if (!response.ok) throw new Error('save failed');
         const saved = (await response.json()) as { stampedVisas?: StampedVisa[] };
         setFailed(false);

@@ -14,10 +14,13 @@ type Interval = 'month' | 'year';
 export function PlanView({
   billing,
   paid = null,
+  planRequired = false,
 }: {
   billing: BillingView | null;
   /** Back from a paid checkout: Stripe confirms it to us a moment later. */
   paid?: 'plan' | 'top-up' | null;
+  /** Sent here because a change could not be saved in the read-only account. */
+  planRequired?: boolean;
 }) {
   const t = useTranslations('planPage');
   const p = useTranslations('plans');
@@ -79,7 +82,9 @@ export function PlanView({
         {billing.readOnly ? (
           <>
             <h2>{t('expiredTitle')}</h2>
-            <p>{t('expiredBody')}</p>
+            <p role={planRequired ? 'status' : undefined}>
+              {t(planRequired ? 'planRequiredBody' : 'expiredBody')}
+            </p>
           </>
         ) : onPlan ? (
           <>
@@ -106,61 +111,64 @@ export function PlanView({
         )}
       </div>
 
-      <div className={styles.facts}>
-        <div className={styles.fact}>
-          <h2>{t('creditsTitle')}</h2>
-          <p className={styles.meterText}>
-            {t('creditsMeter', {
-              left: billing.credits.monthlyLeft,
-              total: billing.credits.monthly,
-            })}
-          </p>
-          <div
-            className={styles.meter}
-            role="meter"
-            aria-label={t('creditsTitle')}
-            aria-valuemin={0}
-            aria-valuemax={billing.credits.monthly}
-            aria-valuenow={billing.credits.monthlyLeft}
-            aria-valuetext={t('creditsMeter', {
-              left: billing.credits.monthlyLeft,
-              total: billing.credits.monthly,
-            })}
-          >
-            <span style={{ width: `${share}%` }} />
-          </div>
-          {onPlan ? (
-            <p className={styles.small}>
-              {t('creditsReset', { date: date(billing.credits.periodEnd) })}
+      {/* Credits and trip counts mean nothing without a plan: the read-only account sees the plans next. */}
+      {billing.readOnly ? null : (
+        <div className={styles.facts}>
+          <div className={styles.fact}>
+            <h2>{t('creditsTitle')}</h2>
+            <p className={styles.meterText}>
+              {t('creditsMeter', {
+                left: billing.credits.monthlyLeft,
+                total: billing.credits.monthly,
+              })}
             </p>
-          ) : null}
-          {billing.credits.topUpLeft > 0 ? (
-            <p className={styles.small}>{t('topUpLeft', { count: billing.credits.topUpLeft })}</p>
-          ) : null}
-          <p className={styles.small}>{p('credit')}</p>
-          {!billing.readOnly ? (
-            <button
-              type="button"
-              className={styles.secondary}
-              disabled={pending}
-              onClick={() => go(() => startCheckout('top-up', 'month'))}
+            <div
+              className={styles.meter}
+              role="meter"
+              aria-label={t('creditsTitle')}
+              aria-valuemin={0}
+              aria-valuemax={billing.credits.monthly}
+              aria-valuenow={billing.credits.monthlyLeft}
+              aria-valuetext={t('creditsMeter', {
+                left: billing.credits.monthlyLeft,
+                total: billing.credits.monthly,
+              })}
             >
-              {p('topUp', { credits: TOP_UP.credits, price: price(TOP_UP.priceMinor) })}
-            </button>
-          ) : null}
+              <span style={{ width: `${share}%` }} />
+            </div>
+            {onPlan ? (
+              <p className={styles.small}>
+                {t('creditsReset', { date: date(billing.credits.periodEnd) })}
+              </p>
+            ) : null}
+            {billing.credits.topUpLeft > 0 ? (
+              <p className={styles.small}>{t('topUpLeft', { count: billing.credits.topUpLeft })}</p>
+            ) : null}
+            <p className={styles.small}>{p('credit')}</p>
+            {!billing.readOnly ? (
+              <button
+                type="button"
+                className={styles.secondary}
+                disabled={pending}
+                onClick={() => go(() => startCheckout('top-up', 'month'))}
+              >
+                {p('topUp', { credits: TOP_UP.credits, price: price(TOP_UP.priceMinor) })}
+              </button>
+            ) : null}
+          </div>
+          <div className={styles.fact}>
+            <h2>{t('tripsTitle')}</h2>
+            <p className={styles.meterText}>
+              {t('trips', {
+                count: billing.activeTrips,
+                max: billing.maxActiveTrips === null ? 'none' : String(billing.maxActiveTrips),
+              })}
+            </p>
+          </div>
         </div>
-        <div className={styles.fact}>
-          <h2>{t('tripsTitle')}</h2>
-          <p className={styles.meterText}>
-            {t('trips', {
-              count: billing.activeTrips,
-              max: billing.maxActiveTrips === null ? 'none' : String(billing.maxActiveTrips),
-            })}
-          </p>
-        </div>
-      </div>
+      )}
 
-      <div className={styles.plansHead}>
+      <div className={styles.plansHead} id="plans">
         <h2>{t('choosePlans')}</h2>
         <div className={styles.toggle} role="group" aria-label={p('billing')}>
           {(['month', 'year'] as const).map((value) => (
