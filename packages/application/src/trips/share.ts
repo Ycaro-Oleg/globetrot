@@ -1,3 +1,4 @@
+import { DEFAULT_LOCALE, isSupportedLocale, SUPPORTED_LOCALES } from '@globetrot/i18n';
 import { z } from 'zod';
 import { budgetOf } from '../budget/operations';
 import { moneySchema } from '../budget/schemas';
@@ -19,6 +20,8 @@ export const tripShareSchema = z.object({
 
 export const sharedTripSchema = z.object({
   title: z.string(),
+  /** The owner's interface language: the social image speaks it, like the title they wrote. */
+  locale: z.enum(SUPPORTED_LOCALES),
   /** `YYYY-MM`: the month only, so nobody learns the day the house is empty. */
   startMonth: z.string().nullable(),
   totalNights: z.number().int(),
@@ -131,7 +134,10 @@ export function createUnshareTrip(deps: Pick<Ports, 'unitOfWork' | 'clock' | 'id
  * trip all answer null, so nothing tells them apart.
  */
 export function createSharedTrips(
-  deps: Pick<Ports, 'shares' | 'trips' | 'destinations' | 'expenses' | 'savings' | 'clock'>,
+  deps: Pick<
+    Ports,
+    'shares' | 'trips' | 'destinations' | 'expenses' | 'savings' | 'preferences' | 'clock'
+  >,
 ) {
   return {
     async view(slug: string): Promise<SharedTripView | null> {
@@ -140,14 +146,16 @@ export function createSharedTrips(
       if (!share) return null;
       const trip = await deps.trips.findById(share.tripId);
       if (!trip || trip.status === 'archived') return null;
-      const [stops, expenses, savings] = await Promise.all([
+      const [stops, expenses, savings, preferences] = await Promise.all([
         deps.destinations.listByTrip(trip.id),
         deps.expenses.listByTrip(trip.id),
         deps.savings.find(trip.id),
+        deps.preferences.find(trip.ownerId),
       ]);
       const budget = budgetOf(trip, expenses, savings, deps.clock.now());
       return sharedTripSchema.parse({
         title: trip.title,
+        locale: isSupportedLocale(preferences?.locale) ? preferences.locale : DEFAULT_LOCALE,
         startMonth: trip.startDate ? trip.startDate.slice(0, 7) : null,
         totalNights: stops.reduce((sum, stop) => sum + stop.nights, 0),
         stops: [...stops]

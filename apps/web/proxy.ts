@@ -62,5 +62,5 @@ const isApiPath = (pathname: string) =>
 
 // Constants only: Next analyses the matcher at build time. The public entry pages are listed for `?lang=`.
 export const config = {
-  matcher: ['/api/auth/:path*', '/v1/:path*', '/app/:path*', '/', '/signup', '/login'],
+  matcher: ['/api/auth/:path*', '/v1/:path*', '/app/:path*', '/', '/signup', '/login', '/t/:path*'],
 };

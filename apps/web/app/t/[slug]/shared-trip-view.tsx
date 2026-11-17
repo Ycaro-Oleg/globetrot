@@ -2,7 +2,7 @@ import { formatMoney, fromDecimal } from '@globetrot/domain';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { formatMonth, type SharedTrip } from '../../../lib/shared-trip';
-import { arcPath, routeSketch } from '../../../lib/route-sketch';
+import { arcPath, routeSketch, visibleLabels } from '../../../lib/route-sketch';
 import { SITE_NAME } from '../../site';
 import { TrackedLink } from '../../tracked-link';
 import styles from './shared-trip.module.css';
@@ -25,6 +25,7 @@ export function SharedTripView({ trip, locale }: { trip: SharedTrip; locale: str
       precision: 'whole',
     });
   const points = routeSketch(trip.stops, W, H, 36);
+  const labelled = visibleLabels(points);
   const percent = Math.round(trip.savings.progressBasisPoints / 100);
 
   return (
@@ -77,14 +78,16 @@ export function SharedTripView({ trip, locale }: { trip: SharedTrip; locale: str
                   >
                     {index + 1}
                   </text>
-                  <text
-                    x={right ? point.x + 26 : point.x - 26}
-                    y={point.y + 6}
-                    textAnchor={right ? 'start' : 'end'}
-                    className={styles.pinLabel}
-                  >
-                    {trip.stops[index]!.name}
-                  </text>
+                  {labelled[index] ? (
+                    <text
+                      x={right ? point.x + 26 : point.x - 26}
+                      y={point.y + 6}
+                      textAnchor={right ? 'start' : 'end'}
+                      className={styles.pinLabel}
+                    >
+                      {trip.stops[index]!.name}
+                    </text>
+                  ) : null}
                 </g>
               );
             })}

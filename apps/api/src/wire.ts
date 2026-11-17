@@ -110,6 +110,7 @@ export function createServices(
     expenses: createExpenseRepository(db),
     savings: createSavingsRepository(db),
     shares: createShareRepository(db),
+    preferences: createPreferencesRepository(db),
   };
   const app = createApp({
     auth: toAuthService(auth),
@@ -120,7 +121,6 @@ export function createServices(
       checklist: createChecklistRepository(db),
       dayPlaces: createDayPlaceRepository(db),
       visas: createVisaRepository(db),
-      preferences: createPreferencesRepository(db),
       community: createCommunityRepository(db),
       media: createMediaRepository(db),
       account: createAccountRepository(db),

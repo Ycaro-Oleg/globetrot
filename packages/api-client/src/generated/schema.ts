@@ -1091,6 +1091,8 @@ export interface operations {
                 content: {
                     "application/json": {
                         title: string;
+                        /** @enum {string} */
+                        locale: "en" | "pt-BR";
                         startMonth: string | null;
                         totalNights: number;
                         stops: {

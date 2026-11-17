@@ -1,6 +1,7 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
+import { sharedTripUrl } from '../../../lib/share-url';
 import { useState, useTransition } from 'react';
 import { track } from '../../../lib/analytics';
 import { ensureTripShare } from './trip-actions';
@@ -19,6 +20,7 @@ export function ShareTripButton({
   className?: string | undefined;
 }) {
   const t = useTranslations('tripHub.share');
+  const locale = useLocale();
   const [status, setStatus] = useState('');
   const [pending, startTransition] = useTransition();
 
@@ -26,7 +28,7 @@ export function ShareTripButton({
     startTransition(async () => {
       const slug = await ensureTripShare(tripId);
       if (!slug) return setStatus(t('error'));
-      const url = `${window.location.origin}/t/${slug}`;
+      const url = sharedTripUrl(window.location.origin, slug, locale);
       track('trip_shared');
       if (typeof navigator.share === 'function') {
         await navigator
