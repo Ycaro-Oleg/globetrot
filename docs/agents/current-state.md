@@ -1,6 +1,6 @@
 # Current state
 
-_Last updated: 2026-11-14, Pip's poses. Code state: `develop` includes #83 to #116; Pip's six poses are in an open PR. The [launch runbook](../engineering/launch-runbook.md) lists what the owner must provide._
+_Last updated: 2026-11-23, launch polish. Code state: `develop` includes #83 to #124. The [launch runbook](../engineering/launch-runbook.md) lists what the owner must provide. GitHub Actions does not run jobs while the account's billing is failing (owner); PRs are merged on local checks with the owner's approval until then._
 
 Read this first. It says where the project is, what exists, what is open, what only the owner can unblock and what to do next. Procedure for working: [`playbook.md`](playbook.md). Feature-by-feature progress: [`../product/progress.md`](../product/progress.md). Milestones and exit criteria: [`../product/roadmap.md`](../product/roadmap.md).
 
@@ -10,7 +10,8 @@ Read this first. It says where the project is, what exists, what is open, what o
 - **Active milestone: M3 App Foundation.** 13 of 13 issues are done in code; #55 stays open for the owner's real-provider smoke run. M2 (engineering foundation) is complete. M0 (product foundation) is complete. **M1 (design system and spikes) is partly open**: the owner reviewed and approved the remaining screen studies (#7 closed on 2026-11-13); the other open items need the owner.
 - **What works end to end today** (checked against the real API, Postgres and Mailpit): a person can see the landing page, create an account in English or Portuguese, confirm the email through Mailpit, log in, create a trip, see it in the list and switcher, archive it and undo, open the world-map board, search places, pin a route, change language, currency, country, nationality, time zone, units, theme (day, red-eye or follow the device) and motion, recover a password and log out.
 - **The map board follows the design handoff v2** (#75, map board v2): a full-bleed map with Atlas, Terrain and Slate styles and country fills, teardrop pins with petals and a pin card (spots, notes, to-dos), arcs with a comet, a slate route panel (reorder, undo, nights, dates, distances), a stop detail (nearby places, leg, mark visited, remove), place search on the server, a phone bottom sheet with "Pin here". Marking the first stop in a country visited stamps a **commemorative visa** (`GET /v1/visas`). Still to do: photos on the pin card (uploads), state outlines (own boundaries), the v2 tokens, type and TopBar shell (a separate change), costs per stop.
-- **The landing page is complete in code** (#74): every section, mock pricing labelled as placeholder, example trips a visitor can copy into an account, metadata, social image, `robots.txt` and sitemap. Real prices, legal text and the owner's review remain.
+- **The landing page is complete in code** (#74): every section, the approved prices (from `PLAN_TERMS`, never the copy; a catalog test enforces it), example trips that survive sign-up and land ready to copy, metadata, social image, `robots.txt` and sitemap. Legal text and the owner's review remain.
+- **Launch polish (#118 to #124), walked in a real browser:** a one-time language offer from the browser's language and `?lang=` ad links; the shared trip, its preview and its social image speak the sharer's language; after the free week every refused change leads to the plan page with the reason, and "Create trip" goes there directly; dark theme and phone fixes from a full screen sweep.
 - **Checklists and the visa page work** (`/app/lists`): four lists per trip (add, check, remove, a suggested starter list) and the nine readiness stamps as they stand now. The budget (costs, conversion, savings answer) and the Days page work too.
 - **The passport screen works** (`/app/passport`): the account's commemorative visas, newest first, with country, city and date, an empty state that leads to the board, and the "not an official document" note.
 - **Pip v1 works behind `FEATURE_PIP`** on DeepSeek (ADR-0016): ask, review a change list, apply, undo.
@@ -34,7 +35,7 @@ Read this first. It says where the project is, what exists, what is open, what o
 | M5 Itinerary & Checklists | **Started** (Days page, checklists) | — | Open: activities per day and drag and drop, storing stamps, the celebration |
 | M6 Budget & Savings | **Started** (budget v1, #83) | — | Open: a rates source, per-stop costs, editing a cost in place |
 | M7 Pip v1 | Not started | — | |
-| M8 Landing & MVP RC | **Started** (landing done in code, #74) | #74 | Pricing mock, example trips, SEO, performance and legal pages are open |
+| M8 Landing & MVP RC | **Started** (landing done in code, #74) | #74 | Prices are approved and wired; example trips work. Legal pages and the owner's review are open |
 | M9 and later | Not started | — | See the roadmap |
 
 ## What exists (by area)
@@ -67,7 +68,8 @@ These cannot be finished by an agent. Do not work around them, and do not mark t
 | **Real-device MapLibre test** | Run the frame-rate test on a mid-range Android phone ([`spikes/maplibre.md`](../architecture/spikes/maplibre.md)) | Final go for the board (M4) |
 | **Legal text** | Fill the `[bracketed]` facts in the drafted Terms and Privacy policy and have them reviewed; then remove the draft banner. Acceptance is not stored yet | A public release |
 | **Production email provider** | Choose Resend or Postmark, then provide settings and a verified sending domain | Production (M11). SMTP settings are the only change |
-| **Pricing, plan limits, regional pricing** | A business decision | M10 |
+| **GitHub billing** | Fix the account's billing (Settings → Billing & plans) so Actions runs jobs again | CI on every PR; merges rely on local checks until then |
+| **Regional pricing** | A business decision (base prices are approved: [ADR-0019](../architecture/adr/0019-plans-trial-and-pip-credits.md)) | Later |
 | **Imagery licensing source** | Choose where destination images come from | Imagery in the board and landing |
 | **Production object storage** ([ADR-0014](../architecture/adr/0014-photos-and-storage.md)) | Choose an S3-compatible provider (or self-host on the Hetzner box) and provide `S3_*` settings as secrets | Photos in production (M11) |
 | **DeepSeek key and privacy text** ([ADR-0016](../architecture/adr/0016-pip-on-deepseek.md)) | Rotate the key that was shared in chat and keep the new one only in local `.env` and the production secret store; say in the privacy policy that Pip sends trip plans to DeepSeek; decide when to switch `FEATURE_PIP` on | Pip in production |
@@ -87,7 +89,7 @@ Honest list of what is missing or deliberately simple, so nobody assumes otherwi
 - **The worker runs hourly housekeeping** (ADR-0017); there is no queue yet (pg-boss when queued work appears).
 - **Migrations in production** run as the API image's release command (`node dist/migrate.js`).
 - **Health:** `/health` (liveness) and `/ready` (database) on the API.
-- **No seed or demo data.** There are no example trips yet (M8) and no script that creates a test account; create one through `/signup` and Mailpit.
+- **No seed script.** Three example trips can be copied from the landing or `/app/trips?example=…`, but no script creates a test account; create one through `/signup` and Mailpit (to test the read-only state, move the user's `created_at` back eight days in the local database).
 - **The Geoapify tile key is a public browser key** written into the bundle at build time (`NEXT_PUBLIC_GEOAPIFY_API_KEY`); restrict it to the site's domains and to tiles in the Geoapify dashboard. Search uses the server key `GEOAPIFY_API_KEY` (#75). The place-lookup rate limit counts in memory, per API process.
 - **An unknown or foreign trip id shows a "not found" page with status 200**, not a 404 (the loading boundary has already sent the status). Harmless; fix if it matters for monitoring.
 - **The board keeps its own palette** (design handoff v2): the map is always light and its panels always slate, in both app themes; its colours still live in `world-map.module.css` rather than the v2 tokens.
@@ -100,13 +102,12 @@ Honest list of what is missing or deliberately simple, so nobody assumes otherwi
 
 ## Next
 
-Suggested order, from the [M3 breakdown](../engineering/m3-foundation-breakdown.md):
+The product is feature-complete for launch in code; what remains is mostly the owner's (table above). Agent work, in order:
 
-1. **#55** Google sign-in; the real-provider smoke test still needs the owner's OAuth credentials.
-2. **M4** (map board): the starter exists (#75). Next for M4: pins and `PinConnection`, the stop panel (nights, notes, costs), the mobile sheet, server-side geocoding, about 10 to 15 at a time. The roadmap's exit criteria and [`progress.md`](../product/progress.md) say what each milestone must deliver.
-3. **M8**: finish the landing (#74) when M4 to M7 are further along.
-
-In parallel, and owner-driven: the M1 items above. A docs-only PR may fix gaps at any time.
+1. Keep walking real flows in the browser (desktop and phone, en and pt-BR) and fix what hurts conversion; one focused PR each.
+2. When the owner provides Stripe test keys: run the checkout, portal and webhook path end to end ([`stripe.md`](../integrations/stripe.md)).
+3. When the owner provides the infrastructure: follow the [launch runbook](../engineering/launch-runbook.md).
+4. **#55** Google sign-in's real-provider smoke test, with the owner's OAuth credentials.
 
 ## Decisions taken (summary)
 
@@ -117,13 +118,13 @@ In parallel, and owner-driven: the M1 items above. A docs-only PR may fix gaps a
 - The web app proxies the API so the session cookie is first-party ([ADR-0010](../architecture/adr/0010-web-proxies-the-api.md)).
 - Mutations are one transaction with audit and idempotency ([ADR-0011](../architecture/adr/0011-idempotency-audit-and-units-of-work.md)).
 - Email goes through a port and SMTP; a password sign-in needs a verified address ([ADR-0012](../architecture/adr/0012-email-delivery-and-verified-sign-in.md)).
-- The Stripe account is in Brazil ([`stripe.md`](../integrations/stripe.md)). Pricing is mocked until approved.
+- The Stripe account is in Brazil ([`stripe.md`](../integrations/stripe.md)). Pricing is approved: 7-day trial, Explorer and Voyager, Pip credits ([ADR-0019](../architecture/adr/0019-plans-trial-and-pip-credits.md)).
 - The passport belongs to the account, with a visa page per trip ([business rules](../product/business-rules.md#passport)).
 - Language, currency, country, nationality and time zone are independent, and USD is the default currency.
 
 ## Open decisions
 
-- Pricing and plan limits (before M10).
+- Regional pricing.
 - Production email provider (Resend or Postmark).
 - Managed geocoding provider (#4).
 - Pip illustrator and asset timeline.
