@@ -121,6 +121,15 @@ describe('Globetrot landing page', () => {
     },
   );
 
+  it.each([
+    ['en', 'board-en.webp'],
+    ['pt-BR', 'board-pt-BR.webp'],
+  ] as const)("shows a real screen of the app in the visitor's language (%s)", (locale, file) => {
+    const html = render(locale);
+    expect(html).toContain(encodeURIComponent(`/landing/${file}`));
+    expect(html).toContain(`alt="${catalogs[locale].landing.seeAlt}"`);
+  });
+
   it('never shows an amount in reais: examples are in USD, the default currency', () => {
     for (const locale of SUPPORTED_LOCALES) {
       expect(visibleText(render(locale))).not.toMatch(/R\$/);

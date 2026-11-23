@@ -509,6 +509,30 @@
 }
 
 /* --- Sections --- */
+.seeBody {
+  margin: 0;
+  max-width: 640px;
+  color: var(--ink-2);
+  font-size: 18px;
+  line-height: 1.5;
+}
+
+/* The app screenshot, framed like a window. */
+.shot {
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid var(--hairline);
+  border-radius: 20px;
+  background: #0f172a;
+  box-shadow: 0 24px 60px -24px rgb(15 23 42 / 0.45);
+}
+
+.shot img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
 .section {
   display: flex;
   flex-direction: column;
