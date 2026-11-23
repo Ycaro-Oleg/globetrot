@@ -1,6 +1,5 @@
 import { formatMoney, money, PLAN_TERMS, TRIAL_TERMS } from '@globetrot/domain';
 import type { Metadata } from 'next';
-import Image from 'next/image';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import { getLocale, getTranslations } from 'next-intl/server';
@@ -67,6 +66,8 @@ export default function HomePage() {
     voyagerMonthly: price(PLAN_TERMS.voyager.monthlyMinor),
     voyagerAnnual: price(PLAN_TERMS.voyager.annualMinor),
   };
+  // A real screen of the app, captured from the Japan example in the visitor's language.
+  const shotLocale = locale === 'pt-BR' ? 'pt-BR' : 'en';
   const accent = (chunks: React.ReactNode) => <span className={styles.accent}>{chunks}</span>;
 
   const steps = [
@@ -190,15 +191,24 @@ export default function HomePage() {
             <h2 id="see-title">{t('seeTitle')}</h2>
             <p className={styles.seeBody}>{t('seeBody')}</p>
           </div>
-          {/* A real screen of the app, captured from the Japan example in the visitor's language. */}
           <figure className={styles.shot}>
-            <Image
-              src={locale === 'pt-BR' ? '/landing/board-pt-BR.webp' : '/landing/board-en.webp'}
-              alt={t('seeAlt')}
-              width={1280}
-              height={704}
-              sizes="(max-width: 1232px) calc(100vw - 32px), 1200px"
-            />
+            {/* eslint-disable-next-line @next/next/no-img-element -- art direction (phone and desktop screens); both are already-sized WebP files */}
+            <picture>
+              <source
+                media="(max-width: 640px)"
+                srcSet={`/landing/board-phone-${shotLocale}.webp`}
+                width={780}
+                height={1484}
+              />
+              <img
+                src={`/landing/board-${shotLocale}.webp`}
+                alt={t('seeAlt')}
+                width={1280}
+                height={704}
+                loading="lazy"
+                decoding="async"
+              />
+            </picture>
           </figure>
         </section>
 
