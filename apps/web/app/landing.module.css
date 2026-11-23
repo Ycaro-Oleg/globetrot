@@ -533,6 +533,15 @@
   height: auto;
 }
 
+/* On a phone the phone screen shows, at a size that stays readable. */
+@media (max-width: 640px) {
+  .shot {
+    width: min(100%, 340px);
+    margin-inline: auto;
+    border-radius: 28px;
+  }
+}
+
 .section {
   display: flex;
   flex-direction: column;

@@ -18,6 +18,7 @@ import {
 } from './board-route';
 import { PIN, relabel, restyle, styleCountries, type MapStyleName } from './map-styles';
 import styles from './world-map.module.css';
+import { fitPadding } from './fit-padding';
 
 export type Inset = { top: number; right: number; bottom: number; left: number };
 export type NearbyPlace = { name: string; kind: string; longitude: number; latitude: number };
@@ -407,12 +408,31 @@ export function MapCanvas(props: Props) {
 
   const padding = () => {
     const { inset } = latest.current;
-    return {
-      top: inset.top + 30,
-      right: inset.right + 30,
-      bottom: inset.bottom + 30,
-      left: inset.left + 30,
-    };
+    const container = mapRef.current?.getContainer();
+    return fitPadding(
+      {
+        top: inset.top + 30,
+        right: inset.right + 30,
+        bottom: inset.bottom + 30,
+        left: inset.left + 30,
+      },
+      container?.clientWidth ?? 0,
+      container?.clientHeight ?? 0,
+    );
+  };
+
+  /**
+   * Fits the camera to `bounds`. MapLibre adds the padding kept from the last camera move to the new one, so a
+   * second fit (the route after the world) could ask for twice the panel's room and be refused: the map stayed on
+   * Europe for a fresh Japan trip on phones. Clearing it first makes each fit use only its own padding.
+   */
+  const fit = (
+    map: MapLibreMap,
+    bounds: [[number, number], [number, number]],
+    options: Omit<Parameters<MapLibreMap['fitBounds']>[1] & object, 'padding'>,
+  ) => {
+    map.setPadding({ top: 0, right: 0, bottom: 0, left: 0 });
+    map.fitBounds(bounds, { ...options, padding: padding() });
   };
 
   useEffect(() => {
@@ -566,12 +586,13 @@ export function MapCanvas(props: Props) {
           syncPins();
           rebuildRoute(true);
           updateSpots();
-          map.fitBounds(
+          fit(
+            map,
             [
               [-170, -50],
               [170, 70],
             ],
-            { duration: 0, padding: padding() },
+            { duration: 0 },
           );
           if (latest.current.stops.length) controller.fitStops(false);
           frame = requestAnimationFrame(tick);
@@ -690,20 +711,22 @@ export function MapCanvas(props: Props) {
           current.jumpTo({ center: sw, zoom: 11 });
           return;
         }
-        current.fitBounds([sw, ne], {
-          padding: padding(),
+        fit(current, [sw, ne], {
           maxZoom: 9,
           duration: animate && !reducedMotion() ? 1600 : 0,
           essential: true,
         });
       },
       fitWorld() {
-        mapRef.current?.fitBounds(
+        const current = mapRef.current;
+        if (!current) return;
+        fit(
+          current,
           [
             [-170, -50],
             [170, 70],
           ],
-          { padding: padding(), duration: reducedMotion() ? 0 : 1200, essential: true },
+          { duration: reducedMotion() ? 0 : 1200, essential: true },
         );
       },
       zoomBy(delta) {

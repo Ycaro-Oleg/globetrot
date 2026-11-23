@@ -126,7 +126,8 @@ describe('Globetrot landing page', () => {
     ['pt-BR', 'board-pt-BR.webp'],
   ] as const)("shows a real screen of the app in the visitor's language (%s)", (locale, file) => {
     const html = render(locale);
-    expect(html).toContain(encodeURIComponent(`/landing/${file}`));
+    expect(html).toContain(`/landing/${file}`);
+    expect(html).toContain(`/landing/${file.replace('board-', 'board-phone-')}`);
     expect(html).toContain(`alt="${catalogs[locale].landing.seeAlt}"`);
   });
 
