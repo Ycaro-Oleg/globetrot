@@ -1,5 +1,6 @@
 import { formatMoney, money, PLAN_TERMS, TRIAL_TERMS } from '@globetrot/domain';
 import type { Metadata } from 'next';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import { getLocale, getTranslations } from 'next-intl/server';
@@ -183,6 +184,24 @@ export default function HomePage() {
       </ul>
 
       <main>
+        <section className={styles.section} id="see" aria-labelledby="see-title">
+          <div className={styles.heading}>
+            <span className={styles.kicker}>{t('seeKicker')}</span>
+            <h2 id="see-title">{t('seeTitle')}</h2>
+            <p className={styles.seeBody}>{t('seeBody')}</p>
+          </div>
+          {/* A real screen of the app, captured from the Japan example in the visitor's language. */}
+          <figure className={styles.shot}>
+            <Image
+              src={locale === 'pt-BR' ? '/landing/board-pt-BR.webp' : '/landing/board-en.webp'}
+              alt={t('seeAlt')}
+              width={1280}
+              height={704}
+              sizes="(max-width: 1232px) calc(100vw - 32px), 1200px"
+            />
+          </figure>
+        </section>
+
         <section className={styles.section} id="how" aria-labelledby="how-title">
           <div className={styles.heading}>
             <span className={styles.kicker}>{t('howKicker')}</span>
