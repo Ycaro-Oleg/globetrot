@@ -256,7 +256,7 @@ export function OnboardingFlow({
                       setError(null);
                     }}
                   >
-                    {formatYearMonth(value, locale)}
+                    {sentenceCase(formatYearMonth(value, locale), locale)}
                   </button>
                 ))}
               </div>
@@ -572,4 +572,9 @@ function PlaceSearch({
       ) : null}
     </div>
   );
+}
+
+/** "dezembro de 2026" → "Dezembro de 2026": only the first letter, so "de" stays lowercase in Portuguese. */
+function sentenceCase(text: string, locale: string): string {
+  return text.charAt(0).toLocaleUpperCase(locale) + text.slice(1);
 }

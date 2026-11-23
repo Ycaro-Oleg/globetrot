@@ -1037,7 +1037,7 @@
     "on": "ligado",
     "off": "desligado",
     "none": "—",
-    "estimateCost": "Estimativa da viagem (onboarding)",
+    "estimateCost": "Estimativa da viagem inteira",
     "finishError": "Não foi possível criar a viagem. Confira os valores e tente de novo.",
     "useTyped": "Continuar com “{name}” — marque no mapa depois",
     "popular": "Populares agora"

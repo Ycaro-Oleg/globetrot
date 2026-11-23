@@ -1037,7 +1037,7 @@
     "on": "on",
     "off": "off",
     "none": "—",
-    "estimateCost": "Rough trip estimate (onboarding)",
+    "estimateCost": "Whole-trip estimate",
     "finishError": "We could not create the trip. Check the amounts and try again.",
     "useTyped": "Continue with “{name}” — pin it on the map later",
     "popular": "Popular right now"
