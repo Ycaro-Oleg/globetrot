@@ -112,7 +112,8 @@ function Feed({
         )}
       </main>
       <aside className={styles.aside} aria-label={t('aside.whoFollow')}>
-        <You me={me} />
+        {/* Keyed by the handle: the first post, like or follow creates it, and the card must show it then. */}
+        <You key={me?.handle ?? 'none'} me={me} />
         {discover ? <Suggestions discover={discover} variant="column" /> : null}
         {discover ? <Trending trending={discover.trending} /> : null}
         <p className={styles.note}>{t('aside.rules')}</p>

@@ -578,7 +578,11 @@
   cursor: pointer;
 }
 
-.copyRoute[aria-pressed='true'] {
+/* After copying: a link to the copy, green like a done state. */
+.copyRoute[data-done] {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
   border-color: #10b981;
   background: #10b981;
   color: #0f172a;
