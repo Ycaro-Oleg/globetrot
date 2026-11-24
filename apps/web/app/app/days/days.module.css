@@ -193,6 +193,17 @@
   font-weight: 600;
 }
 
+/* The departure day: the morning is free, the rest is the way out. */
+.departure {
+  margin: 0;
+  padding: 8px 10px;
+  border: 1px dashed var(--gt-semantic-color-input-border);
+  border-radius: 12px;
+  color: var(--gt-semantic-color-text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+}
+
 .card {
   display: flex;
   flex-direction: column;

@@ -37,5 +37,10 @@ export const checklistSchema = z.object({
   items: z.array(checklistItemSchema),
   /** The nine readiness stamps as they stand now, computed from what the trip has today. */
   readiness: z.record(z.enum(MILESTONES), z.boolean()),
+  /**
+   * Stamps this change earned for the very first time (recorded now with today's date). Only these are
+   * celebrated: a stamp that comes off and back is not new. Always empty when only reading.
+   */
+  firstTime: z.array(z.enum(MILESTONES)),
 });
 export type ChecklistView = z.infer<typeof checklistSchema>;

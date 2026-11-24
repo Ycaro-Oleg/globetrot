@@ -14,10 +14,10 @@ export function buildOpenApiDocument() {
     auth: { handler: unreachable, getSession: unreachable },
     application: createApplication({
       users: { findById: unreachable },
-      trips: { findById: unreachable, listByOwner: unreachable },
+      trips: { findById: unreachable, listByOwner: unreachable, copiesOf: unreachable },
       destinations: { listByTrip: unreachable },
       expenses: { listByTrip: unreachable, findById: unreachable },
-      checklist: { listByTrip: unreachable, findById: unreachable },
+      checklist: { listByTrip: unreachable, findById: unreachable, stamps: unreachable },
       dayPlaces: { listByTrip: unreachable, findById: unreachable },
       visas: { listByUser: unreachable },
       savings: { find: unreachable },

@@ -738,6 +738,8 @@
     "outside": "Fora da parada: este dia é em {stop}",
     "noStop": "Sem parada",
     "travel": "{mode} {from} → {to}",
+    "departure": "✈ Dia da partida: você vai embora hoje, então planeje a manhã.",
+    "departureShort": "partida",
     "moved": "{name} → {target}",
     "removed": "{name} removido",
     "remove": "Remover {name}",

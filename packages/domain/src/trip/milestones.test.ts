@@ -17,6 +17,19 @@ describe('milestones', () => {
     ]);
   });
 
+  it('plans "every day" without a place on the departure day, but never for a route of day trips only', () => {
+    const planned: TripPlan = {
+      ...japanDemo(),
+      stops: [{ id: 'a', nights: 1, state: 'planned', places: [{ id: 'p', day: 1, done: false }] }],
+    };
+    expect(milestones(planned, JAPAN_TODAY).itin).toBe(true);
+    const dayTrip: TripPlan = {
+      ...japanDemo(),
+      stops: [{ id: 'sintra', nights: 0, state: 'planned', places: [] }],
+    };
+    expect(milestones(dayTrip, JAPAN_TODAY).itin).toBe(false);
+  });
+
   it('earns all nine once every gap is closed', () => {
     expect(earned(milestones(japanReady(), JAPAN_TODAY))).toEqual([...MILESTONES]);
   });

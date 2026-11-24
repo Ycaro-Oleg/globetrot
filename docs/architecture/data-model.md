@@ -46,6 +46,7 @@ Every table, in the order it was introduced. `pnpm --filter @globetrot/db genera
 | `user_preference` | `0004_user_preferences`, `0005_theme_and_motion_preferences` | `schema/preference.ts` | One row of settings per user | `user_id` | [below](#user-preferences) |
 | `expense`, `trip_savings` | `0007_budget_and_savings` | `schema/budget.ts` | A trip's costs (with the conversion provenance) and what it has set aside | the trip's owner (through `trip_id`) | [below](#budget-expenses-and-savings) |
 | `checklist_item` | `0008_checklists` | `schema/checklist.ts` | A trip's checklist items in four groups, each done or not | the trip's owner (through `trip_id`) | [below](#checklists) |
+| `trip_stamp` | `0022_stamps_and_route_copies` | `schema/checklist.ts` | The day each readiness stamp was first earned, so it is celebrated once | the trip's owner (through `trip_id`) | [below](#checklists) |
 | `destination` | `0006_trip_destinations` | `schema/destination.ts` | The ordered stops of a trip's route | the trip's owner (through `trip_id`) | [below](#destinations-a-trips-route) |
 
 `0000_extensions` enables `postgis`, `pg_trgm` and `unaccent` and creates no table. Planned, not built: pins and their connections (M4), itinerary and checklists (M5), expenses, exchange rates and savings (M6), stamps and the passport (M5 and M9), proposals (M7), billing (M10).
@@ -60,7 +61,7 @@ Migration `0002_trips` (and `0003_audit_event_append_only`). Code: `packages/db/
 
 | Table | What | Notes |
 |---|---|---|
-| `trip` | A user's trip | `id uuid` (UUIDv7 from the application), `owner_id text` → `user.id`, `title`, `start_date date` (nullable), `currency char(3)`, `status`, `visibility`, `created_at`, `updated_at`. Index `(owner_id, created_at)` |
+| `trip` | A user's trip | `id uuid` (UUIDv7 from the application), `owner_id text` → `user.id`, `title`, `start_date date` (nullable), `currency char(3)`, `status`, `visibility`, `copied_from_post_id uuid` (nullable, migration `0022`: the community route post it was copied from; no foreign key, so a deleted post leaves the copy alone), `created_at`, `updated_at`. Indexes `(owner_id, created_at)` and `(owner_id, copied_from_post_id)` |
 | `idempotency_key` | A mutation already done | Primary key `(owner_id, key)`, canonical request `fingerprint`, stored `response` (jsonb) |
 | `audit_event` | Append-only history of mutations | `actor_kind`, `actor_id`, `action`, `entity_type`, `entity_id`, `metadata` (jsonb), `occurred_at` |
 
@@ -155,7 +156,7 @@ Migration `0008_checklists`. `checklist_item` references `trip` with `ON DELETE 
 - `group` is CHECKed against the domain list (`CHECKLIST_GROUPS`: documents, money, bookings, packing). `label` is trimmed, 1 to 120 characters. `done` defaults to false.
 - Items keep the order they were added (`created_at`, then `id`). A batch add spaces its items one millisecond apart so they keep their order.
 - A trip keeps at most 100 items (enforced by the application, `CHECKLIST_MAX_ITEMS`).
-- **The readiness stamps are not stored.** `getChecklist` evaluates the domain's `milestones` from the route, costs, savings and items every time, so a stamp can come back off. Recording first-time stamps with their date (`recordStamps`), the visa page history and the celebration are still to do. `stays` and `itin` cannot be earned yet: they need costs per stop and activities per day.
+- **The readiness stamps are computed, and their first day is stored.** `getChecklist` evaluates the domain's `milestones` from the route, costs, savings and items every time, so a stamp can come back off. `trip_stamp` (migration `0022_stamps_and_route_copies`: `trip_id` → `trip` cascade, `milestone` CHECKed against `MILESTONES`, `earned_on date`, primary key `(trip_id, milestone)`) keeps the day each stamp was first earned. The checklist commands record new ones with `recordStamps` and return them as `firstTime`, so the celebration shows once; reads never write. The visa page history is still to do.
 - Audit entries (`checklist.add`, `.update`, `.delete`) hold groups, the changed field names and a count, never a label (a label can be a passport number or a booking code).
 
 ## Day plan (places to see, on days)

@@ -40,6 +40,8 @@ describe('buildBoard', () => {
       [10, 'full'],
       [4, 'ok'],
       [1, 'light'],
+      // The departure day, still free.
+      [0, 'light'],
     ]);
     expect(board.fullDays).toBe(1);
     expect(board.totalHours).toBe(15);
@@ -51,7 +53,9 @@ describe('buildBoard', () => {
       null,
       null,
       { mode: 'train', from: 'Tokyo', to: 'Kyoto' },
+      null,
     ]);
+    expect(board.days.map((day) => day.departure)).toEqual([false, false, false, true]);
   });
 });
 

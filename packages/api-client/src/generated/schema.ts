@@ -3818,6 +3818,7 @@ export interface operations {
                             check?: boolean;
                             ready?: boolean;
                         };
+                        firstTime: ("dest" | "route" | "budget" | "saved" | "docs" | "stays" | "itin" | "check" | "ready")[];
                     };
                 };
             };
@@ -3942,6 +3943,7 @@ export interface operations {
                             check?: boolean;
                             ready?: boolean;
                         };
+                        firstTime: ("dest" | "route" | "budget" | "saved" | "docs" | "stays" | "itin" | "check" | "ready")[];
                     };
                 };
             };
@@ -4055,6 +4057,7 @@ export interface operations {
                             check?: boolean;
                             ready?: boolean;
                         };
+                        firstTime: ("dest" | "route" | "budget" | "saved" | "docs" | "stays" | "itin" | "check" | "ready")[];
                     };
                 };
             };
@@ -4176,6 +4179,7 @@ export interface operations {
                             check?: boolean;
                             ready?: boolean;
                         };
+                        firstTime: ("dest" | "route" | "budget" | "saved" | "docs" | "stays" | "itin" | "check" | "ready")[];
                     };
                 };
             };
@@ -5154,6 +5158,8 @@ export interface operations {
                                     bagColor: "amber" | "cyan" | "pink";
                                 };
                             } | null;
+                            /** Format: uuid */
+                            copiedTripId: string | null;
                         }[];
                         /** Format: uuid */
                         nextBefore: string | null;
@@ -5540,6 +5546,8 @@ export interface operations {
                                 bagColor: "amber" | "cyan" | "pink";
                             };
                         } | null;
+                        /** Format: uuid */
+                        copiedTripId: string | null;
                     };
                 };
             };
@@ -5765,6 +5773,8 @@ export interface operations {
                                 bagColor: "amber" | "cyan" | "pink";
                             };
                         } | null;
+                        /** Format: uuid */
+                        copiedTripId: string | null;
                     };
                 };
             };
@@ -6044,6 +6054,8 @@ export interface operations {
                                 bagColor: "amber" | "cyan" | "pink";
                             };
                         } | null;
+                        /** Format: uuid */
+                        copiedTripId: string | null;
                     };
                 };
             };
@@ -6317,6 +6329,8 @@ export interface operations {
                                 bagColor: "amber" | "cyan" | "pink";
                             };
                         } | null;
+                        /** Format: uuid */
+                        copiedTripId: string | null;
                     };
                 };
             };
@@ -6496,6 +6510,8 @@ export interface operations {
                                 bagColor: "amber" | "cyan" | "pink";
                             };
                         } | null;
+                        /** Format: uuid */
+                        copiedTripId: string | null;
                     };
                 };
             };
@@ -6675,6 +6691,8 @@ export interface operations {
                                 bagColor: "amber" | "cyan" | "pink";
                             };
                         } | null;
+                        /** Format: uuid */
+                        copiedTripId: string | null;
                     };
                 };
             };
@@ -6854,6 +6872,8 @@ export interface operations {
                                 bagColor: "amber" | "cyan" | "pink";
                             };
                         } | null;
+                        /** Format: uuid */
+                        copiedTripId: string | null;
                     };
                 };
             };
@@ -8005,6 +8025,8 @@ export interface operations {
                                     bagColor: "amber" | "cyan" | "pink";
                                 };
                             } | null;
+                            /** Format: uuid */
+                            copiedTripId: string | null;
                         }[];
                         /** Format: uuid */
                         nextBefore: string | null;

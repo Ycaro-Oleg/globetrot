@@ -39,6 +39,8 @@ export interface TripRecord {
   readonly currency: string;
   readonly status: TripStatus;
   readonly visibility: TripVisibility;
+  /** The community route post this trip was copied from, if any. */
+  readonly copiedFromPostId?: string | null;
   readonly createdAt: Date;
   readonly updatedAt: Date;
 }
@@ -51,6 +53,8 @@ export interface NewTrip {
   readonly currency: string;
   readonly status: TripStatus;
   readonly visibility: TripVisibility;
+  /** Set when the trip is a copy of a community route post. */
+  readonly copiedFromPostId?: string | null;
   readonly createdAt: Date;
 }
 
@@ -70,6 +74,8 @@ export interface TripReader {
     ownerId: string,
     options: { readonly includeArchived: boolean },
   ): Promise<TripRecord[]>;
+  /** The owner's trips (not archived) copied from these route posts: post id to trip id. */
+  copiesOf(ownerId: string, postIds: readonly string[]): Promise<Map<string, string>>;
 }
 
 export interface TripWriter extends TripReader {
@@ -302,10 +308,18 @@ export interface ChecklistItemRecord {
 export type NewChecklistItem = Omit<ChecklistItemRecord, 'updatedAt'>;
 export type ChecklistItemPatch = Partial<Pick<ChecklistItemRecord, 'label' | 'done'>>;
 
+/** A readiness stamp the trip earned, and the day it was first earned (`YYYY-MM-DD`). */
+export interface StampRecordRow {
+  readonly milestone: string;
+  readonly earnedOn: string;
+}
+
 export interface ChecklistReader {
   /** In the order the items were added. */
   listByTrip(tripId: string): Promise<ChecklistItemRecord[]>;
   findById(id: string): Promise<ChecklistItemRecord | null>;
+  /** The stamps the trip has earned, each with its first day. */
+  stamps(tripId: string): Promise<StampRecordRow[]>;
 }
 
 export interface ChecklistWriter extends ChecklistReader {
@@ -313,6 +327,8 @@ export interface ChecklistWriter extends ChecklistReader {
   update(id: string, patch: ChecklistItemPatch, updatedAt: Date): Promise<ChecklistItemRecord>;
   delete(id: string): Promise<void>;
   countByTrip(tripId: string): Promise<number>;
+  /** Records stamps earned for the first time; one already recorded keeps its first day. */
+  addStamps(tripId: string, stamps: readonly StampRecordRow[]): Promise<void>;
 }
 
 // --- Day plan (places to see, each on a day or not yet) -----------------------------------------------

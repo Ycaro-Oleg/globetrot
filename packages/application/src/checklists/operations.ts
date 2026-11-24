@@ -1,5 +1,6 @@
 import {
   milestones,
+  recordStamps,
   toLocalDate,
   tripDays,
   type ChecklistGroup,
@@ -9,7 +10,7 @@ import { z } from 'zod';
 import { planOf } from '../budget/operations';
 import { NotFoundError, ValidationError } from '../errors';
 import { defineOperation } from '../operation';
-import type { ChecklistItemRecord, Ports } from '../ports';
+import type { ChecklistItemRecord, Ports, Transaction } from '../ports';
 import { loadOwnedTrip } from '../trips/operations';
 import { tripIdSchema } from '../trips/schemas';
 import {
@@ -67,7 +68,33 @@ async function checklistOf(
       done: item.done,
     })),
     readiness: milestones(plan, toLocalDate(now.toISOString().slice(0, 10))),
+    firstTime: [],
   };
+}
+
+/**
+ * The lists after a change, and the stamps it earned for the very first time: those are recorded now with today's
+ * date, so a stamp that comes off and back is never celebrated twice.
+ */
+async function checklistAfterChange(
+  tx: Pick<Transaction, 'checklist' | 'destinations' | 'expenses' | 'savings' | 'dayPlaces'>,
+  trip: Parameters<typeof planOf>[0],
+  now: Date,
+): Promise<ChecklistView> {
+  const view = await checklistOf(tx, trip, now);
+  const today = toLocalDate(now.toISOString().slice(0, 10));
+  const recorded = Object.fromEntries(
+    (await tx.checklist.stamps(trip.id)).map((stamp) => [
+      stamp.milestone,
+      toLocalDate(stamp.earnedOn),
+    ]),
+  );
+  const { newlyEarned } = recordStamps(view.readiness, recorded, today);
+  await tx.checklist.addStamps(
+    trip.id,
+    newlyEarned.map((milestone) => ({ milestone, earnedOn: today })),
+  );
+  return { ...view, firstTime: newlyEarned };
 }
 
 export function createGetChecklist(deps: ReadPorts) {
@@ -128,7 +155,7 @@ export function createAddChecklistItems(deps: WritePorts) {
             count: input.items.length,
           },
         });
-        return checklistOf(tx, trip, now);
+        return checklistAfterChange(tx, trip, now);
       });
     },
   });
@@ -178,7 +205,7 @@ export function createUpdateChecklistItem(deps: WritePorts) {
             ].filter(Boolean),
           },
         });
-        return checklistOf(tx, trip, now);
+        return checklistAfterChange(tx, trip, now);
       });
     },
   });
@@ -205,7 +232,7 @@ export function createDeleteChecklistItem(deps: WritePorts) {
           entityId: trip.id,
           metadata: {},
         });
-        return checklistOf(tx, trip, now);
+        return checklistAfterChange(tx, trip, now);
       });
     },
   });

@@ -3,6 +3,7 @@ import type {
   SightResult,
   ChecklistItemRecord,
   ChecklistWriter,
+  StampRecordRow,
   VisaRecord,
   VisaWriter,
   AuditEventInput,
@@ -46,6 +47,8 @@ export interface FakeState {
   destinations: Map<string, DestinationRecord[]>;
   expenses: Map<string, ExpenseRecord>;
   checklist: Map<string, ChecklistItemRecord>;
+  /** First-earned stamps, keyed by `${tripId}\u0000${milestone}`. */
+  stamps: Map<string, StampRecordRow & { readonly tripId: string }>;
   dayPlaces: Map<string, DayPlaceRecord>;
   /** Keyed by `${userId}\u0000${countryCode}`. */
   visas: Map<string, VisaRecord>;
@@ -99,6 +102,7 @@ export function createFakePorts(options: FakeOptions = {}) {
     destinations: new Map(),
     expenses: new Map(),
     checklist: new Map(),
+    stamps: new Map(),
     dayPlaces: new Map(),
     visas: new Map(),
     savings: new Map(),
@@ -124,6 +128,21 @@ export function createFakePorts(options: FakeOptions = {}) {
         .filter((trip) => trip.ownerId === ownerId)
         .filter((trip) => includeArchived || trip.status !== 'archived')
         .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    },
+    async copiesOf(ownerId, postIds) {
+      const copies = new Map<string, string>();
+      for (const trip of state.trips.values()) {
+        const from = trip.copiedFromPostId;
+        if (
+          trip.ownerId === ownerId &&
+          trip.status !== 'archived' &&
+          from &&
+          postIds.includes(from)
+        ) {
+          copies.set(from, trip.id);
+        }
+      }
+      return copies;
     },
     async insert(trip: NewTrip) {
       const record: TripRecord = { ...trip, updatedAt: trip.createdAt };
@@ -283,6 +302,17 @@ export function createFakePorts(options: FakeOptions = {}) {
     },
     async countByTrip(tripId) {
       return [...state.checklist.values()].filter((record) => record.tripId === tripId).length;
+    },
+    async stamps(tripId) {
+      return [...state.stamps.values()]
+        .filter((stamp) => stamp.tripId === tripId)
+        .map(({ milestone, earnedOn }) => ({ milestone, earnedOn }));
+    },
+    async addStamps(tripId, stamps) {
+      for (const stamp of stamps) {
+        const key = `${tripId}\u0000${stamp.milestone}`;
+        if (!state.stamps.has(key)) state.stamps.set(key, { tripId, ...stamp });
+      }
     },
   };
 
@@ -605,6 +635,7 @@ export function createFakePorts(options: FakeOptions = {}) {
           destinations: new Map(state.destinations),
           expenses: new Map(state.expenses),
           checklist: new Map(state.checklist),
+          stamps: new Map(state.stamps),
           dayPlaces: new Map(state.dayPlaces),
           visas: new Map(state.visas),
           savings: new Map(state.savings),
@@ -629,6 +660,7 @@ export function createFakePorts(options: FakeOptions = {}) {
           state.destinations = before.destinations;
           state.expenses = before.expenses;
           state.checklist = before.checklist;
+          state.stamps = before.stamps;
           state.dayPlaces = before.dayPlaces;
           state.visas = before.visas;
           state.savings = before.savings;

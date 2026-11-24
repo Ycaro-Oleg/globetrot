@@ -44,11 +44,17 @@ export const trip = pgTable(
     currency: char('currency', { length: 3 }).notNull(),
     status: text('status').notNull().default(DEFAULT_TRIP_STATUS),
     visibility: text('visibility').notNull().default(DEFAULT_TRIP_VISIBILITY),
+    /**
+     * The community route post this trip was copied from, so the post can say "already copied" and a second copy
+     * is not made. No foreign key: a deleted post leaves the copy alone.
+     */
+    copiedFromPostId: uuid('copied_from_post_id'),
     createdAt: instant('created_at').defaultNow().notNull(),
     updatedAt: instant('updated_at').defaultNow().notNull(),
   },
   (table) => [
     index('trip_owner_id_created_at_idx').on(table.ownerId, table.createdAt),
+    index('trip_owner_id_copied_from_post_id_idx').on(table.ownerId, table.copiedFromPostId),
     check('trip_title_trimmed', sql`${table.title} = btrim(${table.title})`),
     check(
       'trip_title_length',

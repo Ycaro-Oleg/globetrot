@@ -54,6 +54,7 @@ Implemented in #53, #54, #57 and #58. Mechanics: [`../architecture/authenticatio
   - `ready`: all of the above.
 - **Stops (destinations)** are ordered and have `nights ≥ 0`. Day trips have 0 nights. A stop is `planned` or `draft` (a Pip proposal not yet applied). Drafts never count towards days, milestones or next steps.
 - **Days:** consecutive local dates from `trip.start` across planned stops in order, one day per night. Without a start date, days are still numbered but have no dates.
+- **The trip's days:** one day per night, in route order from the start date, then the **departure day** (the day after the last night), spent at the last stop slept in. Day trips (0 nights) add no day of their own; a route of day trips only is one day. The departure day can hold places (the card says "you leave today, so plan the morning"), but it is not needed for "Every day has a plan".
 - **Places on days (the day plan):** a trip keeps up to 200 places to see, each with a name (1 to 120 characters), an estimated time (15 minutes to 12 hours), an optional stop and a day or "No day". A new place goes to "No day". Places move to a day (at its end or before another place of that day) by drag and drop or the "Move to" select, and every move can be undone. A day's load is the sum of its places' times: **more than 9 hours is a "full day"**, under 3 is "light". A place on a day spent at another stop shows a warning ("Outside the stop"), never a block. When the route changes, nothing is lost: a day the route no longer reaches reads as "No day", and a place whose stop was removed reads with no stop. "Every day has a plan" (readiness) is earned when each day has at least one place.
 - **Calendar file:** once the trip has a start date, "Add to calendar" downloads an iCalendar (`.ics`) file made in the browser: one all-day event per day ("Day 1 · Lisbon — Portugal") with that day's places and times. Event ids are stable, so importing again updates the same days. Nothing is sent anywhere.
 - **Ideas to fill the days:** the Days screen suggests up to 6 places worth a visit near each of the first 6 stops, with a kind of visit and a typical time (45 minutes for a viewpoint up to 3 hours for a beach), leaving out places already on the plan. They come from the places provider (Geoapify, with its credit) when it is configured, otherwise from Globetrot's own short list for the 12 most chosen cities (labelled as such, with "check opening times"). One tap puts an idea in "No day" with its typical time; nothing else is assumed (no prices, hours or bookings).
@@ -103,7 +104,7 @@ Nine per trip, each recorded once with a date when it first becomes true:
 8. `check`: the checklist is not empty, and every item is done.
 9. `ready`: all of the above, and `left = 0`.
 
-Stamps are recorded once, with the date they were first earned, and are **never taken back** if a condition later becomes false. Newly earned stamps, in display order, drive the celebration queue.
+Stamps are recorded once, with the date they were first earned, and are **never taken back** if a condition later becomes false. Newly earned stamps, in display order, drive the celebration queue. A stamp is celebrated **only the first time** the trip earns it: unticking and ticking an item again shows no second celebration.
 
 Financial readiness never implies travel readiness. Documents, reservations and entry rules are separate items.
 
@@ -141,7 +142,7 @@ Decision record: [ADR-0013](../architecture/adr/0013-community.md).
 - **People appear only when they act.** The first post, comment, like or follow gives the person a handle made from their name (with a number when taken; they can change it). Until then nobody sees them. "Who to follow" lists only people with public posts in the last 30 days; "Trending destinations" counts countries tagged on public posts in that time.
 - **Following is open**, muting and saving are private. Comments can be removed by their author or by the post's author; deleting a post or a comment can be undone.
 - **Reports:** once per person and post; the post disappears for the reporter at once and for everyone but its author after **3** distinct reports, until it is reviewed. Limits: **30 posts and 200 comments a day**.
-- **Copying a route** makes a new private trip in USD with the stops and nights, which is the person's own from then on. "+ Save to my trip" puts a tip's or moment's place into the current trip's "No day".
+- **Copying a route** makes a new private trip in USD with the stops and nights, which is the person's own from then on. **One copy per person:** once they have it (not archived), the post offers "Open on my map" instead, and copying again hands back the same trip. "+ Save to my trip" puts a tip's or moment's place into the current trip's "No day".
 - Never share someone else's live location; there is no live location in Globetrot.
 
 ## AI (Pip)
