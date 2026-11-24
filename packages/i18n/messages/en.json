@@ -123,14 +123,18 @@
     },
     "trialEnding": {
       "subject": "Your free week ends in 2 days",
+      "subjectTrip": "“{trip}” is waiting: your free week ends in 2 days",
       "body": "Your Globetrot free week ends soon. Your trips, budget and lists are all there; pick a plan now and keep planning without a break. Explorer starts at {price} a month.",
+      "trip": "Your trip “{trip}” is waiting for you.",
       "action": "See plans",
       "expiry": "Your free week ends in {hours, plural, one {# hour} other {# hours}}.",
       "ignore": "If you do nothing, your trips stay safe and you can still see and export them."
     },
     "trialEnded": {
       "subject": "Your free week is over: your trips are safe",
+      "subjectTrip": "“{trip}” is safe: your free week is over",
       "body": "Your Globetrot free week has ended. Everything you planned is still there, read-only. Choose a plan to keep changing it, or export it any time.",
+      "trip": "Your trip “{trip}” is safe and still yours.",
       "action": "Choose a plan",
       "expiry": "We send this once. Nothing is charged unless you choose a plan.",
       "ignore": "You can delete your account from Settings whenever you like."

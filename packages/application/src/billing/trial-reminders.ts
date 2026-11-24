@@ -11,6 +11,8 @@ export interface TrialNoticeTarget {
   readonly name: string;
   readonly locale: string;
   readonly signedUpAt: Date;
+  /** The trip changed most recently (not archived), named in the email; null without one. */
+  readonly tripTitle?: string | null;
 }
 
 export interface TrialNoticeStore {
@@ -62,6 +64,7 @@ export function createTrialReminders(deps: {
             url: planUrl,
             name: target.name,
             expiresInHours: Math.max(1, Math.round((endsAt - now.getTime()) / HOUR)),
+            ...(target.tripTitle ? { tripTitle: target.tripTitle } : {}),
           },
         });
         sent += 1;

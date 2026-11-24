@@ -11,6 +11,8 @@ export interface EmailData {
   readonly name: string;
   /** How long the link works, shown as whole hours (at least 1). */
   readonly expiresInHours: number;
+  /** The person's own trip, named in the trial emails when they have one. User text: always escaped. */
+  readonly tripTitle?: string;
 }
 
 export interface EmailMessage {
@@ -42,6 +44,17 @@ const escapeHtml = (value: string) =>
     .replaceAll('>', '&gt;')
     .replaceAll('"', '&quot;')
     .replaceAll("'", '&#39;');
+
+const trialTemplate = (template: EmailTemplate) =>
+  template === 'trialEnding' || template === 'trialEnded';
+
+/** A trip title on one line, without control characters, so a subject header cannot be split. */
+const oneLine = (value: string) =>
+  [...value]
+    .map((char) => (char.charCodeAt(0) < 32 || char.charCodeAt(0) === 127 ? ' ' : char))
+    .join('')
+    .replace(/\s+/g, ' ')
+    .trim();
 
 function assertHttpUrl(url: string): void {
   let parsed: URL;
@@ -77,34 +90,48 @@ export function renderEmail(
       precision: 'full',
     }),
   });
+  // Trial emails name the person's own trip when there is one: their plan, not a product, is what they come back for.
+  const trip = trialTemplate(template) && data.tripTitle ? oneLine(data.tripTitle) : null;
+  const subject = trip
+    ? t(`email.${template}.subjectTrip`, { trip })
+    : t(`email.${template}.subject`);
+  const tripLine = trip ? t(`email.${template}.trip`, { trip }) : null;
   const action = t(`email.${template}.action`);
   const expiry = t(`email.${template}.expiry`, { hours });
   const ignore = t(`email.${template}.ignore`);
   const linkHint = t('email.linkHint');
   const footer = t('email.footer');
 
-  const text = [greeting, body, `${action}: ${data.url}`, expiry, ignore, '--', footer].join(
-    '\n\n',
-  );
+  const text = [
+    greeting,
+    ...(tripLine ? [tripLine] : []),
+    body,
+    `${action}: ${data.url}`,
+    expiry,
+    ignore,
+    '--',
+    footer,
+  ].join('\n\n');
 
   const url = escapeHtml(data.url);
   const html = `<!doctype html>
 <html lang="${locale}">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>${escapeHtml(t(`email.${template}.subject`))}</title></head>
-<body style="margin:0;padding:24px;background:#fff5e1;color:#1a1a2e;font-family:Arial,Helvetica,sans-serif;line-height:1.5">
-<div style="max-width:520px;margin:0 auto">
-<p>${escapeHtml(greeting)}</p>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>${escapeHtml(subject)}</title></head>
+<body style="margin:0;padding:24px;background:#f8f9fa;color:#1e293b;font-family:Arial,Helvetica,sans-serif;line-height:1.5">
+<div style="max-width:520px;margin:0 auto;padding:28px;background:#ffffff;border:1px solid #dde2e8;border-radius:16px">
+<p style="margin:0 0 20px;font-size:20px;font-weight:bold;color:#ea580c">globetrot</p>
+<p>${escapeHtml(greeting)}</p>${tripLine ? `\n<p style="font-size:18px;font-weight:bold;color:#0f172a">${escapeHtml(tripLine)}</p>` : ''}
 <p>${escapeHtml(body)}</p>
-<p><a href="${url}" style="display:inline-block;padding:12px 20px;background:#1a1a2e;color:#fff5e1;text-decoration:none;font-weight:bold;border-radius:8px">${escapeHtml(action)}</a></p>
-<p>${escapeHtml(linkHint)}<br><a href="${url}" style="color:#1a1a2e;word-break:break-all">${url}</a></p>
+<p><a href="${url}" style="display:inline-block;padding:12px 22px;background:#f97316;color:#0f172a;text-decoration:none;font-weight:bold;border-radius:999px">${escapeHtml(action)}</a></p>
+<p style="font-size:14px;color:#475569">${escapeHtml(linkHint)}<br><a href="${url}" style="color:#2563eb;word-break:break-all">${url}</a></p>
 <p>${escapeHtml(expiry)}</p>
 <p>${escapeHtml(ignore)}</p>
-<hr style="border:0;border-top:1px solid #1a1a2e33">
-<p style="font-size:12px;color:#555">${escapeHtml(footer)}</p>
+<hr style="border:0;border-top:1px solid #dde2e8">
+<p style="font-size:12px;color:#475569">${escapeHtml(footer)}</p>
 </div>
 </body>
 </html>
 `;
 
-  return { subject: t(`email.${template}.subject`), text, html };
+  return { subject, text, html };
 }

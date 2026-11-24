@@ -96,4 +96,14 @@ describe('trial reminders', () => {
     await reminders.run();
     expect(outbox[0]!.locale).toBe('en');
   });
+
+  it('passes the person’s latest trip to the email, and leaves it out without one', async () => {
+    const { reminders, outbox } = setup([
+      { ...person('trip', 6), tripTitle: 'Japan in two weeks' },
+      { ...person('none', 6), tripTitle: null },
+    ]);
+    await reminders.run();
+    expect(outbox.find((m) => m.to.startsWith('trip'))!.data.tripTitle).toBe('Japan in two weeks');
+    expect(outbox.find((m) => m.to.startsWith('none'))!.data).not.toHaveProperty('tripTitle');
+  });
 });
