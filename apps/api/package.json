@@ -1,0 +1,37 @@
+{
+  "name": "@globetrot/api",
+  "version": "0.0.0",
+  "private": true,
+  "description": "HTTP adapter (Hono + OpenAPI) over @globetrot/application",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch --env-file-if-exists=../../.env src/index.ts",
+    "build": "tsup",
+    "start": "node dist/index.js",
+    "generate:openapi": "tsx src/generate-openapi.ts",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:int": "vitest run --config vitest.int.config.ts"
+  },
+  "dependencies": {
+    "@globetrot/application": "workspace:*",
+    "@globetrot/db": "workspace:*",
+    "@globetrot/domain": "workspace:*",
+    "@globetrot/i18n": "workspace:*",
+    "@globetrot/mailer": "workspace:*",
+    "@globetrot/storage": "workspace:*",
+    "@hono/node-server": "2.1.6",
+    "@hono/zod-openapi": "1.6.3",
+    "better-auth": "1.7.18",
+    "hono": "4.13.17",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@globetrot/api-client": "workspace:*",
+    "@globetrot/config": "workspace:*",
+    "drizzle-orm": "0.45.4",
+    "tsup": "9.0.0",
+    "tsx": "4.23.15"
+  }
+}

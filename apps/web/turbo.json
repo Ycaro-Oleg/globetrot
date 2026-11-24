@@ -1,0 +1,22 @@
+{
+  "$schema": "https://turborepo.com/schema.json",
+  "extends": ["//"],
+  "tasks": {
+    "build": {
+      "dependsOn": ["@globetrot/tokens#build", "typecheck"],
+      "env": ["NEXT_PUBLIC_GEOAPIFY_API_KEY"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "!**/*.test.ts",
+        "!**/*.test.tsx",
+        "$TURBO_ROOT$/packages/*/src/**",
+        "$TURBO_ROOT$/packages/i18n/messages/**",
+        "!$TURBO_ROOT$/packages/**/*.test.ts",
+        "!$TURBO_ROOT$/packages/**/*.test.tsx"
+      ]
+    },
+    "dev": {
+      "dependsOn": ["@globetrot/tokens#build"]
+    }
+  }
+}

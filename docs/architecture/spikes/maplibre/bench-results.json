@@ -1,0 +1,121 @@
+[
+  {
+    "profile": "desktop",
+    "loadMs": 3395,
+    "firstIdleMs": 3057,
+    "coldKB": 1852,
+    "minPinHitPx": 44,
+    "benches": {
+      "stops": {
+        "mode": "stops",
+        "view": "region",
+        "zoom": 7.25,
+        "frames": 37,
+        "avgFps": 7.6,
+        "p95FrameMs": 366.7,
+        "longFrames": 16,
+        "overlayFrameMs": 0.6,
+        "labelResolveMs": 0.7
+      },
+      "pins50": {
+        "mode": "pins50",
+        "view": "region",
+        "zoom": 7.25,
+        "frames": 22,
+        "avgFps": 5.6,
+        "p95FrameMs": 383.3,
+        "longFrames": 20,
+        "overlayFrameMs": 0.8,
+        "labelResolveMs": 1.2
+      },
+      "poi-symbol": {
+        "mode": "poi-symbol",
+        "view": "region",
+        "zoom": 7.25,
+        "frames": 16,
+        "avgFps": 3.5,
+        "p95FrameMs": 816.6,
+        "longFrames": 15,
+        "overlayFrameMs": 0.5,
+        "labelResolveMs": 0.6
+      },
+      "poi-dom": {
+        "mode": "poi-dom",
+        "view": "region",
+        "zoom": 7.25,
+        "frames": 22,
+        "avgFps": 5,
+        "p95FrameMs": 350,
+        "longFrames": 22,
+        "overlayFrameMs": 0.2,
+        "labelResolveMs": 12.3
+      }
+    }
+  },
+  {
+    "profile": "phone-4x-4g",
+    "loadMs": 4519,
+    "firstIdleMs": 3435,
+    "coldKB": 1287,
+    "minPinHitPx": 44,
+    "benches": {
+      "stops": {
+        "mode": "stops",
+        "view": "region",
+        "zoom": 5.51,
+        "frames": 118,
+        "avgFps": 23.5,
+        "p95FrameMs": 100,
+        "longFrames": 85,
+        "overlayFrameMs": 1.4,
+        "labelResolveMs": 2.3
+      },
+      "pins50": {
+        "mode": "pins50",
+        "view": "region",
+        "zoom": 5.51,
+        "frames": 103,
+        "avgFps": 20.8,
+        "p95FrameMs": 99.9,
+        "longFrames": 86,
+        "overlayFrameMs": 5.6,
+        "labelResolveMs": 3.9
+      },
+      "poi-symbol": {
+        "mode": "poi-symbol",
+        "view": "region",
+        "zoom": 5.51,
+        "frames": 92,
+        "avgFps": 18.6,
+        "p95FrameMs": 100,
+        "longFrames": 85,
+        "overlayFrameMs": 0.1,
+        "labelResolveMs": 0.4
+      },
+      "poi-dom": {
+        "mode": "poi-dom",
+        "view": "region",
+        "zoom": 5.51,
+        "frames": 67,
+        "avgFps": 12.4,
+        "p95FrameMs": 100,
+        "longFrames": 67,
+        "overlayFrameMs": 1.1,
+        "labelResolveMs": 49.5
+      }
+    }
+  },
+  {
+    "profile": "phone-crosshair",
+    "toast": "Pinned a custom place",
+    "landed": {
+      "crosshair": {
+        "x": 195,
+        "y": 280
+      },
+      "dx": 0,
+      "dy": 0,
+      "crosshairHiddenAfter": true
+    }
+  }
+]

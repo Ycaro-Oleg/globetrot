@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Globetrot tokens / Tokens Globetrot</title>
+    <link rel="stylesheet" href="../dist/tokens.css" />
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family: var(--gt-primitive-font-body);
+      }
+      main {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
+      }
+      section {
+        min-height: 100vh;
+        padding: var(--gt-primitive-space-32);
+        background: var(--gt-semantic-color-surface-page);
+        color: var(--gt-semantic-color-text);
+      }
+      h1 {
+        font-size: var(--gt-primitive-type-page);
+        line-height: 1;
+        margin: 0 0 24px;
+      }
+      article {
+        background: var(--gt-semantic-color-surface-card);
+        border: 3px solid var(--gt-semantic-color-outline);
+        border-radius: var(--gt-component-sheet-radius);
+        padding: 24px;
+        box-shadow: var(--gt-primitive-shadow-sheet);
+      }
+      p {
+        color: var(--gt-semantic-color-text-secondary);
+        line-height: 1.5;
+      }
+      button {
+        min-height: var(--gt-component-hit-target);
+        border-radius: var(--gt-component-button-radius);
+        border: 2px solid var(--gt-semantic-color-outline);
+        background: var(--gt-semantic-color-marigold);
+        color: var(--gt-semantic-color-always-light-text);
+        padding: 8px 20px;
+        font: inherit;
+        font-weight: 700;
+        box-shadow: var(--gt-primitive-shadow-button);
+        cursor: pointer;
+      }
+      button:focus-visible {
+        outline: var(--gt-component-focus-width) solid var(--gt-semantic-color-focus);
+        outline-offset: 3px;
+      }
+      .rail {
+        background: var(--gt-semantic-color-rail-surface);
+        color: var(--gt-semantic-color-rail-title);
+        padding: 16px;
+        border-radius: 12px;
+        margin: 24px 0;
+      }
+      .light {
+        background: var(--gt-semantic-color-always-light-surface);
+        color: var(--gt-semantic-color-text);
+        padding: 16px;
+        border-radius: 12px;
+        margin: 24px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section data-theme="day">
+        <h1>Day / Dia</h1>
+        <article>
+          <h2>A place to dream / Um lugar para sonhar</h2>
+          <p>Plan your next journey. / Planeje sua próxima viagem.</p>
+          <button type="button">Explore / Explorar</button>
+        </article>
+        <div class="rail">Your trip / Sua viagem</div>
+        <div class="light" data-always-light>
+          Map label / Etiqueta do mapa
+          <p>Always-light surface / Superfície sempre clara</p>
+        </div>
+      </section>
+      <section data-theme="red-eye">
+        <h1>Red-eye / Noturno</h1>
+        <article>
+          <h2>A place to dream / Um lugar para sonhar</h2>
+          <p>Plan your next journey. / Planeje sua próxima viagem.</p>
+          <button type="button">Explore / Explorar</button>
+        </article>
+        <div class="rail">Your trip / Sua viagem</div>
+        <div class="light" data-always-light>
+          Map label / Etiqueta do mapa
+          <p>Always-light surface / Superfície sempre clara</p>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

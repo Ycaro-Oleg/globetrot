@@ -1,0 +1,23 @@
+{
+  "$schema": "https://turborepo.com/schema.json",
+  "ui": "stream",
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "inputs": ["$TURBO_DEFAULT$", "!**/*.test.ts", "!**/*.test.tsx"],
+      "outputs": ["dist/**", ".next/**", "!.next/cache/**", "storybook-static/**"]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "lint": {},
+    "typecheck": {},
+    "test": {},
+    "test:int": {
+      "cache": false,
+      "passThroughEnv": ["DATABASE_URL", "SMTP_PORT", "MAILPIT_URL", "MAILPIT_UI_PORT"]
+    }
+  },
+  "globalDependencies": ["eslint.config.mjs", "packages/config/tsconfig/*.json", ".nvmrc"]
+}

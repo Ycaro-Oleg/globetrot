@@ -1,0 +1,268 @@
+{
+  "semantic": {
+    "color": {
+      "surface-page": {
+        "$type": "color",
+        "$value": "{primitive.color.page}"
+      },
+      "surface-page-alt": {
+        "$type": "color",
+        "$value": "{primitive.color.white}"
+      },
+      "surface-card": {
+        "$type": "color",
+        "$value": "{primitive.color.surface}"
+      },
+      "surface-nested": {
+        "$type": "color",
+        "$value": "{primitive.color.white}"
+      },
+      "text": {
+        "$type": "color",
+        "$value": "{primitive.color.ink}"
+      },
+      "text-secondary": {
+        "$type": "color",
+        "$value": "{primitive.color.ink-secondary}"
+      },
+      "text-tertiary": {
+        "$type": "color",
+        "$value": "{primitive.color.ink-tertiary}"
+      },
+      "outline": {
+        "$type": "color",
+        "$value": "{primitive.color.hairline}"
+      },
+      "shadow": {
+        "$type": "color",
+        "$value": "{primitive.color.deep}"
+      },
+      "sea": {
+        "$type": "color",
+        "$value": "{primitive.color.primary}"
+      },
+      "sea-deep": {
+        "$type": "color",
+        "$value": "{primitive.color.primary-hover}"
+      },
+      "land": {
+        "$type": "color",
+        "$value": "{primitive.color.primary-tint}"
+      },
+      "land-highlight": {
+        "$type": "color",
+        "$value": "{primitive.color.white}"
+      },
+      "thread": {
+        "$type": "color",
+        "$value": "{primitive.color.coral}"
+      },
+      "marigold": {
+        "$type": "color",
+        "$value": "{primitive.color.coral}"
+      },
+      "mint": {
+        "$type": "color",
+        "$value": "{primitive.color.savings-tint}"
+      },
+      "confirmed": {
+        "$type": "color",
+        "$value": "{primitive.color.savings-ink}"
+      },
+      "estimate": {
+        "$type": "color",
+        "$value": "{primitive.color.warning-ink}"
+      },
+      "note": {
+        "$type": "color",
+        "$value": "{primitive.color.warning-tint}"
+      },
+      "danger": {
+        "$type": "color",
+        "$value": "{primitive.color.expense-deep}"
+      },
+      "focus": {
+        "$type": "color",
+        "$value": "{primitive.color.primary}"
+      },
+      "rule": {
+        "$type": "color",
+        "$value": "{primitive.color.hairline}"
+      },
+      "rule-strong": {
+        "$type": "color",
+        "$value": "{primitive.color.input-border}"
+      },
+      "rail-surface": {
+        "$type": "color",
+        "$value": "{primitive.color.deep}"
+      },
+      "rail-title": {
+        "$type": "color",
+        "$value": "{primitive.color.white}"
+      },
+      "always-light-surface": {
+        "$type": "color",
+        "$value": "{primitive.color.white}"
+      },
+      "always-light-text": {
+        "$type": "color",
+        "$value": "{primitive.color.ink}"
+      },
+      "always-light-text-secondary": {
+        "$type": "color",
+        "$value": "{primitive.color.ink-secondary}"
+      },
+      "always-light-text-tertiary": {
+        "$type": "color",
+        "$value": "{primitive.color.ink-tertiary}"
+      },
+      "airmail": {
+        "$type": "color",
+        "$value": "{primitive.color.primary}"
+      },
+      "airmail-deep": {
+        "$type": "color",
+        "$value": "{primitive.color.primary-hover}"
+      },
+      "sky": {
+        "$type": "color",
+        "$value": "{primitive.color.primary-soft}"
+      },
+      "ripple": {
+        "$type": "color",
+        "$value": "{primitive.color.ripple}"
+      },
+      "thread-ink": {
+        "$type": "color",
+        "$value": "{primitive.color.deep}"
+      },
+      "note-ink": {
+        "$type": "color",
+        "$value": "{primitive.color.ink}"
+      },
+      "pin-highlight": {
+        "$type": "color",
+        "$value": "{primitive.color.warning}"
+      },
+      "pin-middle": {
+        "$type": "color",
+        "$value": "{primitive.color.warning}"
+      },
+      "pin-low": {
+        "$type": "color",
+        "$value": "{primitive.color.warning}"
+      },
+      "primary": {
+        "$type": "color",
+        "$value": "{primitive.color.primary}"
+      },
+      "primary-hover": {
+        "$type": "color",
+        "$value": "{primitive.color.primary-hover}"
+      },
+      "primary-tint": {
+        "$type": "color",
+        "$value": "{primitive.color.primary-tint}"
+      },
+      "primary-soft": {
+        "$type": "color",
+        "$value": "{primitive.color.primary-soft}"
+      },
+      "on-primary": {
+        "$type": "color",
+        "$value": "{primitive.color.white}"
+      },
+      "cta": {
+        "$type": "color",
+        "$value": "{primitive.color.coral}"
+      },
+      "on-cta": {
+        "$type": "color",
+        "$value": "{primitive.color.deep}"
+      },
+      "savings": {
+        "$type": "color",
+        "$value": "{primitive.color.savings}"
+      },
+      "savings-tint": {
+        "$type": "color",
+        "$value": "{primitive.color.savings-soft}"
+      },
+      "expense": {
+        "$type": "color",
+        "$value": "{primitive.color.expense}"
+      },
+      "expense-tint": {
+        "$type": "color",
+        "$value": "{primitive.color.expense-tint}"
+      },
+      "warning": {
+        "$type": "color",
+        "$value": "{primitive.color.warning}"
+      },
+      "warning-ink": {
+        "$type": "color",
+        "$value": "{primitive.color.warning-ink}"
+      },
+      "warning-tint": {
+        "$type": "color",
+        "$value": "{primitive.color.warning-tint}"
+      },
+      "hairline": {
+        "$type": "color",
+        "$value": "{primitive.color.hairline}"
+      },
+      "input-border": {
+        "$type": "color",
+        "$value": "{primitive.color.input-border}"
+      },
+      "input-surface": {
+        "$type": "color",
+        "$value": "{primitive.color.white}"
+      },
+      "track": {
+        "$type": "color",
+        "$value": "{primitive.color.page}"
+      },
+      "deep": {
+        "$type": "color",
+        "$value": "{primitive.color.deep}"
+      },
+      "like": {
+        "$type": "color",
+        "$value": "{primitive.color.like}"
+      }
+    }
+  },
+  "component": {
+    "button-radius": {
+      "$type": "dimension",
+      "$value": "{primitive.radius.pill}"
+    },
+    "input-radius": {
+      "$type": "dimension",
+      "$value": "{primitive.radius.12}"
+    },
+    "sheet-radius": {
+      "$type": "dimension",
+      "$value": "{primitive.radius.22}"
+    },
+    "modal-radius": {
+      "$type": "dimension",
+      "$value": "{primitive.radius.24}"
+    },
+    "hit-target": {
+      "$type": "dimension",
+      "$value": "{primitive.size.hit}"
+    },
+    "focus-width": {
+      "$type": "dimension",
+      "$value": "{primitive.size.focus-width}"
+    },
+    "card-radius": {
+      "$type": "dimension",
+      "$value": "{primitive.radius.24}"
+    }
+  }
+}

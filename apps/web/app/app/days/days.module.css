@@ -1,0 +1,662 @@
+/* Days (design handoff v2, "Days"): a "No day" tray and one 264px column per day. */
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.heading {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.title {
+  margin: 0;
+  font-size: var(--gt-primitive-type-page);
+  font-weight: 800;
+  letter-spacing: var(--gt-primitive-type-page-tracking);
+  line-height: 1;
+}
+
+.sub {
+  margin: 0;
+  color: var(--gt-semantic-color-text-secondary);
+  font-size: 13px;
+}
+
+.cta,
+.submit {
+  min-height: var(--gt-component-hit-target);
+  padding: 0 20px;
+  border: 0;
+  border-radius: var(--gt-primitive-radius-pill);
+  background: var(--gt-semantic-color-cta);
+  color: var(--gt-semantic-color-on-cta);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  box-shadow: var(--gt-primitive-shadow-cta);
+  cursor: pointer;
+}
+
+.secondary {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  min-height: var(--gt-component-hit-target);
+  padding: 0 18px;
+  border-radius: var(--gt-primitive-radius-pill);
+  background: var(--gt-semantic-color-primary);
+  color: var(--gt-semantic-color-on-primary);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.how {
+  margin: 0;
+  color: var(--gt-semantic-color-text-secondary);
+  font-size: 12px;
+}
+
+.how strong {
+  color: var(--gt-semantic-color-text);
+}
+
+.board {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-bottom: 12px;
+}
+
+.column {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  padding: 12px;
+  border: 1.5px solid var(--gt-semantic-color-hairline);
+  border-radius: 20px;
+  background: var(--gt-semantic-color-surface-card);
+}
+
+.column[data-tray] {
+  border-style: dashed;
+  border-color: var(--gt-semantic-color-input-border);
+  background: var(--gt-semantic-color-track);
+}
+
+.column[data-over] {
+  border-style: dashed;
+  border-color: var(--gt-semantic-color-primary);
+  background: var(--gt-semantic-color-primary-soft);
+}
+
+.columnHead {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.columnTitle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.columnTitle h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.count,
+.stopChip {
+  padding: 3px 9px;
+  border-radius: var(--gt-primitive-radius-pill);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.count {
+  background: var(--gt-semantic-color-deep);
+  color: var(--gt-primitive-color-white);
+}
+
+.stopChip {
+  background: var(--gt-semantic-color-primary-tint);
+  color: var(--gt-semantic-color-primary-hover);
+}
+
+.columnSub {
+  color: var(--gt-semantic-color-text-secondary);
+  font-size: 12px;
+}
+
+.load {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.load > span:first-child {
+  flex: 1;
+  height: 6px;
+  overflow: hidden;
+  border-radius: var(--gt-primitive-radius-pill);
+  background: var(--gt-semantic-color-hairline);
+}
+
+.load > span:first-child span {
+  display: block;
+  height: 100%;
+  border-radius: var(--gt-primitive-radius-pill);
+  background: var(--gt-semantic-color-primary);
+  transition: width 0.3s;
+}
+
+.load > span:last-child {
+  color: var(--gt-semantic-color-text-secondary);
+  font-family: var(--gt-primitive-font-mono);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.load[data-load='full'] > span:first-child span {
+  background: var(--gt-semantic-color-warning);
+}
+
+.load[data-load='full'] > span:last-child {
+  color: var(--gt-semantic-color-warning-ink);
+}
+
+.travel {
+  margin: 0;
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: var(--gt-semantic-color-primary-soft);
+  color: var(--gt-semantic-color-primary-hover);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border: var(--gt-primitive-border-1) solid var(--gt-semantic-color-hairline);
+  border-radius: 14px;
+  background: var(--gt-semantic-color-input-surface);
+  cursor: grab;
+}
+
+.card[data-warn] {
+  border-color: var(--gt-semantic-color-warning);
+}
+
+.card[data-dragging] {
+  opacity: 0.4;
+}
+
+.cardHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.cardHead h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.remove {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  margin: -6px -6px 0 0;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--gt-semantic-color-text-secondary);
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.remove:hover {
+  background: var(--gt-semantic-color-expense-tint);
+  color: var(--gt-semantic-color-danger);
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  font-size: 11px;
+}
+
+.tags span {
+  padding: 3px 8px;
+  border-radius: var(--gt-primitive-radius-pill);
+  background: var(--gt-semantic-color-surface-page);
+  color: var(--gt-semantic-color-text);
+}
+
+.tags .hoursTag {
+  font-family: var(--gt-primitive-font-mono);
+}
+
+.warn {
+  margin: 0;
+  padding: 5px 8px;
+  border-radius: 8px;
+  background: var(--gt-semantic-color-warning-tint);
+  color: var(--gt-semantic-color-warning-ink);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.moveTo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--gt-semantic-color-text-secondary);
+  font-size: 11px;
+}
+
+.moveTo select {
+  flex: 1;
+  min-width: 0;
+  min-height: 36px;
+  padding: 0 8px;
+  border: var(--gt-primitive-border-1) solid var(--gt-semantic-color-input-border);
+  border-radius: 10px;
+  background: var(--gt-semantic-color-surface-card);
+  color: var(--gt-semantic-color-text);
+  font: inherit;
+  font-size: 12px;
+}
+
+.empty {
+  margin: 0;
+  padding: 18px 12px;
+  border: 1.5px dashed var(--gt-semantic-color-input-border);
+  border-radius: 14px;
+  color: var(--gt-semantic-color-text-secondary);
+  font-size: 12px;
+  text-align: center;
+}
+
+/* --- Add place dialog --- */
+.scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: rgb(15 23 42 / 0.45);
+}
+
+.dialog {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: 41;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: min(440px, calc(100vw - 24px));
+  padding: 24px;
+  border-radius: 26px;
+  background: var(--gt-semantic-color-surface-card);
+  box-shadow: var(--gt-primitive-shadow-modal);
+  transform: translate(-50%, -50%);
+}
+
+.dialogHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dialogHead h2 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.05em;
+}
+
+.close {
+  width: var(--gt-component-hit-target);
+  height: var(--gt-component-hit-target);
+  border: var(--gt-primitive-border-1) solid var(--gt-semantic-color-input-border);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--gt-semantic-color-text);
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field > span,
+.slider > span {
+  color: var(--gt-semantic-color-text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.field input,
+.field select {
+  min-height: 48px;
+  padding: 0 14px;
+  border: var(--gt-primitive-border-1) solid var(--gt-semantic-color-input-border);
+  border-radius: 14px;
+  background: var(--gt-semantic-color-input-surface);
+  color: var(--gt-semantic-color-text);
+  font: inherit;
+  font-size: 15px;
+}
+
+.slider {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.slider > span {
+  display: flex;
+  justify-content: space-between;
+}
+
+.slider strong {
+  color: var(--gt-semantic-color-text);
+  font-weight: 800;
+}
+
+.slider input {
+  width: 100%;
+  height: var(--gt-component-hit-target);
+  margin: 0;
+  accent-color: var(--gt-semantic-color-primary);
+}
+
+.formError {
+  margin: 0;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: var(--gt-semantic-color-expense-tint);
+  color: var(--gt-semantic-color-danger);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.submit {
+  min-height: 52px;
+  font-size: 15px;
+}
+
+.toast {
+  position: fixed;
+  inset-block-end: calc(80px + env(safe-area-inset-bottom, 0px));
+  left: 50%;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: calc(100vw - 32px);
+  padding: 8px 8px 8px 18px;
+  border-radius: var(--gt-primitive-radius-pill);
+  background: var(--gt-semantic-color-primary);
+  color: var(--gt-semantic-color-on-primary);
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: var(--gt-primitive-shadow-modal);
+  transform: translateX(-50%);
+}
+
+.toast button {
+  min-height: 36px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: var(--gt-primitive-radius-pill);
+  background: var(--gt-semantic-color-surface-card);
+  color: var(--gt-semantic-color-text);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.board:focus-visible,
+.cta:focus-visible,
+.submit:focus-visible,
+.secondary:focus-visible,
+.remove:focus-visible,
+.close:focus-visible,
+.toast button:focus-visible,
+.moveTo select:focus-visible,
+.field input:focus-visible,
+.field select:focus-visible,
+.slider input:focus-visible {
+  outline: var(--gt-component-focus-width) solid var(--gt-semantic-color-focus);
+  outline-offset: 2px;
+}
+
+@media (min-width: 720px) {
+  .board {
+    flex-direction: row;
+    align-items: flex-start;
+    overflow-x: auto;
+  }
+
+  .column {
+    flex: none;
+    width: 264px;
+  }
+
+  .toast {
+    inset-block-end: 24px;
+  }
+}
+
+/* An empty route: Pip and two ways to start. */
+.emptyCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  max-width: 34rem;
+  margin: 24px auto 0;
+  padding: 32px 24px;
+  border: var(--gt-primitive-border-1) solid var(--gt-semantic-color-hairline);
+  border-radius: var(--gt-component-card-radius);
+  background: var(--gt-semantic-color-surface-card);
+  text-align: center;
+}
+
+.emptyCard h2 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.emptyCard p {
+  max-width: 40ch;
+  margin: 0;
+  color: var(--gt-semantic-color-text-secondary);
+}
+
+.emptyActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+/* No start date yet: set it right here. */
+.dateBanner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: var(--gt-semantic-color-primary-tint);
+}
+
+.dateBanner > p {
+  flex: 1 1 18rem;
+  margin: 0;
+  font-weight: 600;
+}
+
+.start {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0 0 16px;
+  padding: 18px;
+  border: 1px solid var(--gt-semantic-color-primary-soft);
+  border-radius: 18px;
+  background: var(--gt-semantic-color-primary-tint);
+}
+
+.start h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  line-height: 1.2;
+}
+
+.start p {
+  margin: 0;
+  color: var(--gt-semantic-color-text-secondary);
+  line-height: 1.5;
+}
+
+.startActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.ideas {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin: 0 0 16px;
+  padding: 18px;
+  border: 1px solid var(--gt-semantic-color-hairline);
+  border-radius: 18px;
+  background: var(--gt-semantic-color-surface-card);
+}
+
+.ideas h2 {
+  margin: 0;
+  font-size: 1.125rem;
+}
+
+.ideaGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ideaGroup h3 {
+  margin: 0;
+  color: var(--gt-semantic-color-text-secondary);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.ideaGroup ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.idea {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: var(--gt-component-hit-target);
+  padding: 0 14px;
+  border: 1px solid var(--gt-semantic-color-input-border);
+  border-radius: 999px;
+  background: var(--gt-semantic-color-surface-card);
+  color: var(--gt-semantic-color-text);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.idea:hover {
+  border-color: var(--gt-semantic-color-primary);
+}
+
+.idea:focus-visible {
+  outline: 3px solid var(--gt-semantic-color-focus);
+  outline-offset: 2px;
+}
+
+.idea:disabled {
+  cursor: progress;
+  opacity: 0.7;
+}
+
+.ideaTime {
+  color: var(--gt-semantic-color-text-secondary);
+  font-weight: 500;
+}
+
+.ideaSource {
+  margin: 0;
+  color: var(--gt-semantic-color-text-tertiary);
+  font-size: 12px;
+}
+
+.calendarButton {
+  /* Sits with "Add place" on the right, not in the middle of the header. */
+  margin-inline-start: auto;
+  min-height: var(--gt-component-hit-target);
+  padding: 0 18px;
+  border: 1px solid var(--gt-semantic-color-input-border);
+  border-radius: var(--gt-primitive-radius-pill);
+  background: var(--gt-semantic-color-surface-card);
+  color: var(--gt-semantic-color-text);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.calendarButton:focus-visible {
+  outline: 3px solid var(--gt-semantic-color-focus);
+  outline-offset: 2px;
+}

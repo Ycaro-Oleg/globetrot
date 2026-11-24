@@ -1,0 +1,10 @@
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/utilities.css' layer(utilities);
+
+@theme inline {
+  --color-gt-page: var(--gt-semantic-color-surface-page);
+  --color-gt-card: var(--gt-semantic-color-surface-card);
+  --color-gt-ink: var(--gt-semantic-color-text);
+  --color-gt-focus: var(--gt-semantic-color-focus);
+  --font-gt-body: var(--gt-primitive-font-body);
+}

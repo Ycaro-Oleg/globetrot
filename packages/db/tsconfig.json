@@ -1,0 +1,4 @@
+{
+  "extends": "@globetrot/config/tsconfig/base.json",
+  "include": ["src", "scripts", "drizzle.config.ts", "vitest.config.ts", "vitest.int.config.ts"]
+}

@@ -1,0 +1,23 @@
+{
+  "name": "@globetrot/storage",
+  "version": "0.0.0",
+  "private": true,
+  "description": "S3-compatible object storage adapter for the application's StoragePort (API and worker)",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@globetrot/application": "workspace:*",
+    "aws4fetch": "1.0.20",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@globetrot/config": "workspace:*"
+  }
+}

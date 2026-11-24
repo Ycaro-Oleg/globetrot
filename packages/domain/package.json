@@ -1,0 +1,19 @@
+{
+  "name": "@globetrot/domain",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Pure domain model and business rules (no I/O, no frameworks)",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --coverage"
+  },
+  "devDependencies": {
+    "@globetrot/config": "workspace:*",
+    "fast-check": "4.10.2"
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "name": "@globetrot/db",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Drizzle schema and migrations for PostgreSQL + PostGIS",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./testing": "./src/testing/index.ts"
+  },
+  "scripts": {
+    "lint": "eslint . && pnpm run check",
+    "check": "drizzle-kit check",
+    "generate": "drizzle-kit generate",
+    "migrate": "tsx --env-file-if-exists=../../.env scripts/migrate.ts",
+    "reset": "tsx --env-file-if-exists=../../.env scripts/reset.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:int": "vitest run --config vitest.int.config.ts"
+  },
+  "dependencies": {
+    "@globetrot/domain": "workspace:*",
+    "@globetrot/i18n": "workspace:*",
+    "drizzle-orm": "0.45.4",
+    "pg": "8.23.1",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@globetrot/config": "workspace:*",
+    "@types/pg": "8.23.1",
+    "drizzle-kit": "0.31.11",
+    "tsx": "4.23.15"
+  }
+}

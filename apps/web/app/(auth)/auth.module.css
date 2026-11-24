@@ -1,0 +1,477 @@
+/* The account screens (design handoff v2): the dark halftone world of the landing beside a light slate panel. */
+.shell {
+  --auth-sea: #0f172a;
+  --auth-ink: #1e293b;
+  --auth-paper: #f8f9fa;
+  --auth-blue: #2563eb;
+  --auth-coral: #f97316;
+  --auth-red: #b91c1c; /* the strong expense red: 6:1 on the light panel */
+  display: grid;
+  min-height: 100dvh;
+  grid-template-columns: minmax(0, 1.08fr) minmax(25rem, 0.92fr);
+  overflow: hidden;
+  background: var(--auth-paper);
+  color: var(--auth-ink);
+  /* The panel is light in both themes, so the text, error and focus colours inside it must be the light-theme ones
+     (the red-eye theme's would be cream on cream). */
+  --gt-semantic-color-text: var(--gt-semantic-color-always-light-text);
+  --gt-semantic-color-text-secondary: var(--gt-semantic-color-always-light-text-secondary);
+  --gt-semantic-color-text-tertiary: var(--gt-semantic-color-always-light-text-tertiary);
+  --gt-semantic-color-danger: #b91c1c;
+  --gt-semantic-color-focus: #2563eb;
+  --gt-semantic-color-surface-card: var(--gt-semantic-color-always-light-surface);
+}
+
+.art {
+  position: relative;
+  min-width: 0;
+  min-height: 44rem;
+  overflow: hidden;
+  background: radial-gradient(ellipse 80% 60% at 40% 0%, #1e3a8a 0%, var(--auth-sea) 70%);
+}
+
+.map {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  background: url('/world-halftone-blue.svg') center 40% / 120% auto no-repeat;
+  opacity: 0.9;
+}
+
+.headline {
+  position: absolute;
+  inset-inline-start: clamp(1.5rem, 6.5vw, 6.5rem);
+  inset-block-end: clamp(2rem, 6vh, 5rem);
+  box-sizing: border-box;
+  width: min(32.5rem, calc(100% - 3rem));
+  padding: clamp(1.5rem, 3vw, 2.2rem);
+  border: 1px solid rgb(248 249 250 / 0.14);
+  border-radius: 1.65rem;
+  background: rgb(15 23 42 / 0.82);
+  color: #f8f9fa;
+  backdrop-filter: blur(8px);
+  box-shadow: none;
+}
+
+.headline h1 {
+  max-width: 9.2em;
+  margin: 0;
+  font-size: clamp(2.7rem, 5vw, 4.75rem);
+  font-weight: 800;
+  letter-spacing: -0.055em;
+  line-height: 0.91;
+}
+
+.headline em {
+  color: #60a5fa;
+  font-style: normal;
+}
+
+.headline p {
+  max-width: 22rem;
+  margin: 1.25rem 0 0;
+  color: #cbd5e1;
+  font-size: 0.98rem;
+  line-height: 1.45;
+}
+
+.panel {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  padding: 3rem clamp(1.5rem, 5vw, 5rem);
+  overflow-y: auto;
+  background: var(--auth-paper);
+}
+
+.panelInner {
+  display: flex;
+  width: min(100%, 25rem);
+  flex-direction: column;
+  margin: auto;
+}
+
+.brand {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  gap: 0.28em;
+  margin: 0 0 2.65rem;
+  color: var(--auth-ink);
+  font-size: 1.85rem;
+  font-weight: 800;
+  letter-spacing: -0.045em;
+  line-height: 1;
+  text-decoration: none;
+}
+
+.brandMark {
+  display: inline-grid;
+  width: 0.82em;
+  height: 0.82em;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--auth-coral);
+  box-shadow:
+    inset 0 0 0 5px var(--auth-paper),
+    0 0 0 2px var(--auth-coral);
+}
+
+.brandMark::after {
+  content: none;
+}
+
+.view {
+  display: grid;
+  gap: 1.35rem;
+}
+
+.view[hidden] {
+  display: none;
+}
+
+.title {
+  margin: 0;
+  font-size: clamp(2.2rem, 3.5vw, 3rem);
+  font-weight: 800;
+  letter-spacing: -0.05em;
+  line-height: 0.98;
+}
+
+.lead {
+  margin: -0.55rem 0 0;
+  color: #475569;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.form {
+  display: grid;
+  gap: 1.15rem;
+}
+
+.form :global(.gt-field) {
+  max-width: none;
+  gap: 0.45rem;
+}
+
+.form :global(.gt-field__label) {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-size: 0.9rem;
+  font-weight: 650;
+}
+
+.form :global(.gt-field__control) {
+  box-sizing: border-box;
+  min-height: 3.25rem;
+  border-width: 1px;
+  border-color: #cbd2da;
+  border-radius: 14px;
+  background: #fff;
+  font-size: 1rem;
+}
+
+.form :global(.gt-field__control)::placeholder {
+  color: #5f6c80;
+  font-style: italic;
+}
+
+.form :global(.gt-button) {
+  width: 100%;
+  min-height: 3.35rem;
+  border: 0;
+  border-radius: 99px;
+  background: var(--auth-coral);
+  color: #0f172a;
+  box-shadow: 0 10px 24px -10px var(--auth-coral);
+  font-size: 1rem;
+}
+
+.form :global(.gt-button[data-disabled]) {
+  opacity: 0.4;
+}
+
+.passwordLabel {
+  display: flex;
+  width: 100%;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.passwordForgot {
+  color: var(--auth-blue);
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 3px;
+}
+
+.passwordForgot:hover,
+.links a:hover,
+.language button:hover {
+  color: #1d4ed8;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: -0.05rem 0;
+  color: #5f6c80;
+  font-family: var(--gt-primitive-font-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.divider::before,
+.divider::after {
+  flex: 1;
+  border-top: 1px solid #dde2e8;
+  content: '';
+}
+
+.view :global(.gt-button--ghost) {
+  background: #fff;
+  color: var(--auth-ink);
+}
+
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.4rem;
+  margin: 0.1rem 0 0;
+  color: #475569;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.links a,
+.language button[aria-pressed='true'] {
+  color: var(--auth-blue);
+  font-weight: 650;
+}
+
+.language {
+  display: flex;
+  justify-content: center;
+  gap: 0.4rem;
+  margin-top: 2.2rem;
+  padding: 0.25rem;
+  border: 1px solid #dde2e8;
+  border-radius: 99px;
+  background: #eef1f4;
+}
+
+.language button {
+  min-height: 2.25rem;
+  padding: 0.4rem 0.7rem;
+  border: 0;
+  border-radius: 99px;
+  background: transparent;
+  color: #475569;
+  font: 600 0.8rem/1.2 var(--gt-primitive-font-body);
+  cursor: pointer;
+}
+
+.language button[aria-pressed='true'] {
+  background: #fff;
+  box-shadow: none;
+}
+
+.strength {
+  display: grid;
+  gap: 0.35rem;
+  color: #475569;
+  font-size: 0.82rem;
+}
+
+.segments {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.3rem;
+}
+
+.segment {
+  height: 0.4rem;
+  border: 0;
+  border-radius: 99px;
+  background: #e2e8f0;
+}
+
+.segment[data-on='1'] {
+  background: #dc2626;
+}
+.segment[data-on='2'] {
+  background: #b45309;
+}
+.segment[data-on='3'] {
+  background: #f59e0b;
+}
+.segment[data-on='4'] {
+  background: #059669;
+}
+.strengthLabel {
+  font-weight: 700;
+}
+
+@media (max-width: 860px) {
+  .shell {
+    display: flex;
+    min-height: 100dvh;
+    flex-direction: column;
+    overflow: visible;
+  }
+
+  .art {
+    flex: none;
+    min-height: 0;
+    height: 15rem;
+    border-inline-end: 0;
+    border-block-end: 0;
+  }
+
+  .map {
+    object-position: center 40%;
+  }
+
+  .headline {
+    inset-inline-start: 1.35rem;
+    inset-block-end: 1.2rem;
+    width: min(26rem, calc(100% - 2.7rem));
+    padding: 1.15rem 1.35rem;
+    border-radius: 1.1rem;
+    box-shadow: none;
+  }
+
+  .headline h1 {
+    max-width: 14em;
+    font-size: clamp(1.8rem, 5vw, 2.5rem);
+    line-height: 0.98;
+  }
+
+  .headline p {
+    margin-top: 0.45rem;
+    font-size: 0.82rem;
+  }
+
+  .panel {
+    flex: 1;
+    align-items: flex-start;
+    padding: 2rem clamp(1.25rem, 5vw, 2.5rem) 2.5rem;
+  }
+
+  .panelInner {
+    width: min(100%, 28rem);
+    /* Top of the panel on a phone, right under the picture, not floating in the middle of the screen. */
+    margin: 0 auto;
+  }
+
+  .brand {
+    margin-bottom: 1.6rem;
+    font-size: 1.55rem;
+  }
+
+  .view {
+    gap: 1.1rem;
+  }
+
+  .title {
+    font-size: 2.35rem;
+  }
+
+  .language {
+    justify-content: flex-start;
+    margin-top: 1.6rem;
+  }
+}
+
+@media (max-width: 420px) {
+  .art {
+    height: 13.5rem;
+  }
+
+  .headline {
+    inset-inline-start: 1rem;
+    inset-block-end: 0.9rem;
+    width: calc(100% - 2rem);
+    padding: 0.9rem 1rem;
+  }
+
+  .headline h1 {
+    font-size: 1.8rem;
+  }
+
+  .headline p {
+    max-width: 17rem;
+    font-size: 0.76rem;
+  }
+
+  .panel {
+    padding: 1.55rem 1.15rem 2rem;
+  }
+
+  .form {
+    gap: 0.95rem;
+  }
+
+  .language {
+    margin-top: 1.35rem;
+  }
+}
+
+/* "Forgot it?" sits under the password field, outside its label so the label stays just "Password". */
+.forgotRow {
+  margin: calc(-1 * var(--gt-primitive-space-8)) 0 0;
+  text-align: end;
+}
+
+.legal {
+  margin: 0;
+  color: #475569;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  text-align: center;
+}
+
+.legal a {
+  color: inherit;
+  text-decoration: underline;
+}
+
+.ctaLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  min-height: 52px;
+  padding: 0 24px;
+  border-radius: 999px;
+  background: var(--gt-semantic-color-cta);
+  color: var(--gt-semantic-color-on-cta);
+  box-shadow: var(--gt-primitive-shadow-cta);
+  font-size: 1.0625rem;
+  font-weight: 750;
+  text-decoration: none;
+}
+
+.ctaLink:hover {
+  filter: brightness(1.05);
+}
+
+.ctaLink:focus-visible {
+  outline: 3px solid var(--auth-blue);
+  outline-offset: 3px;
+}

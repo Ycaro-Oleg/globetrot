@@ -1,0 +1,74 @@
+/* The consent banner: plain, bottom of the screen, two equal choices. */
+.banner {
+  position: fixed;
+  right: 16px;
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  left: 16px;
+  z-index: 50;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 56rem;
+  margin: 0 auto;
+  padding: 16px 18px;
+  border-radius: 18px;
+  background: #0f172a;
+  color: #f8f9fa;
+  box-shadow: 0 20px 50px -20px rgb(15 23 42 / 0.6);
+}
+
+.banner h2 {
+  margin: 0 0 4px;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.banner p {
+  max-width: 60ch;
+  margin: 0;
+  color: #cbd5e1;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.banner a {
+  color: #93c5fd;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.actions button {
+  min-width: 7.5rem;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid rgb(248 249 250 / 0.4);
+  border-radius: 99px;
+  background: #f8f9fa;
+  color: #0f172a;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.banner button:focus-visible,
+.banner a:focus-visible {
+  outline: 3px solid #93c5fd;
+  outline-offset: 2px;
+}
+
+.link {
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}

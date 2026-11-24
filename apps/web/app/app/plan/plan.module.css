@@ -1,0 +1,263 @@
+/* Plan & credits: where the person stands, Pip credits, and the two plans. Tokens only, so both themes work. */
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: min(100%, 960px);
+  margin-inline: auto;
+}
+
+.title {
+  margin: 0;
+  font-size: var(--gt-primitive-type-page);
+  font-weight: 800;
+  letter-spacing: var(--gt-primitive-type-page-tracking);
+  line-height: 1;
+}
+
+.status,
+.fact,
+.plan {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 20px;
+  border: 1px solid var(--gt-semantic-color-hairline);
+  border-radius: 22px;
+  background: var(--gt-semantic-color-surface-card);
+  color: var(--gt-semantic-color-text);
+}
+
+.status h2,
+.fact h2,
+.plansHead h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.status p,
+.fact p {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.status[data-tone='trial'] {
+  border-color: var(--gt-semantic-color-primary-soft);
+  background: var(--gt-semantic-color-primary-tint);
+}
+
+.status[data-tone='expired'] {
+  border-color: var(--gt-semantic-color-warning);
+  background: var(--gt-semantic-color-warning-tint);
+  color: var(--gt-semantic-color-warning-ink);
+}
+
+.facts {
+  display: grid;
+  gap: 16px;
+}
+
+.meterText {
+  font-weight: 700;
+}
+
+.meter {
+  height: 10px;
+  overflow: hidden;
+  border-radius: 99px;
+  background: var(--gt-semantic-color-track);
+}
+
+.meter span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--gt-semantic-color-primary);
+}
+
+.small {
+  color: var(--gt-semantic-color-text-secondary);
+  font-size: 14px;
+}
+
+.plansHead {
+  scroll-margin-top: 10rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.toggle {
+  display: flex;
+  gap: 2px;
+  padding: 4px;
+  border-radius: 99px;
+  background: var(--gt-semantic-color-surface-nested);
+}
+
+.toggle button {
+  min-height: 40px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 99px;
+  background: transparent;
+  color: var(--gt-semantic-color-text);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.toggle button[aria-pressed='true'] {
+  background: var(--gt-semantic-color-primary);
+  color: var(--gt-semantic-color-on-primary);
+}
+
+.plans {
+  display: grid;
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.plan[data-highlighted] {
+  border: 2px solid var(--gt-semantic-color-primary);
+}
+
+.planTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.planTop h3 {
+  margin: 0;
+  font-size: 1.375rem;
+  font-weight: 800;
+}
+
+.badge {
+  padding: 4px 10px;
+  border-radius: 99px;
+  background: var(--gt-semantic-color-primary);
+  color: var(--gt-semantic-color-on-primary);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.price {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin: 0;
+}
+
+.price strong {
+  font-size: 2.25rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+
+.price span {
+  color: var(--gt-semantic-color-text-secondary);
+  font-size: 14px;
+}
+
+.features {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 15px;
+}
+
+.features li {
+  display: flex;
+  gap: 8px;
+}
+
+.features span {
+  color: var(--gt-semantic-color-confirmed);
+  font-weight: 800;
+}
+
+.cta,
+.secondary {
+  min-height: var(--gt-component-hit-target);
+  padding: 10px 20px;
+  border-radius: var(--gt-primitive-radius-pill);
+  font: inherit;
+  font-size: 15px;
+  line-height: 1.3;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.cta {
+  margin-top: auto;
+  border: 0;
+  background: var(--gt-semantic-color-cta);
+  color: var(--gt-semantic-color-on-cta);
+  box-shadow: var(--gt-primitive-shadow-cta);
+}
+
+.secondary {
+  align-self: flex-start;
+  /* The top-up offer wraps on narrow cards: two lines still read as one button. */
+  border-radius: 22px;
+  border: 1px solid var(--gt-semantic-color-input-border);
+  background: var(--gt-semantic-color-surface-card);
+  color: var(--gt-semantic-color-text);
+}
+
+.cta:disabled,
+.secondary:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+.cta:focus-visible,
+.secondary:focus-visible,
+.toggle button:focus-visible {
+  outline: 3px solid var(--gt-semantic-color-focus);
+  outline-offset: 2px;
+}
+
+.current {
+  margin: auto 0 0;
+  padding: 12px;
+  border-radius: 99px;
+  background: var(--gt-semantic-color-surface-nested);
+  font-weight: 800;
+  text-align: center;
+}
+
+.notice {
+  margin: 0;
+  font-weight: 600;
+}
+
+@media (min-width: 720px) {
+  .facts,
+  .plans {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.thanks {
+  margin: 0;
+  padding: 14px 18px;
+  border: 1px solid var(--gt-semantic-color-confirmed);
+  border-radius: 16px;
+  background: var(--gt-semantic-color-surface-card);
+  font-weight: 700;
+}

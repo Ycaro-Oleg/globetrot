@@ -1,0 +1,111 @@
+# Local development
+
+One command starts the services the apps need, close to the eventual Hetzner + Coolify setup. Monorepo layout and commands: [`project-structure.md`](project-structure.md).
+
+## Requirements
+
+- **Node 24 LTS** (`.nvmrc`) and **pnpm 10** via Corepack (`corepack enable`).
+- **Docker** with Compose v2+ (Docker Desktop, or Docker Engine in WSL2 / Linux / macOS).
+- `curl` ≥ 7.75 and `bash`. Both are only used by `pnpm services:check`.
+
+> No Node 24 on the host? Run any pnpm command inside the official image:
+> `docker run --rm -it -u "$(id -u):$(id -g)" -e HOME=/tmp -v "$PWD:/repo" -w /repo node:24-bookworm bash -c "corepack enable --install-directory /tmp/bin && PATH=/tmp/bin:\$PATH pnpm <command>"`
+
+## The fast loop
+
+Run everything natively with Node 24, not through Docker: it is an order of magnitude faster (installing takes seconds, the web unit tests under three, lint about eight, typecheck about three). Use Docker only for the services and for `docker build`.
+
+| When | Run | About |
+|---|---|---|
+| While you work | `pnpm --filter @globetrot/web test` (or the package you touch), `pnpm --filter @globetrot/web lint`, `... typecheck` | seconds |
+| Before a commit | `pnpm check` (`docs:check`, then lint, typecheck and unit tests of every package; Turborepo caches what did not change) | seconds when cached |
+| Before a PR that changes screens | `pnpm verify:web` (builds the web app, then the real-browser accessibility and behavior check; states run in parallel, `AXE_CONCURRENCY` sets how many) | about two minutes |
+| The real journey (real API, Postgres, Mailpit) | `pnpm services:up`, `pnpm --filter @globetrot/db migrate`, `pnpm turbo run build --filter=@globetrot/web --filter=@globetrot/api`, then `pnpm --filter @globetrot/web test:e2e` (the script starts the API and the web app itself; run it with `.env` loaded, for example `set -a; . ./.env; set +a`) | about half a minute |
+| Debugging one state | `AXE_ONLY='^trips-list' pnpm --filter @globetrot/web test:a11y` after a build | under a minute |
+| Always before the PR | what the [playbook](../agents/playbook.md#3-verify-before-you-open-the-pr) lists | |
+
+The browser check needs Chromium once: `pnpm --filter @globetrot/web exec playwright install chromium` (add `--with-deps` on a machine where you may use `sudo`).
+
+**WSL2 without a system Node 24:** unpack the official Node 24 tarball under `~/.local` and symlink `node`, `npm`, `npx` and `corepack` into `~/.local/bin` (which must come first in `PATH`), then `corepack enable pnpm`. No `sudo` is needed.
+
+## First run
+
+```bash
+cp .env.example .env      # local-only defaults, git-ignored
+pnpm install
+pnpm services:up          # start Postgres, object storage and Mailpit, wait until healthy
+pnpm services:check       # verify everything (DB extensions, S3 round trip, SMTP)
+pnpm --filter @globetrot/db migrate   # create or upgrade the schema (extensions and the auth tables today, more as features land)
+pnpm dev                  # web :3000, api :4000 (/health, /api/auth/*, /v1/*), worker. Builds the design tokens first
+```
+
+Then open <http://localhost:3000/signup>. A fresh clone needs no other step: `pnpm dev` builds `@globetrot/tokens` (its CSS is generated, not committed) before starting the web app.
+
+## Services (`compose.yaml`)
+
+| Service | What | Host port (`.env`) | Notes |
+|---|---|---|---|
+| `postgres` | PostgreSQL 17 + PostGIS 3.7 | `POSTGRES_PORT=5455` | `postgis`, `pg_trgm` and `unaccent` are created on first start (`infra/postgres/init/`). Use `DATABASE_URL` |
+| `storage` | S3-compatible object storage (SeaweedFS) | `S3_PORT=8333` | Stands in for Hetzner Object Storage. Use path-style URLs (`S3_FORCE_PATH_STYLE=true`), region `us-east-1` |
+| `storage-init` | One-shot | — | Creates `S3_BUCKET` (idempotent), then exits |
+| `mailpit` | Catches all outgoing email | `SMTP_PORT=1025`, UI `MAILPIT_UI_PORT=8025` | Open http://localhost:8025 to read emails. The API sends its verification and password-reset emails here, and the integration tests read them over its HTTP API |
+
+- Port defaults avoid common clashes. 5455 is used because another Postgres often runs on 5432. Change any port in `.env` and keep `DATABASE_URL`/`S3_ENDPOINT` in sync.
+- The credentials in `.env.example` are **local-only defaults, not secrets**. Real credentials live only in Coolify (M11) and never in the repository.
+- **Why SeaweedFS, not MinIO:** the official MinIO images are no longer published on Docker Hub. The apps talk plain S3 through a storage port, so the local backend can change without touching code.
+
+## Commands
+
+| Command | Effect |
+|---|---|
+| `pnpm services:up` | `docker compose up -d --wait`, then wait for the bucket to be created |
+| `pnpm services:check` | Health report: Postgres + extensions + search smoke query, S3 health, bucket, signed PUT/GET/DELETE, 403 on wrong credentials, SMTP delivery into Mailpit |
+| `pnpm services:logs` | Follow all service logs |
+| `pnpm services:down` | Stop. Data stays in the named volumes `globetrot_postgres-data` and `globetrot_storage-data` |
+| `pnpm services:reset` | Stop and **delete all local data**. The init scripts run again on the next `up` |
+
+## Database
+
+| Command | Effect |
+|---|---|
+| `pnpm --filter @globetrot/db migrate` | Apply pending migrations to `DATABASE_URL`. Running it again changes nothing |
+| `pnpm --filter @globetrot/db reset` | Drop and recreate the local database, then migrate. Refuses non-local hosts and `NODE_ENV=production` |
+| `pnpm --filter @globetrot/db generate` | Generate a migration from `src/schema` (add `--custom --name=<what>` through `drizzle-kit` for hand-written SQL) |
+| `pnpm test:int` | Integration tests: each one creates and drops its own `globetrot_test_*` database, so your data is safe. They also need Mailpit (the email tests read what the API sent) |
+
+Conventions and the migration rules are in [`data-model.md`](../architecture/data-model.md).
+
+## How the apps get configuration
+
+- `apps/api` and `apps/worker` start with `tsx --env-file-if-exists=../../.env` in `pnpm dev`, so the root `.env` is loaded when present. Deployed containers receive environment variables from Coolify instead.
+- `apps/web` (Next.js) reads `apps/web/.env*` files, not the root `.env`. Its one server-side variable is `API_INTERNAL_URL` (where `/api/auth/*` and `/v1/*` are proxied, and where the web server itself reads a signed-in user's settings; default `http://localhost:4000`, so `pnpm dev` needs nothing). Open <http://localhost:3000/signup> to create an account: with the services up, the confirmation email appears in Mailpit (<http://localhost:8025>); open its link, then log in at `/login` and you land on `/app`. `/settings` changes the language and region.
+- The API reads its auth settings (secret, public URL, trusted origins, session and rate-limit knobs) from the environment. Without `BETTER_AUTH_SECRET` it uses the public development secret and warns; with `NODE_ENV=production` it refuses to start. Full table: [`authentication.md`](../architecture/authentication.md).
+- Open http://localhost:3000 and call `/api/auth/*` there, not on :4000: the browser always goes through the web origin so the session cookie is first-party.
+- **Email:** the API sends verification and reset emails over SMTP (`SMTP_HOST`, `SMTP_PORT`, `EMAIL_FROM`; the defaults are Mailpit). With `REQUIRE_VERIFIED_EMAIL=true` (the default) a new account must follow the link in Mailpit before it can sign in. Set it to `false` in your `.env` to skip that locally.
+- Storage adapters arrive with their features.
+
+## Running the built images locally
+
+Useful to check what CI cannot (bundling, the proxy, the full journey). The images set `NODE_ENV=production`, so for a local run override it:
+
+```bash
+docker build -f apps/api/Dockerfile -t globetrot-api . && docker build -f apps/web/Dockerfile -t globetrot-web .
+docker run -d --network host -e NODE_ENV=development -e PORT=4000 -e BETTER_AUTH_URL=http://localhost:3000 \
+  -e DATABASE_URL=postgres://globetrot:globetrot@localhost:5455/globetrot globetrot-api
+docker run -d --network host -e PORT=3000 -e HOSTNAME=127.0.0.1 -e API_INTERNAL_URL=http://127.0.0.1:4000 globetrot-web
+```
+
+In production the API refuses to start without a real `BETTER_AUTH_SECRET`, an `https` `BETTER_AUTH_URL`, `SMTP_HOST` and `EMAIL_FROM` ([`configuration.md`](configuration.md)).
+
+## Troubleshooting
+
+- **Port already allocated:** change the port in `.env` (and the matching URL), then `pnpm services:up`.
+- **Extensions missing:** the init SQL only runs on a fresh volume. Run `pnpm services:reset`.
+- **WSL2:** keep the repository on the Linux filesystem (`~/…`), not under `/mnt/c`, for fast installs and file watching.
+- **`pnpm test:int` fails to reach Mailpit:** run `pnpm services:up`. The email tests read <http://localhost:8025> (change with `MAILPIT_URL` or `MAILPIT_UI_PORT`).
+- **A new account cannot log in:** it has to follow the verification link first. Read the email in Mailpit, or set `REQUIRE_VERIFIED_EMAIL=false` in your `.env`.
+- **`EACCES` writing `node_modules`, `.next` or `.turbo`:** a container ran as root. Run containers with `-u "$(id -u):$(id -g)"`, and fix the owner of the leftovers (build artifacts only; never touch uncommitted source files).
+- **`next dev` or the web build cannot find `@globetrot/tokens/tokens.css`:** build the tokens: `pnpm --filter @globetrot/tokens build` (`pnpm dev` and `turbo run build` do it for you).
+- **`Dynamic require of … is not supported` when starting a built API:** a CommonJS dependency was bundled without the `createRequire` banner in `apps/api/tsup.config.ts`.
+- **The web app shows English although you chose Portuguese:** a signed-in user's stored language wins over the cookie. Change it in `/settings`.
+- **Changed an API route and two tests fail:** run `pnpm api:generate` and commit the two generated files.

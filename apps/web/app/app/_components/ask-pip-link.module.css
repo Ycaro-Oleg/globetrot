@@ -1,0 +1,30 @@
+.link {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  min-height: var(--gt-component-hit-target);
+  padding: 0 16px 0 8px;
+  border: var(--gt-primitive-border-1) solid var(--gt-semantic-color-input-border);
+  border-radius: var(--gt-primitive-radius-pill);
+  background: var(--gt-semantic-color-surface-card);
+  color: var(--gt-semantic-color-text);
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.link[data-tone='dark'] {
+  border-color: rgb(248 249 250 / 0.3);
+  background: transparent;
+  color: #f8f9fa;
+}
+
+.link:hover {
+  border-color: var(--gt-semantic-color-primary);
+}
+
+.link:focus-visible {
+  outline: var(--gt-component-focus-width) solid var(--gt-semantic-color-focus);
+  outline-offset: 2px;
+}

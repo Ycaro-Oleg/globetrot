@@ -1,0 +1,40 @@
+{
+  "name": "@globetrot/web",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Next.js web app: marketing pages and the app under /app",
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "typecheck": "next typegen && tsc --noEmit",
+    "test": "vitest run",
+    "test:a11y": "node scripts/check-auth-pages.mjs",
+    "test:e2e": "node e2e/journey.mjs"
+  },
+  "dependencies": {
+    "@globetrot/api-client": "workspace:*",
+    "@globetrot/application": "workspace:*",
+    "@globetrot/domain": "workspace:*",
+    "@globetrot/i18n": "workspace:*",
+    "@globetrot/tokens": "workspace:*",
+    "@globetrot/ui": "workspace:*",
+    "lucide-react": "1.67.0",
+    "maplibre-gl": "6.15.0",
+    "next": "16.4.5",
+    "next-intl": "4.14.9",
+    "open-bot-avatar": "0.2.1",
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.14.0",
+    "@globetrot/config": "workspace:*",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "fast-check": "4.10.2",
+    "playwright": "1.64.0"
+  }
+}

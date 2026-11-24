@@ -1,0 +1,67 @@
+# Stripe (commercial architecture)
+
+Status: **built** ([ADR-0019](../architecture/adr/0019-plans-trial-and-pip-credits.md)): plans, credits, Checkout, the Customer Portal and webhooks. It is off until the `STRIPE_*` settings are set. No live payments until the owner sets live keys.
+
+## Facts and decisions
+
+- Provider: **Stripe**. The account is **registered in Brazil**.
+- What that means:
+  - Brazilian payment methods are available: cards, Boleto, Pix.
+  - Payouts are settled in BRL.
+  - **NFS-e (Brazilian service invoices) is not issued by Stripe.** It needs an integrator (e.g. NFE.io or eNotas), triggered by the `invoice.paid` webhook.
+  - The tax regime for SaaS sold abroad must be confirmed with an accountant.
+- **Pix recurring payments:** Stripe's changelog of 2026-04-22 adds Pix as a subscription payment method, but one line in the Pix docs contradicts it. Verify for our account before relying on it.
+- **To verify in M10:** whether a Brazilian Stripe account can charge international customers in USD and other presentment currencies. If it can't, evaluate Stripe Managed Payments (merchant of record) or a separate entity.
+- Evaluate Stripe Tax for international tax collection.
+
+## Architecture
+
+- **Stripe Checkout** for subscriptions, plus the **Customer Portal** for upgrades, downgrades, cancellation and payment methods.
+- Plans and prices live in `PlanConfig` (data), mapped to Stripe Price IDs. Components never hardcode prices.
+- **Webhooks:**
+  - Verified signatures.
+  - Idempotent processing (a processed-events table).
+  - Events handled: `checkout.session.completed`, `customer.subscription.*`, `invoice.paid`, `invoice.payment_failed`, `charge.refunded`.
+- **Entitlements** are derived from the subscription state and checked by the application layer: AI quota, trip limits, cosmetic perks.
+- **Failed payments:** Stripe Smart Retries, a grace period, then a downgrade to the free entitlements. User data is never deleted.
+- Test mode only until the commercial milestone is approved.
+
+## How it is built
+
+- **Prices:** plans, prices and credits are data in the domain (`PLAN_TERMS`, `TRIAL_TERMS`, `TOP_UP`). The landing and `/app/plan` read them through `apps/web/lib/plan-config.ts`; copy lives in the `plans` catalog. The Stripe Prices must charge the same amounts.
+- **The adapter (`apps/api/src/stripe.ts`)** uses Stripe's HTTP API with `fetch`, with no SDK and a pinned `Stripe-Version`. It implements `PaymentsPort`:
+  - **Checkout** in `subscription` mode for Explorer and Voyager (monthly or yearly Price) and in `payment` mode for the top-up.
+  - It sends `client_reference_id` and `metadata.userId`, and reuses the customer once there is one. Otherwise it sends the account's email, which Stripe needs for receipts.
+  - Promotion codes are allowed.
+  - Success returns to `/app/plan?paid=…`, which thanks the person while the webhook arrives.
+  - **Customer Portal** to change the card, switch or cancel.
+- **The webhook:** `POST /v1/webhooks/stripe`, through the web origin like every `/v1` route, with no session.
+  - It checks the `Stripe-Signature` HMAC over the raw body, with a 5-minute tolerance against replays.
+  - For any subscription event it **reads the subscription from Stripe** and stores its current state, so events can repeat or arrive out of order.
+  - Events handled:
+    - `checkout.session.completed` and `checkout.session.async_payment_succeeded`: a subscription, or a paid top-up added once per payment intent.
+    - `customer.subscription.*`
+    - `invoice.paid` and `invoice.payment_failed`
+  - Everything else answers 200 and is ignored. A failure answers 500, so Stripe retries.
+- **Status mapping:**
+  - `active` and `trialing` grant the plan.
+  - `past_due` and `unpaid` keep it for 3 days.
+  - `canceled`, `incomplete_expired` and `paused` end it at the period end.
+  - `incomplete` grants nothing yet.
+
+## Switching it on (the owner, in the Stripe dashboard, test mode first)
+
+1. **Products and Prices:**
+   - Explorer: US$4.99 a month and US$39.99 a year.
+   - Voyager: US$9.99 a month and US$79.99 a year.
+   - "200 Pip credits": a one-time US$2.99.
+   - Put the five Price ids in `STRIPE_PRICE_*`.
+2. **Customer Portal:** allow cancel, card updates and switching between the four plan Prices.
+3. **Webhook endpoint:**
+   - The URL is `https://<web domain>/v1/webhooks/stripe`.
+   - Subscribe to `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `customer.subscription.created`, `customer.subscription.updated`, `customer.subscription.deleted`, `invoice.paid` and `invoice.payment_failed`.
+   - Its signing secret goes in `STRIPE_WEBHOOK_SECRET`.
+4. **Secret key:** `STRIPE_SECRET_KEY` (`sk_test_…`). Production accepts `sk_live_…` once you decide to charge.
+5. **Test a purchase:** buy with the test card `4242 4242 4242 4242`, check `/app/plan` shows the plan, then cancel from the portal.
+
+Locally, `stripe listen --forward-to localhost:3000/v1/webhooks/stripe` prints a `whsec_` to use as the webhook secret.
