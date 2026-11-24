@@ -245,6 +245,7 @@ export default function HomePage() {
                 <PipAvatar
                   size={180}
                   look={{ hat: 'helmet', outfit: 'vest', bag: 'backpack', bagColor: 'cyan' }}
+                  followPointer
                 />
               </div>
               <span className={styles.kicker}>Pip</span>

@@ -1175,10 +1175,14 @@
     font-size: 18px;
   }
 
+  /*
+   * The calculator overlaps the lower part of the map. The overlap follows the map's own width (never wider than
+   * 1240px): a plain percentage follows the page width, and on wide screens it pulled the card over the headline.
+   */
   .world {
     display: block;
     margin-top: -24px;
-    margin-bottom: -38%;
+    margin-bottom: calc(min(1240px, 100%) * -0.38);
   }
 
   .heroCopy h1 {
