@@ -59,6 +59,7 @@ describe('account notices', () => {
         name: 'u-soon',
         locale: 'pt-BR',
         signedUpAt: daysAgo(6),
+        tripTitle: null,
       },
     ]);
 
@@ -68,5 +69,41 @@ describe('account notices', () => {
     expect(await notices.due('trial-ended', window, NOW, 10)).toHaveLength(1);
     await notices.release('u-soon', 'trial-ending');
     expect(await notices.due('trial-ending', window, NOW, 10)).toHaveLength(1);
+  });
+
+  it('names the trip changed most recently, never an archived one', async () => {
+    const database = await createTestDatabase();
+    databases.push(database);
+    const { db } = database;
+    await db.insert(schema.user).values({
+      id: 'u-trips',
+      name: 'u-trips',
+      email: 'u-trips@example.com',
+      emailVerified: true,
+      createdAt: daysAgo(6),
+    });
+    const trip = (id: string, title: string, status: string, updatedAt: Date) => ({
+      id,
+      ownerId: 'u-trips',
+      title,
+      status,
+      currency: 'USD',
+      createdAt: daysAgo(6),
+      updatedAt,
+    });
+    await db
+      .insert(schema.trip)
+      .values([
+        trip('00000000-0000-7000-8000-000000000001', 'Lisbon', 'active', daysAgo(5)),
+        trip('00000000-0000-7000-8000-000000000002', 'Japan in two weeks', 'active', daysAgo(2)),
+        trip('00000000-0000-7000-8000-000000000003', 'Old idea', 'archived', daysAgo(1)),
+      ]);
+    const [target] = await createNoticeRepository(db).due(
+      'trial-ending',
+      { after: daysAgo(7), upTo: daysAgo(5) },
+      NOW,
+      10,
+    );
+    expect(target?.tripTitle).toBe('Japan in two weeks');
   });
 });

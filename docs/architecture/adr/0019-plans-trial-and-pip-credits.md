@@ -34,6 +34,7 @@ The product is sold, not given away: at most a time-limited trial. Each Pip requ
   - "ends in 2 days", 48 hours before the end;
   - "your trips are safe", once, within 3 days after the end, so older accounts are never written to.
   - Each email is claimed in `account_notice` before sending and released if sending fails, so it goes at most once per account.
+  - Both name the person's trip changed most recently (not archived) in the subject and the first line, when there is one. The title is user text: it is escaped in the HTML and kept on one line in the subject.
 
 ## Consequences
 - The landing shows the real prices; nothing is labelled placeholder any more. No real charge happens until Stripe's live keys are set by the owner.

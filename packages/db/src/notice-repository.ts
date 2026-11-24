@@ -1,6 +1,6 @@
 import { and, eq, gt, lte, sql } from 'drizzle-orm';
 import type { Database } from './client';
-import { accountNotice, subscription, user, userPreference } from './schema';
+import { accountNotice, subscription, trip, user, userPreference } from './schema';
 
 /** The worker's queries for one-time account emails (packages/application/src/billing/trial-reminders.ts). */
 
@@ -11,7 +11,8 @@ export function createNoticeRepository(executor: Executor) {
   return {
     /**
      * Verified accounts that signed up in `(after, upTo]`, with no plan paid past `now` and no `kind` email yet.
-     * Only what the email needs: the address, the first name, the language and the sign-up time.
+     * Only what the email needs: the address, the first name, the language, the sign-up time and the title of
+     * the trip changed most recently (not archived), so the email can name it.
      */
     async due(kind: NoticeKind, range: { after: Date; upTo: Date }, now: Date, limit: number) {
       return executor
@@ -21,6 +22,9 @@ export function createNoticeRepository(executor: Executor) {
           name: user.name,
           locale: sql<string>`coalesce(${userPreference.locale}, 'en')`,
           signedUpAt: user.createdAt,
+          tripTitle: sql<
+            string | null
+          >`(select ${trip.title} from ${trip} where ${trip.ownerId} = ${user.id} and ${trip.status} <> 'archived' order by ${trip.updatedAt} desc limit 1)`,
         })
         .from(user)
         .leftJoin(userPreference, eq(userPreference.userId, user.id))

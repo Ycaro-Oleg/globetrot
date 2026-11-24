@@ -123,14 +123,18 @@
     },
     "trialEnding": {
       "subject": "Sua semana grátis termina em 2 dias",
+      "subjectTrip": "“{trip}” está esperando: sua semana grátis termina em 2 dias",
       "body": "Sua semana grátis no Globetrot está acabando. Suas viagens, orçamento e listas estão lá; escolha um plano agora e continue planejando sem pausa. O Explorer começa em {price} por mês.",
+      "trip": "Sua viagem “{trip}” está esperando por você.",
       "action": "Ver planos",
       "expiry": "Sua semana grátis termina em {hours, plural, one {# hora} other {# horas}}.",
       "ignore": "Se você não fizer nada, suas viagens continuam seguras e você ainda pode vê-las e exportá-las."
     },
     "trialEnded": {
       "subject": "Sua semana grátis acabou: suas viagens estão seguras",
+      "subjectTrip": "“{trip}” está segura: sua semana grátis acabou",
       "body": "Sua semana grátis no Globetrot terminou. Tudo o que você planejou continua lá, somente leitura. Escolha um plano para continuar editando, ou exporte quando quiser.",
+      "trip": "Sua viagem “{trip}” está segura e continua sua.",
       "action": "Escolher um plano",
       "expiry": "Enviamos este e-mail uma vez só. Nada é cobrado a menos que você escolha um plano.",
       "ignore": "Você pode excluir sua conta em Configurações quando quiser."

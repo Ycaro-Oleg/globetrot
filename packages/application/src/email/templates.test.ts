@@ -121,4 +121,35 @@ describe('renderEmail content rules', () => {
   ])('refuses the link %s', (url) => {
     expect(() => renderEmail('verifyEmail', 'en', { ...DATA, url })).toThrow(TypeError);
   });
+
+  it.each(['trialEnding', 'trialEnded'] as const)(
+    '%s names the person’s own trip in the subject and the body, escaped in the HTML',
+    (template) => {
+      for (const locale of SUPPORTED_LOCALES) {
+        const copy = catalogs[locale].email[template];
+        const { subject, text, html } = renderEmail(template, locale, {
+          ...DATA,
+          tripTitle: 'Tokyo <3 & Kyoto',
+        });
+        expect(subject).toBe(copy.subjectTrip.replace('{trip}', 'Tokyo <3 & Kyoto'));
+        expect(text).toContain(copy.trip.replace('{trip}', 'Tokyo <3 & Kyoto'));
+        expect(html).toContain('Tokyo &lt;3 &amp; Kyoto');
+        expect(html).not.toContain('Tokyo <3');
+      }
+    },
+  );
+
+  it('keeps a trip title on one line, so it cannot split the subject header', () => {
+    const { subject } = renderEmail('trialEnding', 'en', {
+      ...DATA,
+      tripTitle: 'Rome\r\nBcc: someone@example.com',
+    });
+    expect(subject).not.toMatch(/[\r\n]/);
+  });
+
+  it('never names a trip in account emails', () => {
+    const { subject, text } = renderEmail('verifyEmail', 'en', { ...DATA, tripTitle: 'Rome' });
+    expect(subject).toBe(catalogs.en.email.verifyEmail.subject);
+    expect(text).not.toContain('Rome');
+  });
 });
