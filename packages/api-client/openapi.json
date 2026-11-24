@@ -4421,6 +4421,52 @@
                         "currency"
                       ]
                     },
+                    "guess": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "amount": {
+                          "type": "object",
+                          "properties": {
+                            "amount": {
+                              "type": "string",
+                              "description": "Major units, exact.",
+                              "example": "1250.00"
+                            },
+                            "currency": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "amount",
+                            "currency"
+                          ]
+                        },
+                        "counted": {
+                          "type": "object",
+                          "properties": {
+                            "amount": {
+                              "type": "string",
+                              "description": "Major units, exact.",
+                              "example": "1250.00"
+                            },
+                            "currency": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "amount",
+                            "currency"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "amount",
+                        "counted"
+                      ]
+                    },
                     "byCategory": {
                       "type": "array",
                       "items": {
@@ -4685,6 +4731,7 @@
                   "required": [
                     "currency",
                     "total",
+                    "guess",
                     "byCategory",
                     "byStatus",
                     "savings"
@@ -4997,6 +5044,9 @@
                               "asOf"
                             ]
                           },
+                          "guess": {
+                            "type": "boolean"
+                          },
                           "createdAt": {
                             "type": "string",
                             "format": "date-time"
@@ -5010,6 +5060,7 @@
                           "original",
                           "inTripCurrency",
                           "fx",
+                          "guess",
                           "createdAt"
                         ]
                       }
@@ -5204,7 +5255,7 @@
           "Budget"
         ],
         "summary": "Add a cost",
-        "description": "The amount is in `currency`. When that is not the trip’s currency, send `fxRate` (how much of the trip’s currency 1 unit is worth); the server converts, and keeps the rate, its source (`manual`) and its date with the cost. The converted amount is never taken from the client.",
+        "description": "The amount is in `currency`. When that is not the trip’s currency, send `fxRate` (how much of the trip’s currency 1 unit is worth); the server converts, and keeps the rate, its source (`manual`) and its date with the cost. The converted amount is never taken from the client. `guess: true` marks the rough guess of the whole trip (at most one per trip): totals count it minus every other cost, never below zero.",
         "security": [
           {
             "cookieAuth": []
@@ -5292,6 +5343,10 @@
                     "format": "date",
                     "description": "The day the rate was taken. Defaults to today.",
                     "example": "2027-04-03"
+                  },
+                  "guess": {
+                    "type": "boolean",
+                    "description": "True for the rough guess of the whole trip (at most one per trip). It counts minus every other cost, never below zero, so real costs replace it instead of adding on top."
                   }
                 },
                 "required": [
@@ -5402,6 +5457,9 @@
                         "asOf"
                       ]
                     },
+                    "guess": {
+                      "type": "boolean"
+                    },
                     "createdAt": {
                       "type": "string",
                       "format": "date-time"
@@ -5415,6 +5473,7 @@
                     "original",
                     "inTripCurrency",
                     "fx",
+                    "guess",
                     "createdAt"
                   ]
                 }
@@ -5811,6 +5870,9 @@
                         "asOf"
                       ]
                     },
+                    "guess": {
+                      "type": "boolean"
+                    },
                     "createdAt": {
                       "type": "string",
                       "format": "date-time"
@@ -5824,6 +5886,7 @@
                     "original",
                     "inTripCurrency",
                     "fx",
+                    "guess",
                     "createdAt"
                   ]
                 }
@@ -6315,6 +6378,52 @@
                         "currency"
                       ]
                     },
+                    "guess": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "amount": {
+                          "type": "object",
+                          "properties": {
+                            "amount": {
+                              "type": "string",
+                              "description": "Major units, exact.",
+                              "example": "1250.00"
+                            },
+                            "currency": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "amount",
+                            "currency"
+                          ]
+                        },
+                        "counted": {
+                          "type": "object",
+                          "properties": {
+                            "amount": {
+                              "type": "string",
+                              "description": "Major units, exact.",
+                              "example": "1250.00"
+                            },
+                            "currency": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "amount",
+                            "currency"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "amount",
+                        "counted"
+                      ]
+                    },
                     "byCategory": {
                       "type": "array",
                       "items": {
@@ -6579,6 +6688,7 @@
                   "required": [
                     "currency",
                     "total",
+                    "guess",
                     "byCategory",
                     "byStatus",
                     "savings"

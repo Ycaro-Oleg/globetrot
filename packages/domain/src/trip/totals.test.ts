@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { CurrencyMismatchError, fromDecimal, toDecimalString } from '../money';
 import { japanDemo } from './__fixtures__/japan-demo';
-import { tripTotals } from './totals';
+import { guessRemainder, tripTotals } from './totals';
 import type { TripPlan } from './types';
 
 const str = toDecimalString;
@@ -62,5 +62,28 @@ describe('tripTotals', () => {
       ],
     };
     expect(() => tripTotals(trip)).toThrow(CurrencyMismatchError);
+  });
+});
+
+describe('guessRemainder', () => {
+  const usd = (value: string) => fromDecimal(value, 'USD');
+
+  it('takes the real costs out of the rough guess', () => {
+    expect(toDecimalString(guessRemainder(usd('2500'), usd('800')))).toBe('1700.00');
+  });
+
+  it('counts the whole guess before any real cost', () => {
+    expect(toDecimalString(guessRemainder(usd('2500'), usd('0')))).toBe('2500.00');
+  });
+
+  it('never goes below zero once the real costs pass the guess', () => {
+    expect(toDecimalString(guessRemainder(usd('2500'), usd('3100')))).toBe('0.00');
+    expect(toDecimalString(guessRemainder(usd('2500'), usd('2500')))).toBe('0.00');
+  });
+
+  it('refuses amounts in different currencies', () => {
+    expect(() => guessRemainder(usd('10'), fromDecimal('10', 'EUR'))).toThrow(
+      CurrencyMismatchError,
+    );
   });
 });

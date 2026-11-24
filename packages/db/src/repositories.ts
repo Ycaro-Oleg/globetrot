@@ -453,6 +453,8 @@ export interface ExpenseRow {
   readonly fxRate: string | null;
   readonly fxSource: string | null;
   readonly fxAsOf: string | null;
+  /** The trip's rough guess (at most one per trip); fixed when the cost is created. */
+  readonly guess: boolean;
   readonly createdAt: Date;
   readonly updatedAt: Date;
 }
@@ -460,7 +462,7 @@ export interface ExpenseRow {
 export type NewExpenseRow = Omit<ExpenseRow, 'updatedAt'>;
 
 export type ExpensePatchRow = Partial<
-  Omit<ExpenseRow, 'id' | 'tripId' | 'createdAt' | 'updatedAt'>
+  Omit<ExpenseRow, 'id' | 'tripId' | 'guess' | 'createdAt' | 'updatedAt'>
 >;
 
 export function createExpenseRepository(executor: Executor) {

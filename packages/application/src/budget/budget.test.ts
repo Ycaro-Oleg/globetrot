@@ -194,6 +194,60 @@ describe('expenses', () => {
   });
 });
 
+describe('the rough guess', () => {
+  const GUESS = {
+    description: 'Whole-trip estimate',
+    category: 'other',
+    status: 'estimate',
+    amount: '2500.00',
+    currency: 'USD',
+    guess: true,
+  } as const;
+
+  it('stands for the rest of the trip: real costs come out of it instead of adding on top', async () => {
+    const { app, trip } = await setup();
+    const guess = await app.createExpense.execute(as(ana), { tripId: trip.id, ...GUESS });
+    expect(guess.guess).toBe(true);
+    let budget = await app.getBudget.execute(as(ana), { tripId: trip.id });
+    expect(budget.total.amount).toBe('2500.00');
+    expect(budget.guess).toEqual({
+      amount: { amount: '2500.00', currency: 'USD' },
+      counted: { amount: '2500.00', currency: 'USD' },
+    });
+
+    // Flights for 800 are part of the 2,500 guessed: the total stays 2,500, the guess counts 1,700.
+    await app.createExpense.execute(as(ana), { tripId: trip.id, ...FLIGHTS, amount: '800.00' });
+    budget = await app.getBudget.execute(as(ana), { tripId: trip.id });
+    expect(budget.total.amount).toBe('2500.00');
+    expect(budget.guess?.counted.amount).toBe('1700.00');
+    expect(budget.byStatus.find((entry) => entry.status === 'estimate')?.amount.amount).toBe(
+      '2500.00',
+    );
+
+    // Real costs past the guess: the guess counts nothing and the total follows the real costs.
+    await app.createExpense.execute(as(ana), {
+      tripId: trip.id,
+      ...FLIGHTS,
+      description: 'Hotels',
+      category: 'stay',
+      status: 'confirmed',
+      amount: '2000.00',
+    });
+    budget = await app.getBudget.execute(as(ana), { tripId: trip.id });
+    expect(budget.total.amount).toBe('2800.00');
+    expect(budget.guess?.counted.amount).toBe('0.00');
+  });
+
+  it('is a plain cost unless marked, and a trip keeps at most one guess', async () => {
+    const { app, trip } = await setup();
+    const plain = await app.createExpense.execute(as(ana), { tripId: trip.id, ...FLIGHTS });
+    expect(plain.guess).toBe(false);
+    expect((await app.getBudget.execute(as(ana), { tripId: trip.id })).guess).toBeNull();
+    await app.createExpense.execute(as(ana), { tripId: trip.id, ...GUESS });
+    await issues(app.createExpense.execute(as(ana), { tripId: trip.id, ...GUESS }));
+  });
+});
+
 describe('the budget and the savings answer', () => {
   it('is empty before any cost: nothing to save for', async () => {
     const { app, trip } = await setup();

@@ -102,6 +102,8 @@ export async function finishOnboarding(input: OnboardingInput): Promise<{ error:
       status: 'estimate',
       amount: input.estimate,
       currency: preferences.data.currency,
+      // The rough guess stands for the whole trip: real costs added later come out of it.
+      guess: true,
     },
   });
   const savings = await client.PUT('/v1/trips/{id}/savings', {

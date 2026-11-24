@@ -1,9 +1,11 @@
 import {
+  add,
   convert,
   EXPENSE_CATEGORIES,
   EXPENSE_STATUSES,
   exchangeRate,
   fromDecimal,
+  guessRemainder,
   money,
   MoneyError,
   savingsPlan,
@@ -26,6 +28,7 @@ import { loadOwnedTrip } from '../trips/operations';
 import { tripIdSchema } from '../trips/schemas';
 import {
   budgetSchema,
+  expenseCreateFields,
   expenseFields,
   expenseListSchema,
   expenseSchema,
@@ -61,8 +64,23 @@ export function toExpenseView(record: ExpenseRecord, tripCurrency: string): Expe
       record.fxRate === null || record.fxSource === null || record.fxAsOf === null
         ? null
         : { rate: record.fxRate, source: record.fxSource, asOf: record.fxAsOf },
+    guess: record.guess,
     createdAt: record.createdAt.toISOString(),
   };
+}
+
+/**
+ * The trip's rough guess and what it still counts for: the guess minus every other cost, never below zero
+ * (business rules, "the first trip"). Null without a guess.
+ */
+function guessOf(expenses: readonly ExpenseRecord[], currency: string) {
+  const record = expenses.find((expense) => expense.guess);
+  if (!record) return null;
+  const others = expenses
+    .filter((expense) => !expense.guess)
+    .reduce((sum, expense) => add(sum, money(expense.tripAmountMinor, currency)), zero(currency));
+  const amount = money(record.tripAmountMinor, currency);
+  return { record, amount, counted: guessRemainder(amount, others) };
 }
 
 /**
@@ -118,17 +136,27 @@ export function planOf(
   savings: SavingsRecord | null,
   extra: { stops?: TripPlan['stops']; checklist?: TripPlan['checklist'] } = {},
 ): TripPlan {
+  const guess = guessOf(expenses, trip.currency);
   return {
     currency: toCurrency(trip.currency),
     startDate: trip.startDate === null ? null : toLocalDate(trip.startDate),
     stops: extra.stops ?? [],
-    expenses: expenses.map((record) => ({
-      id: record.id,
-      category: record.category as ExpenseCategory,
-      stopId: null,
-      status: record.status as ExpenseStatus,
-      amount: money(record.tripAmountMinor, trip.currency),
-    })),
+    // Totals count the rough guess only for what the real costs have not covered yet.
+    expenses: expenses.flatMap((record) => {
+      const amount = record.guess
+        ? (guess?.counted ?? zero(trip.currency))
+        : money(record.tripAmountMinor, trip.currency);
+      if (amount.amountMinor === 0n) return [];
+      return [
+        {
+          id: record.id,
+          category: record.category as ExpenseCategory,
+          stopId: null,
+          status: record.status as ExpenseStatus,
+          amount,
+        },
+      ];
+    }),
     checklist: extra.checklist ?? [],
     savings: {
       saved: money(savings?.savedMinor ?? 0n, trip.currency),
@@ -152,9 +180,11 @@ export function budgetOf(
     savings?.ceilingMinor === null || savings?.ceilingMinor === undefined
       ? null
       : money(savings.ceilingMinor, trip.currency);
+  const guess = guessOf(expenses, trip.currency);
   return {
     currency: trip.currency,
     total: view(totals.total),
+    guess: guess ? { amount: view(guess.amount), counted: view(guess.counted) } : null,
     byCategory: EXPENSE_CATEGORIES.map((category) => ({
       category,
       amount: view(totals.byCategory[category]),
@@ -218,13 +248,17 @@ export function createCreateExpense(deps: Writes) {
   return defineOperation({
     name: 'createExpense',
     kind: 'command',
-    input: expenseFields.extend({ tripId: tripIdSchema }),
+    input: expenseCreateFields.extend({ tripId: tripIdSchema }),
     output: expenseSchema,
     async handler(actor, input) {
       const now = deps.clock.now();
       return deps.unitOfWork.run(async (tx) => {
         const trip = await loadOwnedTrip(tx.trips, actor, input.tripId);
         const priced = priceExpense(input, trip.currency, now);
+        const guess = input.guess === true;
+        if (guess && (await tx.expenses.listByTrip(trip.id)).some((expense) => expense.guess)) {
+          invalid('guess', 'This trip already has a rough guess');
+        }
         const record = await tx.expenses.insert({
           id: deps.ids.newId(),
           tripId: trip.id,
@@ -232,6 +266,7 @@ export function createCreateExpense(deps: Writes) {
           status: input.status,
           description: input.description,
           currency: input.currency,
+          guess,
           createdAt: now,
           ...priced,
         });

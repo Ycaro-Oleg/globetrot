@@ -3,6 +3,7 @@ import { EXPENSE_CATEGORIES, EXPENSE_STATUSES } from '@globetrot/domain';
 import { sql, type AnyColumn, type SQL } from 'drizzle-orm';
 import {
   bigint,
+  boolean,
   char,
   check,
   date,
@@ -10,6 +11,7 @@ import {
   pgTable,
   text,
   timestamp,
+  uniqueIndex,
   uuid,
 } from 'drizzle-orm/pg-core';
 import { trip } from './trip';
@@ -38,11 +40,19 @@ export const expense = pgTable(
     fxRate: text('fx_rate'),
     fxSource: text('fx_source'),
     fxAsOf: date('fx_as_of', { mode: 'string' }),
+    /**
+     * The onboarding's rough guess for the whole trip. It stands for the rest of the trip: totals count it minus every
+     * other cost, never below zero. At most one per trip.
+     */
+    guess: boolean('guess').default(false).notNull(),
     createdAt: instant('created_at').defaultNow().notNull(),
     updatedAt: instant('updated_at').defaultNow().notNull(),
   },
   (table) => [
     index('expense_trip_id_created_at_idx').on(table.tripId, table.createdAt),
+    uniqueIndex('expense_one_guess_per_trip')
+      .on(table.tripId)
+      .where(sql`${table.guess}`),
     check('expense_category_valid', oneOf(table.category, EXPENSE_CATEGORIES)),
     check('expense_status_valid', oneOf(table.status, EXPENSE_STATUSES)),
     check(
