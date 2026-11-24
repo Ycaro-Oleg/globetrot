@@ -4235,7 +4235,7 @@ export interface operations {
                             ideas: {
                                 name: string;
                                 /** @enum {string} */
-                                kind: "landmark" | "museum" | "park" | "viewpoint" | "neighbourhood" | "market" | "beach";
+                                kind: "landmark" | "museum" | "park" | "viewpoint" | "neighbourhood" | "market" | "beach" | "daytrip";
                                 minutes: number;
                             }[];
                             /** @enum {string|null} */

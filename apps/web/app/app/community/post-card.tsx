@@ -388,13 +388,16 @@ export function PostCard({
                 })}
               </p>
             ) : null}
-            {!post.mine ? (
+            {!post.mine && copied ? (
+              // The copy is now the current trip: the next step is to open it, not to stay in the feed.
+              <Link href="/app/board" className={styles.copyRoute} data-done="">
+                {t('post.openCopied')}
+              </Link>
+            ) : !post.mine ? (
               <button
                 type="button"
                 className={styles.copyRoute}
-                aria-pressed={copied}
                 onClick={() => {
-                  if (copied) return;
                   startTransition(async () => {
                     const title = await copyRoute(post.id);
                     if (!title) return failed();
@@ -403,7 +406,7 @@ export function PostCard({
                   });
                 }}
               >
-                {copied ? t('post.copied') : t('post.copyRoute')}
+                {t('post.copyRoute')}
               </button>
             ) : null}
           </div>

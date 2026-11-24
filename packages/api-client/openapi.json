@@ -8053,7 +8053,8 @@
                                     "viewpoint",
                                     "neighbourhood",
                                     "market",
-                                    "beach"
+                                    "beach",
+                                    "daytrip"
                                   ]
                                 },
                                 "minutes": {

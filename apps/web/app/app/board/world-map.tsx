@@ -1062,6 +1062,19 @@ export function WorldMapBoard({
                 </button>
               </div>
             )}
+            {stops.length ? (
+              <button
+                type="button"
+                className={styles.addStop}
+                onClick={() => {
+                  // The search box is the main way to add a stop: take the person there, keyboard included.
+                  if (phone) setSheet('peek');
+                  document.getElementById('place-search')?.focus();
+                }}
+              >
+                {t('addStop')}
+              </button>
+            ) : null}
             <p className={styles.muted}>{t('addHint')}</p>
             {stops.length ? (
               <button type="button" className={styles.clear} onClick={() => commit([])}>
