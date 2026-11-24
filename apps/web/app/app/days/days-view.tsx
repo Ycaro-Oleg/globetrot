@@ -349,6 +349,7 @@ function Board({
               <option key={day.index} value={day.index}>
                 {t('dayLabel', { index: day.index })}
                 {day.stop ? ` · ${day.stop.name}` : ''}
+                {day.departure ? ` · ${t('departureShort')}` : ''}
               </option>
             ))}
           </select>
@@ -496,6 +497,10 @@ function Board({
                   {hours(day.hours)} · {t(day.load)}
                 </span>
               </div>
+              {day.departure ? (
+                // The last day: the person leaves, so only the morning is free. Never a block.
+                <p className={styles.departure}>{t('departure')}</p>
+              ) : null}
               {day.travel ? (
                 <p className={styles.travel}>
                   →{' '}

@@ -54,7 +54,7 @@ const text = (html: string) =>
 describe.each(SUPPORTED_LOCALES)('days (%s)', (locale) => {
   const copy = catalogs[locale].daysPage;
 
-  it('has the "No day" tray first and one column per night', () => {
+  it('has the "No day" tray first, one column per night, then the departure day', () => {
     const html = render(locale);
     const headings = [...html.matchAll(/<h2 id="day-[^"]+">([^<]+)<\/h2>/g)].map((m) => m[1]);
     expect(headings).toEqual([
@@ -62,7 +62,10 @@ describe.each(SUPPORTED_LOCALES)('days (%s)', (locale) => {
       copy.dayLabel.replace('{index}', '1'),
       copy.dayLabel.replace('{index}', '2'),
       copy.dayLabel.replace('{index}', '3'),
+      copy.dayLabel.replace('{index}', '4'),
     ]);
+    // Only the last day says the person leaves that day.
+    expect(html.split(copy.departure).length - 1).toBe(1);
   });
 
   it('gives every card a "Move to" select (the keyboard and phone path) and a remove button', () => {

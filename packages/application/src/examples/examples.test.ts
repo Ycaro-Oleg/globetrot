@@ -46,7 +46,8 @@ describe('example trips', () => {
           places: [],
         })),
       });
-      expect(days.length).toBe(trip.stops.reduce((sum, s) => sum + s.nights, 0));
+      // One day per night, then the departure day.
+      expect(days.length).toBe(trip.stops.reduce((sum, s) => sum + s.nights, 0) + 1);
     },
   );
 
