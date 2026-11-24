@@ -526,6 +526,13 @@
   font-size: 12px;
 }
 
+/* The rough guess explains itself: real costs come out of it. */
+.rowMain .guessNote {
+  color: var(--gt-semantic-color-text);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
 .chip {
   display: inline-flex;
   align-items: center;

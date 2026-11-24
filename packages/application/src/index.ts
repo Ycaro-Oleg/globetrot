@@ -224,6 +224,7 @@ export { idempotencyKeySchema } from './trips/operations';
 
 export {
   budgetSchema,
+  expenseCreateFields,
   expenseFields,
   expenseListSchema,
   expenseSchema,

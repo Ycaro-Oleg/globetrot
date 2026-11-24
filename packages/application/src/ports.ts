@@ -236,13 +236,16 @@ export interface ExpenseRecord {
   readonly fxRate: string | null;
   readonly fxSource: string | null;
   readonly fxAsOf: string | null;
+  /** The onboarding's rough guess for the whole trip: it counts minus every other cost (at most one per trip). */
+  readonly guess: boolean;
   readonly createdAt: Date;
   readonly updatedAt: Date;
 }
 
 export type NewExpense = Omit<ExpenseRecord, 'updatedAt'>;
+/** A cost's role (guess or not) is set when it is created and never changed. */
 export type ExpensePatch = Partial<
-  Omit<ExpenseRecord, 'id' | 'tripId' | 'createdAt' | 'updatedAt'>
+  Omit<ExpenseRecord, 'id' | 'tripId' | 'guess' | 'createdAt' | 'updatedAt'>
 >;
 
 export interface ExpenseReader {

@@ -448,6 +448,8 @@ async function apply(
       fxRate: null,
       fxSource: null,
       fxAsOf: null,
+      // A cost Pip proposes is a real line of the budget, never the trip's rough guess.
+      guess: false,
       createdAt: now,
     });
     expenseIds.push(id);

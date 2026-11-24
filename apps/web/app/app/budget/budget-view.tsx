@@ -125,6 +125,12 @@ function Board({
     fmt(fromDecimal(value.amount, value.currency));
 
   const total = fromDecimal(budget.total.amount, currency);
+  /** What the rough guess still counts for, in words: whole, partly covered by real costs, or covered. */
+  const guessNote = (guess: NonNullable<BudgetData['guess']>, hasOthers: boolean) => {
+    if (Number(guess.counted.amount) <= 0) return t('guessCovered');
+    if (!hasOthers) return t('guessNote');
+    return t('guessLeft', { counted: view(guess.counted), amount: view(guess.amount) });
+  };
   const [savedText, setSavedText] = useState(budget.savings.saved.amount);
   const [ceilingText, setCeilingText] = useState(budget.savings.ceiling?.amount ?? '');
   const [monthly, setMonthly] = useState(() => Math.round(Number(budget.savings.monthly.amount)));
@@ -311,6 +317,11 @@ function Board({
                 <div className={styles.rowMain}>
                   <strong>{expense.description}</strong>
                   <span>{t(`categories.${expense.category}`)}</span>
+                  {expense.guess && budget.guess ? (
+                    <span className={styles.guessNote}>
+                      {guessNote(budget.guess, expenses.length > 1)}
+                    </span>
+                  ) : null}
                 </div>
                 <span className={styles.chip} data-status={expense.status}>
                   <span className={styles.dot} data-status={expense.status} aria-hidden="true">
@@ -335,7 +346,10 @@ function Board({
                 </span>
                 <span className={styles.converted}>
                   {expense.status === 'estimate' ? '≈ ' : ''}
-                  {view(expense.inTripCurrency)}
+                  {/* The guess shows what it still counts for once real costs came out of it. */}
+                  {view(
+                    expense.guess && budget.guess ? budget.guess.counted : expense.inTripCurrency,
+                  )}
                 </span>
                 <button
                   type="button"

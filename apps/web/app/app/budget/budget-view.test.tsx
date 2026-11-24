@@ -31,6 +31,7 @@ function budget(overrides: Partial<BudgetData['savings']> = {}, total = '2225.00
   return {
     currency: 'USD',
     total: money(total),
+    guess: null,
     byCategory: zeroes(CATEGORIES, 'category').map((entry) =>
       entry.category === 'flights'
         ? { ...entry, amount: money('1250.00') }
@@ -74,6 +75,7 @@ const EXPENSES: ExpenseData[] = [
     original: money('1250.00'),
     inTripCurrency: money('1250.00'),
     fx: null,
+    guess: false,
     createdAt: '2026-11-08T12:00:00.000Z',
   },
   {
@@ -84,6 +86,7 @@ const EXPENSES: ExpenseData[] = [
     original: money('150000', 'JPY'),
     inTripCurrency: money('975.00'),
     fx: { rate: '0.0065', source: 'manual', asOf: '2026-11-01' },
+    guess: false,
     createdAt: '2026-11-08T12:05:00.000Z',
   },
 ];
@@ -174,6 +177,47 @@ describe.each(SUPPORTED_LOCALES)('budget (%s)', (locale) => {
     const html = render(locale);
     expect(html.match(/class="[^"]*cta[^"]*"/g)).toHaveLength(1);
     expect(html).not.toMatch(/budgetPage\.[a-zA-Z.]+/);
+  });
+});
+
+describe.each(SUPPORTED_LOCALES)('the rough guess (%s)', (locale) => {
+  const copy = catalogs[locale].budgetPage;
+  const guess: ExpenseData = {
+    id: '0193c0a8-7b1e-7c4a-9e2f-3d5a6b7c8d03',
+    description: 'Whole-trip estimate',
+    category: 'other',
+    status: 'estimate',
+    original: money('2500.00'),
+    inTripCurrency: money('2500.00'),
+    fx: null,
+    guess: true,
+    createdAt: '2026-11-08T11:00:00.000Z',
+  };
+  const withGuess = (amount: string, counted: string) =>
+    ({ ...budget(), guess: { amount: money(amount), counted: money(counted) } }) as BudgetData;
+
+  it('says real costs come out of it, and shows only what it still counts for', () => {
+    const shown = text(
+      render(locale, { expenses: [guess, ...EXPENSES], budget: withGuess('2500.00', '275.00') }),
+    );
+    // The words after the guess's amount, which every language keeps fixed.
+    expect(shown).toContain(copy.guessLeft.split('{amount}')[1]!.trim());
+    expect(shown).toMatch(locale === 'en' ? /\$275\.00/ : /US\$\s?275,00/);
+    expect(shown).toMatch(locale === 'en' ? /\$2,500\.00/ : /US\$\s?2\.500,00/);
+  });
+
+  it('explains the guess on its own before any real cost', () => {
+    const shown = text(
+      render(locale, { expenses: [guess], budget: withGuess('2500.00', '2500.00') }),
+    );
+    expect(shown).toContain(copy.guessNote);
+  });
+
+  it('says when real costs cover it, so it can be removed', () => {
+    const shown = text(
+      render(locale, { expenses: [guess, ...EXPENSES], budget: withGuess('2500.00', '0.00') }),
+    );
+    expect(shown).toContain(copy.guessCovered);
   });
 });
 

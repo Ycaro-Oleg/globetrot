@@ -40,6 +40,18 @@ export const expenseFields = z.object({
     .meta({ description: 'The day the rate was taken. Defaults to today.' }),
 });
 
+/** Adding a cost: the same fields, plus whether it is the trip's rough guess (the onboarding sends it). */
+export const expenseCreateFields = expenseFields.extend({
+  guess: z
+    .boolean()
+    .optional()
+    .meta({
+      description:
+        'True for the rough guess of the whole trip (at most one per trip). It counts minus every other cost, never ' +
+        'below zero, so real costs replace it instead of adding on top.',
+    }),
+});
+
 export const moneySchema = z.object({
   amount: z.string().meta({ description: 'Major units, exact.', example: '1250.00' }),
   currency: z.string(),
@@ -56,6 +68,8 @@ export const expenseSchema = z.object({
   inTripCurrency: moneySchema,
   /** Provenance of the conversion, or null when the cost was in the trip's own currency. */
   fx: z.object({ rate: z.string(), source: z.string(), asOf: z.string() }).nullable(),
+  /** The trip's rough guess: see `BudgetView.guess` for what it still counts for. */
+  guess: z.boolean(),
   createdAt: z.iso.datetime(),
 });
 export type ExpenseView = z.infer<typeof expenseSchema>;
@@ -77,6 +91,11 @@ export const savingsFields = z.object({
 export const budgetSchema = z.object({
   currency: z.string(),
   total: moneySchema,
+  /**
+   * The rough guess and what it still counts for in the total (the guess minus every other cost, never below zero).
+   * Null when the trip has no guess.
+   */
+  guess: z.object({ amount: moneySchema, counted: moneySchema }).nullable(),
   byCategory: z.array(z.object({ category: z.enum(EXPENSE_CATEGORIES), amount: moneySchema })),
   byStatus: z.array(z.object({ status: z.enum(EXPENSE_STATUSES), amount: moneySchema })),
   savings: z.object({

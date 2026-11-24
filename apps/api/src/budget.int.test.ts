@@ -195,6 +195,45 @@ describe('budget against a real database', () => {
     for (const personal of ['1250', '777', 'Tokyo']) expect(text).not.toContain(personal);
   });
 
+  it('counts the rough guess minus real costs, and keeps one guess per trip even past the application', async () => {
+    const { signUp, call, tripFor, database } = await harness();
+    const ana = await signUp('Ana', 'ana@example.com');
+    const id = await tripFor(ana.cookie, { startDate: '2027-04-03' });
+    const base = `/v1/trips/${id}`;
+    const guess = {
+      ...COST,
+      description: 'Whole-trip estimate',
+      category: 'other',
+      amount: '2500.00',
+    };
+
+    const created = await call(ana.cookie, 'POST', `${base}/expenses`, { ...guess, guess: true });
+    expect(created.response.status).toBe(201);
+    expect(created.json.guess).toBe(true);
+    await call(ana.cookie, 'POST', `${base}/expenses`, { ...COST, amount: '800.00' });
+    const budget = (await call(ana.cookie, 'GET', `${base}/budget`)).json;
+    expect(budget.total).toEqual({ amount: '2500.00', currency: 'USD' });
+    expect(budget.guess).toEqual({
+      amount: { amount: '2500.00', currency: 'USD' },
+      counted: { amount: '1700.00', currency: 'USD' },
+    });
+
+    expect(
+      (await call(ana.cookie, 'POST', `${base}/expenses`, { ...guess, guess: true })).response
+        .status,
+    ).toBe(422);
+    const second = await database.pool
+      .query(
+        "INSERT INTO expense (id, trip_id, category, status, description, amount_minor, currency, trip_amount_minor, guess) VALUES ('0193c0a8-7b1e-7c4a-9e2f-3d5a6b7c8d9f', $1, 'other', 'estimate', 'x', 100, 'USD', 100, true)",
+        [id],
+      )
+      .then(
+        () => undefined,
+        (e: unknown) => e as { constraint?: string },
+      );
+    expect(second?.constraint).toBe('expense_one_guess_per_trip');
+  });
+
   it('refuses impossible rows even when the application is bypassed, and removes costs with their trip', async () => {
     const { signUp, call, tripFor, database } = await harness();
     const ana = await signUp('Ana', 'ana@example.com');

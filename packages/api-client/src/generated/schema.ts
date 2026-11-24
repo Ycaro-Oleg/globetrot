@@ -254,7 +254,7 @@ export interface paths {
         put?: never;
         /**
          * Add a cost
-         * @description The amount is in `currency`. When that is not the trip’s currency, send `fxRate` (how much of the trip’s currency 1 unit is worth); the server converts, and keeps the rate, its source (`manual`) and its date with the cost. The converted amount is never taken from the client.
+         * @description The amount is in `currency`. When that is not the trip’s currency, send `fxRate` (how much of the trip’s currency 1 unit is worth); the server converts, and keeps the rate, its source (`manual`) and its date with the cost. The converted amount is never taken from the client. `guess: true` marks the rough guess of the whole trip (at most one per trip): totals count it minus every other cost, never below zero.
          */
         post: operations["createExpense"];
         delete?: never;
@@ -2842,6 +2842,24 @@ export interface operations {
                             amount: string;
                             currency: string;
                         };
+                        guess: {
+                            amount: {
+                                /**
+                                 * @description Major units, exact.
+                                 * @example 1250.00
+                                 */
+                                amount: string;
+                                currency: string;
+                            };
+                            counted: {
+                                /**
+                                 * @description Major units, exact.
+                                 * @example 1250.00
+                                 */
+                                amount: string;
+                                currency: string;
+                            };
+                        } | null;
                         byCategory: {
                             /** @enum {string} */
                             category: "flights" | "stay" | "local_transport" | "intercity_transport" | "food" | "experiences" | "insurance" | "documents" | "taxes" | "shopping" | "buffer" | "other";
@@ -3047,6 +3065,7 @@ export interface operations {
                                 source: string;
                                 asOf: string;
                             } | null;
+                            guess: boolean;
                             /** Format: date-time */
                             createdAt: string;
                         }[];
@@ -3167,6 +3186,8 @@ export interface operations {
                      * @example 2027-04-03
                      */
                     fxAsOf?: string | null;
+                    /** @description True for the rough guess of the whole trip (at most one per trip). It counts minus every other cost, never below zero, so real costs replace it instead of adding on top. */
+                    guess?: boolean;
                 };
             };
         };
@@ -3206,6 +3227,7 @@ export interface operations {
                             source: string;
                             asOf: string;
                         } | null;
+                        guess: boolean;
                         /** Format: date-time */
                         createdAt: string;
                     };
@@ -3365,6 +3387,7 @@ export interface operations {
                             source: string;
                             asOf: string;
                         } | null;
+                        guess: boolean;
                         /** Format: date-time */
                         createdAt: string;
                     };
@@ -3582,6 +3605,24 @@ export interface operations {
                             amount: string;
                             currency: string;
                         };
+                        guess: {
+                            amount: {
+                                /**
+                                 * @description Major units, exact.
+                                 * @example 1250.00
+                                 */
+                                amount: string;
+                                currency: string;
+                            };
+                            counted: {
+                                /**
+                                 * @description Major units, exact.
+                                 * @example 1250.00
+                                 */
+                                amount: string;
+                                currency: string;
+                            };
+                        } | null;
                         byCategory: {
                             /** @enum {string} */
                             category: "flights" | "stay" | "local_transport" | "intercity_transport" | "food" | "experiences" | "insurance" | "documents" | "taxes" | "shopping" | "buffer" | "other";

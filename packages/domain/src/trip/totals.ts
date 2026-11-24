@@ -1,4 +1,4 @@
-import { add, zero, type Money } from '../money';
+import { add, subtract, zero, type Money } from '../money';
 import {
   EXPENSE_CATEGORIES,
   EXPENSE_STATUSES,
@@ -45,4 +45,14 @@ export function tripTotals(trip: TripPlan): TripTotals {
   }
 
   return { total, byCategory, byStatus, byStop, tripWide };
+}
+
+/**
+ * What the onboarding's rough guess still counts for: it stands for the rest of the trip, so the real costs come out
+ * of it instead of adding on top. `others` is every other cost of the trip; the result is never below zero.
+ * Both amounts must be in the same currency (the trip's).
+ */
+export function guessRemainder(guess: Money, others: Money): Money {
+  const left = subtract(guess, others);
+  return left.amountMinor > 0n ? left : zero(guess.currency);
 }
