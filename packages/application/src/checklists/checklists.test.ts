@@ -52,6 +52,27 @@ describe('checklists', () => {
     expect(done.readiness).toMatchObject({ docs: true, check: false });
   });
 
+  it('says a stamp is new only the first time the trip earns it', async () => {
+    const { app, trip } = await setup();
+    const added = await app.addChecklistItems.execute(as(ana), {
+      tripId: trip.id,
+      items: [{ group: 'documents', label: 'Passport' }],
+    });
+    expect(added.firstTime).toEqual([]);
+    const item = added.items[0]!;
+    const toggle = (done: boolean) =>
+      app.updateChecklistItem.execute(as(ana), { tripId: trip.id, itemId: item.id, done });
+
+    const earned = await toggle(true);
+    expect(earned.firstTime).toEqual(expect.arrayContaining(['docs', 'check']));
+    expect((await toggle(false)).firstTime).toEqual([]);
+    const again = await toggle(true);
+    expect(again.readiness).toMatchObject({ docs: true, check: true });
+    expect(again.firstTime).toEqual([]);
+    // Reading never records or announces anything.
+    expect((await app.getChecklist.execute(as(ana), { tripId: trip.id })).firstTime).toEqual([]);
+  });
+
   it('earns "all done" when every item is checked, and loses it when one is added', async () => {
     const { app, trip } = await setup();
     const added = await app.addChecklistItems.execute(as(ana), {

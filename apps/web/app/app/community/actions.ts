@@ -182,7 +182,8 @@ export async function report(
 }
 
 /** Copies a shared route into a new trip and makes it the current trip. Answers its title, or null. */
-export async function copyRoute(postId: string): Promise<string | null> {
+/** Copies a route post into the person's trips (or hands back the copy they already have) and opens it next. */
+export async function copyRoute(postId: string): Promise<{ id: string; title: string } | null> {
   const client = await apiClient();
   if (!client) return null;
   const { data } = await client.POST('/v1/community/posts/{postId}/copy-route', {
@@ -196,7 +197,7 @@ export async function copyRoute(postId: string): Promise<string | null> {
     path: '/',
     maxAge: 60 * 60 * 24 * 365,
   });
-  return data.title;
+  return { id: data.id, title: data.title };
 }
 
 /** Saves a post's place to the current trip's "No day". */

@@ -192,7 +192,6 @@ export default function HomePage() {
             <p className={styles.seeBody}>{t('seeBody')}</p>
           </div>
           <figure className={styles.shot}>
-            {/* eslint-disable-next-line @next/next/no-img-element -- art direction (phone and desktop screens); both are already-sized WebP files */}
             <picture>
               <source
                 media="(max-width: 640px)"

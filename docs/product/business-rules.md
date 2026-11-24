@@ -104,7 +104,7 @@ Nine per trip, each recorded once with a date when it first becomes true:
 8. `check`: the checklist is not empty, and every item is done.
 9. `ready`: all of the above, and `left = 0`.
 
-Stamps are recorded once, with the date they were first earned, and are **never taken back** if a condition later becomes false. Newly earned stamps, in display order, drive the celebration queue.
+Stamps are recorded once, with the date they were first earned, and are **never taken back** if a condition later becomes false. Newly earned stamps, in display order, drive the celebration queue. A stamp is celebrated **only the first time** the trip earns it: unticking and ticking an item again shows no second celebration.
 
 Financial readiness never implies travel readiness. Documents, reservations and entry rules are separate items.
 
@@ -142,7 +142,7 @@ Decision record: [ADR-0013](../architecture/adr/0013-community.md).
 - **People appear only when they act.** The first post, comment, like or follow gives the person a handle made from their name (with a number when taken; they can change it). Until then nobody sees them. "Who to follow" lists only people with public posts in the last 30 days; "Trending destinations" counts countries tagged on public posts in that time.
 - **Following is open**, muting and saving are private. Comments can be removed by their author or by the post's author; deleting a post or a comment can be undone.
 - **Reports:** once per person and post; the post disappears for the reporter at once and for everyone but its author after **3** distinct reports, until it is reviewed. Limits: **30 posts and 200 comments a day**.
-- **Copying a route** makes a new private trip in USD with the stops and nights, which is the person's own from then on. "+ Save to my trip" puts a tip's or moment's place into the current trip's "No day".
+- **Copying a route** makes a new private trip in USD with the stops and nights, which is the person's own from then on. **One copy per person:** once they have it (not archived), the post offers "Open on my map" instead, and copying again hands back the same trip. "+ Save to my trip" puts a tip's or moment's place into the current trip's "No day".
 - Never share someone else's live location; there is no live location in Globetrot.
 
 ## AI (Pip)

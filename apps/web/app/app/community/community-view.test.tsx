@@ -29,6 +29,7 @@ const post = (n: number, extra: Partial<PostData>): PostData => ({
   saved: false,
   comments: 0,
   likedBy: null,
+  copiedTripId: null,
   ...extra,
 });
 

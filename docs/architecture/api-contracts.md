@@ -97,7 +97,7 @@ Today:
 | `listComments` / `addComment` | `GET`/`POST /v1/community/posts/{postId}/comments` | Oldest first, without deleted ones or muted people's. `429` after 200 comments a day |
 | `deleteComment` / `restoreComment`, `addCommentLike` / `removeCommentLike` | `DELETE /v1/community/comments/{commentId}`, `POST …/restore`, `PUT`/`DELETE …/like` | Remove: the comment's or the post's author |
 | `reportPost` | `POST /v1/community/posts/{postId}/report` | `reason`: `spam`, `abuse`, `unsafe`, `other`. Once per person; three distinct reports hide the post |
-| `copyRoute` | `POST /v1/community/posts/{postId}/copy-route` | A new private USD trip from a route post. `Idempotency-Key` supported |
+| `copyRoute` | `POST /v1/community/posts/{postId}/copy-route` | A new private USD trip from a route post, or the caller's existing copy (not archived) when they already made one. `Idempotency-Key` supported. Posts show `copiedTripId`: the caller's copy, or null |
 | `getPerson` / `listPersonPosts` | `GET /v1/community/people/{handle}`, `…/posts` | The person's name, handle, Pip and counts, and their posts the caller may see |
 | `followPerson` / `unfollowPerson`, `mutePerson` / `unmutePerson` | `PUT`/`DELETE /v1/community/people/{handle}/follow`, `/mute` | Never oneself (`422`) |
 | `getCommunityMe` / `updateHandle` | `GET`/`PATCH /v1/community/me` | The caller's handle (null until they first act) and counts; change the handle (`422 handle_taken`) |
@@ -115,7 +115,7 @@ Today:
 | `addDayPlace` | `POST /v1/trips/{id}/day-places` | `201`. `name`, `minutes` (15–720), optional `destinationId` (a stop of the trip). Saved to "No day". At most 200 per trip. Audited without the name |
 | `moveDayPlace` | `PATCH /v1/trips/{id}/day-places/{placeId}` | `day` (a day of the route, or null) and optional `beforeId` (a place on that day); without it, the end of the day. `422` for a day the route does not have |
 | `removeDayPlace` | `DELETE /v1/trips/{id}/day-places/{placeId}` | Answers with the plan. Another person's place is the same `404` |
-| `getChecklist` | `GET /v1/trips/{id}/checklist` | The items in the order they were added (`group`: documents, money, bookings, packing; `label`; `done`) and the nine readiness stamps as they stand now. Stamps are computed from what the trip has today (route, costs, savings, lists), never stored |
+| `getChecklist` | `GET /v1/trips/{id}/checklist` | The items in the order they were added (`group`: documents, money, bookings, packing; `label`; `done`) and the nine readiness stamps as they stand now, computed from what the trip has today (route, costs, savings, lists). `firstTime` is always empty here: the changes below fill it with the stamps they earned for the very first time (recorded then, never announced twice) |
 | `addChecklistItems` | `POST /v1/trips/{id}/checklist` | `201`. One to 30 `{ group, label }` at once (a single add or the suggested starter list). A trip keeps at most 100 items (`422`, `checklist_full`). Audited (groups and count only, never labels). Answers with the new lists |
 | `updateChecklistItem` | `PATCH /v1/trips/{id}/checklist/{itemId}` | `done` and/or `label`; at least one. An item of another trip is the same `404` |
 | `deleteChecklistItem` | `DELETE /v1/trips/{id}/checklist/{itemId}` | Removes it. Answers with the new lists |

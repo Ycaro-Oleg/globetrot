@@ -94,6 +94,24 @@ describe('posting', () => {
     expect(copy.currency).toBe('USD');
     const stops = await app.listDestinations.execute(as(leo), { tripId: copy.id });
     expect(stops.destinations.map((d) => d.name)).toEqual(['Lisbon', 'Porto']);
+
+    // One copy per person: the post now points Leo to it, and copying again hands back the same trip.
+    const [seen] = (await app.listFeed.execute(as(leo), { feed: 'all' })).posts.filter(
+      (post) => post.id === shared.id,
+    );
+    expect(seen?.copiedTripId).toBe(copy.id);
+    const again = await app.copyRoute.execute(as(leo), { postId: shared.id });
+    expect(again.id).toBe(copy.id);
+    expect(
+      (await app.listTrips.execute(as(leo), { includeArchived: true })).trips.filter(
+        (t) => t.title === 'Portugal',
+      ),
+    ).toHaveLength(1);
+    // The author has no copy of their own post.
+    const [own] = (await app.listFeed.execute(as(ana), { feed: 'all' })).posts.filter(
+      (post) => post.id === shared.id,
+    );
+    expect(own?.copiedTripId).toBeNull();
   });
 
   it('refuses to share someone else’s trip', async () => {

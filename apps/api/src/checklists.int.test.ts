@@ -105,6 +105,31 @@ describe('checklists against a real database', () => {
     expect((removed.json as unknown as Checklist).readiness.check).toBe(true);
   });
 
+  it('records each stamp the first time it is earned, so it is new only once', async () => {
+    const { signUp, call, tripFor, database } = await harness();
+    const ana = await signUp('Ana', 'ana@example.com');
+    const id = await tripFor(ana.cookie);
+    const base = `/v1/trips/${id}/checklist`;
+    const added = await call(ana.cookie, 'POST', base, {
+      items: [{ group: 'documents', label: 'Passport' }],
+    });
+    const itemId = (added.json as unknown as Checklist).items[0]!.id;
+    const toggle = async (done: boolean) =>
+      (await call(ana.cookie, 'PATCH', `${base}/${itemId}`, { done })).json as unknown as {
+        firstTime: string[];
+      };
+    expect((await toggle(true)).firstTime).toEqual(expect.arrayContaining(['docs', 'check']));
+    expect((await toggle(false)).firstTime).toEqual([]);
+    expect((await toggle(true)).firstTime).toEqual([]);
+    const stored = await database.pool.query(
+      'SELECT milestone FROM trip_stamp WHERE trip_id = $1 ORDER BY milestone',
+      [id],
+    );
+    expect(stored.rows.map((row: { milestone: string }) => row.milestone)).toEqual(
+      expect.arrayContaining(['check', 'docs']),
+    );
+  });
+
   it('refuses bad input with 422, and answers "not found" for another user’s trip or item', async () => {
     const { signUp, call, tripFor } = await harness();
     const ana = await signUp('Ana', 'ana@example.com');

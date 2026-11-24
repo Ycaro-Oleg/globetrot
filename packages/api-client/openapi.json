@@ -6972,11 +6972,29 @@
                           "type": "boolean"
                         }
                       }
+                    },
+                    "firstTime": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "enum": [
+                          "dest",
+                          "route",
+                          "budget",
+                          "saved",
+                          "docs",
+                          "stays",
+                          "itin",
+                          "check",
+                          "ready"
+                        ]
+                      }
                     }
                   },
                   "required": [
                     "items",
-                    "readiness"
+                    "readiness",
+                    "firstTime"
                   ]
                 }
               }
@@ -7300,11 +7318,29 @@
                           "type": "boolean"
                         }
                       }
+                    },
+                    "firstTime": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "enum": [
+                          "dest",
+                          "route",
+                          "budget",
+                          "saved",
+                          "docs",
+                          "stays",
+                          "itin",
+                          "check",
+                          "ready"
+                        ]
+                      }
                     }
                   },
                   "required": [
                     "items",
-                    "readiness"
+                    "readiness",
+                    "firstTime"
                   ]
                 }
               }
@@ -7614,11 +7650,29 @@
                           "type": "boolean"
                         }
                       }
+                    },
+                    "firstTime": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "enum": [
+                          "dest",
+                          "route",
+                          "budget",
+                          "saved",
+                          "docs",
+                          "stays",
+                          "itin",
+                          "check",
+                          "ready"
+                        ]
+                      }
                     }
                   },
                   "required": [
                     "items",
-                    "readiness"
+                    "readiness",
+                    "firstTime"
                   ]
                 }
               }
@@ -7905,11 +7959,29 @@
                           "type": "boolean"
                         }
                       }
+                    },
+                    "firstTime": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "enum": [
+                          "dest",
+                          "route",
+                          "budget",
+                          "saved",
+                          "docs",
+                          "stays",
+                          "itin",
+                          "check",
+                          "ready"
+                        ]
+                      }
                     }
                   },
                   "required": [
                     "items",
-                    "readiness"
+                    "readiness",
+                    "firstTime"
                   ]
                 }
               }
@@ -10594,6 +10666,13 @@
                               "name",
                               "pipLook"
                             ]
+                          },
+                          "copiedTripId": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "format": "uuid"
                           }
                         },
                         "required": [
@@ -10613,7 +10692,8 @@
                           "liked",
                           "saved",
                           "comments",
-                          "likedBy"
+                          "likedBy",
+                          "copiedTripId"
                         ]
                       }
                     },
@@ -11716,6 +11796,13 @@
                         "name",
                         "pipLook"
                       ]
+                    },
+                    "copiedTripId": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "format": "uuid"
                     }
                   },
                   "required": [
@@ -11735,7 +11822,8 @@
                     "liked",
                     "saved",
                     "comments",
-                    "likedBy"
+                    "likedBy",
+                    "copiedTripId"
                   ]
                 }
               }
@@ -12415,6 +12503,13 @@
                         "name",
                         "pipLook"
                       ]
+                    },
+                    "copiedTripId": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "format": "uuid"
                     }
                   },
                   "required": [
@@ -12434,7 +12529,8 @@
                     "liked",
                     "saved",
                     "comments",
-                    "likedBy"
+                    "likedBy",
+                    "copiedTripId"
                   ]
                 }
               }
@@ -13015,6 +13111,13 @@
                         "name",
                         "pipLook"
                       ]
+                    },
+                    "copiedTripId": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "format": "uuid"
                     }
                   },
                   "required": [
@@ -13034,7 +13137,8 @@
                     "liked",
                     "saved",
                     "comments",
-                    "likedBy"
+                    "likedBy",
+                    "copiedTripId"
                   ]
                 }
               }
@@ -14041,6 +14145,13 @@
                         "name",
                         "pipLook"
                       ]
+                    },
+                    "copiedTripId": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "format": "uuid"
                     }
                   },
                   "required": [
@@ -14060,7 +14171,8 @@
                     "liked",
                     "saved",
                     "comments",
-                    "likedBy"
+                    "likedBy",
+                    "copiedTripId"
                   ]
                 }
               }
@@ -14622,6 +14734,13 @@
                         "name",
                         "pipLook"
                       ]
+                    },
+                    "copiedTripId": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "format": "uuid"
                     }
                   },
                   "required": [
@@ -14641,7 +14760,8 @@
                     "liked",
                     "saved",
                     "comments",
-                    "likedBy"
+                    "likedBy",
+                    "copiedTripId"
                   ]
                 }
               }
@@ -15206,6 +15326,13 @@
                         "name",
                         "pipLook"
                       ]
+                    },
+                    "copiedTripId": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "format": "uuid"
                     }
                   },
                   "required": [
@@ -15225,7 +15352,8 @@
                     "liked",
                     "saved",
                     "comments",
-                    "likedBy"
+                    "likedBy",
+                    "copiedTripId"
                   ]
                 }
               }
@@ -15788,6 +15916,13 @@
                         "name",
                         "pipLook"
                       ]
+                    },
+                    "copiedTripId": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "format": "uuid"
                     }
                   },
                   "required": [
@@ -15807,7 +15942,8 @@
                     "liked",
                     "saved",
                     "comments",
-                    "likedBy"
+                    "likedBy",
+                    "copiedTripId"
                   ]
                 }
               }
@@ -18783,6 +18919,13 @@
                               "name",
                               "pipLook"
                             ]
+                          },
+                          "copiedTripId": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "format": "uuid"
                           }
                         },
                         "required": [
@@ -18802,7 +18945,8 @@
                           "liked",
                           "saved",
                           "comments",
-                          "likedBy"
+                          "likedBy",
+                          "copiedTripId"
                         ]
                       }
                     },

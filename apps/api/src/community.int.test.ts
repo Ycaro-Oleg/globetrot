@@ -247,6 +247,14 @@ describe('community (PostgreSQL)', () => {
       'Lisbon',
       'Porto',
     ]);
+    // A second copy is the same trip, and the feed tells Leo he has it.
+    const again = await call(leo, 'POST', `/v1/community/posts/${shared.json.id}/copy-route`);
+    expect(again.json.id).toBe(copy.json.id);
+    const feed = await call(leo, 'GET', '/v1/community/feed');
+    const seen = (feed.json.posts as { id: string; copiedTripId: string | null }[]).find(
+      (post) => post.id === shared.json.id,
+    );
+    expect(seen?.copiedTripId).toBe(copy.json.id);
   });
 
   it('suggests people, shows trending countries and handles handles', async () => {
