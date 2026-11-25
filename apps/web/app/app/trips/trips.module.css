@@ -39,7 +39,7 @@
   font-size: clamp(2.8rem, 4.4vw, 3.55rem);
   font-weight: 800;
   font-stretch: 80%;
-  letter-spacing: -0.055em;
+  letter-spacing: -0.025em;
   line-height: 0.98;
 }
 
@@ -93,7 +93,7 @@
 .createPopover h2 {
   font-size: 1.25rem;
   font-weight: 800;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.012em;
 }
 
 .createPopover > p {
@@ -238,7 +238,7 @@
   font-size: clamp(1.35rem, 2vw, 1.7rem);
   font-weight: 800;
   font-stretch: 86%;
-  letter-spacing: -0.035em;
+  letter-spacing: -0.015em;
   line-height: 1.05;
 }
 
@@ -374,7 +374,7 @@
   max-width: 24ch;
   font-size: 1.45rem;
   font-weight: 800;
-  letter-spacing: -0.035em;
+  letter-spacing: -0.015em;
 }
 
 .emptyState p,

@@ -745,7 +745,7 @@
 .cardTitle strong {
   font-size: 19px;
   font-weight: 800;
-  letter-spacing: -0.04em;
+  letter-spacing: -0.018em;
   line-height: 1.1;
 }
 
@@ -1029,7 +1029,7 @@
   margin: 0;
   font-size: 2.25rem;
   font-weight: 800;
-  letter-spacing: -0.06em;
+  letter-spacing: -0.028em;
   line-height: 0.95;
   overflow-wrap: anywhere;
 }
@@ -1206,7 +1206,7 @@
 
 .empty strong {
   font-size: 20px;
-  letter-spacing: -0.04em;
+  letter-spacing: -0.018em;
 }
 
 .empty p {
@@ -1238,7 +1238,7 @@
   margin: 0;
   font-size: 2.75rem;
   font-weight: 800;
-  letter-spacing: -0.065em;
+  letter-spacing: -0.03em;
   line-height: 0.92;
   overflow-wrap: anywhere;
 }
@@ -1552,7 +1552,7 @@
   max-width: 150px;
   font-size: 26px;
   font-weight: 800;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.012em;
   line-height: 1;
   text-transform: uppercase;
 }
@@ -1561,7 +1561,7 @@
   margin: 0;
   font-size: 2.25rem;
   font-weight: 800;
-  letter-spacing: -0.06em;
+  letter-spacing: -0.028em;
   line-height: 1;
 }
 

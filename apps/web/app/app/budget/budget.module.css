@@ -121,7 +121,7 @@
   margin: 0;
   font-size: var(--gt-primitive-type-answer);
   font-weight: 800;
-  letter-spacing: -0.05em;
+  letter-spacing: -0.022em;
   line-height: 1.02;
   text-wrap: pretty;
 }
@@ -347,7 +347,7 @@
   margin: 0;
   font-size: 40px;
   font-weight: 800;
-  letter-spacing: -0.05em;
+  letter-spacing: -0.022em;
   line-height: 1;
   font-variant-numeric: tabular-nums;
 }
@@ -478,7 +478,7 @@
   margin: 0;
   font-size: 22px;
   font-weight: 800;
-  letter-spacing: -0.04em;
+  letter-spacing: -0.018em;
 }
 
 .listHead span {
@@ -612,7 +612,7 @@
   margin: 0;
   font-size: 26px;
   font-weight: 800;
-  letter-spacing: -0.05em;
+  letter-spacing: -0.022em;
 }
 
 .close {

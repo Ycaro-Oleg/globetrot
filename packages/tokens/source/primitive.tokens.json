@@ -552,7 +552,11 @@
     "font": {
       "body": {
         "$type": "fontFamily",
-        "$value": ["Plus Jakarta Sans", "system-ui", "sans-serif"]
+        "$value": ["Instrument Sans", "system-ui", "sans-serif"]
+      },
+      "display": {
+        "$type": "fontFamily",
+        "$value": ["Bricolage Grotesque", "Instrument Sans", "system-ui", "sans-serif"]
       },
       "mono": {
         "$type": "fontFamily",
@@ -1029,19 +1033,19 @@
       },
       "hero-tracking": {
         "$type": "number",
-        "$value": -0.065
+        "$value": -0.03
       },
       "section-tracking": {
         "$type": "number",
-        "$value": -0.045
+        "$value": -0.02
       },
       "page-tracking": {
         "$type": "number",
-        "$value": -0.055
+        "$value": -0.025
       },
       "card-tracking": {
         "$type": "number",
-        "$value": -0.03
+        "$value": -0.012
       },
       "eyebrow-tracking": {
         "$type": "number",

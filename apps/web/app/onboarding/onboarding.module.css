@@ -33,7 +33,7 @@
   color: inherit;
   font-size: 21px;
   font-weight: 800;
-  letter-spacing: -0.06em;
+  letter-spacing: -0.028em;
   text-decoration: none;
 }
 
@@ -87,7 +87,7 @@
   margin: 0;
   font-size: clamp(36px, 5vw, 56px);
   font-weight: 800;
-  letter-spacing: -0.06em;
+  letter-spacing: -0.028em;
   line-height: 0.98;
   text-wrap: balance;
 }
@@ -342,9 +342,10 @@
 
 .sentence {
   margin: 0;
+  font-family: var(--gt-primitive-font-display);
   font-size: clamp(26px, 3.4vw, 34px);
   font-weight: 800;
-  letter-spacing: -0.05em;
+  letter-spacing: -0.022em;
   line-height: 1.05;
 }
 
