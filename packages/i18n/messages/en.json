@@ -349,7 +349,10 @@
     "error": {
       "title": "Something went wrong",
       "description": "This page could not be loaded. Try again, or go back to the home page.",
-      "retry": "Try again"
+      "retry": "Try again",
+      "staleTitle": "Globetrot was updated",
+      "staleDescription": "A new version came out while this page was open. Reload to carry on where you were.",
+      "reload": "Reload"
     },
     "plan": {
       "trial": "{days, plural, one {Last day of your free week} other {# days left in your free week}}",
@@ -1585,7 +1588,10 @@
     "toHome": "Home page",
     "errorTitle": "Something went wrong",
     "errorBody": "It was not your fault. Try again, or go back to the home page.",
-    "retry": "Try again"
+    "retry": "Try again",
+    "staleTitle": "Globetrot was updated",
+    "staleBody": "A new version came out while this page was open. Reload to carry on where you were.",
+    "reload": "Reload"
   },
   "plans": {
     "billing": "Billing period",

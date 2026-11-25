@@ -349,7 +349,10 @@
     "error": {
       "title": "Algo deu errado",
       "description": "Não foi possível carregar esta página. Tente de novo ou volte para o início.",
-      "retry": "Tentar de novo"
+      "retry": "Tentar de novo",
+      "staleTitle": "O Globetrot foi atualizado",
+      "staleDescription": "Saiu uma versão nova enquanto esta página estava aberta. Recarregue para continuar de onde parou.",
+      "reload": "Recarregar"
     },
     "plan": {
       "trial": "{days, plural, one {Último dia da sua semana grátis} other {Faltam # dias da sua semana grátis}}",
@@ -1585,7 +1588,10 @@
     "toHome": "Página inicial",
     "errorTitle": "Algo deu errado",
     "errorBody": "Não foi culpa sua. Tente de novo ou volte à página inicial.",
-    "retry": "Tentar de novo"
+    "retry": "Tentar de novo",
+    "staleTitle": "O Globetrot foi atualizado",
+    "staleBody": "Saiu uma versão nova enquanto esta página estava aberta. Recarregue para continuar de onde parou.",
+    "reload": "Recarregar"
   },
   "plans": {
     "billing": "Período de cobrança",
