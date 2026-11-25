@@ -739,7 +739,23 @@
       "spotsGuideTitle": "What will you do in {place}?",
       "spotsGuideStay": "Where you sleep: the hotel or flat",
       "spotsGuideFood": "Where you want to eat",
-      "spotsGuideSight": "What you must not miss"
+      "spotsGuideSight": "What you must not miss",
+      "kinds": {
+        "stay": "Stay",
+        "food": "Food",
+        "sight": "Sight",
+        "shop": "Shopping",
+        "transport": "Transport",
+        "other": "Other"
+      },
+      "kindPick": "What kind of place?",
+      "kindOf": "Kind of {name}",
+      "addSpotKind": "Add a place ({kind})…",
+      "noPlace": "not on the map yet",
+      "nearbyTitle": "Nearby, on the map",
+      "nearbyAddHint": ", add with its place on the map",
+      "markOnMap": "Mark on the map",
+      "pinnedSpot": "Marked place"
     },
     "visa": {
       "kicker": "GLOBETROT VISA",
@@ -763,7 +779,10 @@
     "pinHintFirst": "Tap a pin to see and plan that place: where you sleep, eat and what to see.",
     "pinHintOk": "Got it",
     "layers": "Layers",
-    "layersClose": "Close"
+    "layersClose": "Close",
+    "spotPinned": "{name} is on the map.",
+    "spotPinHint": "Click the map where {name} is, in {place}. Esc cancels.",
+    "spotAria": "{name}, {kind}, in {place}"
   },
   "daysPage": {
     "title": "Days",

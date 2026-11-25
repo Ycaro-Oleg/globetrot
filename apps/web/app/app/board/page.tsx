@@ -79,7 +79,7 @@ export default async function BoardPage() {
     note: stop.note ?? '',
     legMode: isLegMode(stop.legMode) ? stop.legMode : null,
     visited: stop.visited ?? false,
-    spots: (stop.spots ?? []).map((spot) => ({ ...spot })),
+    spots: (stop.spots ?? []).map((spot) => ({ ...spot, kind: spot.kind ?? 'sight' })),
     todos: (stop.todos ?? []).map((todo) => ({ ...todo })),
     photos: (stop.photos ?? []).map((photo) => ({ ...photo })),
   }));

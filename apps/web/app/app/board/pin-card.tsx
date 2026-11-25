@@ -12,14 +12,19 @@ import {
 import {
   ITEM_MAX,
   KIT_TABS,
+  SPOT_ICONS,
+  SPOT_KINDS,
+  spotKindOf,
   NOTE_MAX,
   SPOTS_MAX,
   PHOTOS_MAX,
   TODOS_MAX,
   type KitTab,
   type RouteStop,
+  type SpotKind,
   type StopSpot,
 } from './board-route';
+import type { NearbyPlace } from './map-canvas';
 import { PhotoPicker } from '../_components/photo-picker';
 import styles from './world-map.module.css';
 
@@ -51,6 +56,9 @@ export function PinCard({
   expanded = false,
   onToggleExpand,
   onDragStart,
+  nearby = null,
+  focusSpot = null,
+  onPinSpot,
   onTab,
   onChange,
   onShowSpot,
@@ -66,6 +74,12 @@ export function PinCard({
   onToggleExpand?: () => void;
   /** Starts dragging the card from its title bar (not from its buttons). */
   onDragStart?: (event: ReactPointerEvent<HTMLElement>) => void;
+  /** Real points of interest near the stop (from the map tiles), offered as spots with their place. */
+  nearby?: readonly NearbyPlace[] | null;
+  /** A spot to bring into view (its mini-pin was tapped). */
+  focusSpot?: number | null;
+  /** "Mark on the map": the next tap on the map places this spot. */
+  onPinSpot?: (draft: { name: string; kind: SpotKind }) => void;
   onTab: (tab: KitTab) => void;
   onChange: (change: Partial<RouteStop>) => void;
   onShowSpot: (spot: StopSpot) => void;
@@ -75,6 +89,12 @@ export function PinCard({
   const counts = kitCounts(stop);
   const [note, setNote] = useState(stop.note);
   const [spotDraft, setSpotDraft] = useState('');
+  const [spotKind, setSpotKind] = useState<SpotKind>('sight');
+  const spotInput = useRef<HTMLInputElement>(null);
+  const focusedRow = useRef<HTMLLIElement>(null);
+  useEffect(() => {
+    focusedRow.current?.scrollIntoView({ block: 'nearest' });
+  }, [focusSpot]);
   const [todoDraft, setTodoDraft] = useState('');
   const closeRef = useRef<HTMLButtonElement>(null);
   const noteRef = useRef(note);
@@ -111,10 +131,36 @@ export function PinCard({
     const text = spotDraft.trim().slice(0, ITEM_MAX);
     if (!text || stop.spots.length >= SPOTS_MAX) return;
     onChange({
-      spots: [...stop.spots, { name: text, latitude: null, longitude: null, done: false }],
+      spots: [
+        ...stop.spots,
+        { name: text, kind: spotKind, latitude: null, longitude: null, done: false },
+      ],
     });
     setSpotDraft('');
   };
+  /** A real place near the stop becomes a spot with its place on the map and a kind read from the map. */
+  const addNearby = (place: NearbyPlace) => {
+    if (stop.spots.length >= SPOTS_MAX) return;
+    onChange({
+      spots: [
+        ...stop.spots,
+        {
+          name: place.name.slice(0, ITEM_MAX),
+          kind: spotKindOf(place.kind),
+          latitude: place.latitude,
+          longitude: place.longitude,
+          done: false,
+        },
+      ],
+    });
+    setSpotDraft('');
+  };
+  const taken = new Set(stop.spots.map((spot) => spot.name.toLowerCase()));
+  const query = spotDraft.trim().toLowerCase();
+  const suggestions = (nearby ?? [])
+    .filter((place) => !taken.has(place.name.toLowerCase()))
+    .filter((place) => (query ? place.name.toLowerCase().includes(query) : true))
+    .slice(0, 5);
   const addTodo = (event: FormEvent) => {
     event.preventDefault();
     const text = todoDraft.trim().slice(0, ITEM_MAX);
@@ -210,74 +256,165 @@ export function PinCard({
           <>
             {stop.spots.length ? (
               <ul className={styles.checkList}>
-                {stop.spots.map((spot, i) => (
-                  <li key={`${spot.name}-${i}`} data-done={spot.done}>
-                    <input
-                      type="checkbox"
-                      id={`spot-${i}`}
-                      checked={spot.done}
-                      onChange={() =>
-                        onChange({
-                          spots: stop.spots.map((item, j) =>
-                            j === i ? { ...item, done: !item.done } : item,
-                          ),
-                        })
-                      }
-                    />
-                    <label htmlFor={`spot-${i}`}>
-                      <span className="sr-only">{t('visited')}: </span>
-                      {spot.name}
-                    </label>
-                    {spot.latitude !== null && spot.longitude !== null ? (
+                {stop.spots.map((spot, i) => {
+                  const placed = spot.latitude !== null && spot.longitude !== null;
+                  return (
+                    <li
+                      key={`${spot.name}-${i}`}
+                      data-done={spot.done}
+                      data-focus={focusSpot === i || undefined}
+                      ref={focusSpot === i ? focusedRow : undefined}
+                    >
+                      <input
+                        type="checkbox"
+                        id={`spot-${i}`}
+                        checked={spot.done}
+                        onChange={() =>
+                          onChange({
+                            spots: stop.spots.map((item, j) =>
+                              j === i ? { ...item, done: !item.done } : item,
+                            ),
+                          })
+                        }
+                      />
+                      <span className={styles.spotIcon} data-kind={spot.kind} aria-hidden="true">
+                        {SPOT_ICONS[spot.kind]}
+                      </span>
+                      <div className={styles.spotMain}>
+                        <label htmlFor={`spot-${i}`}>
+                          <span className="sr-only">{t('visited')}: </span>
+                          {spot.name}
+                        </label>
+                        <div className={styles.spotMeta}>
+                          <select
+                            className={styles.spotKind}
+                            aria-label={t('kindOf', { name: spot.name })}
+                            value={spot.kind}
+                            onChange={(event) =>
+                              onChange({
+                                spots: stop.spots.map((item, j) =>
+                                  j === i
+                                    ? { ...item, kind: event.target.value as SpotKind }
+                                    : item,
+                                ),
+                              })
+                            }
+                          >
+                            {SPOT_KINDS.map((kind) => (
+                              <option key={kind} value={kind}>
+                                {t(`kinds.${kind}`)}
+                              </option>
+                            ))}
+                          </select>
+                          {placed ? null : (
+                            <small className={styles.spotNoPlace}>{t('noPlace')}</small>
+                          )}
+                        </div>
+                      </div>
+                      {placed ? (
+                        <button
+                          type="button"
+                          className={styles.spotGo}
+                          aria-label={t('showSpot', { name: spot.name })}
+                          onClick={() => onShowSpot(spot)}
+                        >
+                          ⌖
+                        </button>
+                      ) : null}
                       <button
                         type="button"
-                        className={styles.spotGo}
-                        aria-label={t('showSpot', { name: spot.name })}
-                        onClick={() => onShowSpot(spot)}
+                        className={styles.itemRemove}
+                        aria-label={t('removeItem', { name: spot.name })}
+                        onClick={() => onChange({ spots: stop.spots.filter((_, j) => j !== i) })}
                       >
-                        ⌖
+                        ×
                       </button>
-                    ) : null}
-                    <button
-                      type="button"
-                      className={styles.itemRemove}
-                      aria-label={t('removeItem', { name: spot.name })}
-                      onClick={() => onChange({ spots: stop.spots.filter((_, j) => j !== i) })}
-                    >
-                      ×
-                    </button>
-                  </li>
-                ))}
+                    </li>
+                  );
+                })}
               </ul>
             ) : (
-              // What belongs here, said plainly: the three questions every stop answers.
+              // What belongs here, said plainly; each line picks that kind for the next spot.
               <div className={styles.cardGuide}>
                 <strong>{t('spotsGuideTitle', { place: name })}</strong>
                 <ul>
-                  <li>
-                    <span aria-hidden="true">🛏</span> {t('spotsGuideStay')}
-                  </li>
-                  <li>
-                    <span aria-hidden="true">🍽</span> {t('spotsGuideFood')}
-                  </li>
-                  <li>
-                    <span aria-hidden="true">📍</span> {t('spotsGuideSight')}
-                  </li>
+                  {(
+                    [
+                      ['stay', 'spotsGuideStay'],
+                      ['food', 'spotsGuideFood'],
+                      ['sight', 'spotsGuideSight'],
+                    ] as const
+                  ).map(([kind, key]) => (
+                    <li key={kind}>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSpotKind(kind);
+                          spotInput.current?.focus();
+                        }}
+                      >
+                        <span aria-hidden="true">{SPOT_ICONS[kind]}</span> {t(key)}
+                      </button>
+                    </li>
+                  ))}
                 </ul>
               </div>
             )}
+            <div className={styles.kindPicker} role="radiogroup" aria-label={t('kindPick')}>
+              {SPOT_KINDS.map((kind) => (
+                <button
+                  key={kind}
+                  type="button"
+                  role="radio"
+                  aria-checked={spotKind === kind}
+                  onClick={() => setSpotKind(kind)}
+                >
+                  <span aria-hidden="true">{SPOT_ICONS[kind]}</span> {t(`kinds.${kind}`)}
+                </button>
+              ))}
+            </div>
             <form className={styles.addRow} onSubmit={addSpot}>
               <input
+                ref={spotInput}
                 value={spotDraft}
                 maxLength={ITEM_MAX}
                 onChange={(event) => setSpotDraft(event.target.value)}
-                placeholder={t('addSpot')}
+                placeholder={t('addSpotKind', { kind: t(`kinds.${spotKind}`).toLowerCase() })}
                 aria-label={t('addSpot')}
               />
               <button type="submit" aria-label={t('addSpot')}>
                 +
               </button>
             </form>
+            {suggestions.length ? (
+              <div className={styles.spotSuggest}>
+                <span className={styles.spotSuggestTitle}>{t('nearbyTitle')}</span>
+                <ul>
+                  {suggestions.map((place) => (
+                    <li key={`${place.name}-${place.longitude}`}>
+                      <button type="button" onClick={() => addNearby(place)}>
+                        <span aria-hidden="true">{SPOT_ICONS[spotKindOf(place.kind)]}</span>
+                        <span>{place.name}</span>
+                        <small>{t(`kinds.${spotKindOf(place.kind)}`)}</small>
+                        <span className="sr-only">{t('nearbyAddHint')}</span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+            {onPinSpot ? (
+              <button
+                type="button"
+                className={styles.markOnMap}
+                onClick={() => {
+                  onPinSpot({ name: spotDraft.trim().slice(0, ITEM_MAX), kind: spotKind });
+                  setSpotDraft('');
+                }}
+              >
+                ⌖ {t('markOnMap')}
+              </button>
+            ) : null}
             <small className={styles.cardHint}>{t('spotsHint')}</small>
           </>
         ) : null}

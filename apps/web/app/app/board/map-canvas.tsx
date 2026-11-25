@@ -11,10 +11,12 @@ import type {
 import {
   arcBetween,
   distanceKm,
+  SPOT_ICONS,
   LEG_ICONS,
   partialLine,
   type KitTab,
   type RouteStop,
+  type SpotKind,
 } from './board-route';
 import { PIN, relabel, restyle, styleCountries, type MapStyleName } from './map-styles';
 import styles from './world-map.module.css';
@@ -67,12 +69,16 @@ type Props = {
     tip: (name: string) => string;
     /** How many things a stop holds, for the pin's name: "5 things". */
     items: (count: number) => string;
+    /** A mini-pin's name: "Lake Ashi, sight, in Hakone". */
+    spot: (name: string, kind: SpotKind, place: string) => string;
     pencilled: (name: string) => string;
     home: (name: string) => string;
   };
   controllerRef: MutableRefObject<BoardMapController | null>;
   onSelect: (id: string) => void;
   onOpenCard: (id: string, tab: KitTab | null) => void;
+  /** A mini-pin was tapped: open its stop's card on that spot. */
+  onOpenSpot: (stopId: string, index: number) => void;
   onPin: (longitude: number, latitude: number, name: string | null) => void;
   onZoom: (zoom: number) => void;
   onMove: () => void;
@@ -133,6 +139,7 @@ export function MapCanvas(props: Props) {
   const markerClass = useRef<typeof MapLibreMarker | null>(null);
   const pins = useRef(new Map<string, PinMarker>());
   const legBadges = useRef<MapLibreMarker[]>([]);
+  const spotMarks = useRef<MapLibreMarker[]>([]);
   const pencilMarks = useRef<MapLibreMarker[]>([]);
   const homeMark = useRef<MapLibreMarker | null>(null);
   const segments = useRef(
@@ -381,23 +388,53 @@ export function MapCanvas(props: Props) {
     });
   };
 
+  /**
+   * Every stop's spots that have a place, as mini-pins with the mark of their kind. They show from z11 (the
+   * city pin's badge counts them before that) and add their name from z13.5; a tap opens the card on that spot.
+   */
   const updateSpots = () => {
     const map = mapRef.current;
-    const source = map?.getSource('gt-spots') as GeoJSONSource | undefined;
-    if (!source) return;
-    const stop = latest.current.stops.find(
-      (candidate) => candidate.id === latest.current.selectedId,
-    );
-    source.setData({
-      type: 'FeatureCollection',
-      features: (stop?.spots ?? [])
-        .filter((spot) => spot.latitude !== null && spot.longitude !== null)
-        .map((spot) => ({
-          type: 'Feature' as const,
-          properties: { name: spot.name, done: spot.done },
-          geometry: { type: 'Point' as const, coordinates: [spot.longitude!, spot.latitude!] },
-        })),
-    });
+    const Marker = markerClass.current;
+    spotMarks.current.forEach((marker) => marker.remove());
+    spotMarks.current = [];
+    if (!map || !Marker) return;
+    const { stops, selectedId, text } = latest.current;
+    for (const stop of stops) {
+      stop.spots.forEach((spot, index) => {
+        if (spot.latitude === null || spot.longitude === null) return;
+        const el = document.createElement('button');
+        el.type = 'button';
+        el.className = styles.spotPin ?? '';
+        el.dataset.kind = spot.kind;
+        if (spot.done) el.dataset.done = 'true';
+        if (stop.id === selectedId) el.dataset.current = 'true';
+        el.setAttribute('aria-label', text.spot(spot.name, spot.kind, stop.label));
+        const icon = document.createElement('span');
+        icon.className = styles.spotPinIcon ?? '';
+        icon.setAttribute('aria-hidden', 'true');
+        icon.textContent = SPOT_ICONS[spot.kind];
+        const label = document.createElement('span');
+        label.className = styles.spotPinLabel ?? '';
+        label.setAttribute('aria-hidden', 'true');
+        label.textContent = spot.name;
+        el.append(icon, label);
+        el.addEventListener('click', (event) => {
+          event.stopPropagation();
+          latest.current.onOpenSpot(stop.id, index);
+        });
+        spotMarks.current.push(
+          new Marker({ element: el, anchor: 'center' })
+            .setLngLat([spot.longitude, spot.latitude])
+            .addTo(map),
+        );
+      });
+    }
+  };
+
+  /** How close the map is, for the mini-pins: hidden far away, marks near, marks and names close up. */
+  const spotScale = (zoom: number) => {
+    if (host.current)
+      host.current.dataset.spots = zoom < 11 ? 'off' : zoom < 13.5 ? 'marks' : 'names';
   };
 
   const tripCountries = () => [
@@ -567,38 +604,6 @@ export function MapCanvas(props: Props) {
             },
             firstSymbol,
           );
-          map.addSource('gt-spots', { type: 'geojson', data: empty });
-          map.addLayer({
-            id: 'gt-spots-dot',
-            type: 'circle',
-            source: 'gt-spots',
-            minzoom: 9,
-            paint: {
-              'circle-radius': ['interpolate', ['linear'], ['zoom'], 9, 3, 14, 7],
-              'circle-color': ['case', ['get', 'done'], '#10B981', '#FFFFFF'],
-              'circle-stroke-color': '#0F172A',
-              'circle-stroke-width': 2,
-            },
-          });
-          map.addLayer({
-            id: 'gt-spots-label',
-            type: 'symbol',
-            source: 'gt-spots',
-            minzoom: 10.5,
-            layout: {
-              'text-field': ['get', 'name'],
-              'text-font': ['Noto Sans Bold'],
-              'text-size': 12,
-              'text-offset': [0, 1.1],
-              'text-anchor': 'top',
-              'text-optional': true,
-            },
-            paint: {
-              'text-color': '#0F172A',
-              'text-halo-color': '#FFFFFF',
-              'text-halo-width': 1.6,
-            },
-          });
           poiLayers.current = restyle(map, latest.current.styleName);
           relabel(map, latest.current.locale);
           // Country fills come from a small Natural Earth file served by the app (public domain).
@@ -730,6 +735,7 @@ export function MapCanvas(props: Props) {
         });
         map.on('moveend', updateLabels);
         map.on('zoom', () => {
+          spotScale(map!.getZoom());
           latest.current.onZoom(map!.getZoom());
           updateLabels();
         });
@@ -1014,7 +1020,13 @@ export function MapCanvas(props: Props) {
 
   return (
     <div className={styles.mapHost}>
-      <div ref={host} className={styles.mapCanvas} role="region" aria-label={props.text.map} />
+      <div
+        ref={host}
+        className={styles.mapCanvas}
+        role="region"
+        aria-label={props.text.map}
+        data-spots="off"
+      />
       {!ready && !error ? <div className={styles.mapLoading}>{props.text.loading}</div> : null}
       {error ? <div className={styles.mapError}>{props.text.error}</div> : null}
     </div>
