@@ -1079,7 +1079,7 @@
     "restLate": "nesse ritmo, só em {ready}. Guarde {needed} por mês para ir em {month}.",
     "restAlready": "você já tem o suficiente para {place}.",
     "restSetMonthly": "diga quanto consegue guardar por mês para ver quando dá para ir.",
-    "answerSub": "≈ {estimate} para {nights, plural, one {# noite} other {# noites}} · faltam {left}",
+    "answerSub": "≈ {estimate} para {nights, plural, one {# noite} other {# noites}} {done, select, yes {· tudo guardado} other {· faltam {left}}}",
     "summary": "Resumo da viagem",
     "yourTrip": "Sua viagem",
     "from": "Saída",

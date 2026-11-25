@@ -6,12 +6,14 @@ import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import { useEffect, useRef, useState, useTransition, type FormEvent } from 'react';
 import { track } from '../../lib/analytics';
+import { confetti } from '../../lib/confetti';
 import { livePlan, parseAmount } from '../app/budget/budget-plan';
 import { SITE_NAME } from '../site';
 import { currencyOptions } from '../settings/options';
 import { finishOnboarding, type OnboardingPlace } from './actions';
 import { CityPicker } from './city-picker';
 import { PipIntro } from './pip-intro';
+import { TripVisual } from './trip-visual';
 import { nightsOf, TripDates, type TripRange } from './trip-dates';
 import styles from './onboarding.module.css';
 
@@ -34,7 +36,10 @@ export function OnboardingFlow({
   homePoint = null,
   pipOptIn: initialPip,
   draft = null,
+  land = '',
 }: {
+  /** The world's countries as one SVG path (drawn on the server), for the live trip map. */
+  land?: string;
   currency: string;
   homeCity: string;
   homePoint?: { latitude: number; longitude: number } | null;
@@ -66,6 +71,7 @@ export function OnboardingFlow({
   const [currencyPicked, setCurrencyPicked] = useState(false);
   const [direction, setDirection] = useState(1);
   const content = useRef<HTMLDivElement>(null);
+  const answerCard = useRef<HTMLDivElement>(null);
   const [estimate, setEstimate] = useState(draft?.cost ?? '');
   const [saved, setSaved] = useState(draft?.saved ?? '0');
   const [monthly, setMonthly] = useState(draft?.monthly ?? '300');
@@ -106,6 +112,31 @@ export function OnboardingFlow({
       cancelled = true;
     };
   }, [step, direction]);
+
+  // The answer lands with a pop; a "yes" throws confetti.
+  useEffect(() => {
+    const card = answerCard.current;
+    if (step !== LAST || !card) return;
+    if (
+      document.documentElement.dataset.motion === 'reduced' ||
+      window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+    )
+      return;
+    void import('gsap').then(({ gsap }) => {
+      gsap.fromTo(
+        card,
+        { scale: 0.9, opacity: 0 },
+        { scale: 1, opacity: 1, duration: 0.6, delay: 0.25, ease: 'back.out(2)' },
+      );
+    });
+    if (card.dataset.ok !== undefined) {
+      const timer = window.setTimeout(
+        () => void confetti(card, { x: card.clientWidth / 2, y: 30 }),
+        600,
+      );
+      return () => window.clearTimeout(timer);
+    }
+  }, [step]);
 
   const chooseDestination = (place: OnboardingPlace | null) => {
     setDestination(place);
@@ -371,7 +402,12 @@ export function OnboardingFlow({
           ) : null}
 
           {step === LAST && answer ? (
-            <div className={styles.answer} data-ok={answer.ok || undefined} aria-live="polite">
+            <div
+              ref={answerCard}
+              className={styles.answer}
+              data-ok={answer.ok || undefined}
+              aria-live="polite"
+            >
               <p className={styles.sentence}>
                 <span className={styles.lead}>{answer.lead}</span> {answer.rest}
               </p>
@@ -380,6 +416,7 @@ export function OnboardingFlow({
                   estimate: fmt(estimateMoney!),
                   nights,
                   left: fmt(answer.plan.left),
+                  done: answer.plan.left.amountMinor === 0n ? 'yes' : 'no',
                 })}
               </p>
             </div>
@@ -421,7 +458,26 @@ export function OnboardingFlow({
       </form>
 
       <aside className={styles.visual} aria-label={t('summary')}>
-        <div className={styles.summary}>
+        {land ? (
+          <TripVisual
+            land={land}
+            home={
+              home && home.latitude !== null && home.longitude !== null
+                ? { name: home.name, latitude: home.latitude, longitude: home.longitude }
+                : null
+            }
+            destination={
+              destination && destination.latitude !== null && destination.longitude !== null
+                ? {
+                    name: destination.name,
+                    latitude: destination.latitude,
+                    longitude: destination.longitude,
+                  }
+                : null
+            }
+          />
+        ) : null}
+        <div className={styles.summary} data-covers-map>
           <span className={styles.summaryKicker}>{t('yourTrip')}</span>
           <dl>
             <div>

@@ -8,6 +8,7 @@ import { setScaffoldLocale } from './actions';
 import { demoMap } from '../lib/demo-map';
 import { AnswerCalculator } from './landing-calculator';
 import { DemoMapBoard } from './landing-demo-map';
+import { HeroRoutes } from './landing-hero-routes';
 import { LandingPip } from './landing-pip';
 import { LandingReveal } from './landing-reveal';
 import { PipDemo, Pricing } from './landing-interactive';
@@ -172,6 +173,7 @@ export default function HomePage() {
             fetchPriority="high"
             decoding="async"
           />
+          <HeroRoutes />
         </div>
         <AnswerCalculator signupHref="/signup" />
       </section>
