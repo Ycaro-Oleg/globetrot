@@ -185,15 +185,6 @@
   font-size: 14px;
 }
 
-.tools {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
-  gap: 8px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
 .tool {
   display: flex;
   align-items: center;

@@ -164,11 +164,14 @@ function Board({
         ? t('hours', { hours: String(minutes / 60) })
         : t('hoursMinutes', { hours: Math.floor(minutes / 60), minutes: minutes % 60 });
   const [addingIdea, setAddingIdea] = useState<string | null>(null);
+  // Someone adding ideas one after another keeps them in view, even after the first one fills the plan.
+  const [ideasOpen, setIdeasOpen] = useState(false);
 
   /** Puts an idea in "No day" with its typical time, and takes it off the ideas. */
   const addIdea = (stopId: string, idea: DayIdea) => {
     const key = `${stopId}:${idea.name}`;
     setAddingIdea(key);
+    setIdeasOpen(true);
     void addPlace(tripId, { name: idea.name, destinationId: stopId, minutes: idea.minutes }).then(
       (plan) => {
         setAddingIdea(null);
@@ -190,6 +193,7 @@ function Board({
     );
   };
   const addButton = useRef<HTMLButtonElement>(null);
+  const hasIdeas = Boolean(ideas && ideas.stops.some((stop) => stop.ideas.length > 0));
   const board = buildBoard(days, stops, places);
   const stopName = (id: string | null) => stops.find((stop) => stop.id === id)?.name ?? null;
   const hours = (value: number) =>
@@ -358,6 +362,37 @@ function Board({
     );
   };
 
+  const ideaGroups = ideas
+    ? ideas.stops
+        .filter((stop) => stop.ideas.length > 0)
+        .map((stop) => (
+          <div key={stop.stopId} className={styles.ideaGroup}>
+            <h3>{t('ideasFor', { stop: stopName(stop.stopId) ?? t('noStop') })}</h3>
+            <ul>
+              {stop.ideas.map((idea) => (
+                <li key={idea.name}>
+                  <button
+                    type="button"
+                    className={styles.idea}
+                    disabled={addingIdea !== null}
+                    onClick={() => addIdea(stop.stopId, idea)}
+                  >
+                    <span aria-hidden="true">+</span> {idea.name}
+                    <span className={styles.ideaTime}>{duration(idea.minutes)}</span>
+                    <span className="sr-only">{t('ideaAddHint')}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+            <p className={styles.ideaSource}>
+              {stop.source === 'provider' && stop.attribution
+                ? stop.attribution
+                : t('ideasBuiltIn')}
+            </p>
+          </div>
+        ))
+    : null;
+
   return (
     <section className={styles.page}>
       <header className={styles.header}>
@@ -377,14 +412,16 @@ function Board({
             {t('calendar')}
           </button>
         ) : null}
-        <button
-          ref={addButton}
-          type="button"
-          className={styles.cta}
-          onClick={() => setAdding(true)}
-        >
-          + {t('addPlace')}
-        </button>
+        {places.length > 0 ? (
+          <button
+            ref={addButton}
+            type="button"
+            className={styles.cta}
+            onClick={() => setAdding(true)}
+          >
+            + {t('addPlace')}
+          </button>
+        ) : null}
       </header>
       {startDate === null ? (
         <div className={styles.dateBanner}>
@@ -393,58 +430,48 @@ function Board({
         </div>
       ) : null}
       {places.length === 0 ? (
+        // One place to begin: the ideas are the first step, and adding your own is right below them.
         <div className={styles.start}>
           <h2>{t('startTitle', { days: days.length })}</h2>
-          <p>{t('startText')}</p>
+          <p>{hasIdeas ? t('startPick') : t('startText')}</p>
+          {hasIdeas ? ideaGroups : null}
           <div className={styles.startActions}>
-            <button type="button" className={styles.cta} onClick={() => setAdding(true)}>
-              + {t('startCta')}
+            <button
+              ref={addButton}
+              type="button"
+              className={hasIdeas ? styles.ghost : styles.cta}
+              onClick={() => setAdding(true)}
+            >
+              + {hasIdeas ? t('startOwn') : t('startCta')}
             </button>
             {pipEnabled ? <AskPipLink topic="days" /> : null}
           </div>
         </div>
       ) : (
-        <p className={styles.how}>
-          <strong>{t('how')}</strong> {t('howText')}
-        </p>
+        <>
+          <p className={styles.how}>
+            <strong>{t('how')}</strong> {t('howText')}
+          </p>
+          {hasIdeas ? (
+            <details
+              className={styles.moreIdeas}
+              open={ideasOpen}
+              onToggle={(event) => setIdeasOpen(event.currentTarget.open)}
+            >
+              <summary>{t('ideasTitle')}</summary>
+              {ideaGroups}
+            </details>
+          ) : null}
+        </>
       )}
 
-      {ideas && ideas.stops.some((stop) => stop.ideas.length > 0) ? (
-        <section className={styles.ideas} aria-labelledby="ideas-title">
-          <h2 id="ideas-title">{t('ideasTitle')}</h2>
-          {ideas.stops
-            .filter((stop) => stop.ideas.length > 0)
-            .map((stop) => (
-              <div key={stop.stopId} className={styles.ideaGroup}>
-                <h3>{t('ideasFor', { stop: stopName(stop.stopId) ?? t('noStop') })}</h3>
-                <ul>
-                  {stop.ideas.map((idea) => (
-                    <li key={idea.name}>
-                      <button
-                        type="button"
-                        className={styles.idea}
-                        disabled={addingIdea !== null}
-                        onClick={() => addIdea(stop.stopId, idea)}
-                      >
-                        <span aria-hidden="true">+</span> {idea.name}
-                        <span className={styles.ideaTime}>{duration(idea.minutes)}</span>
-                        <span className="sr-only">{t('ideaAddHint')}</span>
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-                <p className={styles.ideaSource}>
-                  {stop.source === 'provider' && stop.attribution
-                    ? stop.attribution
-                    : t('ideasBuiltIn')}
-                </p>
-              </div>
-            ))}
-        </section>
-      ) : null}
-
-      {/* Scrolls sideways on wide screens: focusable, so the keyboard can scroll it too. */}
-      <div className={styles.board} role="region" aria-label={t('title')} tabIndex={0}>
+      {/* "No day" beside a grid of every day: nothing hides off to the side. */}
+      <div
+        className={styles.board}
+        role="region"
+        aria-label={t('title')}
+        data-dragging={dragging ? '' : undefined}
+      >
         <section
           className={styles.column}
           data-tray=""
@@ -465,59 +492,67 @@ function Board({
           ) : null}
         </section>
 
-        {board.days.map((day) => (
-          <section
-            key={day.index}
-            className={styles.column}
-            data-over={over === `d${day.index}` || undefined}
-            aria-labelledby={`day-${day.index}`}
-            {...zone(`d${day.index}`, day.index)}
-          >
-            <div className={styles.columnHead}>
-              <div className={styles.columnTitle}>
-                <h2 id={`day-${day.index}`}>{t('dayLabel', { index: day.index })}</h2>
-                {day.stop ? <span className={styles.stopChip}>{day.stop.name}</span> : null}
-              </div>
-              <span className={styles.columnSub}>
-                {day.date
-                  ? formatLocalDate(day.date, locale, {
-                      weekday: 'short',
-                      day: 'numeric',
-                      month: 'short',
-                    })
-                  : t('noDate')}
-              </span>
-              <div className={styles.load} data-load={day.load}>
-                <span aria-hidden="true">
-                  <span
-                    style={{ width: `${Math.min(100, (day.hours / LOAD_SCALE_HOURS) * 100)}%` }}
-                  />
+        <div className={styles.days}>
+          {board.days.map((day) => (
+            <section
+              key={day.index}
+              className={styles.column}
+              data-over={over === `d${day.index}` || undefined}
+              aria-labelledby={`day-${day.index}`}
+              {...zone(`d${day.index}`, day.index)}
+            >
+              <div className={styles.columnHead}>
+                <div className={styles.columnTitle}>
+                  <h2 id={`day-${day.index}`}>{t('dayLabel', { index: day.index })}</h2>
+                  {day.stop ? <span className={styles.stopChip}>{day.stop.name}</span> : null}
+                </div>
+                <span className={styles.columnSub}>
+                  {day.date
+                    ? formatLocalDate(day.date, locale, {
+                        weekday: 'short',
+                        day: 'numeric',
+                        month: 'short',
+                      })
+                    : t('noDate')}
                 </span>
-                <span>
-                  {hours(day.hours)} · {t(day.load)}
-                </span>
+                {day.hours > 0 ? (
+                  <div className={styles.load} data-load={day.load}>
+                    <span aria-hidden="true">
+                      <span
+                        style={{ width: `${Math.min(100, (day.hours / LOAD_SCALE_HOURS) * 100)}%` }}
+                      />
+                    </span>
+                    <span>
+                      {hours(day.hours)} · {t(day.load)}
+                    </span>
+                  </div>
+                ) : null}
+                {day.departure ? (
+                  // The last day: the person leaves, so only the morning is free. Never a block.
+                  <p className={styles.departure}>{t('departure')}</p>
+                ) : null}
+                {day.travel ? (
+                  <p className={styles.travel}>
+                    →{' '}
+                    {t('travel', {
+                      mode: t(
+                        `legs.${(LEGS as readonly string[]).includes(day.travel.mode) ? day.travel.mode : 'other'}`,
+                      ),
+                      from: day.travel.from,
+                      to: day.travel.to,
+                    })}
+                  </p>
+                ) : null}
               </div>
-              {day.departure ? (
-                // The last day: the person leaves, so only the morning is free. Never a block.
-                <p className={styles.departure}>{t('departure')}</p>
-              ) : null}
-              {day.travel ? (
-                <p className={styles.travel}>
-                  →{' '}
-                  {t('travel', {
-                    mode: t(
-                      `legs.${(LEGS as readonly string[]).includes(day.travel.mode) ? day.travel.mode : 'other'}`,
-                    ),
-                    from: day.travel.from,
-                    to: day.travel.to,
-                  })}
+              {day.places.map((place) => card(place, day.index, day.stopId))}
+              {day.places.length === 0 ? (
+                <p className={styles.empty} data-free="">
+                  {dragging ? t('dropHere') : t('freeDay')}
                 </p>
               ) : null}
-            </div>
-            {day.places.map((place) => card(place, day.index, day.stopId))}
-            {day.places.length === 0 ? <p className={styles.empty}>{t('dropHere')}</p> : null}
-          </section>
-        ))}
+            </section>
+          ))}
+        </div>
       </div>
 
       {adding ? (

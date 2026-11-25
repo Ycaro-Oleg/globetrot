@@ -267,20 +267,23 @@ export default async function TripsPage({
         <section className={styles.listSection} aria-labelledby="trip-list-title">
           <div className={styles.sectionHeader}>
             <h2 id="trip-list-title">{t('yourTrips')}</h2>
-            <span className={styles.tripCount}>{filtered.length}</span>
+            {trips.length > 0 ? <span className={styles.tripCount}>{filtered.length}</span> : null}
           </div>
-          <nav className={styles.filters} aria-label={t('filterLabel')}>
-            {FILTERS.map((filter) => (
-              <Link
-                key={filter}
-                href={filter === 'all' ? '/app/trips' : `/app/trips?filter=${filter}`}
-                aria-current={selectedFilter === filter ? 'page' : undefined}
-                className={styles.filter}
-              >
-                {t(`filter.${filter}`)}
-              </Link>
-            ))}
-          </nav>
+          {/* Filters only help once there is something to sort: not for none or one trip. */}
+          {trips.length > 1 || selectedFilter !== 'all' ? (
+            <nav className={styles.filters} aria-label={t('filterLabel')}>
+              {FILTERS.map((filter) => (
+                <Link
+                  key={filter}
+                  href={filter === 'all' ? '/app/trips' : `/app/trips?filter=${filter}`}
+                  aria-current={selectedFilter === filter ? 'page' : undefined}
+                  className={styles.filter}
+                >
+                  {t(`filter.${filter}`)}
+                </Link>
+              ))}
+            </nav>
+          ) : null}
 
           {error ? (
             <div className={styles.emptyState} role="alert">
@@ -351,14 +354,10 @@ export default async function TripsPage({
                   {t('clearFilters')}
                 </Link>
               ) : (
-                <>
-                  <Link href="/onboarding" className={styles.primaryAction}>
-                    {t('planFirst')}
-                  </Link>
-                  <a href="#create-trip-form" className={styles.secondaryAction}>
-                    {t('create')}
-                  </a>
-                </>
+                // One way in from here; a blank trip is the "Create trip" button above.
+                <Link href="/onboarding" className={styles.primaryAction}>
+                  {t('planFirst')}
+                </Link>
               )}
             </div>
           )}

@@ -818,7 +818,10 @@
     "ideaAddHint": ", add to “No day”",
     "calendar": "Add to calendar",
     "calendarSummary": "Day {index} · {stop} — {trip}",
-    "calendarDone": "Calendar file ready: open it to add the days to your calendar."
+    "calendarDone": "Calendar file ready: open it to add the days to your calendar.",
+    "startPick": "Start with one of these: one tap puts it in “No day”, and you choose its day after.",
+    "startOwn": "Add another place",
+    "freeDay": "Free day"
   },
   "budgetPage": {
     "title": "Budget & savings",
@@ -1534,14 +1537,6 @@
       "ready": "You have it all saved.",
       "by": "Saved up by {month} at your current pace.",
       "notYet": "Not yet: set a monthly amount in the budget."
-    },
-    "toolsTitle": "This trip",
-    "tools": {
-      "board": "Map",
-      "days": "Days",
-      "budget": "Budget",
-      "lists": "Lists",
-      "pip": "Ask Pip"
     },
     "archive": "Archive this trip",
     "archiveHint": "Hides it from your list; you can restore it.",
