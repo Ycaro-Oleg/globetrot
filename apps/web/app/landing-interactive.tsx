@@ -19,51 +19,6 @@ export function PipDemo() {
   const [decisions, setDecisions] = useState<Decision[]>(['pending', 'pending', 'pending']);
   const rows = useRef<(HTMLLIElement | null)[]>([]);
 
-  const celebrate = async (row: HTMLElement, button: HTMLElement | null) => {
-    if (!motionAllowed()) return;
-    const { gsap } = await import('gsap');
-    gsap.fromTo(row, { scale: 0.97 }, { scale: 1, duration: 0.5, ease: 'back.out(3)' });
-    gsap.fromTo(
-      row,
-      { backgroundColor: '#d1fae5' },
-      {
-        backgroundColor: '#ffffff',
-        duration: 0.9,
-        ease: 'power1.out',
-        clearProps: 'backgroundColor',
-      },
-    );
-    // A little confetti from where the button was.
-    const origin = button?.getBoundingClientRect();
-    const box = row.getBoundingClientRect();
-    const x = origin ? origin.left - box.left + origin.width / 2 : box.width - 60;
-    const y = origin ? origin.top - box.top + origin.height / 2 : box.height / 2;
-    const colors = ['#f97316', '#2563eb', '#10b981', '#f59e0b', '#ec4899'];
-    for (let i = 0; i < 14; i++) {
-      const bit = document.createElement('span');
-      bit.className = styles.confetti!;
-      bit.style.left = `${x}px`;
-      bit.style.top = `${y}px`;
-      bit.style.background = colors[i % colors.length]!;
-      row.appendChild(bit);
-      gsap.to(bit, {
-        x: (Math.random() - 0.5) * 160,
-        y: -30 - Math.random() * 70,
-        rotate: Math.random() * 360,
-        opacity: 0,
-        duration: 0.9 + Math.random() * 0.4,
-        ease: 'power2.out',
-        onComplete: () => bit.remove(),
-      });
-    }
-  };
-
-  const shake = async (row: HTMLElement) => {
-    if (!motionAllowed()) return;
-    const { gsap } = await import('gsap');
-    gsap.fromTo(row, { x: -6 }, { x: 0, duration: 0.5, ease: 'elastic.out(1, 0.3)' });
-  };
-
   const decide = (index: number, decision: Decision, button: HTMLElement | null) => {
     setDecisions((current) => current.map((value, i) => (i === index ? decision : value)));
     pipReact(decision === 'approved' ? 'celebrate' : 'unsure');
@@ -130,6 +85,52 @@ export function PipDemo() {
       <p className={styles.demoNote}>{t('pipDemoNote')}</p>
     </div>
   );
+}
+
+/** Approve: the row pops, flashes green and throws a little confetti from the button. */
+async function celebrate(row: HTMLElement, button: HTMLElement | null) {
+  if (!motionAllowed()) return;
+  const { gsap } = await import('gsap');
+  gsap.fromTo(row, { scale: 0.97 }, { scale: 1, duration: 0.5, ease: 'back.out(3)' });
+  gsap.fromTo(
+    row,
+    { backgroundColor: '#d1fae5' },
+    {
+      backgroundColor: '#ffffff',
+      duration: 0.9,
+      ease: 'power1.out',
+      clearProps: 'backgroundColor',
+    },
+  );
+  // A little confetti from where the button was.
+  const origin = button?.getBoundingClientRect();
+  const box = row.getBoundingClientRect();
+  const x = origin ? origin.left - box.left + origin.width / 2 : box.width - 60;
+  const y = origin ? origin.top - box.top + origin.height / 2 : box.height / 2;
+  const colors = ['#f97316', '#2563eb', '#10b981', '#f59e0b', '#ec4899'];
+  for (let i = 0; i < 14; i++) {
+    const bit = document.createElement('span');
+    bit.className = styles.confetti!;
+    bit.style.left = `${x}px`;
+    bit.style.top = `${y}px`;
+    bit.style.background = colors[i % colors.length]!;
+    row.appendChild(bit);
+    gsap.to(bit, {
+      x: (Math.random() - 0.5) * 160,
+      y: -30 - Math.random() * 70,
+      rotate: Math.random() * 360,
+      opacity: 0,
+      duration: 0.9 + Math.random() * 0.4,
+      ease: 'power2.out',
+      onComplete: () => bit.remove(),
+    });
+  }
+}
+
+async function shake(row: HTMLElement) {
+  if (!motionAllowed()) return;
+  const { gsap } = await import('gsap');
+  gsap.fromTo(row, { x: -6 }, { x: 0, duration: 0.5, ease: 'elastic.out(1, 0.3)' });
 }
 
 function motionAllowed() {

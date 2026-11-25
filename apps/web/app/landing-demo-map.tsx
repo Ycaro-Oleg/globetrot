@@ -277,18 +277,10 @@ export function DemoMapBoard({ map }: { map: DemoMap }) {
               style={{ left: `${city.left}%`, top: `${city.top}%` }}
               onClick={() => setSelected(selected === index ? null : index)}
               aria-pressed={selected === index}
-              aria-label={t('stop', {
-                n: index + 1,
-                city: cityName(stop.key),
-                nights: stop.nights,
-              })}
             >
-              <span className={styles.pinHead} aria-hidden="true">
-                {index + 1}
-              </span>
-              <span className={styles.pinName} aria-hidden="true">
-                {cityName(stop.key)}
-              </span>
+              <span className={styles.pinHead}>{index + 1}</span>
+              <span className={styles.pinName}>{cityName(stop.key)}</span>
+              <span className="sr-only">, {t('nights', { count: stop.nights })}</span>
             </button>
           );
         })}
