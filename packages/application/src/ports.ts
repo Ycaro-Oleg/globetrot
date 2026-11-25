@@ -5,6 +5,7 @@ import type {
   MotionChoice,
   ThemeChoice,
   SightKind,
+  SpotKind,
   SubscriptionState,
   TripStatus,
   TripVisibility,
@@ -165,6 +166,8 @@ export interface PhotoRecord {
 /** A place to see at a stop. */
 export interface StopSpotRecord {
   readonly name: string;
+  /** Missing on spots saved before kinds existed: read as a sight. */
+  readonly kind?: SpotKind;
   readonly latitude: number | null;
   readonly longitude: number | null;
   readonly done: boolean;

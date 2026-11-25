@@ -3449,6 +3449,17 @@
                                 "name": {
                                   "type": "string"
                                 },
+                                "kind": {
+                                  "type": "string",
+                                  "enum": [
+                                    "stay",
+                                    "food",
+                                    "sight",
+                                    "shop",
+                                    "transport",
+                                    "other"
+                                  ]
+                                },
                                 "latitude": {
                                   "type": [
                                     "number",
@@ -3467,6 +3478,7 @@
                               },
                               "required": [
                                 "name",
+                                "kind",
                                 "latitude",
                                 "longitude",
                                 "done"
@@ -3840,6 +3852,19 @@
                                 "maxLength": 120,
                                 "example": "Fushimi Inari"
                               },
+                              "kind": {
+                                "type": "string",
+                                "enum": [
+                                  "stay",
+                                  "food",
+                                  "sight",
+                                  "shop",
+                                  "transport",
+                                  "other"
+                                ],
+                                "default": "sight",
+                                "description": "What the spot is, for its mini-pin: stay (where you sleep), food, sight, shop, transport (a station or airport) or other. Defaults to sight."
+                              },
                               "latitude": {
                                 "type": [
                                   "number",
@@ -4018,6 +4043,17 @@
                                 "name": {
                                   "type": "string"
                                 },
+                                "kind": {
+                                  "type": "string",
+                                  "enum": [
+                                    "stay",
+                                    "food",
+                                    "sight",
+                                    "shop",
+                                    "transport",
+                                    "other"
+                                  ]
+                                },
                                 "latitude": {
                                   "type": [
                                     "number",
@@ -4036,6 +4072,7 @@
                               },
                               "required": [
                                 "name",
+                                "kind",
                                 "latitude",
                                 "longitude",
                                 "done"

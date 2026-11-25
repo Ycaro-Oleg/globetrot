@@ -16,17 +16,21 @@ import {
   distanceKm,
   HISTORY_LIMIT,
   isEditable,
+  ITEM_MAX,
   KIT_TABS,
   LEG_ICONS,
   MAX_NIGHTS,
   moveStop,
   newStop,
   routeBody,
+  SPOTS_MAX,
   stopDays,
   zoomLevel,
   type KitTab,
+  type SpotKind,
   type MapPlace,
   type RouteStop,
+  type StopSpot,
 } from './board-route';
 import {
   MapCanvas,
@@ -78,9 +82,9 @@ const SAMPLE = [
     latitude: 35.6812,
     nights: 4,
     spots: [
-      ['Senso-ji', 139.7967, 35.7148],
-      ['Shibuya Crossing', 139.7005, 35.6595],
-      ['teamLab Planets', 139.7845, 35.6491],
+      ['Senso-ji', 139.7967, 35.7148, 'sight'],
+      ['Shibuya Crossing', 139.7005, 35.6595, 'sight'],
+      ['teamLab Planets', 139.7845, 35.6491, 'sight'],
     ],
   },
   {
@@ -90,8 +94,8 @@ const SAMPLE = [
     latitude: 35.2324,
     nights: 1,
     spots: [
-      ['Lake Ashi', 139.0235, 35.2045],
-      ['Hakone Open-Air Museum', 139.0517, 35.2449],
+      ['Lake Ashi', 139.0235, 35.2045, 'sight'],
+      ['Hakone Open-Air Museum', 139.0517, 35.2449, 'sight'],
     ],
   },
   {
@@ -101,9 +105,9 @@ const SAMPLE = [
     latitude: 34.9858,
     nights: 4,
     spots: [
-      ['Fushimi Inari', 135.7727, 34.9671],
-      ['Kiyomizu-dera', 135.785, 34.9949],
-      ['Gion', 135.7752, 35.0037],
+      ['Fushimi Inari', 135.7727, 34.9671, 'sight'],
+      ['Kiyomizu-dera', 135.785, 34.9949, 'sight'],
+      ['Gion', 135.7752, 35.0037, 'sight'],
     ],
   },
   {
@@ -113,8 +117,8 @@ const SAMPLE = [
     latitude: 34.7025,
     nights: 2,
     spots: [
-      ['Dotonbori', 135.5013, 34.6687],
-      ['Osaka Castle', 135.5262, 34.6873],
+      ['Dotonbori', 135.5013, 34.6687, 'food'],
+      ['Osaka Castle', 135.5262, 34.6873, 'sight'],
     ],
   },
 ] as const;
@@ -196,6 +200,12 @@ export function WorldMapBoard({
   const [layersOpen, setLayersOpen] = useState(false);
   const [pinHint, setPinHint] = useState<{ x: number; y: number } | null>(null);
   const [pinHintSeen, setPinHintSeen] = useState(true);
+  /** "Mark on the map" from a card: the next tap on the map places this spot instead of adding a stop. */
+  const [spotPin, setSpotPin] = useState<{ stopId: string; name: string; kind: SpotKind } | null>(
+    null,
+  );
+  /** A spot whose mini-pin was tapped, brought into view in its card. */
+  const [focusSpot, setFocusSpot] = useState<{ stopId: string; index: number } | null>(null);
   const stage = useRef<HTMLDivElement>(null);
   const controller = useRef<BoardMapController | null>(null);
   const nearbyTimer = useRef(0);
@@ -483,6 +493,28 @@ export function WorldMapBoard({
 
   /** Adds a stop at a point, then asks the API what is there to fill in the region and country. */
   const pinAt = (longitude: number, latitude: number, name: string | null) => {
+    if (spotPin) {
+      // Placing a spot from its card: a mini-pin in that city, not a new stop.
+      const target = spotPin;
+      const spotName = (target.name || name || t('card.pinnedSpot')).slice(0, ITEM_MAX);
+      commit((current) =>
+        current.map((stop) =>
+          stop.id === target.stopId && stop.spots.length < SPOTS_MAX
+            ? {
+                ...stop,
+                spots: [
+                  ...stop.spots,
+                  { name: spotName, kind: target.kind, latitude, longitude, done: false },
+                ],
+              }
+            : stop,
+        ),
+      );
+      setSpotPin(null);
+      setTool('select');
+      flash(t('spotPinned', { name: spotName }));
+      return;
+    }
     const id = `pin:${Date.now()}:${Math.round(longitude * 1000)}:${Math.round(latitude * 1000)}`;
     const label = name ?? t('mapPinName');
     commit((current) => [
@@ -539,8 +571,9 @@ export function WorldMapBoard({
         {
           nights: item.nights,
           legMode: 'train' as LegMode,
-          spots: item.spots.map(([name, longitude, latitude]) => ({
+          spots: item.spots.map(([name, longitude, latitude, kind]): StopSpot => ({
             name,
+            kind,
             longitude,
             latitude,
             done: false,
@@ -559,7 +592,10 @@ export function WorldMapBoard({
     const onKey = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         if (visa) setVisa(null);
-        else if (card) setCard(null);
+        else if (spotPin) {
+          setSpotPin(null);
+          setTool('select');
+        } else if (card) setCard(null);
         else if (isEditable(event.target)) {
           setQuery('');
           setResults([]);
@@ -574,15 +610,18 @@ export function WorldMapBoard({
         return;
       }
       if (event.ctrlKey || event.metaKey || event.altKey) return;
-      if (event.key === 'v' || event.key === 'V') setTool('select');
-      else if (event.key === 'p' || event.key === 'P') {
+      if (event.key === 'v' || event.key === 'V') {
+        setTool('select');
+        setSpotPin(null);
+      } else if (event.key === 'p' || event.key === 'P') {
         setTool('pin');
+        setSpotPin(null);
         if (phone) setSheet('peek');
       }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [visa, card, tool, selected, undo, phone]);
+  }, [visa, card, tool, selected, undo, phone, spotPin]);
 
   const days = (index: number) => {
     const range = stopDays(stops, index, startDate);
@@ -673,12 +712,18 @@ export function WorldMapBoard({
           petal: petalNames,
           stop: (name, index) => t('stopAria', { place: name, index }),
           tip: (name) => t('pinTip', { place: name }),
+          spot: (name, kind, place) =>
+            t('spotAria', { name, kind: t(`card.kinds.${kind}`), place }),
           items: (count) => t('pinItems', { count }),
           pencilled: (name) => t('pip.pencilled', { name }),
           home: (name) => t('home', { name }),
         }}
         onSelect={select}
         onOpenCard={openCard}
+        onOpenSpot={(stopId, index) => {
+          openCard(stopId, 'spots');
+          setFocusSpot({ stopId, index });
+        }}
         onPin={pinAt}
         onZoom={(value) =>
           setZoom((current) => (Math.abs(current - value) > 0.15 ? value : current))
@@ -753,6 +798,7 @@ export function WorldMapBoard({
               aria-keyshortcuts={key === 'select' ? 'V' : 'P'}
               onClick={() => {
                 setTool(key);
+                setSpotPin(null);
                 if (key === 'pin' && phone) setSheet('peek');
               }}
             >
@@ -764,7 +810,14 @@ export function WorldMapBoard({
 
       {tool === 'pin' ? (
         <div className={styles.hint} role="status">
-          {phone ? t('pinHintPhone') : t('pinHint')}
+          {spotPin
+            ? t('spotPinHint', {
+                name: spotPin.name || t(`card.kinds.${spotPin.kind}`),
+                place: stops.find((stop) => stop.id === spotPin.stopId)?.name ?? '',
+              })
+            : phone
+              ? t('pinHintPhone')
+              : t('pinHint')}
         </div>
       ) : null}
 
@@ -940,6 +993,13 @@ export function WorldMapBoard({
             setCardMode((current) => (current === 'expanded' ? 'follow' : 'expanded'));
           }}
           onDragStart={dragCard}
+          nearby={nearby?.id === cardStop.id ? nearby.places : null}
+          focusSpot={focusSpot?.stopId === cardStop.id ? focusSpot.index : null}
+          onPinSpot={(draft) => {
+            setSpotPin({ stopId: cardStop.id, ...draft });
+            setTool('pin');
+            if (phone) setSheet('peek');
+          }}
           onTab={(tab) => setCard({ id: cardStop.id, tab })}
           onChange={(change) => updateStop(cardStop.id, change)}
           onShowSpot={(spot) =>

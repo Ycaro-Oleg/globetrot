@@ -5,6 +5,7 @@ import {
   moveStop,
   partialLine,
   routeBody,
+  spotKindOf,
   stopDays,
   toDestination,
   zoomLevel,
@@ -56,8 +57,8 @@ describe('board route', () => {
         stop('kyoto', {
           visited: true,
           spots: [
-            { name: ' Gion ', latitude: null, longitude: null, done: false },
-            { name: '  ', latitude: null, longitude: null, done: false },
+            { name: ' Gion ', kind: 'food', latitude: null, longitude: null, done: false },
+            { name: '  ', kind: 'sight', latitude: null, longitude: null, done: false },
           ],
           todos: [{ text: ' Book ryokan ', done: true }],
         }),
@@ -65,7 +66,7 @@ describe('board route', () => {
       ),
     ).toMatchObject({
       visited: true,
-      spots: [{ name: 'Gion', latitude: null, longitude: null, done: false }],
+      spots: [{ name: 'Gion', kind: 'food', latitude: null, longitude: null, done: false }],
       todos: [{ text: 'Book ryokan', done: true }],
     });
   });
@@ -100,5 +101,19 @@ describe('board route', () => {
     expect(days?.start.toISOString().slice(0, 10)).toBe('2027-04-07');
     expect(days?.end.toISOString().slice(0, 10)).toBe('2027-04-09');
     expect(stopDays(route, 0, null)).toBeNull();
+  });
+});
+
+describe('spotKindOf', () => {
+  it('reads a sensible kind from the kinds of points of interest on the map', () => {
+    expect(spotKindOf('hotel')).toBe('stay');
+    expect(spotKindOf('guest_house')).toBe('stay');
+    expect(spotKindOf('restaurant')).toBe('food');
+    expect(spotKindOf('cafe')).toBe('food');
+    expect(spotKindOf('bus_stop')).toBe('transport');
+    expect(spotKindOf('station')).toBe('transport');
+    expect(spotKindOf('supermarket')).toBe('shop');
+    expect(spotKindOf('museum')).toBe('sight');
+    expect(spotKindOf('')).toBe('sight');
   });
 });

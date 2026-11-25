@@ -1,12 +1,17 @@
 import {
+  DEFAULT_SPOT_KIND,
   LEG_MODES,
   MEDIA_ALT_MAX,
   STOP_PHOTOS_MAX,
   STOP_ITEM_TEXT_MAX_LENGTH,
   STOP_SPOTS_MAX,
   STOP_TODOS_MAX,
+  SPOT_KINDS,
   type LegMode,
+  type SpotKind,
 } from '@globetrot/domain';
+
+export { DEFAULT_SPOT_KIND, SPOT_KINDS, type SpotKind };
 
 /** A place on the map, as the board shows it. */
 export type MapPlace = {
@@ -20,11 +25,35 @@ export type MapPlace = {
 
 export type StopSpot = {
   name: string;
+  /** What it is, for its mini-pin: stay, food, sight, shop, transport or other. */
+  kind: SpotKind;
   latitude: number | null;
   longitude: number | null;
   done: boolean;
 };
 export type StopTodo = { text: string; done: boolean };
+
+/** The mini-pin's mark for each kind of spot (decoration: the kind is also said in words). */
+export const SPOT_ICONS: Record<SpotKind, string> = {
+  stay: '🛏',
+  food: '🍽',
+  sight: '📍',
+  shop: '🛍',
+  transport: '🚉',
+  other: '✳',
+};
+
+/** A sensible kind for a point of interest from the map tiles ("restaurant", "hotel", "bus_stop"…). */
+export function spotKindOf(poiKind: string): SpotKind {
+  const kind = poiKind.toLowerCase();
+  if (/hotel|hostel|motel|guest|apartment|camp|lodging|ryokan|chalet/.test(kind)) return 'stay';
+  if (/restaurant|cafe|bar|pub|food|bakery|ice_cream|bistro|izakaya|biergarten/.test(kind))
+    return 'food';
+  if (/station|stop|airport|aerodrome|terminal|ferry|subway|rail|bus|tram|halt/.test(kind))
+    return 'transport';
+  if (/shop|mall|market|store|supermarket|boutique|department/.test(kind)) return 'shop';
+  return 'sight';
+}
 /** A photo of the stop: an image the person uploaded and the words that describe it. */
 export type StopPhoto = { mediaId: string; alt: string };
 

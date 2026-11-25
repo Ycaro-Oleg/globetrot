@@ -4,6 +4,7 @@ import {
   DESTINATION_NOTE_MAX_LENGTH,
   LEG_MODES,
   MAX_NIGHTS_PER_DESTINATION,
+  type SpotKind,
 } from '@globetrot/domain';
 import { sql } from 'drizzle-orm';
 import {
@@ -25,6 +26,8 @@ import { trip } from './trip';
 /** One place to see at a stop. Coordinates are optional: a spot can be just a name. */
 export interface StopSpot {
   readonly name: string;
+  /** stay, food, sight, shop, transport or other; missing on spots saved before kinds existed (a sight). */
+  readonly kind?: SpotKind;
   readonly latitude: number | null;
   readonly longitude: number | null;
   readonly done: boolean;

@@ -739,7 +739,23 @@
       "spotsGuideTitle": "O que você vai fazer em {place}?",
       "spotsGuideStay": "Onde vai dormir: o hotel ou o apê",
       "spotsGuideFood": "Onde quer comer",
-      "spotsGuideSight": "O que você não pode perder"
+      "spotsGuideSight": "O que você não pode perder",
+      "kinds": {
+        "stay": "Hospedagem",
+        "food": "Comer",
+        "sight": "Passeio",
+        "shop": "Compras",
+        "transport": "Transporte",
+        "other": "Outro"
+      },
+      "kindPick": "Que tipo de lugar?",
+      "kindOf": "Tipo de {name}",
+      "addSpotKind": "Adicionar lugar ({kind})…",
+      "noPlace": "ainda sem local no mapa",
+      "nearbyTitle": "Perto daqui, no mapa",
+      "nearbyAddHint": ", adicionar com o local no mapa",
+      "markOnMap": "Marcar no mapa",
+      "pinnedSpot": "Lugar marcado"
     },
     "visa": {
       "kicker": "VISTO GLOBETROT",
@@ -763,7 +779,10 @@
     "pinHintFirst": "Toque num pin para ver e planejar o lugar: onde dormir, comer e o que ver.",
     "pinHintOk": "Entendi",
     "layers": "Camadas",
-    "layersClose": "Fechar"
+    "layersClose": "Fechar",
+    "spotPinned": "{name} está no mapa.",
+    "spotPinHint": "Clique no mapa onde fica {name}, em {place}. Esc cancela.",
+    "spotAria": "{name}, {kind}, em {place}"
   },
   "daysPage": {
     "title": "Dias",

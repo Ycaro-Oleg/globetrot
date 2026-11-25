@@ -1852,3 +1852,230 @@
   font-size: 13px;
   list-style: none;
 }
+
+/* --- Mini-pins: a city's own places (stay, food, sight…), each with the mark of its kind --- */
+.spotPin {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.mapCanvas[data-spots='off'] .spotPin {
+  display: none;
+}
+
+.spotPinIcon {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+  background: var(--surface);
+  box-shadow: 0 4px 10px -4px rgba(15, 23, 42, 0.55);
+  font-size: 15px;
+  line-height: 1;
+}
+
+.spotPin[data-kind='stay'] .spotPinIcon {
+  background: #ede9fe;
+}
+
+.spotPin[data-kind='food'] .spotPinIcon {
+  background: #ffedd5;
+}
+
+.spotPin[data-kind='shop'] .spotPinIcon {
+  background: #fce7f3;
+}
+
+.spotPin[data-kind='transport'] .spotPinIcon {
+  background: #e0f2fe;
+}
+
+.spotPin[data-done] .spotPinIcon {
+  border-color: var(--green);
+  box-shadow: 0 0 0 2px var(--green);
+}
+
+.spotPin[data-current] .spotPinIcon {
+  border-width: 2.5px;
+}
+
+.spotPinLabel {
+  display: none;
+  padding: 3px 8px;
+  border-radius: 99px;
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: 0 4px 10px -4px rgba(15, 23, 42, 0.45);
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.mapCanvas[data-spots='names'] .spotPinLabel,
+.spotPin:hover .spotPinLabel,
+.spotPin:focus-visible .spotPinLabel {
+  display: inline-block;
+}
+
+.spotPin:focus-visible {
+  outline: 3px solid var(--blue);
+  outline-offset: 2px;
+  border-radius: 99px;
+}
+
+/* --- The Spots tab: kinds, real places nearby, "mark on the map" --- */
+.spotIcon {
+  flex: none;
+  font-size: 15px;
+}
+
+.spotMain {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.spotMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.spotNoPlace {
+  color: var(--text-2);
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.spotKind {
+  flex: none;
+  max-width: 140px;
+  min-height: 32px;
+  padding: 0 6px;
+  border: 1px solid #cbd2da;
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: 12px;
+}
+
+.checkList li[data-focus] {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+  border-radius: 12px;
+}
+
+.kindPicker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.kindPicker button {
+  min-height: 34px;
+  padding: 0 10px;
+  border: 1px solid #cbd2da;
+  border-radius: 99px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.kindPicker button[aria-checked='true'] {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: #fff;
+}
+
+.spotSuggest {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.spotSuggestTitle {
+  color: var(--text-2);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.spotSuggest ul {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.spotSuggest button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 40px;
+  padding: 0 10px;
+  border: 1px dashed #cbd2da;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: start;
+  cursor: pointer;
+}
+
+.spotSuggest button small {
+  margin-inline-start: auto;
+  color: var(--text-2);
+  font-size: 11px;
+}
+
+.spotSuggest button:hover {
+  border-style: solid;
+  border-color: var(--blue);
+}
+
+.markOnMap {
+  align-self: flex-start;
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid #cbd2da;
+  border-radius: 99px;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.cardGuide button {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  text-decoration: underline;
+  text-decoration-color: #cbd2da;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}

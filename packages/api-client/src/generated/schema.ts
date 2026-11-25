@@ -2488,6 +2488,8 @@ export interface operations {
                             visited: boolean;
                             spots: {
                                 name: string;
+                                /** @enum {string} */
+                                kind: "stay" | "food" | "sight" | "shop" | "transport" | "other";
                                 latitude: number | null;
                                 longitude: number | null;
                                 done: boolean;
@@ -2633,6 +2635,12 @@ export interface operations {
                         spots?: {
                             /** @example Fushimi Inari */
                             name: string;
+                            /**
+                             * @description What the spot is, for its mini-pin: stay (where you sleep), food, sight, shop, transport (a station or airport) or other. Defaults to sight.
+                             * @default sight
+                             * @enum {string}
+                             */
+                            kind?: "stay" | "food" | "sight" | "shop" | "transport" | "other";
                             /** @default null */
                             latitude?: number | null;
                             /** @default null */
@@ -2692,6 +2700,8 @@ export interface operations {
                             visited: boolean;
                             spots: {
                                 name: string;
+                                /** @enum {string} */
+                                kind: "stay" | "food" | "sight" | "shop" | "transport" | "other";
                                 latitude: number | null;
                                 longitude: number | null;
                                 done: boolean;
