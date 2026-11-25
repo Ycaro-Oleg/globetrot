@@ -745,7 +745,8 @@
       "suggestionsBody": "{count, plural, =0 {Rascunhadas no mapa antes de você decidir.} one {# parada nova está rascunhada no mapa.} other {# paradas novas estão rascunhadas no mapa.}}",
       "review": "Revisar",
       "pencilled": "Sugerido pelo Pip: {name}"
-    }
+    },
+    "home": "Saída: {name}"
   },
   "daysPage": {
     "title": "Dias",
@@ -1053,11 +1054,8 @@
     "chosen": "Escolhido: {name}",
     "errDest": "Escolha um lugar da lista para continuar.",
     "whenTitle": "Quando, e por quanto tempo?",
-    "whenBody": "Não precisa ser exato. Datas podem mudar depois.",
-    "month": "Mês de ida",
-    "nights": "Duração",
+    "whenBody": "Toque no dia da ida e depois no dia da volta. As datas podem mudar depois.",
     "nightsValue": "{count, plural, one {# noite} other {# noites}}",
-    "errMonth": "Escolha o mês de ida.",
     "moneyTitle": "Vamos falar de dinheiro.",
     "moneyBody": "Só para responder “dá para ir?”. Nada é cobrado.",
     "estimateLabel": "Seu palpite para a viagem inteira",
@@ -1067,7 +1065,7 @@
     "noMoney": "Só registro: o Globetrot não guarda nem movimenta dinheiro.",
     "errEstimate": "Escreva um palpite maior que zero, só com números.",
     "pipTitle": "Quer ajuda do Pip?",
-    "pipBody": "O Pip é um pequeno globo viajante e o assistente do Globetrot. Ele sugere mudanças — você aprova ou descarta. Nada muda sozinho.",
+    "pipBody": "Antes de decidir, conheça o Pip.",
     "pipYes": "Sim, quero sugestões",
     "pipYesBody": "O Pip propõe roteiros, lembra documentos e revisa o orçamento. Você aprova cada mudança.",
     "pipNo": "Agora não",
@@ -1096,7 +1094,23 @@
     "estimateCost": "Estimativa da viagem inteira",
     "finishError": "Não foi possível criar a viagem. Confira os valores e tente de novo.",
     "useTyped": "Continuar com “{name}” — marque no mapa depois",
-    "popular": "Populares agora"
+    "popular": "Populares agora",
+    "datesLabel": "Datas da viagem",
+    "datesHint": "Escolha o dia da ida e o dia da volta.",
+    "errDates": "Escolha o dia da ida e o dia da volta (pelo menos uma noite).",
+    "currencyLabel": "Moeda desta viagem",
+    "currencyHint": "Escolha a moeda em que você vai pagar. Dá para mudar depois.",
+    "currencyFromDestination": "A moeda usada em {place}. Troque se preferir outra.",
+    "pipHello": "Oi! Eu sou o Pip, um pequeno globo viajante.",
+    "pipHow": "Eu sugiro mudanças na sua viagem. Você aprova ou descarta cada uma: nada muda sozinho.",
+    "pipExampleKicker": "Por exemplo",
+    "pipExample": "Adicionar uma noite em {place}",
+    "pipExampleWhy": "Seus dias lá estão cheios (10 h).",
+    "pipApprove": "Aprovar",
+    "pipDismiss": "Descartar",
+    "pipApproved": "✓ Aprovado (só aqui, é um exemplo)",
+    "pipDismissed": "Descartado: nada mudou",
+    "citiesCredit": "Lista de cidades: GeoNames (CC BY 4.0)"
   },
   "profilePage": {
     "title": "Perfil",

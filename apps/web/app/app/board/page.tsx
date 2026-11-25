@@ -2,7 +2,11 @@ import { cookies } from 'next/headers';
 import { getTranslations } from 'next-intl/server';
 import { apiInternalUrl } from '../../../lib/api-proxy';
 import { isPipEnabled } from '../../../lib/flags';
-import { createServerApiClient, sessionCookieHeader } from '../../../lib/stored-preferences';
+import {
+  createServerApiClient,
+  fetchStoredPreferences,
+  sessionCookieHeader,
+} from '../../../lib/stored-preferences';
 import {
   fetchDestinations,
   fetchTrips,
@@ -29,7 +33,7 @@ export default async function BoardPage() {
   const savedId = store.get(SELECTED_TRIP_COOKIE)?.value;
   const trip = trips.find((candidate) => candidate.id === savedId) ?? trips[0] ?? null;
   const pipEnabled = isPipEnabled();
-  const [destinations, visas, proposals] = await Promise.all([
+  const [destinations, visas, proposals, preferences] = await Promise.all([
     options && trip ? fetchDestinations(options, trip.id) : Promise.resolve(null),
     options ? fetchVisas(options) : Promise.resolve(null),
     options && trip && pipEnabled
@@ -38,7 +42,12 @@ export default async function BoardPage() {
           .then((answer) => answer.data?.proposals ?? [])
           .catch(() => [])
       : Promise.resolve([]),
+    options ? fetchStoredPreferences(options) : Promise.resolve(null),
   ]);
+  const home =
+    preferences?.homeCity && preferences.homePoint
+      ? { name: preferences.homeCity, ...preferences.homePoint }
+      : null;
   // The newest proposal still waiting for a decision: its new stops are pencilled on the map.
   const waiting = proposals.find((proposal) => proposal.status === 'proposed');
   const pipSuggestion = waiting
@@ -85,6 +94,7 @@ export default async function BoardPage() {
       initialVisas={(visas ?? []).map((visa) => visa.countryCode)}
       pipEnabled={pipEnabled}
       pipSuggestion={pipSuggestion}
+      home={home}
     />
   );
 }

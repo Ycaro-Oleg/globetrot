@@ -745,7 +745,8 @@
       "suggestionsBody": "{count, plural, =0 {Pencilled on the map before you decide.} one {# new stop is pencilled on the map.} other {# new stops are pencilled on the map.}}",
       "review": "Review",
       "pencilled": "Suggested by Pip: {name}"
-    }
+    },
+    "home": "From {name}"
   },
   "daysPage": {
     "title": "Days",
@@ -1053,11 +1054,8 @@
     "chosen": "Chosen: {name}",
     "errDest": "Pick a place from the list to continue.",
     "whenTitle": "When, and for how long?",
-    "whenBody": "It doesn’t need to be exact. Dates can change later.",
-    "month": "Departure month",
-    "nights": "Length",
+    "whenBody": "Tap the day you leave, then the day you come back. Dates can change later.",
     "nightsValue": "{count, plural, one {# night} other {# nights}}",
-    "errMonth": "Pick a departure month.",
     "moneyTitle": "Let’s talk money.",
     "moneyBody": "Only to answer “can I go?”. Nothing is charged.",
     "estimateLabel": "Your rough guess of the whole trip",
@@ -1067,7 +1065,7 @@
     "noMoney": "Tracking only: Globetrot never holds or moves money.",
     "errEstimate": "Write a rough guess above zero, using plain numbers.",
     "pipTitle": "Want Pip’s help?",
-    "pipBody": "Pip is a little traveling globe and Globetrot’s assistant. It suggests changes — you approve or dismiss. Nothing changes on its own.",
+    "pipBody": "Before you decide, meet Pip.",
     "pipYes": "Yes, suggest things",
     "pipYesBody": "Pip proposes routes, reminds you of documents and reviews the budget. You approve every change.",
     "pipNo": "Not now",
@@ -1096,7 +1094,23 @@
     "estimateCost": "Whole-trip estimate",
     "finishError": "We could not create the trip. Check the amounts and try again.",
     "useTyped": "Continue with “{name}” — pin it on the map later",
-    "popular": "Popular right now"
+    "popular": "Popular right now",
+    "datesLabel": "Trip dates",
+    "datesHint": "Pick the day you leave and the day you come back.",
+    "errDates": "Pick the day you leave and the day you come back (at least one night).",
+    "currencyLabel": "Currency for this trip",
+    "currencyHint": "Pick the currency you will pay in. You can change it later.",
+    "currencyFromDestination": "The currency used in {place}. Change it if you prefer another.",
+    "pipHello": "Hi! I’m Pip, a little travelling globe.",
+    "pipHow": "I suggest changes to your trip. You approve or dismiss each one: nothing changes on its own.",
+    "pipExampleKicker": "For example",
+    "pipExample": "Add a night in {place}",
+    "pipExampleWhy": "Your days there are full (10 h).",
+    "pipApprove": "Approve",
+    "pipDismiss": "Dismiss",
+    "pipApproved": "✓ Approved (only here, it’s an example)",
+    "pipDismissed": "Dismissed: nothing changed",
+    "citiesCredit": "City list: GeoNames (CC BY 4.0)"
   },
   "profilePage": {
     "title": "Profile",

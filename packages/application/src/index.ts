@@ -87,7 +87,7 @@ import {
   createRemoveDayPlace,
 } from './days/operations';
 import { createCreateTripFromExample } from './examples/operations';
-import { createReversePlace, createSearchPlaces } from './places/operations';
+import { createReversePlace, createSearchCities, createSearchPlaces } from './places/operations';
 import {
   createListDestinations,
   createListVisas,
@@ -124,6 +124,7 @@ import {
 } from './assistant/operations';
 export { defineOperation, type Operation } from './operation';
 export type {
+  CityIndexPort,
   GeocodingPort,
   PlaceResult,
   SightResult,
@@ -367,6 +368,7 @@ export function createApplication(ports: Ports) {
     listDestinations: createListDestinations(ports),
     createTripFromExample: createCreateTripFromExample(ports),
     searchPlaces: createSearchPlaces(ports),
+    searchCities: createSearchCities(ports),
     reversePlace: createReversePlace(ports),
     getChecklist: createGetChecklist(ports),
     addChecklistItems: createAddChecklistItems(ports),

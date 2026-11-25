@@ -46,6 +46,8 @@ type Props = {
   stops: MapStop[];
   /** Pip's suggested stops, drawn dashed and see-through until the person applies them. */
   pencilled: readonly { name: string; latitude: number; longitude: number; nights: number }[];
+  /** Where the person's trips start (their home city from the city list), drawn as a house and a dashed leg. */
+  home: { name: string; latitude: number; longitude: number } | null;
   selectedId: string | null;
   styleName: MapStyleName;
   locale: string;
@@ -62,6 +64,7 @@ type Props = {
     petal: Record<KitTab, string>;
     stop: (name: string, index: number) => string;
     pencilled: (name: string) => string;
+    home: (name: string) => string;
   };
   controllerRef: MutableRefObject<BoardMapController | null>;
   onSelect: (id: string) => void;
@@ -128,6 +131,7 @@ export function MapCanvas(props: Props) {
   const pins = useRef(new Map<string, PinMarker>());
   const legBadges = useRef<MapLibreMarker[]>([]);
   const pencilMarks = useRef<MapLibreMarker[]>([]);
+  const homeMark = useRef<MapLibreMarker | null>(null);
   const segments = useRef(new Map<string, { coords: [number, number][]; born: number }>());
   const routeDirty = useRef(false);
   const poiLayers = useRef<string[]>([]);
@@ -703,8 +707,10 @@ export function MapCanvas(props: Props) {
         const current = mapRef.current;
         const stops = latest.current.stops;
         if (!current || !stops.length) return;
-        const lngs = stops.map((stop) => stop.longitude);
-        const lats = stops.map((stop) => stop.latitude);
+        // With a single stop the trip is "home to there": show both. With a route, the route.
+        const home = stops.length === 1 ? latest.current.home : null;
+        const lngs = [...stops.map((stop) => stop.longitude), ...(home ? [home.longitude] : [])];
+        const lats = [...stops.map((stop) => stop.latitude), ...(home ? [home.latitude] : [])];
         const sw: [number, number] = [Math.min(...lngs), Math.min(...lats)];
         const ne: [number, number] = [Math.max(...lngs), Math.max(...lats)];
         if (sw[0] === ne[0] && sw[1] === ne[1]) {
@@ -844,6 +850,71 @@ export function MapCanvas(props: Props) {
       pencilMarks.current = [];
     };
   }, [ready, pencilled]);
+
+  // Home: a house where the person's trips start, and a dashed leg to the first stop.
+  const { home } = props;
+  const firstStop = stops[0];
+  useEffect(() => {
+    const map = mapRef.current;
+    const Marker = markerClass.current;
+    homeMark.current?.remove();
+    homeMark.current = null;
+    if (!ready || !map || !Marker) return;
+    const line = {
+      type: 'FeatureCollection' as const,
+      features:
+        home && firstStop
+          ? [
+              {
+                type: 'Feature' as const,
+                properties: {},
+                geometry: {
+                  type: 'LineString' as const,
+                  coordinates: [
+                    [home.longitude, home.latitude],
+                    [firstStop.longitude, firstStop.latitude],
+                  ],
+                },
+              },
+            ]
+          : [],
+    };
+    const source = map.getSource('gt-home') as GeoJSONSource | undefined;
+    if (source) source.setData(line);
+    else {
+      map.addSource('gt-home', { type: 'geojson', data: line });
+      map.addLayer({
+        id: 'gt-home-leg',
+        type: 'line',
+        source: 'gt-home',
+        paint: {
+          'line-color': '#0f172a',
+          'line-width': 2.5,
+          'line-dasharray': [2, 2],
+          'line-opacity': 0.6,
+        },
+      });
+    }
+    if (!home) return;
+    const el = document.createElement('div');
+    el.className = styles.homePin ?? '';
+    el.setAttribute('aria-hidden', 'true');
+    el.title = latest.current.text.home(home.name);
+    const head = document.createElement('span');
+    head.className = styles.homeHead ?? '';
+    head.textContent = '⌂';
+    const label = document.createElement('span');
+    label.className = styles.homeLabel ?? '';
+    label.textContent = latest.current.text.home(home.name);
+    el.append(head, label);
+    homeMark.current = new Marker({ element: el, anchor: 'bottom' })
+      .setLngLat([home.longitude, home.latitude])
+      .addTo(map);
+    return () => {
+      homeMark.current?.remove();
+      homeMark.current = null;
+    };
+  }, [ready, home, firstStop]);
 
   useEffect(() => {
     if (!ready) return;

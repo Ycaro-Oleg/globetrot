@@ -32,6 +32,7 @@ export default async function OnboardingPage() {
     <OnboardingFlow
       currency={preferences?.currency ?? 'USD'}
       homeCity={preferences?.homeCity ?? ''}
+      homePoint={preferences?.homePoint ?? null}
       pipOptIn={preferences?.pipOptIn ?? false}
       draft={draft}
     />

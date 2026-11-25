@@ -21,6 +21,7 @@
     "@globetrot/i18n": "workspace:*",
     "@globetrot/tokens": "workspace:*",
     "@globetrot/ui": "workspace:*",
+    "@internationalized/date": "3.12.4",
     "gsap": "3.13.0",
     "lucide-react": "1.67.0",
     "maplibre-gl": "6.15.0",
@@ -28,6 +29,7 @@
     "next-intl": "4.14.9",
     "open-bot-avatar": "0.2.1",
     "react": "19.3.1",
+    "react-aria-components": "1.22.1",
     "react-dom": "19.3.1"
   },
   "devDependencies": {

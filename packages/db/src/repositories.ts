@@ -147,6 +147,7 @@ export interface PreferencesRow {
   readonly theme: ThemeChoice;
   readonly motion: MotionChoice;
   readonly homeCity: string | null;
+  readonly homePoint: { readonly latitude: number; readonly longitude: number } | null;
   readonly pipOptIn: boolean;
   readonly pipLook: { hat: string; outfit: string; bag: string; bagColor: string };
   readonly pipName: string | null;
@@ -162,6 +163,10 @@ const asPreferencesRow = (row: typeof userPreference.$inferSelect): PreferencesR
   theme: row.theme as ThemeChoice,
   motion: row.motion as MotionChoice,
   homeCity: row.homeCity,
+  homePoint:
+    row.homeLatitude === null || row.homeLongitude === null
+      ? null
+      : { latitude: row.homeLatitude, longitude: row.homeLongitude },
   pipOptIn: row.pipOptIn,
   pipLook: { hat: row.pipHat, outfit: row.pipOutfit, bag: row.pipBag, bagColor: row.pipBagColor },
   pipName: row.pipName,
@@ -195,6 +200,8 @@ export function createPreferencesRepository(executor: Executor) {
         readonly theme?: ThemeChoice | undefined;
         readonly motion?: MotionChoice | undefined;
         readonly homeCity?: string | null | undefined;
+        readonly homePoint?:
+          { readonly latitude: number; readonly longitude: number } | null | undefined;
         readonly pipOptIn?: boolean | undefined;
         readonly pipLook?:
           { hat: string; outfit: string; bag: string; bagColor: string } | undefined;
@@ -212,6 +219,12 @@ export function createPreferencesRepository(executor: Executor) {
         ...(patch.theme === undefined ? {} : { theme: patch.theme }),
         ...(patch.motion === undefined ? {} : { motion: patch.motion }),
         ...(patch.homeCity === undefined ? {} : { homeCity: patch.homeCity }),
+        ...(patch.homePoint === undefined
+          ? {}
+          : {
+              homeLatitude: patch.homePoint?.latitude ?? null,
+              homeLongitude: patch.homePoint?.longitude ?? null,
+            }),
         ...(patch.pipOptIn === undefined ? {} : { pipOptIn: patch.pipOptIn }),
         ...(patch.pipLook === undefined
           ? {}

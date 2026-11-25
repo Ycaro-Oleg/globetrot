@@ -180,6 +180,7 @@ export function createFakePorts(options: FakeOptions = {}) {
         theme: 'system' as const,
         motion: 'full' as const,
         homeCity: null,
+        homePoint: null,
         pipOptIn: false,
         pipLook: { hat: 'straw', outfit: 'none', bag: 'trolley', bagColor: 'amber' },
         pipName: null,
@@ -194,6 +195,7 @@ export function createFakePorts(options: FakeOptions = {}) {
         theme: patch.theme ?? current.theme,
         motion: patch.motion ?? current.motion,
         homeCity: patch.homeCity === undefined ? current.homeCity : patch.homeCity,
+        homePoint: patch.homePoint === undefined ? current.homePoint : patch.homePoint,
         pipOptIn: patch.pipOptIn ?? current.pipOptIn,
         pipLook: patch.pipLook ?? current.pipLook,
         pipName: patch.pipName === undefined ? current.pipName : patch.pipName,
@@ -684,6 +686,35 @@ export function createFakePorts(options: FakeOptions = {}) {
       newId: () => `00000000-0000-7000-8000-${String(++counter).padStart(12, '0')}`,
       newToken: () => `token${String(++counter).padStart(17, '0')}`,
     },
+    cities: {
+      // A few cities, like the built-in GeoNames index: prefix match, a name in another language for big ones.
+      search(query, { language, limit }) {
+        const fold = (text: string) =>
+          text
+            .normalize('NFKD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .toLowerCase();
+        const q = fold(query.trim());
+        return FAKE_CITIES.filter((city) =>
+          [city.name, ...city.alts].some((n) => fold(n).startsWith(q)),
+        )
+          .slice(0, limit)
+          .map((city) => ({
+            key: city.key,
+            name:
+              language === 'pt-BR' &&
+              city.alts.some((n) => fold(n).startsWith(q)) &&
+              !fold(city.name).startsWith(q)
+                ? city.alts.find((n) => fold(n).startsWith(q))!
+                : city.name,
+            countryCode: city.countryCode,
+            region: city.region,
+            latitude: city.latitude,
+            longitude: city.longitude,
+            attribution: 'GeoNames',
+          }));
+      },
+    },
     geocoding: {
       // A tiny gazetteer: enough for the board's tests. `places.offline` makes it behave like a provider that is down.
       async search(query) {
@@ -729,3 +760,33 @@ export function createFakePorts(options: FakeOptions = {}) {
     },
   };
 }
+
+const FAKE_CITIES = [
+  {
+    key: 'gn:6320062',
+    name: 'Fortaleza',
+    alts: [],
+    countryCode: 'BR',
+    region: 'Ceará',
+    latitude: -3.717,
+    longitude: -38.543,
+  },
+  {
+    key: 'gn:2643743',
+    name: 'London',
+    alts: ['Londres'],
+    countryCode: 'GB',
+    region: 'England',
+    latitude: 51.509,
+    longitude: -0.126,
+  },
+  {
+    key: 'gn:2267057',
+    name: 'Lisbon',
+    alts: ['Lisboa'],
+    countryCode: 'PT',
+    region: 'Lisbon',
+    latitude: 38.717,
+    longitude: -9.133,
+  },
+] as const;

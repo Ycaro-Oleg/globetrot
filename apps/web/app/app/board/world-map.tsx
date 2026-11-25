@@ -140,6 +140,7 @@ export function WorldMapBoard({
   initialVisas,
   pipEnabled = false,
   pipSuggestion = null,
+  home = null,
 }: {
   /** The trip the route belongs to, or `null` when there is no trip yet (the board then works unsaved). */
   tripId: string | null;
@@ -151,6 +152,8 @@ export function WorldMapBoard({
   pipEnabled?: boolean;
   /** Pip's proposal waiting for a decision: how many changes, and the new stops to pencil on the map. */
   pipSuggestion?: PipSuggestion | null;
+  /** The person's home city, when it has a point: where the trip starts on the map. */
+  home?: { name: string; latitude: number; longitude: number } | null;
 }) {
   const t = useTranslations('mapBoard');
   const locale = useLocale();
@@ -247,7 +250,8 @@ export function WorldMapBoard({
   }[sheet];
   const inset: Inset = phone
     ? { top: 76, right: 20, bottom: sheetHeight + 10, left: 20 }
-    : { top: 80, right: PANEL_INSET, bottom: 60, left: 40 };
+    : // The map-style legend sits in the lower left: keep pins (and home) above it.
+      { top: 80, right: PANEL_INSET, bottom: 240, left: 40 };
 
   const flash = useCallback((text: string, undo = false) => setToast({ text, undo }), []);
   useEffect(() => {
@@ -570,6 +574,7 @@ export function WorldMapBoard({
       <MapCanvas
         stops={mapStops}
         pencilled={pipSuggestion?.stops ?? NO_PENCILLED}
+        home={home}
         selectedId={selected}
         styleName={styleName}
         locale={locale}
@@ -586,6 +591,7 @@ export function WorldMapBoard({
           petal: petalNames,
           stop: (name, index) => t('stopAria', { place: name, index }),
           pencilled: (name) => t('pip.pencilled', { name }),
+          home: (name) => t('home', { name }),
         }}
         onSelect={select}
         onOpenCard={openCard}

@@ -15,6 +15,7 @@ const STORED: StoredPreferences = {
   theme: 'system',
   motion: 'full',
   homeCity: null,
+  homePoint: null,
   pipOptIn: false,
   pipLook: { hat: 'straw', outfit: 'none', bag: 'trolley', bagColor: 'amber' },
   pipName: null,
