@@ -18,9 +18,12 @@ describe('token build', () => {
     expect(tokens.day['primitive.shadow.button']).toBe('0px 0px 0px 0px #0F172A');
     expect(tokens.day['primitive.shadow.modal']).toBe('0px 20px 50px -12px #0F172A59');
     expect(tokens.day['primitive.type.page']).toBe('clamp(30px, 3.4vw, 38px)');
-    expect(tokens.day['primitive.type.page-tracking']).toBe('-0.055em');
+    expect(tokens.day['primitive.type.page-tracking']).toBe('-0.025em');
     expect(tokens.day['primitive.radius.circle']).toBe('50%');
-    expect(tokens.day['primitive.font.body']).toBe('"Plus Jakarta Sans", system-ui, sans-serif');
+    expect(tokens.day['primitive.font.body']).toBe('"Instrument Sans", system-ui, sans-serif');
+    expect(tokens.day['primitive.font.display']).toBe(
+      '"Bricolage Grotesque", "Instrument Sans", system-ui, sans-serif',
+    );
     expect(tokens['red-eye']['semantic.color.rail-title']).toBe('#F1F5F9');
   });
 
