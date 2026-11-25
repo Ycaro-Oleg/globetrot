@@ -115,6 +115,38 @@ export const PIN = {
   comet: [6, 182, 212] as const,
 };
 
+/** A wider line in the land's colour under a country border, so the border stays crisp over any fill. */
+function haloUnder(
+  map: MapLibreMap,
+  layer: { id: string } & Record<string, unknown>,
+  color: string,
+) {
+  const id = `gt-halo-${layer.id}`;
+  try {
+    if (!map.getLayer(id)) {
+      map.addLayer(
+        {
+          id,
+          type: 'line',
+          source: layer.source as string,
+          ...(layer['source-layer'] ? { 'source-layer': layer['source-layer'] as string } : {}),
+          ...(layer.filter ? { filter: layer.filter as never } : {}),
+          ...(typeof layer.minzoom === 'number' ? { minzoom: layer.minzoom } : {}),
+          layout: { 'line-join': 'round', 'line-cap': 'round' },
+          paint: {
+            'line-width': ['interpolate', ['linear'], ['zoom'], 1, 2.6, 4, 4, 10, 6] as never,
+            'line-opacity': 0.75,
+          },
+        },
+        layer.id,
+      );
+    }
+    setPaint(map)(id, 'line-color', color);
+  } catch {
+    /* A style without that source: the border is still drawn, just without its halo. */
+  }
+}
+
 /** Layer ids whose features are points of interest (used for "Nearby"). Filled in by `restyle`. */
 export function restyle(map: MapLibreMap, name: MapStyleName): string[] {
   const P = PALETTES[name];
@@ -153,11 +185,19 @@ export function restyle(map: MapLibreMap, name: MapStyleName): string[] {
     } else if (layer.type === 'line') {
       if (/water|river|canal|stream|ditch|drain/.test(id)) paint('line-color', P.seaLine);
       else if (/boundary|admin/.test(id)) {
+        // Borders read in two clear tiers, apart from the route: a country is a firm line on a halo of land
+        // (added once, below it), a state a thin dashed line that only comes in once a country fills the screen.
         const country = /_2|-2|country|disputed/.test(id) && !/_3|_4|-3|-4|state/.test(id);
         paint('line-color', country ? P.border : P.stateBorder);
         if (country) {
-          paint('line-width', ['interpolate', ['linear'], ['zoom'], 1, 0.7, 4, 1.3, 10, 2.4]);
-          paint('line-opacity', 0.85);
+          paint('line-width', ['interpolate', ['linear'], ['zoom'], 1, 0.9, 4, 1.6, 10, 2.8]);
+          paint('line-opacity', 1);
+          paint('line-dasharray', undefined);
+          haloUnder(map, layer as unknown as { id: string } & Record<string, unknown>, P.land);
+        } else {
+          paint('line-width', ['interpolate', ['linear'], ['zoom'], 3.5, 0.5, 8, 1.1, 12, 1.6]);
+          paint('line-opacity', ['interpolate', ['linear'], ['zoom'], 3.5, 0, 4.5, 0.75]);
+          paint('line-dasharray', ['literal', [3, 2]]);
         }
       } else if (/casing/.test(id)) paint('line-color', P.casing);
       else if (/rail|transit|aeroway/.test(id)) paint('line-color', P.casing);
@@ -217,6 +257,10 @@ export function styleCountries(
   if (!map.getLayer('gt-countries-fill')) return;
   const iso = ['get', 'iso'];
   const list = (codes: readonly string[]) => ['literal', codes.length ? [...codes] : ['__']];
+  // The trip's countries get their own outline too, so "this trip" reads without the fill (and without colour).
+  if (map.getLayer('gt-countries-trip')) {
+    map.setFilter('gt-countries-trip', ['in', iso, list(trip)] as never);
+  }
   const F = ATLAS_FILLS;
   setPaint(map)('gt-countries-fill', 'fill-color', [
     'case',

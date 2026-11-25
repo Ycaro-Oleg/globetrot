@@ -10,7 +10,7 @@ import type {
 } from 'maplibre-gl';
 import {
   arcBetween,
-  KIT_TABS,
+  distanceKm,
   LEG_ICONS,
   partialLine,
   type KitTab,
@@ -63,6 +63,10 @@ type Props = {
     error: string;
     petal: Record<KitTab, string>;
     stop: (name: string, index: number) => string;
+    /** The hint over a pin on hover or focus: "Tap to plan Hakone". */
+    tip: (name: string) => string;
+    /** How many things a stop holds, for the pin's name: "5 things". */
+    items: (count: number) => string;
     pencilled: (name: string) => string;
     home: (name: string) => string;
   };
@@ -83,14 +87,13 @@ type PinMarker = {
   ring: HTMLSpanElement;
   label: HTMLSpanElement;
   button: HTMLButtonElement;
-  petals: HTMLDivElement;
-  petalButtons: { button: HTMLButtonElement; badge: HTMLSpanElement; x: number; y: number }[];
+  /** How many things the stop holds (photos, spots, notes, to-dos), on the pin's head. */
+  badge: HTMLSpanElement;
+  tip: HTMLSpanElement;
   hideTimer?: number;
   name: string;
 };
 
-const PETAL_GLYPHS: Record<KitTab, string> = { photos: '▣', spots: '⌖', notes: '✎', todos: '✓' };
-const PETAL_ANGLES = [158, 114, 66, 22];
 const DRAW_MS = 1100;
 const COMET_MS = 2800;
 
@@ -132,7 +135,9 @@ export function MapCanvas(props: Props) {
   const legBadges = useRef<MapLibreMarker[]>([]);
   const pencilMarks = useRef<MapLibreMarker[]>([]);
   const homeMark = useRef<MapLibreMarker | null>(null);
-  const segments = useRef(new Map<string, { coords: [number, number][]; born: number }>());
+  const segments = useRef(
+    new Map<string, { coords: [number, number][]; born: number; mode: string }>(),
+  );
   const routeDirty = useRef(false);
   const poiLayers = useRef<string[]>([]);
   const firstSync = useRef(true);
@@ -185,12 +190,13 @@ export function MapCanvas(props: Props) {
     }
   };
 
-  const showPetals = (pin: PinMarker) => {
-    pin.petals.dataset.open = 'true';
+  // Hover or focus lifts the pin and shows what a tap does; the contents live in the card, not around the pin.
+  const showTip = (pin: PinMarker) => {
+    pin.el.dataset.hover = 'true';
     pin.el.style.zIndex = '5';
   };
-  const hidePetals = (pin: PinMarker, id: string) => {
-    delete pin.petals.dataset.open;
+  const hideTip = (pin: PinMarker, id: string) => {
+    delete pin.el.dataset.hover;
     pin.el.style.zIndex = latest.current.selectedId === id ? '3' : '1';
   };
 
@@ -217,8 +223,13 @@ export function MapCanvas(props: Props) {
     const button = document.createElement('button');
     button.type = 'button';
     button.className = styles.pinButton ?? '';
-    const petals = document.createElement('div');
-    petals.className = styles.petals ?? '';
+    const badge = document.createElement('span');
+    badge.className = styles.pinBadge ?? '';
+    badge.setAttribute('aria-hidden', 'true');
+    head.append(badge);
+    const tip = document.createElement('span');
+    tip.className = styles.pinTip ?? '';
+    tip.setAttribute('aria-hidden', 'true');
     const pin: PinMarker = {
       marker: null as unknown as MapLibreMarker,
       el,
@@ -228,51 +239,18 @@ export function MapCanvas(props: Props) {
       ring,
       label,
       button,
-      petals,
-      petalButtons: [],
+      badge,
+      tip,
       name: stop.label,
     };
-    KIT_TABS.forEach((tab, i) => {
-      const angle = (PETAL_ANGLES[i]! * Math.PI) / 180;
-      const x = Math.cos(angle) * 62;
-      const y = -Math.sin(angle) * 62;
-      const petal = document.createElement('button');
-      petal.type = 'button';
-      petal.className = styles.petal ?? '';
-      petal.style.setProperty('--x', `${x}px`);
-      petal.style.setProperty('--y', `${y}px`);
-      petal.style.setProperty('--delay', `${i * 35}ms`);
-      const glyph = document.createElement('span');
-      glyph.setAttribute('aria-hidden', 'true');
-      glyph.textContent = PETAL_GLYPHS[tab];
-      const badge = document.createElement('span');
-      badge.className = styles.petalBadge ?? '';
-      badge.setAttribute('aria-hidden', 'true');
-      petal.append(glyph, badge);
-      petal.addEventListener('mouseenter', () => {
-        label.textContent = latest.current.text.petal[tab];
-        label.style.display = 'block';
-      });
-      petal.addEventListener('mouseleave', () => {
-        label.textContent = pin.name;
-        updateLabels();
-      });
-      petal.addEventListener('click', (event) => {
-        event.stopPropagation();
-        latest.current.onOpenCard(stop.id, tab);
-        hidePetals(pin, stop.id);
-      });
-      petals.append(petal);
-      pin.petalButtons.push({ button: petal, badge, x, y });
-    });
-    el.append(ground, ring, drop, label, button, petals);
+    el.append(ground, ring, drop, label, tip, button);
     const show = () => {
       window.clearTimeout(pin.hideTimer);
-      if (!latest.current.phone) showPetals(pin);
+      if (!latest.current.phone) showTip(pin);
     };
     const hide = () => {
       window.clearTimeout(pin.hideTimer);
-      pin.hideTimer = window.setTimeout(() => hidePetals(pin, stop.id), 220);
+      pin.hideTimer = window.setTimeout(() => hideTip(pin, stop.id), 120);
     };
     el.addEventListener('mouseenter', show);
     el.addEventListener('mouseleave', hide);
@@ -334,16 +312,20 @@ export function MapCanvas(props: Props) {
       pin.head.dataset.state = selected ? 'selected' : stop.visited ? 'visited' : 'planned';
       pin.num.textContent = stop.visited && !selected ? '✓' : String(index + 1);
       pin.label.textContent = stop.label;
-      pin.button.setAttribute('aria-label', text.stop(stop.label, index + 1));
+      const total =
+        stop.photos.length + stop.spots.length + stop.todos.length + (stop.note.trim() ? 1 : 0);
+      pin.button.setAttribute(
+        'aria-label',
+        total > 0
+          ? `${text.stop(stop.label, index + 1)} · ${text.items(total)}`
+          : text.stop(stop.label, index + 1),
+      );
       pin.button.setAttribute('aria-pressed', String(selected));
       pin.el.setAttribute('aria-label', stop.label);
       pin.el.style.zIndex = selected ? '3' : '1';
-      KIT_TABS.forEach((tab, j) => {
-        const petal = pin.petalButtons[j]!;
-        petal.badge.textContent = stop.counts[tab];
-        petal.badge.style.display = stop.counts[tab] ? 'flex' : 'none';
-        petal.button.setAttribute('aria-label', `${text.petal[tab]} · ${stop.label}`);
-      });
+      pin.badge.textContent = total > 0 ? String(total) : '';
+      pin.badge.style.display = total > 0 ? 'flex' : 'none';
+      pin.tip.textContent = text.tip(stop.label);
       pin.marker.setLngLat([stop.longitude, stop.latitude]);
     });
     updateLabels();
@@ -356,7 +338,7 @@ export function MapCanvas(props: Props) {
     const now = performance.now();
     const reduced = reducedMotion();
     const previous = segments.current;
-    const next = new Map<string, { coords: [number, number][]; born: number }>();
+    const next = new Map<string, { coords: [number, number][]; born: number; mode: string }>();
     for (let i = 0; i < stops.length - 1; i++) {
       const a = stops[i]!;
       const b = stops[i + 1]!;
@@ -365,6 +347,7 @@ export function MapCanvas(props: Props) {
       next.set(key, {
         coords: arcBetween(a, b, 120),
         born: reduced ? now - 2 * DRAW_MS : (old?.born ?? now + (initial ? 900 + i * 420 : 150)),
+        mode: a.legMode ?? 'none',
       });
     }
     segments.current = next;
@@ -380,7 +363,18 @@ export function MapCanvas(props: Props) {
       const badge = document.createElement('span');
       badge.className = styles.legBadge ?? '';
       badge.setAttribute('aria-hidden', 'true');
-      badge.textContent = LEG_ICONS[stop.legMode];
+      // The mode and the straight-line distance, where the leg is (the route list says it in words).
+      const km = new Intl.NumberFormat(latest.current.locale, {
+        style: 'unit',
+        unit: 'kilometer',
+        maximumFractionDigits: 0,
+      }).format(distanceKm(stop, stops[i + 1]!));
+      const icon = document.createElement('span');
+      icon.textContent = LEG_ICONS[stop.legMode];
+      const distance = document.createElement('span');
+      distance.className = styles.legDistance ?? '';
+      distance.textContent = km;
+      badge.append(icon, distance);
       legBadges.current.push(
         new Marker({ element: badge }).setLngLat(arc[Math.floor(arc.length / 2)]!).addTo(map),
       );
@@ -499,16 +493,65 @@ export function MapCanvas(props: Props) {
             },
             firstSymbol,
           );
+          // The leg's way of travel shows in the line itself: a flight is an airmail dash, a walk a dotted
+          // line, a boat a long dash; train, bus and car a solid line.
+          const dashed = ['flight', 'walk', 'boat'];
           map.addLayer(
             {
               id: 'gt-route-core',
               type: 'line',
               source: 'gt-route',
+              filter: ['!', ['in', ['get', 'mode'], ['literal', dashed]]],
               layout: { 'line-cap': 'round', 'line-join': 'round' },
               paint: { 'line-width': width(1.8, 3, 4.5) as never, 'line-color': PIN.route },
             },
             firstSymbol,
           );
+          (
+            [
+              ['flight', [2.2, 1.4]],
+              ['walk', [0.1, 1.8]],
+              ['boat', [3.5, 1.6]],
+            ] as const
+          ).forEach(([mode, dash]) =>
+            map!.addLayer(
+              {
+                id: `gt-route-${mode}`,
+                type: 'line',
+                source: 'gt-route',
+                filter: ['==', ['get', 'mode'], mode],
+                layout: { 'line-cap': 'round', 'line-join': 'round' },
+                paint: {
+                  'line-width': width(1.8, 3, 4.5) as never,
+                  'line-color': PIN.route,
+                  'line-dasharray': [...dash],
+                },
+              },
+              firstSymbol,
+            ),
+          );
+          // Which way the trip goes: small chevrons along every leg.
+          map.addLayer({
+            id: 'gt-route-arrows',
+            type: 'symbol',
+            source: 'gt-route',
+            layout: {
+              'symbol-placement': 'line',
+              'symbol-spacing': ['interpolate', ['linear'], ['zoom'], 1, 70, 8, 140] as never,
+              'text-field': '›',
+              'text-font': ['Noto Sans Bold'],
+              'text-size': ['interpolate', ['linear'], ['zoom'], 1, 13, 8, 19] as never,
+              'text-keep-upright': false,
+              'text-rotation-alignment': 'map',
+              'text-allow-overlap': true,
+              'text-ignore-placement': true,
+            },
+            paint: {
+              'text-color': '#FFFFFF',
+              'text-halo-color': PIN.route,
+              'text-halo-width': 1.2,
+            },
+          });
           map.addLayer(
             {
               id: 'gt-route-comet',
@@ -576,6 +619,21 @@ export function MapCanvas(props: Props) {
                 },
                 water,
               );
+              map.addLayer(
+                {
+                  id: 'gt-countries-trip',
+                  type: 'line',
+                  source: 'gt-countries',
+                  filter: ['in', ['get', 'iso'], ['literal', ['__']]],
+                  layout: { 'line-join': 'round' },
+                  paint: {
+                    'line-color': PIN.route,
+                    'line-width': ['interpolate', ['linear'], ['zoom'], 1, 1.2, 5, 2] as never,
+                    'line-opacity': ['interpolate', ['linear'], ['zoom'], 1, 0.9, 6, 0.55] as never,
+                  },
+                },
+                water,
+              );
               styleCountries(
                 map,
                 latest.current.styleName,
@@ -616,7 +674,7 @@ export function MapCanvas(props: Props) {
                 const eased = p < 0.5 ? 4 * p * p * p : 1 - (-2 * p + 2) ** 3 / 2;
                 features.push({
                   type: 'Feature' as const,
-                  properties: {},
+                  properties: { mode: segment.mode },
                   geometry: {
                     type: 'LineString' as const,
                     coordinates: partialLine(segment.coords, eased),

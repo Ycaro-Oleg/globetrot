@@ -727,12 +727,19 @@
       "addSpot": "Adicionar ponto…",
       "spotsHint": "Pontos com localização aparecem no mapa quando você aproxima.",
       "notesLabel": "Notas",
-      "notesPlaceholder": "Endereços, horários, ideias…",
+      "notesPlaceholder": "Endereços, horários, a dica de um amigo…",
       "autosave": "Salvo automaticamente",
       "progress": "Tarefas feitas",
-      "noTodos": "Nada a fazer ainda.",
+      "noTodos": "Nada a fazer ainda: um ingresso para comprar, uma mesa para reservar, um passe para tirar.",
       "addTodo": "Adicionar tarefa…",
-      "photosLabel": "Fotos de {stop}"
+      "photosLabel": "Fotos de {stop}",
+      "drag": "Arraste para mover",
+      "expand": "Expandir o cartão",
+      "collapse": "Reduzir o cartão",
+      "spotsGuideTitle": "O que você vai fazer em {place}?",
+      "spotsGuideStay": "Onde vai dormir: o hotel ou o apê",
+      "spotsGuideFood": "Onde quer comer",
+      "spotsGuideSight": "O que você não pode perder"
     },
     "visa": {
       "kicker": "VISTO GLOBETROT",
@@ -750,7 +757,13 @@
       "review": "Revisar",
       "pencilled": "Sugerido pelo Pip: {name}"
     },
-    "home": "Saída: {name}"
+    "home": "Saída: {name}",
+    "pinTip": "Toque para planejar {place}",
+    "pinItems": "{count, plural, one {# coisa} other {# coisas}} dentro",
+    "pinHintFirst": "Toque num pin para ver e planejar o lugar: onde dormir, comer e o que ver.",
+    "pinHintOk": "Entendi",
+    "layers": "Camadas",
+    "layersClose": "Fechar"
   },
   "daysPage": {
     "title": "Dias",

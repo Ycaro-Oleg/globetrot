@@ -85,6 +85,8 @@ Some surfaces are cream or white in the red-eye theme too (the account pages' pa
 
 Phones get equivalent essential capabilities through patterns that suit the device, not shrunken desktop components.
 
+**The map's reading order** (November 2026): borders in two tiers (a country is a firm line on a halo of land; a state a thin dashed line from z4), the trip's countries outlined, and the route apart from both (thicker, cased, chevrons for direction, the way of travel in the line: flight dashed, walk dotted, boat long dash, with a mode-and-distance badge on each leg). A pin says it holds something (a count badge) and what a tap does (a hint on hover or focus); its card can be dragged by the title bar and expanded into a tall side panel, with Expand and Close as buttons so the keyboard never needs to drag. The map key is folded into a **Layers** button.
+
 ### The shell as built (design handoff v2, the TopBar)
 
 `apps/web/app/app/_components/` holds the frame of every signed-in page: everything under `/app` and `/settings` renders inside `SignedInFrame`, which reads the person and their trips once and sends a visitor without a session to log in.
