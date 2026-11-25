@@ -1079,7 +1079,7 @@
     "restLate": "at this pace you’d be ready in {ready}. Save {needed} a month to go in {month}.",
     "restAlready": "you already have enough for {place}.",
     "restSetMonthly": "set what you can save each month to see when you can go.",
-    "answerSub": "≈ {estimate} for {nights, plural, one {# night} other {# nights}} · {left} to go",
+    "answerSub": "≈ {estimate} for {nights, plural, one {# night} other {# nights}} {done, select, yes {· all saved} other {· {left} to go}}",
     "summary": "Trip summary",
     "yourTrip": "Your trip",
     "from": "From",

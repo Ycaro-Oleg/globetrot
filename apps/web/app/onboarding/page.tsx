@@ -6,6 +6,7 @@ import { fetchCurrentUser } from '../../lib/current-user';
 import { fetchStoredPreferences, sessionCookieHeader } from '../../lib/stored-preferences';
 import { SITE_NAME } from '../site';
 import { PLAN_DRAFT_COOKIE, readDraft } from '../../lib/plan-draft';
+import { worldLandPath } from '../../lib/world-map';
 import { OnboardingFlow } from './onboarding-flow';
 
 // Depends on the visitor's cookies, so it is rendered per request.
@@ -35,6 +36,7 @@ export default async function OnboardingPage() {
       homePoint={preferences?.homePoint ?? null}
       pipOptIn={preferences?.pipOptIn ?? false}
       draft={draft}
+      land={worldLandPath()}
     />
   );
 }
