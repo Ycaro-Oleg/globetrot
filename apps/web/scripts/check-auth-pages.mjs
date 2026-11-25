@@ -939,6 +939,27 @@ try {
       },
       VIEWPORTS.desktop,
     ]);
+    // The pin's card on the map, opened from the route list (no tiles needed), then expanded.
+    const openPinCard = async (page) => {
+      await go(page, `${base}/app/board`);
+      await page.locator('ol li').first().locator('button').first().click();
+      await page
+        .locator('[role=group] button', { hasText: /Spots|Pontos/ })
+        .first()
+        .click();
+      await page.locator('[data-pin-card]').waitFor();
+    };
+    entries.push(['board-pin-card-desktop', true, openPinCard, VIEWPORTS.desktop]);
+    entries.push([
+      'board-pin-card-expanded-desktop',
+      true,
+      async (page) => {
+        await openPinCard(page);
+        await page.getByRole('button', { name: /^(Expand the card|Expandir o cartão)$/ }).click();
+        await page.locator('[data-pin-card][data-expanded]').waitFor();
+      },
+      VIEWPORTS.desktop,
+    ]);
     for (const section of ['board', 'days', 'budget', 'lists', 'trips', 'passport']) {
       entries.push([`shell-${section}-phone`, true, ...at(`/app/${section}`, VIEWPORTS.phone)]);
     }

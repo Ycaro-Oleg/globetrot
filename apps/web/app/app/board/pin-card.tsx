@@ -1,7 +1,14 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { useEffect, useRef, useState, type CSSProperties, type FormEvent } from 'react';
+import {
+  useEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type FormEvent,
+  type PointerEvent as ReactPointerEvent,
+} from 'react';
 import {
   ITEM_MAX,
   KIT_TABS,
@@ -31,7 +38,8 @@ export function kitCounts(stop: RouteStop): Record<KitTab, string> {
 
 /**
  * The pin's "instance" card: a stop's own photos, spots, notes and to-dos, next to its pin on the map
- * (full width at the top on a phone). Esc closes it (handled by the board).
+ * (full width at the top on a phone). It can be dragged by its title bar and expanded into a tall side panel;
+ * Expand and Close are buttons, so the keyboard needs no dragging. Esc closes it (handled by the board).
  */
 export function PinCard({
   stop,
@@ -40,6 +48,9 @@ export function PinCard({
   when,
   tab,
   style,
+  expanded = false,
+  onToggleExpand,
+  onDragStart,
   onTab,
   onChange,
   onShowSpot,
@@ -51,6 +62,10 @@ export function PinCard({
   when: string;
   tab: KitTab;
   style: CSSProperties;
+  expanded?: boolean;
+  onToggleExpand?: () => void;
+  /** Starts dragging the card from its title bar (not from its buttons). */
+  onDragStart?: (event: ReactPointerEvent<HTMLElement>) => void;
   onTab: (tab: KitTab) => void;
   onChange: (change: Partial<RouteStop>) => void;
   onShowSpot: (spot: StopSpot) => void;
@@ -109,8 +124,27 @@ export function PinCard({
   };
 
   return (
-    <div className={styles.card} style={style} role="dialog" aria-labelledby="pin-card-title">
-      <div className={styles.cardHead}>
+    <div
+      className={styles.card}
+      style={style}
+      role="dialog"
+      aria-labelledby="pin-card-title"
+      data-pin-card=""
+      data-expanded={expanded || undefined}
+    >
+      <div
+        className={styles.cardHead}
+        data-draggable={onDragStart && !expanded ? '' : undefined}
+        onPointerDown={(event) => {
+          if ((event.target as HTMLElement).closest('button')) return;
+          onDragStart?.(event);
+        }}
+      >
+        {onDragStart && !expanded ? (
+          <span className={styles.cardGrip} aria-hidden="true" title={t('drag')}>
+            ⠿
+          </span>
+        ) : null}
         <span className={styles.cardDisc} data-state={stop.visited ? 'visited' : 'selected'}>
           {stop.visited ? '✓' : index + 1}
         </span>
@@ -118,6 +152,17 @@ export function PinCard({
           <strong id="pin-card-title">{name}</strong>
           <span>{when}</span>
         </div>
+        {onToggleExpand ? (
+          <button
+            type="button"
+            className={styles.cardClose}
+            onClick={onToggleExpand}
+            aria-label={expanded ? t('collapse') : t('expand')}
+            aria-pressed={expanded}
+          >
+            <span aria-hidden="true">{expanded ? '⤡' : '⤢'}</span>
+          </button>
+        ) : null}
         <button
           ref={closeRef}
           type="button"
@@ -205,7 +250,21 @@ export function PinCard({
                 ))}
               </ul>
             ) : (
-              <p className={styles.cardEmpty}>{t('noSpots')}</p>
+              // What belongs here, said plainly: the three questions every stop answers.
+              <div className={styles.cardGuide}>
+                <strong>{t('spotsGuideTitle', { place: name })}</strong>
+                <ul>
+                  <li>
+                    <span aria-hidden="true">🛏</span> {t('spotsGuideStay')}
+                  </li>
+                  <li>
+                    <span aria-hidden="true">🍽</span> {t('spotsGuideFood')}
+                  </li>
+                  <li>
+                    <span aria-hidden="true">📍</span> {t('spotsGuideSight')}
+                  </li>
+                </ul>
+              </div>
             )}
             <form className={styles.addRow} onSubmit={addSpot}>
               <input

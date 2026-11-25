@@ -3,7 +3,15 @@
 import { LEG_MODES, type LegMode } from '@globetrot/domain';
 import { useLocale, useTranslations } from 'next-intl';
 import Link from 'next/link';
-import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+  type PointerEvent as ReactPointerEvent,
+} from 'react';
 import {
   distanceKm,
   HISTORY_LIMIT,
@@ -37,6 +45,8 @@ import { isPlanRequired, PLAN_REQUIRED_PATH } from '../../../lib/plan-required';
 /** Public browser key: map tiles only. Place search goes through the API (`/v1/places/*`), key on the server. */
 const API_KEY = process.env.NEXT_PUBLIC_GEOAPIFY_API_KEY ?? '';
 const STYLE_KEY = 'globetrot.mapStyle';
+/** Set once the person has opened a pin's card: the first-visit hint over the first pin stops showing. */
+const PIN_HINT_KEY = 'globetrot.board.pinHint';
 const PHONE_MAX = 720;
 const PANEL_INSET = 412;
 type Sheet = 'peek' | 'half' | 'full';
@@ -181,6 +191,11 @@ export function WorldMapBoard({
   const [nearby, setNearby] = useState<{ id: string; places: NearbyPlace[] } | null>(null);
   const [view, setView] = useState({ w: 1280, h: 800, phone: false, stageH: 0 });
   const [cardStyle, setCardStyle] = useState<CSSProperties>({ visibility: 'hidden' });
+  /** Where the card lives: next to its pin, where the person dragged it, or expanded into a tall side panel. */
+  const [cardMode, setCardMode] = useState<'follow' | 'moved' | 'expanded'>('follow');
+  const [layersOpen, setLayersOpen] = useState(false);
+  const [pinHint, setPinHint] = useState<{ x: number; y: number } | null>(null);
+  const [pinHintSeen, setPinHintSeen] = useState(true);
   const stage = useRef<HTMLDivElement>(null);
   const controller = useRef<BoardMapController | null>(null);
   const nearbyTimer = useRef(0);
@@ -198,6 +213,15 @@ export function WorldMapBoard({
     if (!cardStop) return;
     const width = stage.current?.clientWidth ?? view.w;
     const height = view.stageH;
+    if (cardMode === 'moved') return; // Stays where the person put it.
+    if (cardMode === 'expanded') {
+      setCardStyle(
+        phone
+          ? { left: 12, top: 12, width: width - 24, maxHeight: Math.round(height * 0.86) }
+          : { left: 16, top: 72, width: 440, maxHeight: height - 88, height: height - 88 },
+      );
+      return;
+    }
     if (phone) {
       setCardStyle({ left: 12, top: 72, width: width - 24, maxHeight: Math.round(height * 0.5) });
       return;
@@ -212,11 +236,38 @@ export function WorldMapBoard({
     left = Math.max(12, left);
     const top = Math.max(72, Math.min(height - maxHeight - 14, point.y - 150));
     setCardStyle({ left, top, width: 340, maxHeight });
-  }, [cardStop, phone, view.w, view.stageH]);
+  }, [cardStop, cardMode, phone, view.w, view.stageH]);
   useEffect(() => {
     const frame = requestAnimationFrame(placeCard);
     return () => cancelAnimationFrame(frame);
   }, [placeCard]);
+
+  // The first-visit hint over the first pin: read after the first paint, then kept next to that pin.
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => {
+      try {
+        setPinHintSeen(window.localStorage.getItem(PIN_HINT_KEY) === '1');
+      } catch {
+        setPinHintSeen(true);
+      }
+    });
+    return () => cancelAnimationFrame(frame);
+  }, []);
+  const firstStop = stops[0] ?? null;
+  const placePinHint = useCallback(() => {
+    // On a phone the stops are listed in the sheet below and the toolbar fills the top: no bubble there.
+    if (pinHintSeen || !firstStop || card || phone) return setPinHint(null);
+    const point = controller.current?.project(firstStop.longitude, firstStop.latitude);
+    if (!point) return setPinHint(null);
+    // Kept clear of the route panel and the screen edges (the bubble is 300px wide, centred on the pin).
+    const width = stage.current?.clientWidth ?? view.w;
+    const right = width - (phone ? 0 : PANEL_INSET) - 160;
+    setPinHint({ x: Math.min(Math.max(160, point.x), Math.max(160, right)), y: point.y });
+  }, [pinHintSeen, firstStop, card, phone, view.w]);
+  useEffect(() => {
+    const frame = requestAnimationFrame(placePinHint);
+    return () => cancelAnimationFrame(frame);
+  }, [placePinHint]);
 
   // The remembered style is read after the first paint, so the server and the browser render the same page.
   useEffect(() => {
@@ -371,10 +422,41 @@ export function WorldMapBoard({
   const openCard = useCallback(
     (id: string, tab: KitTab | null) => {
       if (selected !== id) select(id);
+      if (card?.id !== id) setCardMode('follow');
       setCard((current) => ({ id, tab: tab ?? current?.tab ?? 'spots' }));
+      // The first pin's hint has done its job.
+      setPinHintSeen(true);
+      try {
+        window.localStorage.setItem(PIN_HINT_KEY, '1');
+      } catch {
+        /* Not remembered: it shows again next time. */
+      }
     },
-    [selected, select],
+    [selected, select, card?.id],
   );
+
+  /** Drags the card by its title bar (a mouse or pen extra: Expand and Close are buttons). */
+  const dragCard = (event: ReactPointerEvent<HTMLElement>) => {
+    if (phone || cardMode === 'expanded' || event.button !== 0) return;
+    const card = event.currentTarget.closest('[data-pin-card]')?.getBoundingClientRect();
+    const box = stage.current?.getBoundingClientRect();
+    if (!card || !box) return;
+    event.preventDefault();
+    const dx = event.clientX - card.left;
+    const dy = event.clientY - card.top;
+    const onMove = (move: PointerEvent) => {
+      const left = Math.min(Math.max(8, move.clientX - box.left - dx), box.width - card.width - 8);
+      const top = Math.min(Math.max(8, move.clientY - box.top - dy), box.height - 64);
+      setCardMode('moved');
+      setCardStyle((current) => ({ ...current, left, top }));
+    };
+    const onUp = () => {
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+    };
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+  };
 
   const addPlace = (place: MapPlace, flyZoom = 11) => {
     if (!stops.some((stop) => stop.id === place.id)) commit([...stops, newStop(place)]);
@@ -590,6 +672,8 @@ export function WorldMapBoard({
           error: t('mapError'),
           petal: petalNames,
           stop: (name, index) => t('stopAria', { place: name, index }),
+          tip: (name) => t('pinTip', { place: name }),
+          items: (count) => t('pinItems', { count }),
           pencilled: (name) => t('pip.pencilled', { name }),
           home: (name) => t('home', { name }),
         }}
@@ -601,6 +685,7 @@ export function WorldMapBoard({
         }
         onMove={() => {
           if (card) placeCard();
+          if (!pinHintSeen) placePinHint();
         }}
       />
 
@@ -683,8 +768,36 @@ export function WorldMapBoard({
         </div>
       ) : null}
 
-      {!phone ? (
-        <div className={styles.legend}>
+      {!phone && !layersOpen ? (
+        <button
+          type="button"
+          className={styles.layersButton}
+          aria-expanded={false}
+          aria-controls="map-layers"
+          onClick={() => setLayersOpen(true)}
+        >
+          <span className={styles.swatch} aria-hidden="true">
+            {SWATCHES[styleName].map((color) => (
+              <span key={color} style={{ background: color }} />
+            ))}
+          </span>
+          {t('layers')}
+        </button>
+      ) : null}
+      {!phone && layersOpen ? (
+        <div className={styles.legend} id="map-layers">
+          <div className={styles.legendRow}>
+            <span className={styles.kicker}>{t('layers')}</span>
+            <button
+              type="button"
+              className={styles.legendClose}
+              aria-expanded={true}
+              aria-controls="map-layers"
+              onClick={() => setLayersOpen(false)}
+            >
+              {t('layersClose')}
+            </button>
+          </div>
           <div className={styles.legendRow}>
             <span className={styles.kicker}>{t('zoomShows')}</span>
             <span className={styles.mono}>z{zoom.toFixed(1)}</span>
@@ -792,6 +905,25 @@ export function WorldMapBoard({
         </>
       ) : null}
 
+      {pinHint && tool !== 'pin' ? (
+        <div className={styles.pinHint} style={{ left: pinHint.x, top: pinHint.y }} role="status">
+          <span>{t('pinHintFirst')}</span>
+          <button
+            type="button"
+            onClick={() => {
+              setPinHintSeen(true);
+              try {
+                window.localStorage.setItem(PIN_HINT_KEY, '1');
+              } catch {
+                /* Shows again next time. */
+              }
+            }}
+          >
+            {t('pinHintOk')}
+          </button>
+        </div>
+      ) : null}
+
       {cardStop ? (
         <PinCard
           key={cardStop.id}
@@ -801,6 +933,13 @@ export function WorldMapBoard({
           when={when(cardIndex)}
           tab={card!.tab}
           style={cardStyle}
+          expanded={cardMode === 'expanded'}
+          onToggleExpand={() => {
+            // On a phone the route sheet steps down to make room for the expanded card.
+            if (phone && cardMode !== 'expanded') setSheet('peek');
+            setCardMode((current) => (current === 'expanded' ? 'follow' : 'expanded'));
+          }}
+          onDragStart={dragCard}
           onTab={(tab) => setCard({ id: cardStop.id, tab })}
           onChange={(change) => updateStop(cardStop.id, change)}
           onShowSpot={(spot) =>
@@ -810,6 +949,7 @@ export function WorldMapBoard({
           }
           onClose={() => {
             setCard(null);
+            setCardMode('follow');
             setCardStyle({ visibility: 'hidden' });
           }}
         />
@@ -1081,7 +1221,7 @@ export function WorldMapBoard({
                 {t('addStop')}
               </button>
             ) : null}
-            <p className={styles.muted}>{t('addHint')}</p>
+            {stops.length ? null : <p className={styles.muted}>{t('addHint')}</p>}
             {stops.length ? (
               <button type="button" className={styles.clear} onClick={() => commit([])}>
                 {t('clearRoute')}

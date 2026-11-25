@@ -727,12 +727,19 @@
       "addSpot": "Add a spot…",
       "spotsHint": "Spots with a location show on the map as you zoom in.",
       "notesLabel": "Notes",
-      "notesPlaceholder": "Addresses, hours, ideas…",
+      "notesPlaceholder": "Addresses, opening hours, a friend’s tip…",
       "autosave": "Saved automatically",
       "progress": "To-dos done",
-      "noTodos": "Nothing to do yet.",
+      "noTodos": "Nothing to do yet: a ticket to buy, a table to book, a pass to get.",
       "addTodo": "Add a task…",
-      "photosLabel": "Photos of {stop}"
+      "photosLabel": "Photos of {stop}",
+      "drag": "Drag to move",
+      "expand": "Expand the card",
+      "collapse": "Shrink the card",
+      "spotsGuideTitle": "What will you do in {place}?",
+      "spotsGuideStay": "Where you sleep: the hotel or flat",
+      "spotsGuideFood": "Where you want to eat",
+      "spotsGuideSight": "What you must not miss"
     },
     "visa": {
       "kicker": "GLOBETROT VISA",
@@ -750,7 +757,13 @@
       "review": "Review",
       "pencilled": "Suggested by Pip: {name}"
     },
-    "home": "From {name}"
+    "home": "From {name}",
+    "pinTip": "Tap to plan {place}",
+    "pinItems": "{count, plural, one {# thing} other {# things}} inside",
+    "pinHintFirst": "Tap a pin to see and plan that place: where you sleep, eat and what to see.",
+    "pinHintOk": "Got it",
+    "layers": "Layers",
+    "layersClose": "Close"
   },
   "daysPage": {
     "title": "Days",
