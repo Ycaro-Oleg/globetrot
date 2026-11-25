@@ -822,7 +822,10 @@
     "ideaAddHint": ", adicionar em “Sem dia”",
     "calendar": "Adicionar à agenda",
     "calendarSummary": "Dia {index} · {stop} — {trip}",
-    "calendarDone": "Arquivo da agenda pronto: abra para adicionar os dias à sua agenda."
+    "calendarDone": "Arquivo da agenda pronto: abra para adicionar os dias à sua agenda.",
+    "startPick": "Comece por um destes: um toque e ele entra em “Sem dia”, depois você escolhe o dia.",
+    "startOwn": "Adicionar outro lugar",
+    "freeDay": "Dia livre"
   },
   "budgetPage": {
     "title": "Orçamento e poupança",
@@ -1539,14 +1542,6 @@
       "ready": "Você já tem tudo guardado.",
       "by": "Guardado até {month} no ritmo atual.",
       "notYet": "Ainda não: defina um valor mensal no orçamento."
-    },
-    "toolsTitle": "Esta viagem",
-    "tools": {
-      "board": "Mapa",
-      "days": "Dias",
-      "budget": "Orçamento",
-      "lists": "Listas",
-      "pip": "Perguntar ao Pip"
     },
     "archive": "Arquivar esta viagem",
     "archiveHint": "Tira da sua lista; dá para restaurar.",

@@ -335,7 +335,17 @@ async function journey(browser, { width, height, locale }) {
       'the five nights at the first stop are not five days on the Days page',
     );
     // A place: saved to "No day", moved to day 2 with the keyboard path, still there after a reload.
-    await page.getByRole('button', { name: daysCopy.addPlace }).click();
+    // An empty plan begins in one panel: its button says "add another place" next to the ideas (or "add the
+    // first place" without ideas); once there are places, the header's "add place" takes over.
+    const escape = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    await page
+      .getByRole('button', {
+        name: new RegExp(
+          [daysCopy.addPlace, daysCopy.startOwn, daysCopy.startCta].map(escape).join('|'),
+        ),
+      })
+      .first()
+      .click();
     await page.locator('#place-name').fill('Senso-ji');
     await axe('days (add place)');
     await page.getByRole('button', { name: daysCopy.fSubmit, exact: true }).click();
