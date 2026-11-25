@@ -51,6 +51,14 @@ const EXAMPLES = [
   { n: 3, id: 'rio-de-la-plata' },
 ] as const;
 
+/** The flight over "how it works": from above step 1's card to step 2's to step 3's (centres at 1/6, 1/2, 5/6). */
+const STEP_PINS = [
+  [200, 128],
+  [600, 128],
+  [1000, 128],
+] as const;
+const STEP_ROUTE = 'M200 126 Q400 14 600 126 Q800 14 1000 126';
+
 /** The scrolling band of destinations: two rows of twelve, spread around the world. */
 const MARQUEE = [
   'Lisbon',
@@ -89,6 +97,18 @@ export default function HomePage() {
   const auth = useTranslations('auth');
   const locale = useLocale();
   // Destinations for the scrolling band, in the page's language (proper names, not copy).
+  const placeName = (en: string) => {
+    const place = POPULAR_PLACES.find((candidate) => candidate.en === en);
+    return place ? (locale === 'pt-BR' ? place.pt : place.en) : en;
+  };
+  const heroLabels = {
+    fortaleza: placeName('Fortaleza'),
+    saoPaulo: placeName('São Paulo'),
+    newYork: placeName('New York'),
+    lisbon: placeName('Lisbon'),
+    paris: placeName('Paris'),
+    tokyo: placeName('Tokyo'),
+  };
   const places = MARQUEE.flatMap((name) => {
     const place = POPULAR_PLACES.find((candidate) => candidate.en === name);
     return place ? [locale === 'pt-BR' ? place.pt : place.en] : [];
@@ -207,7 +227,7 @@ export default function HomePage() {
             fetchPriority="high"
             decoding="async"
           />
-          <HeroRoutes />
+          <HeroRoutes labels={heroLabels} />
         </div>
         <AnswerCalculator signupHref="/signup" />
       </section>
@@ -241,29 +261,37 @@ export default function HomePage() {
             <h2 id="how-title">{t('howTitle')}</h2>
           </div>
           <div className={styles.stepsWrap}>
-            <svg
-              className={styles.stepPath}
-              viewBox="0 0 1000 80"
-              preserveAspectRatio="none"
-              aria-hidden="true"
-            >
+            <svg className={styles.stepPath} viewBox="0 0 1200 150" aria-hidden="true">
+              <defs>
+                <mask id="step-route-mask" maskUnits="userSpaceOnUse">
+                  <path
+                    d={STEP_ROUTE}
+                    pathLength={1}
+                    className={styles.stepRouteDraw}
+                    data-route-draw
+                  />
+                </mask>
+              </defs>
+              <path d={STEP_ROUTE} className={styles.stepRouteTrack} />
               <path
-                d="M10 50 C 180 0, 330 90, 500 40 S 820 0, 990 46"
-                pathLength={1}
-                className={styles.stepPathTrack}
+                d={STEP_ROUTE}
+                className={styles.stepRoute}
+                mask="url(#step-route-mask)"
+                data-route
               />
-              <path
-                d="M10 50 C 180 0, 330 90, 500 40 S 820 0, 990 46"
-                pathLength={1}
-                className={styles.stepPathLine}
-                data-path-line
-              />
-              <path
-                d="M10 50 C 180 0, 330 90, 500 40 S 820 0, 990 46"
-                pathLength={1}
-                className={styles.stepPathDash}
-                data-path-dash
-              />
+              {STEP_PINS.map(([x, y], index) => (
+                <g key={x} data-pin data-tip={`${x} ${y}`} className={styles.stepPin}>
+                  <path
+                    d={`M${x} ${y} c-4-7 -14-14 -14-24 a14 14 0 1 1 28 0 c0 10 -10 17 -14 24z`}
+                  />
+                  <text x={x} y={y - 19}>
+                    {index + 1}
+                  </text>
+                </g>
+              ))}
+              <g data-plane className={styles.stepPlane} transform="translate(-60 -60)">
+                <path d="M15 0 L-6 -3.4 L-11 -13 L-15 -13 L-11 -2.6 L-17 -1.8 L-20 -6.5 L-23 -6.5 L-21 0 L-23 6.5 L-20 6.5 L-17 1.8 L-11 2.6 L-15 13 L-11 13 L-6 3.4 Z" />
+              </g>
             </svg>
             <ol className={styles.steps}>
               {steps.map((step) => (

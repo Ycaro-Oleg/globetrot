@@ -562,7 +562,8 @@
       "check": "digite os valores só com números, como 2500.",
       "noCost": "diga quanto a viagem custa para ter uma data.",
       "cta": "Salvar plano — é grátis",
-      "note": "Uma estimativa a partir do que você digita. O Globetrot nunca guarda seu dinheiro."
+      "note": "Uma estimativa a partir do que você digita. O Globetrot nunca guarda seu dinheiro.",
+      "quickMonthly": "Valores rápidos por mês"
     },
     "cookiePrefs": "Preferências de cookies",
     "stickyCta": "Começar grátis",

@@ -562,7 +562,8 @@
       "check": "type the amounts as plain numbers, like 2500.",
       "noCost": "add what the trip costs to get a date.",
       "cta": "Save this plan — it’s free",
-      "note": "An estimate from what you type. Globetrot never holds your money."
+      "note": "An estimate from what you type. Globetrot never holds your money.",
+      "quickMonthly": "Quick monthly amounts"
     },
     "cookiePrefs": "Cookie preferences",
     "stickyCta": "Start free",

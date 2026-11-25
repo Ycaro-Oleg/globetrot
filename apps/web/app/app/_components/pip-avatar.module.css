@@ -23,6 +23,18 @@
 }
 
 /* The outfit and hat sit over the body, even when a pose's props come after them. */
+/* The globe's continents: over the body, under the look. */
+.globe {
+  z-index: 1;
+}
+
+.grid path {
+  fill: none;
+  stroke: #93c5fd;
+  stroke-width: 0.8;
+  opacity: 0.55;
+}
+
 .front {
   z-index: 2;
 }
