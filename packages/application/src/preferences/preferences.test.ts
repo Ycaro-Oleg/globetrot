@@ -21,6 +21,7 @@ const FULL = {
   theme: 'red-eye',
   motion: 'reduced',
   homeCity: 'São Paulo',
+  homePoint: null,
   pipOptIn: true,
   pipLook: { hat: 'cap', outfit: 'vest', bag: 'backpack', bagColor: 'cyan' },
   pipName: 'Pipoca',
@@ -53,6 +54,7 @@ describe('getPreferences', () => {
       theme: 'system',
       motion: 'full',
       homeCity: null,
+      homePoint: null,
       pipOptIn: false,
       pipLook: { hat: 'straw', outfit: 'none', bag: 'trolley', bagColor: 'amber' },
       pipName: null,
@@ -98,6 +100,7 @@ describe('updatePreferences changes one field and nothing else', () => {
       theme: 'system',
       motion: 'full',
       homeCity: null,
+      homePoint: null,
       pipOptIn: false,
       pipLook: { hat: 'straw', outfit: 'none', bag: 'trolley', bagColor: 'amber' },
       pipName: null,
@@ -134,6 +137,25 @@ describe('updatePreferences changes one field and nothing else', () => {
       nationality: null,
       timeZone: null,
     });
+  });
+
+  it('keeps the home city’s point, and drops it when only the name changes', async () => {
+    const { app } = setup();
+    const picked = await app.updatePreferences.execute(as(ana), {
+      homeCity: 'Fortaleza',
+      homePoint: { latitude: -3.717, longitude: -38.543 },
+    });
+    expect(picked.homePoint).toEqual({ latitude: -3.717, longitude: -38.543 });
+    expect((await app.updatePreferences.execute(as(ana), { units: 'imperial' })).homePoint).toEqual(
+      {
+        latitude: -3.717,
+        longitude: -38.543,
+      },
+    );
+    // Typed in settings: a name only, so the old point must not stay on the map.
+    expect(
+      (await app.updatePreferences.execute(as(ana), { homeCity: 'Recife' })).homePoint,
+    ).toBeNull();
   });
 
   it('stores the time zone in its canonical spelling', async () => {

@@ -96,6 +96,8 @@ export interface PreferencesRecord {
   readonly motion: MotionChoice;
   /** The city the person usually leaves from, or null. */
   readonly homeCity: string | null;
+  /** Where that city is, when it was picked from the city list; null when typed or unknown. */
+  readonly homePoint: { readonly latitude: number; readonly longitude: number } | null;
   readonly pipOptIn: boolean;
   /** The person's Pip: hat, outfit, bag and bag colour (values from the domain's lists). */
   readonly pipLook: { hat: string; outfit: string; bag: string; bagColor: string };
@@ -114,6 +116,7 @@ export interface PreferencesPatch {
   readonly theme?: ThemeChoice | undefined;
   readonly motion?: MotionChoice | undefined;
   readonly homeCity?: string | null | undefined;
+  readonly homePoint?: { readonly latitude: number; readonly longitude: number } | null | undefined;
   readonly pipOptIn?: boolean | undefined;
   readonly pipLook?: { hat: string; outfit: string; bag: string; bagColor: string } | undefined;
   readonly pipName?: string | null | undefined;
@@ -663,6 +666,17 @@ export interface PlaceResult {
  * Looks places up by name or by point. Adapters (Geoapify today) keep their keys on the server. `null` means the
  * provider is not configured or did not answer; an empty list means it answered with nothing.
  */
+/**
+ * Cities from a built-in index (GeoNames, every city of 15 000 people or more): fast, free and always there, for
+ * picking a home city or a destination. `language` picks the name shown when the query matched another name.
+ */
+export interface CityIndexPort {
+  search(
+    query: string,
+    options: { readonly language: 'en' | 'pt-BR'; readonly limit: number },
+  ): PlaceResult[];
+}
+
 export interface GeocodingPort {
   search(
     query: string,
@@ -865,5 +879,6 @@ export interface Ports {
   readonly clock: Clock;
   readonly ids: IdGenerator;
   readonly geocoding: GeocodingPort;
+  readonly cities: CityIndexPort;
   readonly rateLimiter: RateLimiter;
 }

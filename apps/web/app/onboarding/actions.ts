@@ -23,10 +23,14 @@ export interface OnboardingPlace {
 export interface OnboardingInput {
   readonly idempotencyKey: string;
   readonly homeCity: string;
+  /** Where the home city is, when it was picked from the city list: the map shows the trip starting there. */
+  readonly homePoint: { readonly latitude: number; readonly longitude: number } | null;
   readonly destination: OnboardingPlace;
-  /** `YYYY-MM`: the trip starts on the first of that month (dates can change later). */
-  readonly month: string;
+  /** `YYYY-MM-DD`: the day the trip starts (it can change later). */
+  readonly startDate: string;
   readonly nights: number;
+  /** The trip's currency: the destination's own by default, or the one the person picked. */
+  readonly currency: string;
   /** The person's own rough guess of the whole trip, in their currency: stored as an estimate. */
   readonly estimate: string;
   readonly saved: string;
@@ -44,13 +48,15 @@ export async function finishOnboarding(input: OnboardingInput): Promise<{ error:
   const cookieHeader = sessionCookieHeader(store.getAll());
   if (!cookieHeader) redirect('/login?next=%2Fonboarding');
   const key = idempotencyKeySchema.safeParse(input.idempotencyKey);
-  if (!key.success || !/^\d{4}-\d{2}$/.test(input.month)) return { error: true };
+  if (!key.success || !/^\d{4}-\d{2}-\d{2}$/.test(input.startDate)) return { error: true };
   const client = createServerApiClient({ cookieHeader, apiUrl: apiInternalUrl() });
   const t = await getTranslations('onboarding');
 
   const preferences = await client.PATCH('/v1/me/preferences', {
     body: {
-      ...(input.homeCity.trim() ? { homeCity: input.homeCity.trim() } : {}),
+      ...(input.homeCity.trim()
+        ? { homeCity: input.homeCity.trim().slice(0, 120), homePoint: input.homePoint }
+        : {}),
       pipOptIn: input.pipOptIn,
     },
   });
@@ -59,8 +65,8 @@ export async function finishOnboarding(input: OnboardingInput): Promise<{ error:
   const trip = await client.POST('/v1/trips', {
     body: {
       title: input.destination.name.slice(0, 120),
-      currency: preferences.data.currency,
-      startDate: `${input.month}-01`,
+      currency: /^[A-Z]{3}$/.test(input.currency) ? input.currency : preferences.data.currency,
+      startDate: input.startDate,
     },
     headers: { 'Idempotency-Key': key.data },
   });
@@ -101,7 +107,7 @@ export async function finishOnboarding(input: OnboardingInput): Promise<{ error:
       category: 'other',
       status: 'estimate',
       amount: input.estimate,
-      currency: preferences.data.currency,
+      currency: trip.data.currency,
       // The rough guess stands for the whole trip: real costs added later come out of it.
       guess: true,
     },

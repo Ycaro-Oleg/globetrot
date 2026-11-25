@@ -428,6 +428,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/places/cities": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Search cities by name
+         * @description Cities of 15 000 people or more from the built-in GeoNames index (CC BY 4.0): instant, no provider. Accents and case are ignored, and big cities also match a name in another language ("Londres"). Shared limit of 60 lookups a minute with the other place lookups.
+         */
+        get: operations["searchCities"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/places/reverse": {
         parameters: {
             query?: never;
@@ -1345,6 +1365,10 @@ export interface operations {
                          */
                         motion: "full" | "reduced";
                         homeCity: string | null;
+                        homePoint: {
+                            latitude: number;
+                            longitude: number;
+                        } | null;
                         pipOptIn: boolean;
                         pipLook: {
                             /** @enum {string} */
@@ -1439,6 +1463,11 @@ export interface operations {
                      * @example São Paulo
                      */
                     homeCity?: string | null;
+                    /** @description Where the home city is (from the city list), so the map shows where trips start. Changing `homeCity` without it clears it. */
+                    homePoint?: {
+                        latitude: number;
+                        longitude: number;
+                    } | null;
                     /** @description Whether the person wants Pip’s suggestions. */
                     pipOptIn?: boolean;
                     /** @description The person’s Pip: hat, outfit, bag and bag colour. */
@@ -1488,6 +1517,10 @@ export interface operations {
                          */
                         motion: "full" | "reduced";
                         homeCity: string | null;
+                        homePoint: {
+                            latitude: number;
+                            longitude: number;
+                        } | null;
                         pipOptIn: boolean;
                         pipLook: {
                             /** @enum {string} */
@@ -4898,6 +4931,111 @@ export interface operations {
             };
             /** @description Place search is not configured or the provider is not answering. */
             503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    searchCities: {
+        parameters: {
+            query: {
+                query: string;
+                /** @description Language for place names. */
+                language?: "en" | "pt-BR";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Up to 8 cities, most populous first. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        places: {
+                            /** @description Stable key of the place (use it as `placeKey`). */
+                            key: string;
+                            name: string;
+                            countryCode: string | null;
+                            region: string | null;
+                            latitude: number;
+                            longitude: number;
+                            /** @example © OpenStreetMap contributors · Geoapify */
+                            attribution: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description The query is not valid. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description Too many lookups in a minute. Wait and try again. */
+            429: {
                 headers: {
                     [name: string]: unknown;
                 };

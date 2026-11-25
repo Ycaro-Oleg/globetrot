@@ -1650,6 +1650,39 @@
   white-space: nowrap;
 }
 
+/* Home: where the trip starts (the person's city from the city list). */
+.homePin {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  pointer-events: none;
+}
+
+.homeHead {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 3px solid #ffffff;
+  border-radius: 50%;
+  background: #0f172a;
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: 800;
+  box-shadow: 0 6px 16px -6px rgb(15 23 42 / 0.6);
+}
+
+.homeLabel {
+  padding: 3px 9px;
+  border-radius: 99px;
+  background: #0f172a;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
 .pipNote {
   display: flex;
   flex-wrap: wrap;

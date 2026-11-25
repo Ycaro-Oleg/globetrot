@@ -16,7 +16,15 @@ import {
 } from '@globetrot/domain';
 import { DEFAULT_LOCALE, SUPPORTED_LOCALES } from '@globetrot/i18n';
 import { sql, type AnyColumn, type SQL } from 'drizzle-orm';
-import { boolean, char, check, pgTable, text, timestamp } from 'drizzle-orm/pg-core';
+import {
+  doublePrecision,
+  boolean,
+  char,
+  check,
+  pgTable,
+  text,
+  timestamp,
+} from 'drizzle-orm/pg-core';
 import { user } from './auth';
 
 const instant = (name: string) => timestamp(name, { withTimezone: true });
@@ -46,6 +54,9 @@ export const userPreference = pgTable(
     motion: text('motion').notNull().default(DEFAULT_MOTION_CHOICE),
     /** The city the person usually leaves from, as they wrote it. Optional; personal, never in logs or audit. */
     homeCity: text('home_city'),
+    /** Where the home city is (picked from the city list), so the map can show where the trip starts. */
+    homeLatitude: doublePrecision('home_latitude'),
+    homeLongitude: doublePrecision('home_longitude'),
     /** Whether the person asked for Pip's suggestions (onboarding). Pip itself stays behind its feature flag. */
     pipOptIn: boolean('pip_opt_in')
       .notNull()
@@ -74,6 +85,10 @@ export const userPreference = pgTable(
     check(
       'user_preference_pip_name_length',
       sql`${table.pipName} is null or (${table.pipName} = btrim(${table.pipName}) and char_length(${table.pipName}) between 1 and 16)`,
+    ),
+    check(
+      'user_preference_home_point_valid',
+      sql`(${table.homeLatitude} is null and ${table.homeLongitude} is null) or (${table.homeLatitude} between -90 and 90 and ${table.homeLongitude} between -180 and 180)`,
     ),
     check(
       'user_preference_home_city_length',

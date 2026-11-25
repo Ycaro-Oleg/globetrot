@@ -20,6 +20,8 @@ export interface StoredPreferences {
   readonly motion: MotionChoice;
   /** The city the person usually leaves from, or null. */
   readonly homeCity: string | null;
+  /** Where the home city is, when it was picked from the city list. */
+  readonly homePoint: { readonly latitude: number; readonly longitude: number } | null;
   readonly pipOptIn: boolean;
   readonly pipLook: {
     readonly hat: 'straw' | 'helmet' | 'cap' | 'none';

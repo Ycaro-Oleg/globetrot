@@ -22,6 +22,8 @@ interface Money { readonly amountMinor: bigint; readonly currency: CurrencyCode 
 | **Budgeting (trip) currency** | Each Trip, defaulting to the user's preferred currency (USD) | Trip totals in USD |
 | **Payment currency** | Stripe subscription | Unrelated to trips |
 
+- **Suggesting a trip currency:** the onboarding suggests the destination country's currency (`currencyOfCountry` in `@globetrot/domain`, from GeoNames' country table) and lets the person pick another. It is a suggestion from where the trip goes, never from the person's language, country or nationality.
+
 ## Conversion and provenance
 
 ```ts

@@ -35,6 +35,29 @@ const searchRoute = createRoute({
   },
 });
 
+const citiesRoute = createRoute({
+  method: 'get',
+  path: '/v1/places/cities',
+  operationId: 'searchCities',
+  tags: ['Places'],
+  summary: 'Search cities by name',
+  description:
+    'Cities of 15 000 people or more from the built-in GeoNames index (CC BY 4.0): instant, no provider. Accents ' +
+    'and case are ignored, and big cities also match a name in another language ("Londres"). Shared limit of 60 ' +
+    'lookups a minute with the other place lookups.',
+  security,
+  request: { query: searchPlacesInput },
+  responses: {
+    200: {
+      description: 'Up to 8 cities, most populous first.',
+      content: { 'application/json': { schema: z.object({ places: z.array(placeSchema) }) } },
+    },
+    401: errors[401],
+    422: errors[422],
+    429: errors[429],
+  },
+});
+
 const reverseRoute = createRoute({
   method: 'get',
   path: '/v1/places/reverse',
@@ -57,6 +80,9 @@ const reverseRoute = createRoute({
 export function registerPlaceRoutes(app: OpenAPIHono<Env>, application: Application) {
   app.openapi(searchRoute, async (c) =>
     c.json(await application.searchPlaces.execute(c.get('actor'), c.req.valid('query')), 200),
+  );
+  app.openapi(citiesRoute, async (c) =>
+    c.json(await application.searchCities.execute(c.get('actor'), c.req.valid('query')), 200),
   );
   app.openapi(reverseRoute, async (c) =>
     c.json(await application.reversePlace.execute(c.get('actor'), c.req.valid('query')), 200),

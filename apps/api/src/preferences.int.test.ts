@@ -28,6 +28,7 @@ const DEFAULTS = {
   theme: 'system',
   motion: 'full',
   homeCity: null,
+  homePoint: null,
   pipOptIn: false,
   pipLook: { hat: 'straw', outfit: 'none', bag: 'trolley', bagColor: 'amber' },
   pipName: null,
@@ -129,6 +130,7 @@ describe('preferences against a real database', () => {
       theme: 'red-eye',
       motion: 'reduced',
       homeCity: 'São Paulo',
+      homePoint: { latitude: -23.548, longitude: -46.636 },
       pipOptIn: true,
       pipLook: { hat: 'cap', outfit: 'vest', bag: 'backpack', bagColor: 'cyan' },
       pipName: 'Pipoca',
@@ -145,14 +147,20 @@ describe('preferences against a real database', () => {
       ['theme', 'day'],
       ['motion', 'full'],
       ['homeCity', 'Lisbon'],
+      ['homePoint', { latitude: 38.717, longitude: -9.133 }],
       ['pipOptIn', false],
       ['pipName', 'Globinho'],
       ['pipLook', { hat: 'none', outfit: 'scarf', bag: 'vintage', bagColor: 'pink' }],
     ] as const) {
       const before = (await call(ana.cookie, 'GET')).json;
+      // A home city typed without its point must not keep the old city's point: that is the one linked field.
+      const expected =
+        field === 'homeCity'
+          ? { ...before, homeCity: value, homePoint: null }
+          : { ...before, [field]: value };
       const { json } = await call(ana.cookie, 'PATCH', { [field]: value });
-      expect(json, field).toEqual({ ...before, [field]: value });
-      expect((await call(ana.cookie, 'GET')).json, field).toEqual({ ...before, [field]: value });
+      expect(json, field).toEqual(expected);
+      expect((await call(ana.cookie, 'GET')).json, field).toEqual(expected);
     }
 
     const cleared = await call(ana.cookie, 'PATCH', {
