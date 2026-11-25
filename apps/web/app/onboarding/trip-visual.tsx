@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { projectWorld, WORLD, WORLD_HEIGHT } from '../../lib/projection';
 import styles from './onboarding.module.css';
 
@@ -74,6 +74,18 @@ export function TripVisual({
   const plane = useRef<SVGGElement>(null);
   const route = useRef<SVGPathElement>(null);
   const view = useRef<Box | null>(null);
+  // The panel's shape (coarse): the trip is reframed when it changes, e.g. when the phone band first shows.
+  const [shape, setShape] = useState('');
+  useEffect(() => {
+    const element = svg.current;
+    if (!element || typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(([entry]) => {
+      const box = entry?.contentRect;
+      if (box) setShape(`${Math.round(box.width / 40)}x${Math.round(box.height / 40)}`);
+    });
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
 
   const from = home ? projectWorld(home.longitude, home.latitude) : null;
   const to = destination ? projectWorld(destination.longitude, destination.latitude) : null;
@@ -87,20 +99,19 @@ export function TripVisual({
     if (from && to)
       points.push({ x: (from.x + to.x) / 2, y: (from.y + to.y) / 2 - bow(from, to) / 2 });
     const rect = element.getBoundingClientRect();
-    const cover = element.parentElement
-      ?.querySelector('[data-covers-map]')
-      ?.getBoundingClientRect();
-    const clear =
-      cover && rect.height > 0 && cover.top > rect.top
-        ? Math.min(1, (cover.top - rect.top) / rect.height)
-        : 1;
-    const target = frame(points, rect.height > 0 ? rect.width / rect.height : 1.6, clear);
+    // What sits on the lower part of the map (the summary card, Pip on a phone): the trip stays above it.
+    const clear = Array.from(element.parentElement?.querySelectorAll('[data-covers-map]') ?? [])
+      .map((cover) => cover.getBoundingClientRect())
+      .filter((cover) => cover.height > 40 && cover.top > rect.top + rect.height * 0.4)
+      .reduce((lowest, cover) => Math.min(lowest, (cover.top - rect.top) / rect.height), 1);
+    if (rect.height === 0) return; // hidden: framed once it shows
+    const target = frame(points, rect.width / rect.height, clear);
     const show = (box: Box) => {
       view.current = box;
       element.setAttribute('viewBox', box.map((n) => n.toFixed(2)).join(' '));
       element.style.setProperty('--pin', (box[2] * PIN_SHARE).toFixed(3));
     };
-    const start = view.current ?? frame([], rect.height > 0 ? rect.width / rect.height : 1.6, 1);
+    const start = view.current ?? frame([], rect.width / rect.height, 1);
     if (!motionAllowed()) {
       show(target);
       return;
@@ -167,7 +178,7 @@ export function TripVisual({
     };
     // Re-run when the trip's places change.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [home?.latitude, home?.longitude, destination?.latitude, destination?.longitude]);
+  }, [home?.latitude, home?.longitude, destination?.latitude, destination?.longitude, shape]);
 
   return (
     <svg

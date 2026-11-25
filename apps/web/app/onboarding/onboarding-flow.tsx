@@ -13,6 +13,7 @@ import { currencyOptions } from '../settings/options';
 import { finishOnboarding, type OnboardingPlace } from './actions';
 import { CityPicker } from './city-picker';
 import { PipIntro } from './pip-intro';
+import { TripPip } from './trip-pip';
 import { TripVisual } from './trip-visual';
 import { nightsOf, TripDates, type TripRange } from './trip-dates';
 import styles from './onboarding.module.css';
@@ -225,6 +226,19 @@ export function OnboardingFlow({
       rest: t('restYes', { place: destination.name, month: when, amount: fmt(monthlyMoney) }),
       plan,
     };
+  })();
+
+  // Pip's line on the map for this step, reacting to what was just picked (none on its own intro step, and
+  // none on the answer when the person turned Pip off).
+  const guide = (() => {
+    if (step === 0) return t('guideWelcome');
+    if (step === 1) return home?.name ? t('guideHomeSet', { place: home.name }) : t('guideHome');
+    if (step === 2)
+      return destination ? t('guideDestSet', { place: destination.name }) : t('guideDest');
+    if (step === 3) return nights > 0 ? t('guideDatesSet', { count: nights }) : t('guideDates');
+    if (step === 4) return t('guideMoney');
+    if (step === LAST && pip && answer) return answer.ok ? t('guideYes') : t('guideNotYet');
+    return null;
   })();
 
   const kicker =
@@ -457,7 +471,7 @@ export function OnboardingFlow({
         </div>
       </form>
 
-      <aside className={styles.visual} aria-label={t('summary')}>
+      <aside className={styles.visual} aria-label={t('summary')} data-step={step}>
         {land ? (
           <TripVisual
             land={land}
@@ -477,6 +491,7 @@ export function OnboardingFlow({
             }
           />
         ) : null}
+        {guide ? <TripPip line={guide} cheer={step === LAST && answer?.ok === true} /> : null}
         <div className={styles.summary} data-covers-map>
           <span className={styles.summaryKicker}>{t('yourTrip')}</span>
           <dl>

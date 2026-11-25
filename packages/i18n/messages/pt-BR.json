@@ -1110,7 +1110,17 @@
     "pipDismiss": "Descartar",
     "pipApproved": "✓ Aprovado (só aqui, é um exemplo)",
     "pipDismissed": "Descartado: nada mudou",
-    "citiesCredit": "Lista de cidades: GeoNames (CC BY 4.0)"
+    "citiesCredit": "Lista de cidades: GeoNames (CC BY 4.0)",
+    "guideWelcome": "Oi! Cinco perguntas rápidas e você descobre se dá para ir.",
+    "guideHome": "De onde a aventura começa?",
+    "guideHomeSet": "{place}, anotado! É de lá que a gente decola.",
+    "guideDest": "Agora a parte do sonho: para onde?",
+    "guideDestSet": "{place}! Já estou desenhando a rota.",
+    "guideDates": "Toque no dia da ida e depois no da volta.",
+    "guideDatesSet": "{count, plural, one {# noite} other {# noites}}. Que delícia!",
+    "guideMoney": "Um palpite basta. Dá para ajustar depois.",
+    "guideYes": "Dá para ir! Vamos abrir seu mapa.",
+    "guideNotYet": "Ainda não, mas agora tem um plano."
   },
   "profilePage": {
     "title": "Perfil",

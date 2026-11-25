@@ -1110,7 +1110,17 @@
     "pipDismiss": "Dismiss",
     "pipApproved": "✓ Approved (only here, it’s an example)",
     "pipDismissed": "Dismissed: nothing changed",
-    "citiesCredit": "City list: GeoNames (CC BY 4.0)"
+    "citiesCredit": "City list: GeoNames (CC BY 4.0)",
+    "guideWelcome": "Hi! Five quick questions and you’ll know if you can go.",
+    "guideHome": "Where does the adventure start?",
+    "guideHomeSet": "{place}, noted! That’s where we take off.",
+    "guideDest": "Now the dream part: where to?",
+    "guideDestSet": "{place}! I’m drawing the route.",
+    "guideDates": "Tap the day you leave, then the day you come back.",
+    "guideDatesSet": "{count, plural, one {# night} other {# nights}}. Sounds good!",
+    "guideMoney": "A rough guess is enough. You can fix it later.",
+    "guideYes": "You can go! Let’s open your map.",
+    "guideNotYet": "Not yet, but now there’s a plan."
   },
   "profilePage": {
     "title": "Profile",

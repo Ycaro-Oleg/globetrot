@@ -1,4 +1,4 @@
-import { formatMoney, money, PLAN_TERMS, TRIAL_TERMS } from '@globetrot/domain';
+import { formatMoney, money, PLAN_TERMS, POPULAR_PLACES, TRIAL_TERMS } from '@globetrot/domain';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
@@ -11,6 +11,7 @@ import { DemoMapBoard } from './landing-demo-map';
 import { HeroRoutes } from './landing-hero-routes';
 import { LandingPip } from './landing-pip';
 import { LandingReveal } from './landing-reveal';
+import { LandingScroll, Words } from './landing-scroll';
 import { PipDemo, Pricing } from './landing-interactive';
 import { StickyCta } from './landing-sticky-cta';
 import { ConsentLink } from './analytics';
@@ -50,6 +51,34 @@ const EXAMPLES = [
   { n: 3, id: 'rio-de-la-plata' },
 ] as const;
 
+/** The scrolling band of destinations: two rows of twelve, spread around the world. */
+const MARQUEE = [
+  'Lisbon',
+  'Tokyo',
+  'Rio de Janeiro',
+  'Paris',
+  'Cape Town',
+  'New York',
+  'Bali',
+  'Buenos Aires',
+  'Rome',
+  'Reykjavik',
+  'Cusco',
+  'Seoul',
+  'Marrakech',
+  'Sydney',
+  'Jericoacoara',
+  'Istanbul',
+  'Mexico City',
+  'Santorini',
+  'Kyoto',
+  'Ushuaia',
+  'Barcelona',
+  'Havana',
+  'Dubai',
+  'Fernando de Noronha',
+];
+
 /**
  * The public landing page (design handoff v2, "Landing"): a dark hero over the halftone world, how it works in
  * three steps, Pip with a live approve / dismiss demo, copyable example trips, placeholder pricing and a FAQ.
@@ -59,6 +88,11 @@ export default function HomePage() {
   const t = useTranslations('landing');
   const auth = useTranslations('auth');
   const locale = useLocale();
+  // Destinations for the scrolling band, in the page's language (proper names, not copy).
+  const places = MARQUEE.flatMap((name) => {
+    const place = POPULAR_PLACES.find((candidate) => candidate.en === name);
+    return place ? [locale === 'pt-BR' ? place.pt : place.en] : [];
+  });
   const usd = (whole: number) =>
     formatMoney(money(BigInt(whole) * 100n, 'USD'), locale, { precision: 'whole' });
   const price = (minor: bigint) => formatMoney(money(minor, 'USD'), locale, { precision: 'full' });
@@ -191,40 +225,84 @@ export default function HomePage() {
         <section className={styles.section} id="see" aria-labelledby="see-title">
           <div className={styles.heading} data-reveal>
             <span className={styles.kicker}>{t('seeKicker')}</span>
-            <h2 id="see-title">{t('seeTitle')}</h2>
+            <h2 id="see-title" data-words>
+              <Words text={t('seeTitle')} />
+            </h2>
             <p className={styles.seeBody}>{t('seeBody')}</p>
           </div>
-          <div data-reveal>
+          <div className={styles.zoomFrame} data-zoom-reveal>
             <DemoMapBoard map={demoMap()} />
           </div>
         </section>
 
-        <section className={styles.section} id="how" aria-labelledby="how-title">
+        <section className={styles.section} id="how" aria-labelledby="how-title" data-step-path>
           <div className={styles.heading} data-reveal>
             <span className={styles.kicker}>{t('howKicker')}</span>
             <h2 id="how-title">{t('howTitle')}</h2>
           </div>
-          <ol className={styles.steps}>
-            {steps.map((step) => (
-              <li key={step.n} className={styles.step} data-tone={step.tone} data-reveal>
-                <span className={styles.stepNumber}>{step.n}</span>
-                <h3>{step.title}</h3>
-                <p>{step.body}</p>
-                <ul className={styles.demo} aria-hidden="true">
-                  {step.demo.map(([glyph, label, value]) => (
-                    <li key={label}>
-                      <span>
-                        <i>{glyph}</i>
-                        {label}
-                      </span>
-                      <b>{value}</b>
-                    </li>
-                  ))}
-                </ul>
-              </li>
-            ))}
-          </ol>
+          <div className={styles.stepsWrap}>
+            <svg
+              className={styles.stepPath}
+              viewBox="0 0 1000 80"
+              preserveAspectRatio="none"
+              aria-hidden="true"
+            >
+              <path
+                d="M10 50 C 180 0, 330 90, 500 40 S 820 0, 990 46"
+                pathLength={1}
+                className={styles.stepPathTrack}
+              />
+              <path
+                d="M10 50 C 180 0, 330 90, 500 40 S 820 0, 990 46"
+                pathLength={1}
+                className={styles.stepPathLine}
+                data-path-line
+              />
+              <path
+                d="M10 50 C 180 0, 330 90, 500 40 S 820 0, 990 46"
+                pathLength={1}
+                className={styles.stepPathDash}
+                data-path-dash
+              />
+            </svg>
+            <ol className={styles.steps}>
+              {steps.map((step) => (
+                <li key={step.n} className={styles.step} data-tone={step.tone} data-path-step>
+                  <span className={styles.stepNumber}>{step.n}</span>
+                  <h3>{step.title}</h3>
+                  <p>{step.body}</p>
+                  <ul className={styles.demo} aria-hidden="true">
+                    {step.demo.map(([glyph, label, value]) => (
+                      <li key={label}>
+                        <span>
+                          <i>{glyph}</i>
+                          {label}
+                        </span>
+                        <b>{value}</b>
+                      </li>
+                    ))}
+                  </ul>
+                </li>
+              ))}
+            </ol>
+          </div>
         </section>
+
+        <div className={styles.marquee} data-marquee aria-hidden="true">
+          {[0, 1].map((row) => (
+            <div key={row} className={styles.marqueeRow} data-marquee-row>
+              {[
+                ...places.slice(row * 12, row * 12 + 12),
+                ...places.slice(row * 12, row * 12 + 12),
+              ].map((place, index) => (
+                <span key={index} data-outline={index % 2 === 1 || undefined}>
+                  {place}
+                  <i>✦</i>
+                </span>
+              ))}
+            </div>
+          ))}
+        </div>
 
         <section className={styles.band} id="pip" aria-labelledby="pip-title">
           <div className={styles.pipGrid}>
@@ -283,7 +361,9 @@ export default function HomePage() {
         </section>
 
         <section className={styles.closing} id="start" aria-labelledby="start-title">
-          <h2 id="start-title">{t('closeTitle')}</h2>
+          <h2 id="start-title" data-words>
+            <Words text={t('closeTitle')} />
+          </h2>
           <p>{t('closeBody')}</p>
           <div className={styles.heroActions}>
             <TrackedLink href="/signup" className={styles.cta} event="cta_click">
@@ -296,6 +376,7 @@ export default function HomePage() {
           <span className={styles.heroNote}>{t('heroNote')}</span>
         </section>
         <LandingReveal />
+        <LandingScroll />
       </main>
       <StickyCta label={t('stickyCta')} note={t('stickyNote')} />
 
