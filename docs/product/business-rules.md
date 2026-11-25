@@ -120,7 +120,7 @@ Implementation: `packages/domain/src/trip/` (`tripDays`, `emptyDays`, `tripTotal
 ## Profile and My Pip
 
 - **The profile** (`/app/profile`) is the person's own page: their name, home city, Pip, a few numbers (countries and continents with a visa, trips) and their visas grouped by year, newest first, with a continent filter. Continents follow the UN M49 grouping (`continentOf` in `@globetrot/domain`): Africa, the Americas split into North and South (Central America and the Caribbean count as North), Asia, Europe, Oceania; Antarctica has its own entry. Following, sharing and visa privacy arrive with the community.
-- **My Pip.** Each person dresses their own Pip (hat, outfit, bag, bag colour) and may name it (1 to 16 characters; empty brings back "Pip"). Nothing changes until **Save**; Undo returns to the saved look and Shuffle picks a random one. The saved look is drawn on **every** Pip the person sees in the app. It is cosmetic only: no option is paid or locked today.
+- **My Pip.** Pip is drawn as the globe itself (dotted continents and a grid on its body). Each person may name their Pip (1 to 16 characters; empty brings back "Pip"); nothing changes until **Save**. **The wardrobe (hat, outfit, bag, bag colour) is switched off for now** (November 2026, the owner's call: it did not sit right on the body in every pose): it is not offered and not drawn, but a stored look is kept for when it returns. Cosmetic only: nothing is paid or locked.
 
 ## Photos
 

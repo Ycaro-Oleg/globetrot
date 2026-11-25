@@ -561,3 +561,22 @@
   clip-path: inset(50%);
   white-space: nowrap;
 }
+
+/* "My Pip" while the wardrobe is off: Pip and its name, side by side on a wide screen. */
+.nameOnly {
+  display: grid;
+  gap: 20px;
+  align-items: center;
+}
+
+.nameForm {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+@media (min-width: 720px) {
+  .nameOnly {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+}

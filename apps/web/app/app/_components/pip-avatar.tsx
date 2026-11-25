@@ -33,6 +33,12 @@ export const PIP_COLORS = { color: '#2B45C4', eyeColor: '#FFF5E1' } as const;
 
 export type PipMood = 'idle' | 'thinking' | 'happy';
 
+/**
+ * The wardrobe (hat, outfit, bag) is switched off for now: it did not sit right on the body in every pose, so Pip
+ * shows as the globe it is everywhere. The drawings and the stored looks stay, ready to come back.
+ */
+const WARDROBE = false;
+
 const INK = '#1E293B';
 const BAG_COLORS: Record<PipLook['bagColor'], [string, string]> = {
   amber: ['#F59E0B', '#B45309'],
@@ -123,6 +129,7 @@ export function PipAvatar({
 }) {
   // A page may dress Pip itself; otherwise it wears the person's own look (or the default outside the app).
   const saved = usePipLook();
+  const dressed = WARDROBE && !bare;
   const mood = moodProp ?? moodOfPose(pose);
   const look = lookProp ?? saved.look;
   const clip = `pip-${useId().replace(/[^a-zA-Z0-9]/g, '')}`;
@@ -215,7 +222,7 @@ export function PipAvatar({
       style={{ width: size, height: size }}
       aria-hidden="true"
     >
-      {size >= 40 && !bare ? (
+      {size >= 40 && dressed ? (
         <svg className={styles.layer} viewBox="0 0 100 100">
           <g ref={back} transform={at.back}>
             <g transform={BAG_FROM_HANDOFF}>
@@ -250,7 +257,7 @@ export function PipAvatar({
           </g>
         </g>
       </svg>
-      {bare ? null : (
+      {!dressed ? null : (
         <svg className={`${styles.layer} ${styles.front}`} viewBox="0 0 100 100">
           <g ref={front} transform={at.front}>
             <g transform={FROM_HANDOFF}>

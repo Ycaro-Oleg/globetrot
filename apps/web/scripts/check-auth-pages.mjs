@@ -869,13 +869,13 @@ try {
     entries.push(['shell-days-desktop', true, ...at('/app/days', VIEWPORTS.desktop)]);
     entries.push(['profile-desktop', true, ...at('/app/profile', VIEWPORTS.desktop)]);
     entries.push(['profile-phone', true, ...at('/app/profile', VIEWPORTS.phone)]);
+    // My Pip with a changed name: the save button and the "unsaved" mark (the wardrobe is off for now).
     entries.push([
-      'profile-pip-bag-tab',
+      'profile-pip-name-edited',
       true,
       async (page) => {
         await go(page, `${base}/app/profile`);
-        await page.locator('#pip-tab-bag').click();
-        await page.locator('#pip-tab-bag[aria-selected="true"]').waitFor();
+        await page.locator('#pip-name').fill('Pipoca');
       },
       VIEWPORTS.desktop,
     ]);
