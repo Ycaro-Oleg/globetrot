@@ -208,6 +208,21 @@
   box-shadow: 0 10px 24px -10px var(--coral);
 }
 
+.cta {
+  transition:
+    transform 180ms cubic-bezier(0.2, 0.8, 0.2, 1.4),
+    box-shadow 180ms ease;
+}
+
+.cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 32px -12px var(--coral);
+}
+
+.cta:active {
+  transform: scale(0.97);
+}
+
 .heroGhost {
   display: inline-flex;
   align-items: center;
@@ -517,31 +532,6 @@
   line-height: 1.5;
 }
 
-/* The app screenshot, framed like a window. */
-.shot {
-  margin: 0;
-  overflow: hidden;
-  border: 1px solid var(--hairline);
-  border-radius: 20px;
-  background: #0f172a;
-  box-shadow: 0 24px 60px -24px rgb(15 23 42 / 0.45);
-}
-
-.shot img {
-  display: block;
-  width: 100%;
-  height: auto;
-}
-
-/* On a phone the phone screen shows, at a size that stays readable. */
-@media (max-width: 640px) {
-  .shot {
-    width: min(100%, 340px);
-    margin-inline: auto;
-    border-radius: 28px;
-  }
-}
-
 .section {
   display: flex;
   flex-direction: column;
@@ -715,6 +705,7 @@
 }
 
 .pipStage {
+  position: relative;
   align-self: flex-start;
   padding: 16px 20px 4px;
   border-radius: 28px;
@@ -749,6 +740,7 @@
 }
 
 .change {
+  position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: 10px;
@@ -800,15 +792,152 @@
 }
 
 .approve {
+  position: relative;
+  overflow: hidden;
   border: 0;
   background: var(--blue);
   color: #fff;
+  box-shadow: 0 6px 16px -8px var(--blue);
+  transition:
+    transform 160ms cubic-bezier(0.2, 0.8, 0.2, 1.4),
+    box-shadow 160ms ease;
+}
+
+/* A light sweeps across Approve on hover. */
+.approve::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    110deg,
+    transparent 30%,
+    rgb(255 255 255 / 0.45) 50%,
+    transparent 70%
+  );
+  transform: translateX(-120%);
+  transition: transform 500ms ease;
+}
+
+.approve:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 22px -8px var(--blue);
+}
+
+.approve:hover::after {
+  transform: translateX(120%);
+}
+
+.approve:active,
+.dismiss:active,
+.replay:active {
+  transform: scale(0.94);
 }
 
 .dismiss {
   border: 1px solid var(--input-border);
   background: transparent;
   color: var(--ink);
+  transition:
+    transform 160ms ease,
+    background-color 160ms ease;
+}
+
+.dismiss:hover {
+  background: var(--band);
+  transform: translateY(-1px);
+}
+
+.decided {
+  animation: pop 420ms cubic-bezier(0.2, 0.8, 0.2, 1.5);
+}
+
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+}
+
+.confetti {
+  position: absolute;
+  z-index: 3;
+  width: 7px;
+  height: 11px;
+  border-radius: 2px;
+  pointer-events: none;
+}
+
+.replay {
+  align-self: flex-start;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--input-border);
+  border-radius: 99px;
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 160ms ease;
+}
+
+/* The landing's Pip is a button: poke it. */
+.pipBody {
+  display: block;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+}
+
+.pipBody:focus-visible,
+.replay:focus-visible,
+.approve:focus-visible,
+.dismiss:focus-visible {
+  outline: 3px solid var(--blue);
+  outline-offset: 3px;
+}
+
+.pipBubble {
+  position: absolute;
+  top: 4px;
+  right: -8px;
+  max-width: 180px;
+  margin: 0;
+  padding: 8px 12px;
+  border-radius: 16px 16px 16px 4px;
+  background: var(--deep);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  opacity: 0;
+  transform: translateY(6px) scale(0.9);
+  transform-origin: bottom left;
+  transition:
+    opacity 180ms ease,
+    transform 220ms cubic-bezier(0.2, 0.8, 0.2, 1.4);
+  pointer-events: none;
+}
+
+.pipBubble[data-on] {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .approve,
+  .approve::after,
+  .dismiss,
+  .replay,
+  .pipBubble {
+    transition: none;
+  }
+
+  .decided {
+    animation: none;
+  }
 }
 
 .decided {

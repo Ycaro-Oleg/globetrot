@@ -186,7 +186,7 @@ export function PipAvatar({
       ) : null}
       {still ? null : <span ref={host} className={styles.live} />}
       <span className={styles.still} dangerouslySetInnerHTML={{ __html: body }} />
-      <svg className={styles.layer} viewBox="0 0 100 100">
+      <svg className={`${styles.layer} ${styles.front}`} viewBox="0 0 100 100">
         <g ref={front} transform={at.front}>
           <g transform={FROM_HANDOFF}>
             <defs>

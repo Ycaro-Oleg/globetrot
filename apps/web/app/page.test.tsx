@@ -121,15 +121,20 @@ describe('Globetrot landing page', () => {
     },
   );
 
-  it.each([
-    ['en', 'board-en.webp'],
-    ['pt-BR', 'board-pt-BR.webp'],
-  ] as const)("shows a real screen of the app in the visitor's language (%s)", (locale, file) => {
-    const html = render(locale);
-    expect(html).toContain(`/landing/${file}`);
-    expect(html).toContain(`/landing/${file.replace('board-', 'board-phone-')}`);
-    expect(html).toContain(`alt="${catalogs[locale].landing.seeAlt}"`);
-  });
+  it.each(SUPPORTED_LOCALES)(
+    'lets the visitor try the map: a route with its stops and every other city to add (%s)',
+    (locale) => {
+      const html = render(locale);
+      const demo = catalogs[locale].landing.demo;
+      const text = visibleText(html);
+      for (const key of ['lisbon', 'madrid', 'barcelona', 'paris'] as const) {
+        expect(text).toContain(demo.cities[key]);
+      }
+      expect(html).toContain(`aria-label="${demo.add.replace('{city}', demo.cities.rome)}"`);
+      expect(text).toContain(demo.title);
+      expect(html.match(/<path d="M/g)?.length).toBeGreaterThan(20);
+    },
+  );
 
   it('never shows an amount in reais: examples are in USD, the default currency', () => {
     for (const locale of SUPPORTED_LOCALES) {

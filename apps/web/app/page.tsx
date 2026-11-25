@@ -5,8 +5,11 @@ import { useLocale, useTranslations } from 'next-intl';
 import { getLocale, getTranslations } from 'next-intl/server';
 import { siteOrigin } from '../lib/site-url';
 import { setScaffoldLocale } from './actions';
-import { PipAvatar } from './app/_components/pip-avatar';
+import { demoMap } from '../lib/demo-map';
 import { AnswerCalculator } from './landing-calculator';
+import { DemoMapBoard } from './landing-demo-map';
+import { LandingPip } from './landing-pip';
+import { LandingReveal } from './landing-reveal';
 import { PipDemo, Pricing } from './landing-interactive';
 import { StickyCta } from './landing-sticky-cta';
 import { ConsentLink } from './analytics';
@@ -66,8 +69,6 @@ export default function HomePage() {
     voyagerMonthly: price(PLAN_TERMS.voyager.monthlyMinor),
     voyagerAnnual: price(PLAN_TERMS.voyager.annualMinor),
   };
-  // A real screen of the app, captured from the Japan example in the visitor's language.
-  const shotLocale = locale === 'pt-BR' ? 'pt-BR' : 'en';
   const accent = (chunks: React.ReactNode) => <span className={styles.accent}>{chunks}</span>;
 
   const steps = [
@@ -186,39 +187,24 @@ export default function HomePage() {
 
       <main>
         <section className={styles.section} id="see" aria-labelledby="see-title">
-          <div className={styles.heading}>
+          <div className={styles.heading} data-reveal>
             <span className={styles.kicker}>{t('seeKicker')}</span>
             <h2 id="see-title">{t('seeTitle')}</h2>
             <p className={styles.seeBody}>{t('seeBody')}</p>
           </div>
-          <figure className={styles.shot}>
-            <picture>
-              <source
-                media="(max-width: 640px)"
-                srcSet={`/landing/board-phone-${shotLocale}.webp`}
-                width={780}
-                height={1484}
-              />
-              <img
-                src={`/landing/board-${shotLocale}.webp`}
-                alt={t('seeAlt')}
-                width={1280}
-                height={704}
-                loading="lazy"
-                decoding="async"
-              />
-            </picture>
-          </figure>
+          <div data-reveal>
+            <DemoMapBoard map={demoMap()} />
+          </div>
         </section>
 
         <section className={styles.section} id="how" aria-labelledby="how-title">
-          <div className={styles.heading}>
+          <div className={styles.heading} data-reveal>
             <span className={styles.kicker}>{t('howKicker')}</span>
             <h2 id="how-title">{t('howTitle')}</h2>
           </div>
           <ol className={styles.steps}>
             {steps.map((step) => (
-              <li key={step.n} className={styles.step} data-tone={step.tone}>
+              <li key={step.n} className={styles.step} data-tone={step.tone} data-reveal>
                 <span className={styles.stepNumber}>{step.n}</span>
                 <h3>{step.title}</h3>
                 <p>{step.body}</p>
@@ -240,14 +226,8 @@ export default function HomePage() {
 
         <section className={styles.band} id="pip" aria-labelledby="pip-title">
           <div className={styles.pipGrid}>
-            <div className={styles.heading}>
-              <div className={styles.pipStage}>
-                <PipAvatar
-                  size={180}
-                  look={{ hat: 'helmet', outfit: 'vest', bag: 'backpack', bagColor: 'cyan' }}
-                  followPointer
-                />
-              </div>
+            <div className={styles.heading} data-reveal>
+              <LandingPip />
               <span className={styles.kicker}>Pip</span>
               <h2 id="pip-title">{t('pipTitle')}</h2>
               <p className={styles.lead}>{t('pipBody')}</p>
@@ -257,7 +237,7 @@ export default function HomePage() {
         </section>
 
         <section className={styles.section} id="trips" aria-labelledby="trips-title">
-          <div className={styles.heading}>
+          <div className={styles.heading} data-reveal>
             <span className={styles.kicker}>{t('examplesKicker')}</span>
             <h2 id="trips-title">{t('examplesTitle')}</h2>
           </div>
@@ -267,6 +247,7 @@ export default function HomePage() {
                 <Link
                   href={`/signup?next=${encodeURIComponent(`/app/trips?example=${id}`)}`}
                   className={styles.example}
+                  data-reveal
                 >
                   <span className={styles.exampleLength}>{t(`trip${n}Length`)}</span>
                   <strong>{t.rich(`trip${n}Title`, { accent })}</strong>
@@ -312,6 +293,7 @@ export default function HomePage() {
           </div>
           <span className={styles.heroNote}>{t('heroNote')}</span>
         </section>
+        <LandingReveal />
       </main>
       <StickyCta label={t('stickyCta')} note={t('stickyNote')} />
 

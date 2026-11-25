@@ -22,7 +22,8 @@
   overflow: visible;
 }
 
-.layer:last-child {
+/* The outfit and hat sit over the body, even when a pose's props come after them. */
+.front {
   z-index: 2;
 }
 
