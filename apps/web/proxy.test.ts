@@ -70,12 +70,18 @@ describe('proxy: the API', () => {
 });
 
 describe('proxy: a link that names its language', () => {
-  it('stores the language and renders the page in it', () => {
-    const response = proxy(request('/?lang=pt-BR'));
-    expect(response.headers.get('x-middleware-next')).toBe('1');
+  it('stores the language and lands on the same address without it', () => {
+    const response = proxy(request('/signup?lang=pt-BR&next=%2Fapp'));
+    expect(response.status).toBe(307);
+    expect(response.headers.get('location')).toBe(`${ORIGIN}/signup?next=%2Fapp`);
     expect(response.cookies.get('globetrot_locale')?.value).toBe('pt-BR');
-    expect(response.headers.get('x-middleware-override-headers')).toContain('cookie');
-    expect(response.headers.get('x-middleware-request-cookie')).toContain('globetrot_locale=pt-BR');
+  });
+
+  it('leaves a form posted from such an address alone (the language switch itself)', () => {
+    const post = new NextRequest(`${ORIGIN}/?lang=pt-BR`, { method: 'POST' });
+    const response = proxy(post);
+    expect(response.headers.get('x-middleware-next')).toBe('1');
+    expect(response.cookies.get('globetrot_locale')).toBeUndefined();
   });
 
   it('ignores unsupported values and plain visits', () => {

@@ -4,7 +4,7 @@ This is the authoritative list. The prototype's executable spec is `design/refer
 
 ## Locale and currency
 
-- The user's **language**, **home country**, **nationality**, **current location** and **preferred currency** are independent settings. None is inferred from another. Detected values are only suggestions the user confirms. A visitor whose browser prefers another supported language is offered it once, in that language; a link may also name its language (`?lang=pt-BR`), which counts as the visitor's choice.
+- The user's **language**, **home country**, **nationality**, **current location** and **preferred currency** are independent settings. None is inferred from another. Detected values are only suggestions the user confirms. A visitor whose browser prefers another supported language is offered it once, in that language; a link may also name its language (`?lang=pt-BR`), which counts as the visitor's choice. The language switch on the public pages changes the language of someone signed in too: it saves their stored language, which otherwise wins over the browser's choice.
 - The default preferred currency is **USD**.
 - Each trip has a **trip currency** (budgeting currency). It defaults to the user's preferred currency and can be changed. **In the onboarding** it is suggested from the destination: the currency of the destination's country (Paris → EUR), shown with a selector to pick another. This reads the destination, never the person's own language, country or nationality.
 - Each expense keeps its **original currency and amount**. Totals are computed in the trip currency using a recorded exchange rate. See [`../architecture/money.md`](../architecture/money.md).
