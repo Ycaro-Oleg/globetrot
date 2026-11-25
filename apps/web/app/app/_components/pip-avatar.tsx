@@ -186,25 +186,23 @@ export function PipAvatar({
       ) : null}
       {still ? null : <span ref={host} className={styles.live} />}
       <span className={styles.still} dangerouslySetInnerHTML={{ __html: body }} />
-      <svg className={styles.layer} viewBox="0 0 100 100">
+      <svg className={`${styles.layer} ${styles.front}`} viewBox="0 0 100 100">
         <g ref={front} transform={at.front}>
           <g transform={FROM_HANDOFF}>
             <defs>
               <clipPath id={clip}>
-                <circle cx="105" cy="118" r="55" />
+                <circle cx="105" cy="118" r="62" />
               </clipPath>
             </defs>
             <g clipPath={`url(#${clip})`}>
               <Outfit kind={look.outfit} />
             </g>
             {look.outfit === 'scarf' ? (
-              <path
-                d="M134 156 L144 186 L156 182 L146 154Z"
-                fill="#EF4444"
-                stroke={INK}
-                strokeWidth="2.5"
-                strokeLinejoin="round"
-              />
+              <g fill="#EF4444" stroke={INK} strokeWidth="2.5" strokeLinejoin="round">
+                <path d="M136 152 L139 188 L150 186 L146 151Z" />
+                <path d="M143 151 L153 182 L163 177 L151 149Z" />
+                <circle cx="142" cy="150" r="6.5" />
+              </g>
             ) : null}
             <g transform="rotate(-7 105 64)">
               <Hat kind={look.hat} />
@@ -221,75 +219,115 @@ export function PipAvatar({
   );
 }
 
-/** Outfits, from the handoff's Pip, clipped to the globe. */
+/*
+ * Outfits, worn on the globe (handoff box: centre 105,118, radius 58). Each garment hugs the lower half of the body:
+ * a curved neckline on top and an arc a hair outside the body below, so it reads as clothing, not a stripe.
+ */
+const R = 59;
+/** The two points where a garment's neckline at height `y` meets the body's outline. */
+const edge = (y: number) => {
+  const dx = Math.sqrt(R * R - (y - 118) ** 2);
+  return [+(105 - dx).toFixed(2), +(105 + dx).toFixed(2)] as const;
+};
+/** A garment from a neckline at `y` (sagging `sag` in the middle) down to the bottom of the body. */
+const garment = (y: number, sag: number) => {
+  const [left, right] = edge(y);
+  return `M${left} ${y} Q105 ${y + sag} ${right} ${y} A${R} ${R} 0 0 1 ${left} ${y}Z`;
+};
+const bottomY = (x: number) => +(118 + Math.sqrt(R * R - (x - 105) ** 2)).toFixed(2);
+
 function Outfit({ kind }: { kind: PipLook['outfit'] }) {
-  if (kind === 'scarf')
+  if (kind === 'scarf') {
+    const [l1, r1] = edge(134);
+    const [l2, r2] = edge(149);
     return (
-      <g>
-        <rect x="40" y="146" width="130" height="15" fill="#EF4444" />
-        {[62, 86, 110, 134].map((x) => (
-          <rect key={x} x={x} y="146" width="7" height="15" fill="#FFFFFF" opacity=".7" />
-        ))}
-        <path d="M40 146 H170 M40 161 H170" stroke={INK} strokeWidth="2.5" />
+      <g strokeLinejoin="round">
+        <path
+          d={`M${l1} 134 Q105 151 ${r1} 134 A${R} ${R} 0 0 1 ${r2} 149 Q105 167 ${l2} 149 A${R} ${R} 0 0 1 ${l1} 134Z`}
+          fill="#EF4444"
+          stroke={INK}
+          strokeWidth="2.5"
+        />
+        <path
+          d="M64 143 Q105 160 146 143"
+          fill="none"
+          stroke="#FFFFFF"
+          strokeWidth="2.5"
+          strokeDasharray="7 9"
+          strokeLinecap="round"
+          opacity=".75"
+        />
       </g>
     );
+  }
   if (kind === 'aloha')
     return (
-      <g>
-        <rect x="40" y="148" width="130" height="40" fill="#F59E0B" />
+      <g strokeLinejoin="round">
+        <path d={garment(140, 18)} fill="#F59E0B" stroke={INK} strokeWidth="2.5" />
         {[
-          [66, 164],
-          [98, 176],
-          [132, 162],
-          [152, 178],
+          [72, 153],
+          [86, 165],
+          [124, 165],
+          [138, 153],
+          [105, 172],
         ].map(([x, y]) => (
-          <g key={x}>
-            <circle cx={x} cy={y} r="5" fill="#FFFFFF" />
-            <circle cx={x} cy={y} r="2" fill="#EC4899" />
+          <g key={`${x}-${y}`}>
+            <circle cx={x} cy={y} r="4.5" fill="#FFFFFF" />
+            <circle cx={x} cy={y} r="1.8" fill="#EC4899" />
           </g>
         ))}
-        <path d="M40 148 H170" stroke={INK} strokeWidth="2.5" />
         <path
-          d="M89 148 L105 166 L121 148Z"
+          d="M89 148 L105 164 L121 148 L113 146 L105 156 L97 146Z"
           fill="#FEF3C7"
           stroke={INK}
-          strokeWidth="2.5"
-          strokeLinejoin="round"
+          strokeWidth="2.2"
         />
       </g>
     );
-  if (kind === 'vest')
+  if (kind === 'vest') {
+    const [left, right] = edge(139);
     return (
-      <g>
-        <path d="M40 140 H91 V192 H40Z" fill="#B08654" />
-        <path d="M119 140 H170 V192 H119Z" fill="#B08654" />
+      <g strokeLinejoin="round">
+        {/* the shirt under the vest */}
+        <path d={garment(140, 16)} fill="#F8FAFC" stroke={INK} strokeWidth="2.2" />
+        <path d="M93 151 L105 160 L100 166Z M117 151 L105 160 L110 166Z" fill="#E2E8F0" />
         <path
-          d="M91 140 V192 M119 140 V192 M40 140 H91 M119 140 H170"
+          d={`M${left} 139 Q72 149 92 151 L101 ${bottomY(101)} A${R} ${R} 0 0 1 ${left} 139Z`}
+          fill="#B08654"
+          stroke={INK}
+          strokeWidth="2.5"
+        />
+        <path
+          d={`M${right} 139 Q138 149 118 151 L109 ${bottomY(109)} A${R} ${R} 0 0 0 ${right} 139Z`}
+          fill="#B08654"
           stroke={INK}
           strokeWidth="2.5"
         />
         <rect
-          x="62"
-          y="158"
-          width="20"
-          height="15"
-          rx="3"
+          x="64"
+          y="153"
+          width="14"
+          height="9"
+          rx="2.5"
           fill="#8A6A42"
           stroke={INK}
-          strokeWidth="2"
+          strokeWidth="1.8"
         />
         <rect
-          x="128"
-          y="158"
-          width="20"
-          height="15"
-          rx="3"
+          x="132"
+          y="153"
+          width="14"
+          height="9"
+          rx="2.5"
           fill="#8A6A42"
           stroke={INK}
-          strokeWidth="2"
+          strokeWidth="1.8"
         />
+        <circle cx="96" cy="161" r="1.8" fill="#3F2A14" />
+        <circle cx="98.5" cy="169" r="1.8" fill="#3F2A14" />
       </g>
     );
+  }
   return null;
 }
 
