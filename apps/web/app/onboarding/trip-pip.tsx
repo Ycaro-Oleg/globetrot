@@ -66,6 +66,7 @@ export function TripPip({ line, cheer }: { line: string; cheer: boolean }) {
       <span data-body className={styles.tripPipBody}>
         <PipAvatar
           size={84}
+          bare
           pose={cheer ? 'celebrate' : 'idle'}
           mood={cheer ? 'happy' : 'idle'}
           followPointer

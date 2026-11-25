@@ -72,7 +72,12 @@ export function PipIntro({
     <div className={styles.pipIntro} ref={stage}>
       <div className={styles.pipMeet}>
         <span data-pip className={styles.pipMeetAvatar}>
-          <PipAvatar size={96} mood={example === 'approved' ? 'happy' : 'idle'} followPointer />
+          <PipAvatar
+            size={96}
+            bare
+            mood={example === 'approved' ? 'happy' : 'idle'}
+            followPointer
+          />
         </span>
         <div className={styles.pipSays}>
           <p data-say>{t('pipHello')}</p>
@@ -110,7 +115,7 @@ export function PipIntro({
             aria-pressed={value === on}
             onClick={() => onChange(on)}
           >
-            <PipAvatar size={56} still mood={on ? 'happy' : 'idle'} />
+            <PipAvatar size={56} still bare mood={on ? 'happy' : 'idle'} />
             <span>
               <strong>{on ? t('pipYes') : t('pipNo')}</strong>
               <span>{on ? t('pipYesBody') : t('pipNoBody')}</span>

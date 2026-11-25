@@ -490,7 +490,7 @@
     "demoMonthly": "Per month",
     "demoReady": "Ready by",
     "pipTitle": "Pip suggests. You decide.",
-    "pipBody": "Pip is a little traveling globe — and you pick its outfit, hat and bag. It proposes changes as a list you review; nothing happens until you approve, and everything can be undone. Pip is optional: every feature works without it.",
+    "pipBody": "Pip is a little travelling globe. It suggests changes in a list you review; nothing happens until you approve, and everything can be undone. Pip is optional: everything works without it.",
     "pipSays": "Pip has 3 suggestions for Kyoto",
     "approve": "Approve",
     "dismiss": "Dismiss",
@@ -562,7 +562,8 @@
       "check": "type the amounts as plain numbers, like 2500.",
       "noCost": "add what the trip costs to get a date.",
       "cta": "Save this plan — it’s free",
-      "note": "An estimate from what you type. Globetrot never holds your money."
+      "note": "An estimate from what you type. Globetrot never holds your money.",
+      "quickMonthly": "Quick monthly amounts"
     },
     "cookiePrefs": "Cookie preferences",
     "stickyCta": "Start free",
@@ -1128,7 +1129,7 @@
     "statCountries": "countries",
     "statContinents": "continents",
     "statTrips": "trips",
-    "editPip": "Edit My Pip",
+    "editPip": "Name your Pip",
     "settings": "Settings",
     "myPip": "My Pip",
     "myPipSub": "Dress your travel companion. Every Pip in the app wears it.",
@@ -1192,7 +1193,8 @@
     "emptyTitle": "Your passport is blank",
     "emptyBody": "Mark a stop as visited on the map: the first visited stop in a country stamps its visa here.",
     "emptyCta": "Open the map",
-    "visaNote": "Globetrot visas are keepsakes for your trips. They are not official documents."
+    "visaNote": "Globetrot visas are keepsakes for your trips. They are not official documents.",
+    "myPipGlobe": "Pip is the globe that travels with you. Give it a name."
   },
   "communityPage": {
     "title": "Community",

@@ -2,7 +2,7 @@
 
 import { formatMoney, money, toLocalDate } from '@globetrot/domain';
 import { useLocale, useTranslations } from 'next-intl';
-import { useId, useState } from 'react';
+import { useId, useState, type CSSProperties } from 'react';
 import { livePlan, parseAmount } from './app/budget/budget-plan';
 import styles from './landing.module.css';
 
@@ -11,6 +11,8 @@ import { PLAN_DRAFT_COOKIE } from '../lib/plan-draft';
 
 const DEFAULTS = { cost: '3000', saved: '500', monthly: '300' };
 const MONTHLY_MAX = 3000;
+/** One-tap monthly amounts under the slider. */
+const QUICK_MONTHLY = [100, 300, 500, 1000];
 
 /**
  * "Can I go?" on the landing page: three numbers in, the answer out, computed with the app's own savings rule
@@ -31,6 +33,7 @@ export function AnswerCalculator({ signupHref }: { signupHref: string }) {
   const total = usd(cost);
   const have = usd(saved);
   const perMonth = usd(monthly);
+  const monthlyValue = Math.min(MONTHLY_MAX, Number(monthly) || 0);
   const format = (minor: bigint) =>
     formatMoney(money(minor, 'USD'), locale, { precision: 'whole' });
   const monthName = (yyyyMm: string) =>
@@ -110,23 +113,52 @@ export function AnswerCalculator({ signupHref }: { signupHref: string }) {
               />
             </span>
           </label>
-          <label className={styles.calcField} htmlFor={`${id}-monthly`}>
-            <span>
+          <div className={styles.calcField}>
+            <label htmlFor={`${id}-monthly`}>
               {t('monthly')} <strong>{perMonth ? format(perMonth.amountMinor) : '—'}</strong>
-            </span>
-            <input
-              id={`${id}-monthly`}
-              type="range"
-              min={0}
-              max={MONTHLY_MAX}
-              step={25}
-              value={Math.min(MONTHLY_MAX, Number(monthly) || 0)}
-              onChange={(event) => {
-                setTouched(true);
-                setMonthly(event.target.value);
-              }}
-            />
-          </label>
+            </label>
+            <div
+              className={styles.calcSlider}
+              style={{ '--fill': monthlyValue / MONTHLY_MAX } as CSSProperties}
+            >
+              <span className={styles.calcBubble} aria-hidden="true">
+                {format(BigInt(monthlyValue * 100))}
+              </span>
+              <input
+                id={`${id}-monthly`}
+                className={styles.calcRange}
+                type="range"
+                min={0}
+                max={MONTHLY_MAX}
+                step={25}
+                value={monthlyValue}
+                onChange={(event) => {
+                  setTouched(true);
+                  setMonthly(event.target.value);
+                }}
+              />
+              <span className={styles.calcTicks} aria-hidden="true">
+                {[0, MONTHLY_MAX / 2, MONTHLY_MAX].map((tick) => (
+                  <span key={tick}>{format(BigInt(tick * 100))}</span>
+                ))}
+              </span>
+            </div>
+            <div className={styles.calcChips} role="group" aria-label={t('quickMonthly')}>
+              {QUICK_MONTHLY.map((amount) => (
+                <button
+                  key={amount}
+                  type="button"
+                  aria-pressed={monthlyValue === amount}
+                  onClick={() => {
+                    setTouched(true);
+                    setMonthly(String(amount));
+                  }}
+                >
+                  {format(BigInt(amount * 100))}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
         <div className={styles.calcAnswer} data-ok={ok || undefined}>
           <p

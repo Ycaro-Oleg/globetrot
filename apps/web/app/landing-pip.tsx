@@ -1,6 +1,5 @@
 'use client';
 
-import type { PipLook } from '@globetrot/domain';
 import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 import { PipAvatar } from './app/_components/pip-avatar';
@@ -22,7 +21,6 @@ function motionAllowed() {
   );
 }
 
-const LOOK: PipLook = { hat: 'helmet', outfit: 'vest', bag: 'backpack', bagColor: 'cyan' };
 const LINES = ['pipHi1', 'pipHi2', 'pipHi3'] as const;
 
 /**
@@ -88,7 +86,7 @@ export function LandingPip() {
       >
         <PipAvatar
           size={180}
-          look={LOOK}
+          bare
           pose={pose}
           mood={hover || pose === 'celebrate' ? 'happy' : pose === 'unsure' ? 'thinking' : 'idle'}
           followPointer

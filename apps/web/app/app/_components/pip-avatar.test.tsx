@@ -22,37 +22,21 @@ describe('PipAvatar', () => {
     expect(renderToStaticMarkup(<PipAvatar still />)).not.toMatch(/class="[^"]*live/);
   });
 
-  it('wears the default look: a straw hat and an amber trolley', () => {
-    const html = renderToStaticMarkup(<PipAvatar size={96} still />);
-    expect(html).toContain('#FDE68A'); // straw brim
-    expect(html).toContain('#F59E0B'); // amber bag
-  });
-
-  it('dresses in the chosen hat, outfit and bag', () => {
-    const html = renderToStaticMarkup(
-      <PipAvatar
-        size={96}
-        still
-        look={{ hat: 'cap', outfit: 'vest', bag: 'vintage', bagColor: 'pink' }}
-      />,
-    );
-    expect(html).toContain('#DC2626'); // cap
-    expect(html).toContain('#B08654'); // vest
-    expect(html).toContain('#EC4899'); // pink bag
-    expect(html).not.toContain('#FDE68A');
-  });
-
-  it('can go without a hat and an outfit, and leaves the bag out when tiny', () => {
-    const bare = renderToStaticMarkup(
-      <PipAvatar
-        size={96}
-        still
-        look={{ hat: 'none', outfit: 'none', bag: 'trolley', bagColor: 'cyan' }}
-      />,
-    );
-    expect(bare).not.toMatch(/#FDE68A|#E7D7B5|#DC2626|#EF4444|#B08654/);
-    expect(bare).toContain('#06B6D4');
-    expect(renderToStaticMarkup(<PipAvatar size={26} still />)).not.toContain('#F59E0B');
+  it('is the globe itself: dotted continents and a grid, and no hat, outfit or bag for now', () => {
+    for (const html of [
+      renderToStaticMarkup(<PipAvatar size={96} still />),
+      renderToStaticMarkup(
+        <PipAvatar
+          size={96}
+          still
+          look={{ hat: 'cap', outfit: 'vest', bag: 'vintage', bagColor: 'pink' }}
+        />,
+      ),
+    ]) {
+      expect(html).toContain('-dots'); // the continents' dot pattern
+      expect(html).toContain('<pattern');
+      expect(html).not.toMatch(/#FDE68A|#E7D7B5|#DC2626|#EF4444|#B08654|#F59E0B|#EC4899/);
+    }
   });
 
   it('draws the props of each of the six states, none for idle or when tiny', () => {

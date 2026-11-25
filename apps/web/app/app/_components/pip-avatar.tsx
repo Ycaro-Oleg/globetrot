@@ -33,6 +33,12 @@ export const PIP_COLORS = { color: '#2B45C4', eyeColor: '#FFF5E1' } as const;
 
 export type PipMood = 'idle' | 'thinking' | 'happy';
 
+/**
+ * The wardrobe (hat, outfit, bag) is switched off for now: it did not sit right on the body in every pose, so Pip
+ * shows as the globe it is everywhere. The drawings and the stored looks stay, ready to come back.
+ */
+const WARDROBE = false;
+
 const INK = '#1E293B';
 const BAG_COLORS: Record<PipLook['bagColor'], [string, string]> = {
   amber: ['#F59E0B', '#B45309'],
@@ -52,8 +58,41 @@ const matrix = (m: Matrix) => `matrix(${m.map((n) => +n.toFixed(4)).join(' ')})`
 /** Where the look sits in a frame: the bag moves with the body, outfit and hat with the face. */
 function placement(frame: AvatarFrame) {
   const face = frame.shapes.find((shape) => shape.kind === 'eye')?.matrix ?? IDENTITY;
-  return { back: matrix(frame.root), front: `${matrix(frame.root)} ${matrix(face)}` };
+  return {
+    back: matrix(frame.root),
+    face: matrix(face),
+    front: `${matrix(frame.root)} ${matrix(face)}`,
+  };
 }
+
+/*
+ * Pip is the globe: dotted continents (like the landing's halftone world) painted on the body, around the face so
+ * they never cover the eyes. They move with the face, so the globe seems to turn towards whatever Pip looks at,
+ * and are clipped to the body.
+ */
+/** Two parallels and two meridians, wide of the eyes: the lines that say "globe" at a glance. */
+const GRID = [
+  'M20.5 45 Q48 51.5 75.5 45',
+  'M20 75 Q48 83 76 75',
+  'M48 31 Q13 60 48 89',
+  'M48 31 Q83 60 48 89',
+];
+const LAND = [
+  // North America and Greenland, top left
+  'M21 50 C20 41 27 33 37 31 C44 30 50 32 49 37 C48 41 43 41 40 44 C38 47 33 48 30 47 C27 49 24 51 21 50Z',
+  'M49 31.5 C52 30 56 31 56 34 C56 37 52 38 50 37 C48 36 47.5 33 49 31.5Z',
+  // Europe and Asia, top right
+  'M57 34 C63 31 72 34 76 42 C78 47 75 50 71 48 C68 47 66 47.5 63 46.5 C59 45 55 41 57 34Z',
+  // South America, left edge
+  'M20 55 C24 52 29 54 28.5 60 C28 67 26 73 23 78 C20 73 18.5 63 20 55Z',
+  // Africa, right edge
+  'M69.5 50 C75 49 78.5 54 78 61 C77.5 68 73 73 70.5 71 C68.5 66 68.5 56 69.5 50Z',
+  // Australia, islands and the ice at the bottom
+  'M51 77 C56 74 63 75 64 80 C65 85 59 88 54 87 C49 86 47 81 51 77Z',
+  'M37 79 a2.2 2.2 0 1 0 0.1 0Z',
+  'M42 84 a1.6 1.6 0 1 0 0.1 0Z',
+  'M28 86 C38 91 58 92 68 86 L68 96 L28 96Z',
+];
 
 function reducedMotion(): boolean {
   return (
@@ -74,6 +113,7 @@ export function PipAvatar({
   mood: moodProp,
   followPointer = false,
   still = false,
+  bare = false,
   className,
 }: {
   size?: number;
@@ -83,16 +123,21 @@ export function PipAvatar({
   mood?: PipMood;
   followPointer?: boolean;
   still?: boolean;
+  /** Just the globe: no hat, outfit or bag (the landing and onboarding show Pip as itself). */
+  bare?: boolean;
   className?: string;
 }) {
   // A page may dress Pip itself; otherwise it wears the person's own look (or the default outside the app).
   const saved = usePipLook();
+  const dressed = WARDROBE && !bare;
   const mood = moodProp ?? moodOfPose(pose);
   const look = lookProp ?? saved.look;
   const clip = `pip-${useId().replace(/[^a-zA-Z0-9]/g, '')}`;
   const host = useRef<HTMLSpanElement>(null);
   const back = useRef<SVGGElement>(null);
   const front = useRef<SVGGElement>(null);
+  const globe = useRef<SVGGElement>(null);
+  const globeFace = useRef<SVGGElement>(null);
   const avatar = useRef<MountedAvatar | null>(null);
   const settings = useRef({ mood, followPointer });
   useEffect(() => {
@@ -157,6 +202,8 @@ export function PipAvatar({
         const next = placement(frame);
         back.current?.setAttribute('transform', next.back);
         front.current?.setAttribute('transform', next.front);
+        globe.current?.setAttribute('transform', next.back);
+        globeFace.current?.setAttribute('transform', next.face);
         const more = !reduced || step.moving;
         return more && size < SMALL_SIZE ? SMALL_STEP : more;
       },
@@ -175,7 +222,7 @@ export function PipAvatar({
       style={{ width: size, height: size }}
       aria-hidden="true"
     >
-      {size >= 40 ? (
+      {size >= 40 && dressed ? (
         <svg className={styles.layer} viewBox="0 0 100 100">
           <g ref={back} transform={at.back}>
             <g transform={BAG_FROM_HANDOFF}>
@@ -186,30 +233,56 @@ export function PipAvatar({
       ) : null}
       {still ? null : <span ref={host} className={styles.live} />}
       <span className={styles.still} dangerouslySetInnerHTML={{ __html: body }} />
-      <svg className={`${styles.layer} ${styles.front}`} viewBox="0 0 100 100">
-        <g ref={front} transform={at.front}>
-          <g transform={FROM_HANDOFF}>
-            <defs>
-              <clipPath id={clip}>
-                <circle cx="105" cy="118" r="62" />
-              </clipPath>
-            </defs>
-            <g clipPath={`url(#${clip})`}>
-              <Outfit kind={look.outfit} />
-            </g>
-            {look.outfit === 'scarf' ? (
-              <g fill="#EF4444" stroke={INK} strokeWidth="2.5" strokeLinejoin="round">
-                <path d="M136 152 L139 188 L150 186 L146 151Z" />
-                <path d="M143 151 L153 182 L163 177 L151 149Z" />
-                <circle cx="142" cy="150" r="6.5" />
+      <svg className={`${styles.layer} ${styles.globe}`} viewBox="0 0 100 100">
+        <defs>
+          <pattern id={`${clip}-dots`} width="3.2" height="3.2" patternUnits="userSpaceOnUse">
+            <circle cx="1.6" cy="1.6" r="1.25" fill="#BFDBFE" />
+          </pattern>
+          <clipPath id={`${clip}-body`}>
+            <circle cx="48" cy="60" r="28.6" />
+          </clipPath>
+        </defs>
+        <g ref={globe} transform={at.back}>
+          <g clipPath={`url(#${clip}-body)`}>
+            <g ref={globeFace} transform={at.face} fill={`url(#${clip}-dots)`}>
+              {LAND.map((d) => (
+                <path key={d} d={d} />
+              ))}
+              <g className={styles.grid}>
+                {GRID.map((d) => (
+                  <path key={d} d={d} />
+                ))}
               </g>
-            ) : null}
-            <g transform="rotate(-7 105 64)">
-              <Hat kind={look.hat} />
             </g>
           </g>
         </g>
       </svg>
+      {!dressed ? null : (
+        <svg className={`${styles.layer} ${styles.front}`} viewBox="0 0 100 100">
+          <g ref={front} transform={at.front}>
+            <g transform={FROM_HANDOFF}>
+              <defs>
+                <clipPath id={clip}>
+                  <circle cx="105" cy="118" r="62" />
+                </clipPath>
+              </defs>
+              <g clipPath={`url(#${clip})`}>
+                <Outfit kind={look.outfit} />
+              </g>
+              {look.outfit === 'scarf' ? (
+                <g fill="#EF4444" stroke={INK} strokeWidth="2.5" strokeLinejoin="round">
+                  <path d="M136 152 L139 188 L150 186 L146 151Z" />
+                  <path d="M143 151 L153 182 L163 177 L151 149Z" />
+                  <circle cx="142" cy="150" r="6.5" />
+                </g>
+              ) : null}
+              <g transform="rotate(-7 105 64)">
+                <Hat kind={look.hat} />
+              </g>
+            </g>
+          </g>
+        </svg>
+      )}
       {size >= 40 && pose !== 'idle' ? (
         <svg className={styles.pose} viewBox="0 0 100 100" data-pose={pose}>
           <PipPoseProps pose={pose} />

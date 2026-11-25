@@ -15,7 +15,7 @@ export default function PublicError({
   const t = useTranslations('statusPages');
   return (
     <main className={styles.page} role="alert">
-      <PipAvatar size={120} pose="unsure" />
+      <PipAvatar size={120} pose="unsure" bare />
       <h1>{t('errorTitle')}</h1>
       <p>{t('errorBody')}</p>
       <div className={styles.actions}>

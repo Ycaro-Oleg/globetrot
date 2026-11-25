@@ -490,7 +490,7 @@
     "demoMonthly": "Por mês",
     "demoReady": "Pronto em",
     "pipTitle": "O Pip sugere. Você decide.",
-    "pipBody": "O Pip é um pequeno globo viajante — e você escolhe a roupa, o chapéu e a mala dele. Ele propõe mudanças numa lista que você revisa; nada acontece até você aprovar, e tudo pode ser desfeito. O Pip é opcional: tudo funciona sem ele.",
+    "pipBody": "O Pip é um pequeno globo viajante. Ele propõe mudanças numa lista que você revisa; nada acontece até você aprovar, e tudo pode ser desfeito. O Pip é opcional: tudo funciona sem ele.",
     "pipSays": "O Pip tem 3 sugestões para Quioto",
     "approve": "Aprovar",
     "dismiss": "Descartar",
@@ -562,7 +562,8 @@
       "check": "digite os valores só com números, como 2500.",
       "noCost": "diga quanto a viagem custa para ter uma data.",
       "cta": "Salvar plano — é grátis",
-      "note": "Uma estimativa a partir do que você digita. O Globetrot nunca guarda seu dinheiro."
+      "note": "Uma estimativa a partir do que você digita. O Globetrot nunca guarda seu dinheiro.",
+      "quickMonthly": "Valores rápidos por mês"
     },
     "cookiePrefs": "Preferências de cookies",
     "stickyCta": "Começar grátis",
@@ -1128,7 +1129,7 @@
     "statCountries": "países",
     "statContinents": "continentes",
     "statTrips": "viagens",
-    "editPip": "Editar Meu Pip",
+    "editPip": "Dar um nome ao Pip",
     "settings": "Configurações",
     "myPip": "Meu Pip",
     "myPipSub": "Vista seu companheiro de viagem. Todo Pip do app usa esse visual.",
@@ -1192,7 +1193,8 @@
     "emptyTitle": "Seu passaporte está em branco",
     "emptyBody": "Marque uma parada como visitada no mapa: a primeira parada visitada em cada país carimba o visto aqui.",
     "emptyCta": "Abrir o mapa",
-    "visaNote": "Os vistos do Globetrot são lembranças das suas viagens. Não são documentos oficiais."
+    "visaNote": "Os vistos do Globetrot são lembranças das suas viagens. Não são documentos oficiais.",
+    "myPipGlobe": "O Pip é o globo que viaja com você. Dê um nome a ele."
   },
   "communityPage": {
     "title": "Comunidade",

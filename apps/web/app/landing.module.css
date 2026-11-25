@@ -254,36 +254,79 @@
   width: 100%;
   height: 100%;
   overflow: visible;
-  mask-image: linear-gradient(180deg, transparent 0%, #000 30%);
+  mask-image: linear-gradient(180deg, transparent 0%, #000 14%);
 }
 
 .heroRoute {
   fill: none;
   stroke: #fb923c;
-  stroke-width: 2.5;
+  stroke-width: 3;
   stroke-linecap: round;
+  filter: drop-shadow(0 0 6px rgb(251 146 60 / 0.7));
 }
 
-.heroRouteStart {
-  fill: #93c5fd;
-}
-
-.heroRouteDot {
-  fill: #fff;
-  filter: drop-shadow(0 0 6px #fff);
+.heroPlane {
+  fill: #ffffff;
+  filter: drop-shadow(0 0 6px rgb(255 255 255 / 0.9));
 }
 
 .heroRouteEnd {
   fill: none;
   stroke: #fb923c;
   stroke-width: 3;
+  opacity: 0;
+}
+
+.heroCityGlow {
+  fill: rgb(147 197 253 / 0.25);
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: city-glow 2.6s ease-in-out infinite;
+}
+
+.heroCity:nth-of-type(2n) .heroCityGlow {
+  animation-delay: -1.3s;
+}
+
+.heroCityDot {
+  fill: #e0f2fe;
+}
+
+.heroCityName {
+  fill: #e2e8f0;
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  paint-order: stroke;
+  stroke: #0f172a;
+  stroke-width: 4px;
+  stroke-linejoin: round;
+}
+
+@keyframes city-glow {
+  0%,
+  100% {
+    transform: scale(0.8);
+    opacity: 0.6;
+  }
+
+  50% {
+    transform: scale(1.3);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .heroCityGlow {
+    animation: none;
+  }
 }
 
 .world img {
   display: block;
   width: 100%;
   height: auto;
-  mask-image: linear-gradient(180deg, transparent 0%, #000 35%);
+  mask-image: linear-gradient(180deg, transparent 0%, #000 18%);
 }
 
 /* --- Primary action in the bar --- */
@@ -371,11 +414,168 @@
   font-weight: 800;
 }
 
-.calcField input[type='range'] {
+/* The monthly slider: a filled track, a big thumb with a value bubble riding above it, marks and quick amounts. */
+.calcSlider {
+  --thumb: 30px;
+  position: relative;
+  padding-top: 38px;
+}
+
+.calcBubble {
+  position: absolute;
+  top: 0;
+  left: calc(var(--fill) * (100% - var(--thumb)) + var(--thumb) / 2);
+  padding: 4px 10px;
+  border-radius: 10px;
+  background: var(--deep);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 800;
+  white-space: nowrap;
+  transform: translateX(-50%);
+  transition: transform 160ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  pointer-events: none;
+}
+
+.calcBubble::after {
+  position: absolute;
+  bottom: -5px;
+  left: 50%;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  background: inherit;
+  transform: translateX(-50%) rotate(45deg);
+  content: '';
+}
+
+.calcSlider:has(.calcRange:active) .calcBubble,
+.calcSlider:has(.calcRange:focus-visible) .calcBubble {
+  transform: translateX(-50%) translateY(-3px) scale(1.1);
+}
+
+.calcRange {
   width: 100%;
   height: 44px;
   margin: 0;
-  accent-color: var(--blue);
+  background: transparent;
+  cursor: grab;
+  appearance: none;
+}
+
+.calcRange:active {
+  cursor: grabbing;
+}
+
+.calcRange::-webkit-slider-runnable-track {
+  height: 12px;
+  border-radius: 99px;
+  background: linear-gradient(
+    90deg,
+    var(--blue) 0%,
+    #f97316 calc(var(--fill) * 100%),
+    #dbe3ee calc(var(--fill) * 100%)
+  );
+}
+
+.calcRange::-moz-range-track {
+  height: 12px;
+  border-radius: 99px;
+  background: #dbe3ee;
+}
+
+.calcRange::-moz-range-progress {
+  height: 12px;
+  border-radius: 99px;
+  background: linear-gradient(90deg, var(--blue), #f97316);
+}
+
+.calcRange::-webkit-slider-thumb {
+  width: var(--thumb);
+  height: var(--thumb);
+  margin-top: calc((12px - var(--thumb)) / 2);
+  border: 4px solid #fff;
+  border-radius: 50%;
+  background: #f97316;
+  box-shadow:
+    0 0 0 2px var(--blue),
+    0 6px 16px -4px rgb(15 23 42 / 0.45);
+  transition: transform 160ms ease;
+  appearance: none;
+}
+
+.calcRange::-moz-range-thumb {
+  width: var(--thumb);
+  height: var(--thumb);
+  box-sizing: border-box;
+  border: 4px solid #fff;
+  border-radius: 50%;
+  background: #f97316;
+  box-shadow:
+    0 0 0 2px var(--blue),
+    0 6px 16px -4px rgb(15 23 42 / 0.45);
+}
+
+.calcRange:active::-webkit-slider-thumb {
+  transform: scale(1.15);
+}
+
+.calcRange:focus-visible {
+  outline: 3px solid var(--blue);
+  outline-offset: 4px;
+  border-radius: 99px;
+}
+
+.calcTicks {
+  display: flex;
+  justify-content: space-between;
+  color: var(--ink-2);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.calcChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.calcChips button {
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--input-border);
+  border-radius: 99px;
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    transform 140ms ease,
+    background-color 140ms ease,
+    border-color 140ms ease;
+}
+
+.calcChips button:hover {
+  border-color: var(--blue);
+  transform: translateY(-1px);
+}
+
+.calcChips button:active {
+  transform: scale(0.96);
+}
+
+.calcChips button[aria-pressed='true'] {
+  border-color: var(--deep);
+  background: var(--deep);
+  color: #fff;
+}
+
+.calcChips button:focus-visible {
+  outline: 3px solid var(--blue);
+  outline-offset: 2px;
 }
 
 .calcAnswer {
@@ -1344,7 +1544,7 @@
   .world {
     display: block;
     margin-top: -24px;
-    margin-bottom: calc(min(1240px, 100%) * -0.38);
+    margin-bottom: calc(min(1240px, 100%) * -0.24);
   }
 
   .heroCopy h1 {
@@ -1400,7 +1600,7 @@
 .zoomFrame {
   overflow: hidden;
   border-radius: 28px;
-  will-change: clip-path;
+  will-change: transform;
 }
 
 /* The airmail line across the three steps (wide screens; on phones the steps still rise one by one). */
@@ -1412,31 +1612,51 @@
   display: none;
 }
 
-.stepPathTrack,
-.stepPathLine,
-.stepPathDash {
+.stepRouteTrack,
+.stepRoute,
+.stepRouteDraw {
   fill: none;
   stroke-linecap: round;
-  vector-effect: non-scaling-stroke;
 }
 
-.stepPathTrack {
+.stepRouteTrack {
   stroke: var(--hairline);
   stroke-width: 2;
-  stroke-dasharray: 0.012 0.01;
+  stroke-dasharray: 2 10;
 }
 
-.stepPathLine {
+.stepRoute {
   stroke: var(--blue);
-  stroke-width: 3;
+  stroke-width: 3.5;
+  stroke-dasharray: 10 9;
+}
+
+.stepRouteDraw {
+  stroke: #fff;
+  stroke-width: 12;
   stroke-dasharray: 1;
   stroke-dashoffset: 0;
 }
 
-.stepPathDash {
-  stroke: #f97316;
-  stroke-width: 5;
-  stroke-dasharray: 0.05 0.95;
+.stepPin path {
+  fill: #f97316;
+  stroke: #fff;
+  stroke-width: 3;
+}
+
+.stepPin text {
+  fill: #fff;
+  font-size: 15px;
+  font-weight: 800;
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
+
+.stepPlane path {
+  fill: var(--deep);
+  stroke: #fff;
+  stroke-width: 1.5;
+  stroke-linejoin: round;
 }
 
 .marquee {
@@ -1480,8 +1700,9 @@
 }
 
 @media (min-width: 720px) {
+  /* The flight's drawing is 1200×150: the same share of the width keeps it in proportion at any size. */
   .stepsWrap {
-    padding-top: 72px;
+    padding-top: 12.5%;
   }
 
   .stepPath {
@@ -1490,7 +1711,8 @@
     left: 0;
     display: block;
     width: 100%;
-    height: 80px;
+    height: auto;
+    aspect-ratio: 8;
     overflow: visible;
   }
 }
