@@ -998,7 +998,8 @@
     "added": "Expense added",
     "removed": "{description} removed",
     "undo": "Undo",
-    "actionError": "That did not work. Try again in a moment."
+    "actionError": "That did not work. Try again in a moment.",
+    "chartGap": "{amount} to go"
   },
   "passportPage": {
     "title": "Passport",
