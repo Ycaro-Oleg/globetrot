@@ -18,4 +18,11 @@ describe.each(SUPPORTED_LOCALES)('the %s catalog', (locale) => {
       .map(([path]) => path);
     expect(quoted).toEqual([]);
   });
+
+  it('never uses an em dash: a colon, a comma or a full stop reads better', () => {
+    const dashed = [...leaves(catalogs[locale] as unknown as MessageTree)]
+      .filter(([, text]) => text.includes('\u2014'))
+      .map(([path]) => path);
+    expect(dashed).toEqual([]);
+  });
 });
