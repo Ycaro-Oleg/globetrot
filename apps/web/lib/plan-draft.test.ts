@@ -9,7 +9,14 @@ describe('readDraft', () => {
       cost: '3000',
       saved: '500',
       monthly: '300',
+      currency: null,
     });
+  });
+  it('keeps the currency picked on the landing page, only when it is a real code', () => {
+    const draft = { cost: '15000', saved: '2500', monthly: '1500' };
+    expect(readDraft(cookie({ ...draft, currency: 'BRL' }))?.currency).toBe('BRL');
+    expect(readDraft(cookie({ ...draft, currency: 'XXX' }))?.currency).toBeNull();
+    expect(readDraft(cookie({ ...draft, currency: '<b>' }))?.currency).toBeNull();
   });
   it('ignores anything that is not three plain amounts', () => {
     expect(readDraft(undefined)).toBeNull();

@@ -1,6 +1,12 @@
 'use client';
 
-import { formatMoney, money, toLocalDate } from '@globetrot/domain';
+import {
+  formatMoney,
+  minorUnitExponent,
+  money,
+  toCurrencyCode,
+  toLocalDate,
+} from '@globetrot/domain';
 import { useLocale, useTranslations } from 'next-intl';
 import { useId, useState, type CSSProperties } from 'react';
 import { livePlan, parseAmount } from './app/budget/budget-plan';
@@ -9,10 +15,33 @@ import styles from './landing.module.css';
 import { track } from '../lib/analytics';
 import { PLAN_DRAFT_COOKIE } from '../lib/plan-draft';
 
-const DEFAULTS = { cost: '3000', saved: '500', monthly: '300' };
-const MONTHLY_MAX = 3000;
-/** One-tap monthly amounts under the slider. */
-const QUICK_MONTHLY = [100, 300, 500, 1000];
+/**
+ * The main currencies offered, each with the top of its monthly slider (a round number in that currency,
+ * not a conversion). The example numbers, the slider marks and the one-tap amounts follow from it.
+ * USD comes first because it is the product default, never because of the visitor's language or country.
+ */
+const CURRENCIES = [
+  ['USD', 3000],
+  ['EUR', 3000],
+  ['GBP', 3000],
+  ['BRL', 15000],
+  ['CAD', 4500],
+  ['AUD', 4500],
+  ['MXN', 60000],
+  ['JPY', 450000],
+  ['CHF', 3000],
+  ['INR', 300000],
+] as const;
+type Code = (typeof CURRENCIES)[number][0];
+const scaleOf = (code: Code) => CURRENCIES.find(([candidate]) => candidate === code)![1];
+/** The example trip for a slider top: the trip costs the top, a sixth is saved, a tenth goes in each month. */
+const examples = (max: number) => ({
+  cost: String(max),
+  saved: String(max / 6),
+  monthly: String(max / 10),
+});
+/** One-tap monthly amounts under the slider, as shares of its top. */
+const QUICK_SHARES = [30, 10, 6, 3];
 
 /**
  * "Can I go?" on the landing page: three numbers in, the answer out, computed with the app's own savings rule
@@ -23,19 +52,42 @@ export function AnswerCalculator({ signupHref }: { signupHref: string }) {
   const t = useTranslations('landing.calc');
   const locale = useLocale();
   const id = useId();
-  const [cost, setCost] = useState(DEFAULTS.cost);
-  const [saved, setSaved] = useState(DEFAULTS.saved);
-  const [monthly, setMonthly] = useState(DEFAULTS.monthly);
+  const [code, setCode] = useState<Code>('USD');
+  const MONTHLY_MAX = scaleOf(code);
+  const [cost, setCost] = useState(examples(MONTHLY_MAX).cost);
+  const [saved, setSaved] = useState(examples(MONTHLY_MAX).saved);
+  const [monthly, setMonthly] = useState(examples(MONTHLY_MAX).monthly);
   const [touched, setTouched] = useState(false);
   const [today] = useState(() => toLocalDate(new Date().toISOString().slice(0, 10)));
 
-  const usd = (text: string) => parseAmount(text || '0', 'USD');
-  const total = usd(cost);
-  const have = usd(saved);
-  const perMonth = usd(monthly);
+  const currency = toCurrencyCode(code);
+  const unit = 10n ** BigInt(minorUnitExponent(currency));
+  const amount = (text: string) => parseAmount(text || '0', code);
+  const total = amount(cost);
+  const have = amount(saved);
+  const perMonth = amount(monthly);
   const monthlyValue = Math.min(MONTHLY_MAX, Number(monthly) || 0);
   const format = (minor: bigint) =>
-    formatMoney(money(minor, 'USD'), locale, { precision: 'whole' });
+    formatMoney(money(minor, currency), locale, { precision: 'whole' });
+  const whole = (value: number) => format(BigInt(Math.round(value)) * unit);
+  const symbol =
+    new Intl.NumberFormat(locale, { style: 'currency', currency: code })
+      .formatToParts(0)
+      .find((part) => part.type === 'currency')?.value ?? code;
+  const names = new Intl.DisplayNames([locale], { type: 'currency' });
+  const step = MONTHLY_MAX / 60;
+  const quick = QUICK_SHARES.map((share) => MONTHLY_MAX / share);
+
+  const pickCurrency = (next: Code) => {
+    setCode(next);
+    // Untouched example numbers follow the currency; numbers the person typed stay as typed.
+    if (!touched) {
+      const example = examples(scaleOf(next));
+      setCost(example.cost);
+      setSaved(example.saved);
+      setMonthly(example.monthly);
+    }
+  };
   const monthName = (yyyyMm: string) =>
     new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(
       new Date(`${yyyyMm}-15T12:00:00Z`),
@@ -71,22 +123,34 @@ export function AnswerCalculator({ signupHref }: { signupHref: string }) {
   }
 
   const keep = () => {
-    const draft = JSON.stringify({ cost, saved, monthly });
+    const draft = JSON.stringify({ cost, saved, monthly, currency: code });
     track('plan_saved');
     document.cookie = `${PLAN_DRAFT_COOKIE}=${encodeURIComponent(draft)}; path=/; max-age=${60 * 60 * 24 * 30}; samesite=lax`;
   };
 
   return (
     <section className={styles.calc} aria-labelledby={`${id}-title`}>
-      <h2 id={`${id}-title`} className={styles.calcTitle}>
-        {t('title')}
-      </h2>
+      <div className={styles.calcHead}>
+        <h2 id={`${id}-title`} className={styles.calcTitle}>
+          {t('title')}
+        </h2>
+        <label className={styles.calcCurrency}>
+          <span>{t('currency')}</span>
+          <select value={code} onChange={(event) => pickCurrency(event.target.value as Code)}>
+            {CURRENCIES.map(([option]) => (
+              <option key={option} value={option}>
+                {option} · {names.of(option)}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
       <div className={styles.calcGrid}>
         <div className={styles.calcFields}>
           <label className={styles.calcField}>
             <span>{t('cost')}</span>
             <span className={styles.calcInput}>
-              <span aria-hidden="true">US$</span>
+              <span aria-hidden="true">{symbol}</span>
               <input
                 inputMode="decimal"
                 value={cost}
@@ -101,7 +165,7 @@ export function AnswerCalculator({ signupHref }: { signupHref: string }) {
           <label className={styles.calcField}>
             <span>{t('saved')}</span>
             <span className={styles.calcInput}>
-              <span aria-hidden="true">US$</span>
+              <span aria-hidden="true">{symbol}</span>
               <input
                 inputMode="decimal"
                 value={saved}
@@ -122,7 +186,7 @@ export function AnswerCalculator({ signupHref }: { signupHref: string }) {
               style={{ '--fill': monthlyValue / MONTHLY_MAX } as CSSProperties}
             >
               <span className={styles.calcBubble} aria-hidden="true">
-                {format(BigInt(monthlyValue * 100))}
+                {whole(monthlyValue)}
               </span>
               <input
                 id={`${id}-monthly`}
@@ -130,7 +194,7 @@ export function AnswerCalculator({ signupHref }: { signupHref: string }) {
                 type="range"
                 min={0}
                 max={MONTHLY_MAX}
-                step={25}
+                step={step}
                 value={monthlyValue}
                 onChange={(event) => {
                   setTouched(true);
@@ -139,22 +203,22 @@ export function AnswerCalculator({ signupHref }: { signupHref: string }) {
               />
               <span className={styles.calcTicks} aria-hidden="true">
                 {[0, MONTHLY_MAX / 2, MONTHLY_MAX].map((tick) => (
-                  <span key={tick}>{format(BigInt(tick * 100))}</span>
+                  <span key={tick}>{whole(tick)}</span>
                 ))}
               </span>
             </div>
             <div className={styles.calcChips} role="group" aria-label={t('quickMonthly')}>
-              {QUICK_MONTHLY.map((amount) => (
+              {quick.map((value) => (
                 <button
-                  key={amount}
+                  key={value}
                   type="button"
-                  aria-pressed={monthlyValue === amount}
+                  aria-pressed={monthlyValue === value}
                   onClick={() => {
                     setTouched(true);
-                    setMonthly(String(amount));
+                    setMonthly(String(value));
                   }}
                 >
-                  {format(BigInt(amount * 100))}
+                  {whole(value)}
                 </button>
               ))}
             </div>

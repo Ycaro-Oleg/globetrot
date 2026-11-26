@@ -233,7 +233,7 @@ export default function HomePage() {
       </section>
 
       <ul className={styles.facts} aria-label={t('factsLabel')}>
-        {(['fact1', 'fact2', 'fact3', 'fact4', 'fact5'] as const).map((key) => (
+        {(['fact1', 'fact2', 'fact4', 'fact5'] as const).map((key) => (
           <li key={key}>
             <strong>{t(`${key}Title`)}</strong>
             <span>{t(`${key}Body`)}</span>

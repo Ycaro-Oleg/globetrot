@@ -100,6 +100,20 @@ describe('Globetrot landing page', () => {
     },
   );
 
+  it.each(SUPPORTED_LOCALES)(
+    'lets "Can I go?" run in the main currencies, starting from USD (%s)',
+    (locale) => {
+      const html = render(locale);
+      const copy = catalogs[locale].landing;
+      const select = /<select[^>]*>([\s\S]*?)<\/select>/.exec(html)?.[1] ?? '';
+      for (const code of ['USD', 'EUR', 'GBP', 'BRL', 'JPY']) {
+        expect(select).toContain(`value="${code}"`);
+      }
+      expect(select).toMatch(/<option value="USD" selected="">/);
+      expect(visibleText(html)).toContain(copy.calc.currency);
+    },
+  );
+
   it('sends each example card through sign-up, keeping the example', () => {
     const html = render('en');
     for (const id of ['portugal', 'japan', 'rio-de-la-plata']) {

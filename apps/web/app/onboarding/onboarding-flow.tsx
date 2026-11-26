@@ -46,7 +46,7 @@ export function OnboardingFlow({
   homePoint?: { latitude: number; longitude: number } | null;
   pipOptIn: boolean;
   /** Numbers tried on the landing page's "Can I go?", to start the money step with. */
-  draft?: { cost: string; saved: string; monthly: string } | null;
+  draft?: { cost: string; saved: string; monthly: string; currency: string | null } | null;
 }) {
   const t = useTranslations('onboarding');
   const locale = useLocale() as SupportedLocale;
@@ -67,9 +67,10 @@ export function OnboardingFlow({
   const [range, setRange] = useState<TripRange | null>(null);
   const nights = nightsOf(range);
   const month = range ? range.start.slice(0, 7) : null;
-  // The trip's money is in the destination's currency unless the person picks another one.
-  const [tripCurrency, setTripCurrency] = useState(currency);
-  const [currencyPicked, setCurrencyPicked] = useState(false);
+  // The trip's money is in the destination's currency unless the person picks another one
+  // (here, or already on the landing page's "Can I go?").
+  const [tripCurrency, setTripCurrency] = useState(draft?.currency ?? currency);
+  const [currencyPicked, setCurrencyPicked] = useState(Boolean(draft?.currency));
   const [direction, setDirection] = useState(1);
   const content = useRef<HTMLDivElement>(null);
   const answerCard = useRef<HTMLDivElement>(null);

@@ -1,4 +1,4 @@
-import { formatMoney, money } from '@globetrot/domain';
+import { DEFAULT_CURRENCY, formatMoney, fromDecimal } from '@globetrot/domain';
 import type { Metadata } from 'next';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
@@ -39,15 +39,19 @@ export default async function SignupPage({
   const providers = await fetchEnabledProviders({ apiUrl: apiInternalUrl() });
   // Someone who saved a plan in the landing's "Can I go?" sees it again here, so the story continues.
   const draft = readDraft(store.get(PLAN_DRAFT_COOKIE)?.value);
-  const usd = (amount: string) =>
-    formatMoney(money(BigInt(Math.round(Number(amount) * 100)), 'USD'), locale, {
-      precision: 'whole',
-    });
+  const amount = (value: string) =>
+    formatMoney(
+      fromDecimal(value, draft?.currency ?? DEFAULT_CURRENCY, { rounding: 'half-even' }),
+      locale,
+      {
+        precision: 'whole',
+      },
+    );
   const planNote = draft
     ? t('planSaved', {
-        cost: usd(draft.cost),
-        saved: usd(draft.saved),
-        monthly: usd(draft.monthly),
+        cost: amount(draft.cost),
+        saved: amount(draft.saved),
+        monthly: amount(draft.monthly),
       })
     : null;
   return (
