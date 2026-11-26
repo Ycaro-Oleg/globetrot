@@ -2486,6 +2486,7 @@ export interface operations {
                             /** @enum {string|null} */
                             legMode: "flight" | "train" | "bus" | "car" | "boat" | "walk" | "other" | null;
                             visited: boolean;
+                            spotRoute: boolean;
                             spots: {
                                 name: string;
                                 /** @enum {string} */
@@ -2629,6 +2630,11 @@ export interface operations {
                          */
                         visited?: boolean;
                         /**
+                         * @description Draw the route between this stop's spots that have a place: A, B, C… in the order of `spots`, straight lines.
+                         * @default false
+                         */
+                        spotRoute?: boolean;
+                        /**
                          * @description Places to see here (at most 30).
                          * @default []
                          */
@@ -2698,6 +2704,7 @@ export interface operations {
                             /** @enum {string|null} */
                             legMode: "flight" | "train" | "bus" | "car" | "boat" | "walk" | "other" | null;
                             visited: boolean;
+                            spotRoute: boolean;
                             spots: {
                                 name: string;
                                 /** @enum {string} */

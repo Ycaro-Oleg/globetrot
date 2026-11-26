@@ -150,6 +150,8 @@ export interface DestinationRecord {
   readonly note: string | null;
   readonly legMode: string | null;
   readonly visited: boolean;
+  /** The route between the stop's spots is drawn (A, B, C… in the order of `spots`). */
+  readonly spotRoute: boolean;
   readonly spots: readonly StopSpotRecord[];
   readonly todos: readonly StopTodoRecord[];
   readonly photos: readonly PhotoRecord[];
@@ -190,6 +192,8 @@ export interface NewDestination {
   readonly note: string | null;
   readonly legMode: string | null;
   readonly visited: boolean;
+  /** The route between the stop's spots is drawn (A, B, C… in the order of `spots`). */
+  readonly spotRoute: boolean;
   readonly spots: readonly StopSpotRecord[];
   readonly todos: readonly StopTodoRecord[];
   readonly photos: readonly PhotoRecord[];

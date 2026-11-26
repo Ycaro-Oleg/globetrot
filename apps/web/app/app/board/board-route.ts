@@ -1,5 +1,6 @@
 import {
   DEFAULT_SPOT_KIND,
+  distanceKm,
   LEG_MODES,
   MEDIA_ALT_MAX,
   STOP_PHOTOS_MAX,
@@ -63,6 +64,8 @@ export type RouteStop = MapPlace & {
   note: string;
   legMode: LegMode | null;
   visited: boolean;
+  /** The route between this stop's placed spots is drawn: A, B, C… in the order of `spots`. */
+  spotRoute: boolean;
   spots: StopSpot[];
   todos: StopTodo[];
   photos: StopPhoto[];
@@ -90,6 +93,7 @@ export const newStop = (place: MapPlace): RouteStop => ({
   note: '',
   legMode: null,
   visited: false,
+  spotRoute: false,
   spots: [],
   todos: [],
   photos: [],
@@ -120,6 +124,7 @@ export function toDestination(stop: RouteStop, isLast: boolean) {
     note: clip(stop.note, NOTE_MAX) || null,
     legMode: isLast ? null : stop.legMode,
     visited: stop.visited,
+    spotRoute: stop.spotRoute,
     spots: stop.spots
       .map((spot) => ({ ...spot, name: clip(spot.name, ITEM_MAX) }))
       .filter((spot) => spot.name)
@@ -138,18 +143,8 @@ export const routeBody = (stops: readonly RouteStop[]) =>
   JSON.stringify(stops.map((stop, index) => toDestination(stop, index === stops.length - 1)));
 
 /** Great-circle distance in kilometres ("as the crow flies"). */
-export function distanceKm(
-  a: { latitude: number; longitude: number },
-  b: { latitude: number; longitude: number },
-) {
-  const rad = Math.PI / 180;
-  const dLat = (b.latitude - a.latitude) * rad;
-  const dLng = (b.longitude - a.longitude) * rad;
-  const h =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(a.latitude * rad) * Math.cos(b.latitude * rad) * Math.sin(dLng / 2) ** 2;
-  return 2 * 6371 * Math.asin(Math.sqrt(h));
-}
+/** As the crow flies, from the domain (one formula for the whole app). */
+export { distanceKm };
 
 const toMercator = (lng: number, lat: number) => {
   const clamped = Math.max(-85.0511, Math.min(85.0511, lat));

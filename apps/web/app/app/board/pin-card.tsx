@@ -1,6 +1,7 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
+import { shortestSpotOrder, spotLegs } from '@globetrot/domain';
+import { useLocale, useTranslations } from 'next-intl';
 import {
   useEffect,
   useRef,
@@ -59,6 +60,7 @@ export function PinCard({
   nearby = null,
   focusSpot = null,
   onPinSpot,
+  onShowRoute,
   onTab,
   onChange,
   onShowSpot,
@@ -80,6 +82,8 @@ export function PinCard({
   focusSpot?: number | null;
   /** "Mark on the map": the next tap on the map places this spot. */
   onPinSpot?: (draft: { name: string; kind: SpotKind }) => void;
+  /** Frames every placed spot of this stop on the map. */
+  onShowRoute?: (points: [longitude: number, latitude: number][]) => void;
   onTab: (tab: KitTab) => void;
   onChange: (change: Partial<RouteStop>) => void;
   onShowSpot: (spot: StopSpot) => void;
@@ -154,6 +158,29 @@ export function PinCard({
       ],
     });
     setSpotDraft('');
+  };
+  // The route between the placed spots: letters in list order, straight legs, a shorter order on request.
+  const locale = useLocale();
+  const placedCount = stop.spots.filter(
+    (spot) => spot.latitude !== null && spot.longitude !== null,
+  ).length;
+  const letters = new Map<number, string>();
+  stop.spots.forEach((spot, index) => {
+    if (spot.latitude !== null && spot.longitude !== null)
+      letters.set(index, String.fromCharCode(65 + (letters.size % 26)));
+  });
+  const km = new Intl.NumberFormat(locale, {
+    style: 'unit',
+    unit: 'kilometer',
+    maximumFractionDigits: 1,
+  });
+  const route = stop.spotRoute ? spotLegs(stop.spots) : null;
+  const moveSpot = (from: number, to: number) => {
+    if (to < 0 || to >= stop.spots.length) return;
+    const next = [...stop.spots];
+    const [moved] = next.splice(from, 1);
+    next.splice(to, 0, moved!);
+    onChange({ spots: next });
   };
   const taken = new Set(stop.spots.map((spot) => spot.name.toLowerCase()));
   const query = spotDraft.trim().toLowerCase();
@@ -277,6 +304,11 @@ export function PinCard({
                           })
                         }
                       />
+                      {stop.spotRoute && letters.has(i) ? (
+                        <span className={styles.spotLetter} aria-hidden="true">
+                          {letters.get(i)}
+                        </span>
+                      ) : null}
                       <span className={styles.spotIcon} data-kind={spot.kind} aria-hidden="true">
                         {SPOT_ICONS[spot.kind]}
                       </span>
@@ -309,6 +341,26 @@ export function PinCard({
                           {placed ? null : (
                             <small className={styles.spotNoPlace}>{t('noPlace')}</small>
                           )}
+                          {stop.spotRoute ? (
+                            <span className={styles.spotOrder}>
+                              <button
+                                type="button"
+                                aria-label={t('moveSpotUp', { name: spot.name })}
+                                disabled={i === 0}
+                                onClick={() => moveSpot(i, i - 1)}
+                              >
+                                ↑
+                              </button>
+                              <button
+                                type="button"
+                                aria-label={t('moveSpotDown', { name: spot.name })}
+                                disabled={i === stop.spots.length - 1}
+                                onClick={() => moveSpot(i, i + 1)}
+                              >
+                                ↓
+                              </button>
+                            </span>
+                          ) : null}
                         </div>
                       </div>
                       {placed ? (
@@ -360,6 +412,61 @@ export function PinCard({
                 </ul>
               </div>
             )}
+            {placedCount >= 2 ? (
+              <div className={styles.spotRoute}>
+                <button
+                  type="button"
+                  className={styles.routeToggle}
+                  aria-pressed={stop.spotRoute}
+                  onClick={() => onChange({ spotRoute: !stop.spotRoute })}
+                >
+                  <span aria-hidden="true">A→B</span> {t('routeToggle')}
+                </button>
+                {route ? (
+                  <>
+                    <ol className={styles.routeLegs} aria-label={t('routeLegs')}>
+                      {route.legs.map((leg, index) => (
+                        <li key={index}>
+                          <span>
+                            {String.fromCharCode(65 + index)} → {String.fromCharCode(66 + index)}
+                          </span>
+                          <span>≈ {km.format(leg.km)}</span>
+                        </li>
+                      ))}
+                    </ol>
+                    <p className={styles.routeTotal}>
+                      {t('routeTotal', { km: km.format(route.totalKm) })}
+                    </p>
+                    <div className={styles.routeActions}>
+                      {placedCount >= 3 ? (
+                        <button
+                          type="button"
+                          className={styles.markOnMap}
+                          onClick={() => onChange({ spots: shortestSpotOrder(stop.spots) })}
+                        >
+                          {t('routeShortest')}
+                        </button>
+                      ) : null}
+                      {onShowRoute ? (
+                        <button
+                          type="button"
+                          className={styles.markOnMap}
+                          onClick={() =>
+                            onShowRoute(
+                              stop.spots
+                                .filter((spot) => spot.latitude !== null && spot.longitude !== null)
+                                .map((spot) => [spot.longitude!, spot.latitude!]),
+                            )
+                          }
+                        >
+                          ⌖ {t('routeShow')}
+                        </button>
+                      ) : null}
+                    </div>
+                  </>
+                ) : null}
+              </div>
+            ) : null}
             <div className={styles.kindPicker} role="radiogroup" aria-label={t('kindPick')}>
               {SPOT_KINDS.map((kind) => (
                 <button

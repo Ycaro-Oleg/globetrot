@@ -376,6 +376,7 @@ export interface DestinationRow {
   readonly note: string | null;
   readonly legMode: string | null;
   readonly visited: boolean;
+  readonly spotRoute: boolean;
   readonly spots: StopSpot[];
   readonly todos: StopTodo[];
   readonly photos: PhotoRef[];
@@ -395,6 +396,7 @@ export interface NewDestinationRow {
   readonly note: string | null;
   readonly legMode: string | null;
   readonly visited: boolean;
+  readonly spotRoute: boolean;
   readonly spots: readonly StopSpot[];
   readonly todos: readonly StopTodo[];
   readonly photos: readonly PhotoRef[];

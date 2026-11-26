@@ -169,6 +169,13 @@
       "when": 1795566142588,
       "tag": "0023_home_point",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1795651216954,
+      "tag": "0024_spot_route",
+      "breakpoints": true
     }
   ]
 }

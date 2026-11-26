@@ -23,6 +23,7 @@ const stop = (id: string, extra: Partial<RouteStop> = {}): RouteStop => ({
   note: '',
   legMode: null,
   visited: false,
+  spotRoute: false,
   spots: [],
   todos: [],
   photos: [],

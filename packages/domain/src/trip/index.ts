@@ -46,3 +46,4 @@ export {
   type TripVisibility,
 } from './status';
 export * from './destinations';
+export { shortestSpotOrder, spotLegs, type RoutableSpot } from './spot-route';

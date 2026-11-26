@@ -755,7 +755,14 @@
       "nearbyTitle": "Nearby, on the map",
       "nearbyAddHint": ", add with its place on the map",
       "markOnMap": "Mark on the map",
-      "pinnedSpot": "Marked place"
+      "pinnedSpot": "Marked place",
+      "routeToggle": "Draw the route",
+      "routeLegs": "The route, as the crow flies",
+      "routeTotal": "Total ≈ {km}, as the crow flies (an estimate)",
+      "routeShortest": "Shortest order",
+      "moveSpotUp": "Move {name} up",
+      "moveSpotDown": "Move {name} down",
+      "routeShow": "Show the route on the map"
     },
     "visa": {
       "kicker": "GLOBETROT VISA",
