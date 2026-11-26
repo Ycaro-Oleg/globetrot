@@ -58,11 +58,11 @@ describe('formatMessage: select, arguments and rich text', () => {
 
   it('renders rich-text tags as plain text outside React', () => {
     expect(formatMessage('en', 'savings.answerYes', { month: 'April 2027', amount: '$300' })).toBe(
-      'Yes — by April 2027, if you put aside $300 a month.',
+      'Yes: by April 2027, if you put aside $300 a month.',
     );
     expect(
       formatMessage('pt-BR', 'savings.answerYes', { month: 'abril de 2027', amount: 'R$ 1.500' }),
-    ).toBe('Sim — até abril de 2027, se você guardar R$ 1.500 por mês.');
+    ).toBe('Sim: até abril de 2027, se você guardar R$ 1.500 por mês.');
   });
 
   it('reuses compiled messages', () => {

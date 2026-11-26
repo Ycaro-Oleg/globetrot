@@ -290,7 +290,6 @@ function Board({
               />
             </label>
             <p className={styles.noMoney}>
-              {t('noMoney')}{' '}
               <span role="status" className={styles.saveState}>
                 {saveState === 'saving' ? t('saving') : null}
                 {saveState === 'saved' ? `✓ ${t('saved')}` : null}

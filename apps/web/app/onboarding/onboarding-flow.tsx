@@ -408,7 +408,6 @@ export function OnboardingFlow({
                   />
                 </span>
               </label>
-              <p className={styles.note}>{t('noMoney')}</p>
             </div>
           ) : null}
 
