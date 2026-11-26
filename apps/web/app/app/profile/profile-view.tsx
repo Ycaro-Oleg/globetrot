@@ -64,9 +64,6 @@ export function ProfileView({
             {homeCity ? <span>{t('homeFrom', { city: homeCity })}</span> : null}
           </div>
           <div className={styles.coverActions}>
-            <a href="#my-pip" className={styles.primary}>
-              {t('editPip')}
-            </a>
             <Link href="/settings" className={styles.ghost}>
               {t('settings')}
             </Link>
@@ -97,9 +94,6 @@ export function ProfileView({
           {dirty ? <span className={styles.unsaved}>● {t('unsaved')}</span> : null}
         </div>
         <div className={styles.nameOnly}>
-          <div className={styles.stage}>
-            <PipAvatar size={180} />
-          </div>
           <div className={styles.nameForm}>
             <label className={styles.field}>
               <span>{t('pipName')}</span>

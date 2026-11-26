@@ -1197,7 +1197,6 @@
     "statCountries": "países",
     "statContinents": "continentes",
     "statTrips": "viagens",
-    "editPip": "Dar um nome ao Pip",
     "settings": "Configurações",
     "myPip": "Meu Pip",
     "myPipSub": "Vista seu companheiro de viagem. Todo Pip do app usa esse visual.",
@@ -1342,7 +1341,7 @@
         "other": "Outro motivo"
       },
       "like": "Curtir",
-      "likes": "{count, plural, =0 {Nenhuma curtida} one {# curtida} other {# curtidas}}",
+      "likes": "{count, plural, =0 {Curtir} one {# curtida} other {# curtidas}}",
       "comments": "{count, plural, =0 {Comentar} one {# comentário} other {# comentários}}",
       "save": "Salvar",
       "saved": "Salvo",

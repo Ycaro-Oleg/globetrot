@@ -576,7 +576,13 @@
 }
 
 @media (min-width: 720px) {
+  /* Pip is already on the cover: here only its name, at a readable width. */
   .nameOnly {
-    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-columns: minmax(0, 28rem);
   }
+}
+
+/* The name form's actions sit under the field, at its start. */
+.nameForm .editorActions .cta {
+  margin-inline-start: 0;
 }

@@ -246,7 +246,7 @@ export function PostCard({
           </span>
           {!post.mine && !isFollowing ? (
             <button type="button" className={styles.followChip} onClick={() => follow(true)}>
-              {t('post.follow')}
+              <span aria-hidden="true">+</span> {t('post.follow')}
             </button>
           ) : null}
           <div className={styles.menuWrap}>
@@ -509,7 +509,8 @@ export function PostCard({
             {post.saved ? t('post.saved') : t('post.save')}
           </button>
           <button type="button" onClick={copyLink}>
-            <span aria-hidden="true">↗</span> {t('post.share')}
+            <span aria-hidden="true">↗</span>{' '}
+            <span className={styles.actionText}>{t('post.share')}</span>
           </button>
         </div>
 
