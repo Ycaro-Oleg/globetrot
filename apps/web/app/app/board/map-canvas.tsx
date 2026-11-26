@@ -12,7 +12,6 @@ import {
   arcBetween,
   distanceKm,
   SPOT_ICONS,
-  LEG_ICONS,
   partialLine,
   type KitTab,
   type RouteStop,
@@ -21,6 +20,7 @@ import {
 import { PIN, relabel, restyle, styleCountries, type MapStyleName } from './map-styles';
 import styles from './world-map.module.css';
 import { fitPadding } from './fit-padding';
+import { legIconMarkup } from './leg-icon';
 
 export type Inset = { top: number; right: number; bottom: number; left: number };
 export type NearbyPlace = { name: string; kind: string; longitude: number; latitude: number };
@@ -98,7 +98,6 @@ type PinMarker = {
   label: HTMLSpanElement;
   button: HTMLButtonElement;
   /** How many things the stop holds (photos, spots, notes, to-dos), on the pin's head. */
-  badge: HTMLSpanElement;
   tip: HTMLSpanElement;
   hideTimer?: number;
   name: string;
@@ -236,10 +235,6 @@ export function MapCanvas(props: Props) {
     const button = document.createElement('button');
     button.type = 'button';
     button.className = styles.pinButton ?? '';
-    const badge = document.createElement('span');
-    badge.className = styles.pinBadge ?? '';
-    badge.setAttribute('aria-hidden', 'true');
-    head.append(badge);
     const tip = document.createElement('span');
     tip.className = styles.pinTip ?? '';
     tip.setAttribute('aria-hidden', 'true');
@@ -252,7 +247,6 @@ export function MapCanvas(props: Props) {
       ring,
       label,
       button,
-      badge,
       tip,
       name: stop.label,
     };
@@ -324,9 +318,13 @@ export function MapCanvas(props: Props) {
       pin.name = stop.label;
       pin.head.dataset.state = selected ? 'selected' : stop.visited ? 'visited' : 'planned';
       pin.num.textContent = stop.visited && !selected ? '✓' : String(index + 1);
-      pin.label.textContent = stop.label;
       const total =
         stop.photos.length + stop.spots.length + stop.todos.length + (stop.note.trim() ? 1 : 0);
+      // One number on the pin (its place in the route); what it holds rides with the name.
+      const count = document.createElement('span');
+      count.className = styles.pinLabelCount ?? '';
+      count.textContent = String(total);
+      pin.label.replaceChildren(stop.label, ...(total > 0 ? [count] : []));
       pin.button.setAttribute(
         'aria-label',
         total > 0
@@ -336,8 +334,6 @@ export function MapCanvas(props: Props) {
       pin.button.setAttribute('aria-pressed', String(selected));
       pin.el.setAttribute('aria-label', stop.label);
       pin.el.style.zIndex = selected ? '3' : '1';
-      pin.badge.textContent = total > 0 ? String(total) : '';
-      pin.badge.style.display = total > 0 ? 'flex' : 'none';
       pin.tip.textContent = text.tip(stop.label);
       pin.marker.setLngLat([stop.longitude, stop.latitude]);
     });
@@ -383,7 +379,8 @@ export function MapCanvas(props: Props) {
         maximumFractionDigits: 0,
       }).format(distanceKm(stop, stops[i + 1]!));
       const icon = document.createElement('span');
-      icon.textContent = LEG_ICONS[stop.legMode];
+      icon.className = styles.legIcon ?? '';
+      icon.innerHTML = legIconMarkup(stop.legMode);
       const distance = document.createElement('span');
       distance.className = styles.legDistance ?? '';
       distance.textContent = km;

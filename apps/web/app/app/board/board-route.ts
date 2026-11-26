@@ -254,13 +254,3 @@ export function isEditable(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) return false;
   return target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName);
 }
-
-export const LEG_ICONS: Record<LegMode, string> = {
-  flight: '✈',
-  train: '🚆',
-  bus: '🚌',
-  car: '🚗',
-  boat: '⛴',
-  walk: '🚶',
-  other: '•',
-};

@@ -18,7 +18,6 @@ import {
   isEditable,
   ITEM_MAX,
   KIT_TABS,
-  LEG_ICONS,
   MAX_NIGHTS,
   moveStop,
   newStop,
@@ -46,6 +45,7 @@ import { MAP_STYLES, SWATCHES, type MapStyleName } from './map-styles';
 import { kitCounts, PinCard } from './pin-card';
 import { AskPipLink } from '../_components/ask-pip-link';
 import { VisaOverlay, type StampedVisa } from './visa-overlay';
+import { LegIcon } from './leg-icon';
 import styles from './world-map.module.css';
 import { isPlanRequired, PLAN_REQUIRED_PATH } from '../../../lib/plan-required';
 
@@ -303,6 +303,16 @@ export function WorldMapBoard({
     const frame = requestAnimationFrame(placePinHint);
     return () => cancelAnimationFrame(frame);
   }, [placePinHint]);
+  // A window resized with no stop open keeps the whole route in view, clear of the panel.
+  const sized = useRef<string | null>(null);
+  useEffect(() => {
+    const size = `${view.w}x${view.h}`;
+    const previous = sized.current;
+    sized.current = size;
+    if (previous === null || previous === size || selected) return;
+    const timer = window.setTimeout(() => controller.current?.fitStops(false), 200);
+    return () => window.clearTimeout(timer);
+  }, [view.w, view.h, selected]);
 
   // The remembered style is read after the first paint, so the server and the browser render the same page.
   useEffect(() => {
@@ -336,8 +346,8 @@ export function WorldMapBoard({
   }[sheet];
   const inset: Inset = phone
     ? { top: 76, right: 20, bottom: sheetHeight + 10, left: 20 }
-    : // The map-style legend sits in the lower left: keep pins (and home) above it.
-      { top: 80, right: PANEL_INSET, bottom: 240, left: 40 };
+    : // The layers and zoom dock sits in the lower left: keep pins (and home) above it.
+      { top: 80, right: PANEL_INSET, bottom: 90, left: 40 };
 
   const flash = useCallback((text: string, undo = false) => setToast({ text, undo }), []);
   useEffect(() => {
@@ -754,8 +764,6 @@ export function WorldMapBoard({
   };
   const whereOf = (place: MapPlace) =>
     [place.region, countryOf(place.countryCode)].filter(Boolean).join(', ');
-  const coord = (value: number, positive: string, negative: string) =>
-    `${Math.abs(value).toFixed(4)}° ${value >= 0 ? positive : negative}`;
   const number = new Intl.NumberFormat(locale);
   const totalNights = stops.reduce((sum, stop) => sum + stop.nights, 0);
 
@@ -928,120 +936,122 @@ export function WorldMapBoard({
         </div>
       ) : null}
 
-      {!phone && !layersOpen ? (
-        <button
-          type="button"
-          className={styles.layersButton}
-          aria-expanded={false}
-          aria-controls="map-layers"
-          onClick={() => setLayersOpen(true)}
-        >
-          <span className={styles.swatch} aria-hidden="true">
-            {SWATCHES[styleName].map((color) => (
-              <span key={color} style={{ background: color }} />
-            ))}
-          </span>
-          {t('layers')}
-        </button>
-      ) : null}
-      {!phone && layersOpen ? (
-        <div className={styles.legend} id="map-layers">
-          <div className={styles.legendRow}>
-            <span className={styles.kicker}>{t('layers')}</span>
-            <button
-              type="button"
-              className={styles.legendClose}
-              aria-expanded={true}
-              aria-controls="map-layers"
-              onClick={() => setLayersOpen(false)}
-            >
-              {t('layersClose')}
-            </button>
-          </div>
-          <div className={styles.legendRow}>
-            <span className={styles.kicker}>{t('zoomShows')}</span>
-            <span className={styles.mono}>z{zoom.toFixed(1)}</span>
-          </div>
-          <div className={styles.levels} aria-hidden="true">
-            {[0, 1, 2, 3, 4].map((step) => (
-              <span key={step} data-on={step <= level || undefined} />
-            ))}
-          </div>
-          <strong className={styles.levelName}>{t(`levels.${level}`)}</strong>
-          <div className={styles.legendBlock}>
-            <span className={styles.kicker} id="map-style-label">
-              {t('mapStyle')}
+      <div className={styles.dock}>
+        {!phone && !layersOpen ? (
+          <button
+            type="button"
+            className={styles.layersButton}
+            aria-expanded={false}
+            aria-controls="map-layers"
+            onClick={() => setLayersOpen(true)}
+          >
+            <span className={styles.swatch} aria-hidden="true">
+              {SWATCHES[styleName].map((color) => (
+                <span key={color} style={{ background: color }} />
+              ))}
             </span>
-            <div className={styles.styles} role="radiogroup" aria-labelledby="map-style-label">
-              {MAP_STYLES.map((name) => (
-                <button
-                  key={name}
-                  type="button"
-                  role="radio"
-                  aria-checked={styleName === name}
-                  onClick={() => {
-                    setStyleName(name);
-                    try {
-                      window.localStorage.setItem(STYLE_KEY, name);
-                    } catch {
-                      /* The choice just is not remembered. */
-                    }
-                  }}
-                >
-                  <span className={styles.swatch} aria-hidden="true">
-                    {SWATCHES[name].map((color) => (
-                      <span key={color} style={{ background: color }} />
-                    ))}
-                  </span>
-                  {t(`styles.${name}`)}
-                </button>
+            {t('layers')}
+          </button>
+        ) : null}
+        {!phone && layersOpen ? (
+          <div className={styles.legend} id="map-layers">
+            <div className={styles.legendRow}>
+              <span className={styles.kicker}>{t('layers')}</span>
+              <button
+                type="button"
+                className={styles.legendClose}
+                aria-expanded={true}
+                aria-controls="map-layers"
+                onClick={() => setLayersOpen(false)}
+              >
+                {t('layersClose')}
+              </button>
+            </div>
+            <div className={styles.legendRow}>
+              <span className={styles.kicker}>{t('zoomShows')}</span>
+              <span className={styles.mono}>z{zoom.toFixed(1)}</span>
+            </div>
+            <div className={styles.levels} aria-hidden="true">
+              {[0, 1, 2, 3, 4].map((step) => (
+                <span key={step} data-on={step <= level || undefined} />
               ))}
             </div>
+            <strong className={styles.levelName}>{t(`levels.${level}`)}</strong>
+            <div className={styles.legendBlock}>
+              <span className={styles.kicker} id="map-style-label">
+                {t('mapStyle')}
+              </span>
+              <div className={styles.styles} role="radiogroup" aria-labelledby="map-style-label">
+                {MAP_STYLES.map((name) => (
+                  <button
+                    key={name}
+                    type="button"
+                    role="radio"
+                    aria-checked={styleName === name}
+                    onClick={() => {
+                      setStyleName(name);
+                      try {
+                        window.localStorage.setItem(STYLE_KEY, name);
+                      } catch {
+                        /* The choice just is not remembered. */
+                      }
+                    }}
+                  >
+                    <span className={styles.swatch} aria-hidden="true">
+                      {SWATCHES[name].map((color) => (
+                        <span key={color} style={{ background: color }} />
+                      ))}
+                    </span>
+                    {t(`styles.${name}`)}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className={styles.key}>
+              <span>
+                <i className={styles.keyTrip} aria-hidden="true" />
+                {t('keyTrip')}
+              </span>
+              <span>
+                <i className={styles.keyVisited} aria-hidden="true" />
+                {t('keyVisited')}
+              </span>
+            </div>
+            <div className={styles.shortcuts}>
+              <span>
+                <kbd>V</kbd> {t('tool.select')}
+              </span>
+              <span>
+                <kbd>P</kbd> {t('tool.pin')}
+              </span>
+              <span>
+                <kbd>Esc</kbd>
+              </span>
+            </div>
           </div>
-          <div className={styles.key}>
-            <span>
-              <i className={styles.keyTrip} aria-hidden="true" />
-              {t('keyTrip')}
-            </span>
-            <span>
-              <i className={styles.keyVisited} aria-hidden="true" />
-              {t('keyVisited')}
-            </span>
-          </div>
-          <div className={styles.shortcuts}>
-            <span>
-              <kbd>V</kbd> {t('tool.select')}
-            </span>
-            <span>
-              <kbd>P</kbd> {t('tool.pin')}
-            </span>
-            <span>
-              <kbd>Esc</kbd>
-            </span>
-          </div>
-        </div>
-      ) : null}
+        ) : null}
 
-      <div
-        className={styles.zoom}
-        style={phone ? { bottom: sheetHeight + 24 } : undefined}
-        role="group"
-        aria-label={t('zoomGroup')}
-      >
-        <button
-          type="button"
-          onClick={() => controller.current?.zoomBy(1)}
-          aria-label={t('zoomIn')}
+        <div
+          className={styles.zoom}
+          style={phone ? { bottom: sheetHeight + 24 } : undefined}
+          role="group"
+          aria-label={t('zoomGroup')}
         >
-          +
-        </button>
-        <button
-          type="button"
-          onClick={() => controller.current?.zoomBy(-1)}
-          aria-label={t('zoomOut')}
-        >
-          −
-        </button>
+          <button
+            type="button"
+            onClick={() => controller.current?.zoomBy(1)}
+            aria-label={t('zoomIn')}
+          >
+            +
+          </button>
+          <button
+            type="button"
+            onClick={() => controller.current?.zoomBy(-1)}
+            aria-label={t('zoomOut')}
+          >
+            −
+          </button>
+        </div>
       </div>
 
       {phone && tool === 'pin' ? (
@@ -1187,9 +1197,6 @@ export function WorldMapBoard({
               </span>
               <h2>{active.name}</h2>
               {whereOf(active) ? <span className={styles.muted}>{whereOf(active)}</span> : null}
-              <span className={styles.mono}>
-                {coord(active.latitude, 'N', 'S')} · {coord(active.longitude, 'E', 'W')}
-              </span>
             </div>
             <div className={styles.stepper}>
               <button
@@ -1217,7 +1224,7 @@ export function WorldMapBoard({
               {KIT_TABS.map((tab) => (
                 <button key={tab} type="button" onClick={() => openCard(active.id, tab)}>
                   <span aria-hidden="true">
-                    {{ photos: '▣', spots: '⌖', notes: '✎', todos: '✓' }[tab]}
+                    {{ photos: '▣', spots: '◎', notes: '✎', todos: '✓' }[tab]}
                   </span>
                   {petalNames[tab]}
                   {kitCounts(active)[tab] ? <b>{kitCounts(active)[tab]}</b> : null}
@@ -1248,7 +1255,7 @@ export function WorldMapBoard({
               )}
             </div>
             {stops[selectedIndex + 1] ? (
-              <div className={styles.block}>
+              <div className={styles.legRow}>
                 <label htmlFor="stop-leg" className={styles.kicker}>
                   {t('legTo', { place: stops[selectedIndex + 1]!.name })}
                 </label>
@@ -1387,8 +1394,8 @@ export function WorldMapBoard({
                           <small>
                             {stop.legMode ? (
                               <>
-                                <span aria-hidden="true">{LEG_ICONS[stop.legMode]} </span>
-                                {t(`legModes.${stop.legMode}`)} ·{' '}
+                                <LegIcon mode={stop.legMode} /> {t(`legModes.${stop.legMode}`)}{' '}
+                                ·{' '}
                               </>
                             ) : null}
                             {t('crow', { km: number.format(Math.round(distanceKm(stop, next))) })}
