@@ -177,6 +177,26 @@ describe('days without what they need', () => {
   );
 
   it.each(SUPPORTED_LOCALES)(
+    'offers the spots from the map first, without the ones already on the plan (%s)',
+    (locale) => {
+      const copy = catalogs[locale].daysPage;
+      const html = render(locale, {
+        mapSpots: [
+          { stopId: KYOTO.id, name: 'Nishiki Market', kind: 'food' },
+          // Already on the plan (same stop, same name): not offered again.
+          { stopId: KYOTO.id, name: 'Fushimi Inari', kind: 'sight' },
+        ],
+      });
+      const plain = text(html);
+      expect(plain).toContain(copy.ideasFromMap.replace('{stop}', 'Kyoto'));
+      expect(plain).toContain('Nishiki Market');
+      expect(plain.split('Fushimi Inari').length - 1).toBe(
+        text(render(locale)).split('Fushimi Inari').length - 1,
+      );
+    },
+  );
+
+  it.each(SUPPORTED_LOCALES)(
     'offers the calendar file only once the trip has dates (%s)',
     (locale) => {
       const copy = catalogs[locale].daysPage;

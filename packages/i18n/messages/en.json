@@ -886,7 +886,8 @@
     "calendarDone": "Calendar file ready: open it to add the days to your calendar.",
     "startPick": "Start with one of these: one tap puts it in “No day”, and you choose its day after.",
     "startOwn": "Add another place",
-    "freeDay": "Free day"
+    "freeDay": "Free day",
+    "ideasFromMap": "From your map in {stop}"
   },
   "budgetPage": {
     "title": "Budget & savings",

@@ -49,6 +49,12 @@ export default async function DaysPage() {
     nights: stop.nights,
     legMode: stop.legMode ?? null,
   }));
+  // What the person marked on the map for each stop (not where they sleep or arrive): ready to put on a day.
+  const mapSpots = (destinations ?? []).flatMap((stop) =>
+    (stop.spots ?? [])
+      .filter((spot) => spot.kind !== 'stay' && spot.kind !== 'transport')
+      .map((spot) => ({ stopId: stop.id, name: spot.name, kind: spot.kind ?? 'sight' })),
+  );
   const startDate = trip?.startDate ?? null;
   const days = tripDays({
     startDate: startDate ? toLocalDate(startDate) : null,
@@ -67,6 +73,7 @@ export default async function DaysPage() {
       days={days}
       places={plan?.places ?? null}
       ideas={ideas}
+      mapSpots={mapSpots}
     />
   );
 }
