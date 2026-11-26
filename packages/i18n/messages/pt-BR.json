@@ -998,7 +998,8 @@
     "added": "Despesa adicionada",
     "removed": "{description} removida",
     "undo": "Desfazer",
-    "actionError": "Não deu certo. Tente de novo em instantes."
+    "actionError": "Não deu certo. Tente de novo em instantes.",
+    "chartGap": "faltam {amount}"
   },
   "passportPage": {
     "title": "Passaporte",

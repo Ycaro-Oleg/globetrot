@@ -131,8 +131,8 @@ function Board({
     if (!hasOthers) return t('guessNote');
     return t('guessLeft', { counted: view(guess.counted), amount: view(guess.amount) });
   };
-  const [savedText, setSavedText] = useState(budget.savings.saved.amount);
-  const [ceilingText, setCeilingText] = useState(budget.savings.ceiling?.amount ?? '');
+  const [savedText, setSavedText] = useState(plainAmount(budget.savings.saved.amount));
+  const [ceilingText, setCeilingText] = useState(plainAmount(budget.savings.ceiling?.amount ?? ''));
   const [monthly, setMonthly] = useState(() => Math.round(Number(budget.savings.monthly.amount)));
   const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [today] = useState(todayLocal);
@@ -503,6 +503,26 @@ function Answer({
           <div className={styles.bars} aria-hidden="true">
             {bars.map((bar) => (
               <div key={bar.month} className={styles.barSlot}>
+                {/* The jar each month fills: up to the goal, so the gap reads as what is still to save. */}
+                <div
+                  className={styles.barGoal}
+                  style={{ height: `${scale(total.amountMinor)}%` }}
+                />
+                {bar.now && !bar.done && total.amountMinor > bar.value.amountMinor ? (
+                  <span
+                    className={styles.gapLabel}
+                    style={{
+                      bottom: `calc(${(scale(bar.value.amountMinor) + scale(total.amountMinor)) / 2}% - 8px)`,
+                    }}
+                  >
+                    {t('chartGap', {
+                      amount: fmt(
+                        money(total.amountMinor - bar.value.amountMinor, total.currency),
+                        true,
+                      ),
+                    })}
+                  </span>
+                ) : null}
                 <div
                   className={styles.bar}
                   data-done={bar.done || undefined}
@@ -837,4 +857,9 @@ function ExpenseDrawer({
       </form>
     </>
   );
+}
+
+/** "1200.00" → "1200", "12.50" → "12.5": an amount as a person types it, for the fields. */
+function plainAmount(amount: string): string {
+  return amount.includes('.') ? amount.replace(/0+$/, '').replace(/\.$/, '') : amount;
 }
