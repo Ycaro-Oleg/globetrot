@@ -5,9 +5,8 @@ import { useLocale, useTranslations } from 'next-intl';
 import { getLocale, getTranslations } from 'next-intl/server';
 import { siteOrigin } from '../lib/site-url';
 import { setScaffoldLocale } from './actions';
-import { demoMap } from '../lib/demo-map';
 import { AnswerCalculator } from './landing-calculator';
-import { DemoMapBoard } from './landing-demo-map';
+import { LandingLiveMap } from './landing-live-map';
 import { HeroRoutes } from './landing-hero-routes';
 import { LandingAnchors } from './landing-anchors';
 import { LandingPip } from './landing-pip';
@@ -241,9 +240,7 @@ export default function HomePage() {
             </h2>
             <p className={styles.seeBody}>{t('seeBody')}</p>
           </div>
-          <div className={styles.zoomFrame} data-zoom-reveal>
-            <DemoMapBoard map={demoMap()} />
-          </div>
+          <LandingLiveMap />
         </section>
 
         <section className={styles.section} id="how" aria-labelledby="how-title" data-step-path>

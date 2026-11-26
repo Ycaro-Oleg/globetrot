@@ -51,7 +51,7 @@ export type PipFill = {
 import { PhotoPicker } from '../_components/photo-picker';
 import styles from './world-map.module.css';
 
-const GLYPHS: Record<KitTab, string> = { photos: '▣', spots: '⌖', notes: '✎', todos: '✓' };
+const GLYPHS: Record<KitTab, string> = { photos: '▣', spots: '◎', notes: '✎', todos: '✓' };
 
 /** What the petal badges and the card's tabs count. */
 export function kitCounts(stop: RouteStop): Record<KitTab, string> {
@@ -80,6 +80,7 @@ export function PinCard({
   onToggleExpand,
   onDragStart,
   nearby = null,
+  photosReadOnly = false,
   focusSpot = null,
   onPinSpot,
   onShowRoute,
@@ -101,6 +102,8 @@ export function PinCard({
   onDragStart?: (event: ReactPointerEvent<HTMLElement>) => void;
   /** Real points of interest near the stop (from the map tiles), offered as spots with their place. */
   nearby?: readonly NearbyPlace[] | null;
+  /** The landing's demo: its photos are shown with their credit, never added or removed. */
+  photosReadOnly?: boolean;
   /** A spot to bring into view (its mini-pin was tapped). */
   focusSpot?: number | null;
   /** "Mark on the map": the next tap on the map places this spot. */
@@ -307,6 +310,7 @@ export function PinCard({
             photos={stop.photos}
             max={PHOTOS_MAX}
             label={t('photosLabel', { stop: name })}
+            readOnly={photosReadOnly}
             onChange={(photos) => onChange({ photos })}
           />
         ) : null}
@@ -402,7 +406,7 @@ export function PinCard({
                           aria-label={t('showSpot', { name: spot.name })}
                           onClick={() => onShowSpot(spot)}
                         >
-                          ⌖
+                          ◎
                         </button>
                       ) : null}
                       <button
@@ -491,7 +495,7 @@ export function PinCard({
                             )
                           }
                         >
-                          ⌖ {t('routeShow')}
+                          ◎ {t('routeShow')}
                         </button>
                       ) : null}
                     </div>
@@ -627,7 +631,7 @@ export function PinCard({
                   setSpotDraft('');
                 }}
               >
-                ⌖ {t('markOnMap')}
+                ◎ {t('markOnMap')}
               </button>
             ) : null}
             <small className={styles.cardHint}>{t('spotsHint')}</small>

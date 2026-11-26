@@ -28,6 +28,12 @@
   font-family: var(--gt-primitive-font-body);
 }
 
+/* The landing's live demo fills the box it is given. */
+.stage[data-demo] {
+  height: 100%;
+  min-height: 0;
+}
+
 /* The board is full-bleed: the shell's content padding goes away on this page only. */
 :global(#main):has(> .stage) {
   padding: 0;

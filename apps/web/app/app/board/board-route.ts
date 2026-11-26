@@ -48,7 +48,8 @@ export const SPOT_ICONS: Record<SpotKind, string> = {
 /** A sensible kind for a point of interest from the map tiles (the domain's rule). */
 export { spotKindOf };
 /** A photo of the stop: an image the person uploaded and the words that describe it. */
-export type StopPhoto = { mediaId: string; alt: string };
+/** A stop's photo: an upload (`mediaId`), or, only in the landing's demo, a static image with its credit. */
+export type StopPhoto = { mediaId: string; alt: string; src?: string; credit?: string };
 
 /** A stop on the board: the place, the nights, the person's own notes and lists, and how they reach the next. */
 export type RouteStop = MapPlace & {

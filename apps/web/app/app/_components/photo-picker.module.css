@@ -126,3 +126,16 @@
   clip-path: inset(50%);
   white-space: nowrap;
 }
+
+.figure {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+}
+
+.figure figcaption {
+  color: var(--gt-semantic-color-text-secondary);
+  font-size: 11px;
+  line-height: 1.3;
+}

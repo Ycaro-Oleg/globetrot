@@ -136,17 +136,14 @@ describe('Globetrot landing page', () => {
   );
 
   it.each(SUPPORTED_LOCALES)(
-    'lets the visitor try the map: a route with its stops and every other city to add (%s)',
+    'keeps a box for the live map, loaded when it comes into view, with the photo credits (%s)',
     (locale) => {
       const html = render(locale);
-      const demo = catalogs[locale].landing.demo;
-      const text = visibleText(html);
-      for (const key of ['lisbon', 'madrid', 'barcelona', 'paris'] as const) {
-        expect(text).toContain(demo.cities[key]);
-      }
-      expect(html).toContain(`aria-label="${demo.add.replace('{city}', demo.cities.rome)}"`);
-      expect(text).toContain(demo.title);
-      expect(html.match(/<path d="M/g)?.length).toBeGreaterThan(20);
+      const live = catalogs[locale].landing.liveDemo;
+      expect(html).toContain(`aria-label="${live.map}"`);
+      expect(visibleText(html)).toContain(live.loading);
+      expect(visibleText(html)).toContain(live.credits);
+      expect(html).toContain('https://commons.wikimedia.org/wiki/File:Sensoji_2023.jpg');
     },
   );
 
