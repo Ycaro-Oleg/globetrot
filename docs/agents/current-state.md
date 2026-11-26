@@ -1,6 +1,6 @@
 # Current state
 
-_Last updated: 2026-11-23, release v0.1.0. Code state: `main` is release **v0.1.0** (#130, `develop` at #129); `develop` includes #83 to #129. The [launch runbook](../engineering/launch-runbook.md) lists what the owner must provide. GitHub Actions does not run jobs while the account's billing is failing (owner); PRs are merged on local checks with the owner's approval until then._
+_Last updated: 2026-11-26, release v0.1.0. Code state: `main` is release **v0.1.0** (#130, `develop` at #129); `develop` includes #83 to #129. The [launch runbook](../engineering/launch-runbook.md) lists what the owner must provide. Since 2026-11-26 the repository is public, so GitHub Actions runs every job again (CI green on `develop` at #151); if it goes private again, Actions stops until the account's billing is fixed (owner)._
 
 Read this first. It says where the project is, what exists, what is open, what only the owner can unblock and what to do next. Procedure for working: [`playbook.md`](playbook.md). Feature-by-feature progress: [`../product/progress.md`](../product/progress.md). Milestones and exit criteria: [`../product/roadmap.md`](../product/roadmap.md).
 
@@ -68,7 +68,7 @@ These cannot be finished by an agent. Do not work around them, and do not mark t
 | **Real-device MapLibre test** | Run the frame-rate test on a mid-range Android phone ([`spikes/maplibre.md`](../architecture/spikes/maplibre.md)) | Final go for the board (M4) |
 | **Legal text** | Fill the `[bracketed]` facts in the drafted Terms and Privacy policy and have them reviewed; then remove the draft banner. Acceptance is not stored yet | A public release |
 | **Production email provider** | Choose Resend or Postmark, then provide settings and a verified sending domain | Production (M11). SMTP settings are the only change |
-| **GitHub billing** | Fix the account's billing (Settings → Billing & plans) so Actions runs jobs again | CI on every PR; merges rely on local checks until then |
+| **GitHub billing** | Only if the repository goes private again: fix the account's billing or raise the spending limit (Settings → Billing & plans) | CI on every PR while private |
 | **Regional pricing** | A business decision (base prices are approved: [ADR-0019](../architecture/adr/0019-plans-trial-and-pip-credits.md)) | Later |
 | **Imagery licensing source** | Choose where destination images come from | Imagery in the board and landing |
 | **Production object storage** ([ADR-0014](../architecture/adr/0014-photos-and-storage.md)) | Choose an S3-compatible provider (or self-host on the Hetzner box) and provide `S3_*` settings as secrets | Photos in production (M11) |
