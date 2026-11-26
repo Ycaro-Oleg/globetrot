@@ -56,6 +56,7 @@ export function AppShell({
             <TripSwitcher trips={trips} activeTripId={activeTripId} />
             <TripTabs variant="inline" />
             <span className={styles.spacer} />
+            <PlanBanner billing={billing} variant="pill" />
             <GlobalNav pipEnabled={pipEnabled} />
             <AccountMenu name={userName} />
           </header>

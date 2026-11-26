@@ -7,14 +7,34 @@ import type { BillingView } from '../../../lib/billing';
 import styles from './shell.module.css';
 
 /**
- * One line under the TopBar about the free week: the days left while it runs, and, once it is over without a
- * plan, that the account is read-only and the trips are safe. Nothing for a paid plan, and nothing on the plan
- * page itself, which says the same thing in full.
+ * The free week under the TopBar: the days left while it runs, and, once it is over without a plan, that the
+ * account is read-only and the trips are safe. Nothing for a paid plan, and nothing on the plan page itself,
+ * which says the same thing in full. While the week runs, wide screens show it as a small pill in the bar
+ * (`variant="pill"`) instead of a whole line; the line stays for narrow screens and for the ended week.
  */
-export function PlanBanner({ billing }: { billing: BillingView | null }) {
+export function PlanBanner({
+  billing,
+  variant = 'row',
+}: {
+  billing: BillingView | null;
+  variant?: 'row' | 'pill';
+}) {
   const t = useTranslations('shell.plan');
   const pathname = usePathname();
   if (!billing || pathname === '/app/plan') return null;
+  if (variant === 'pill') {
+    if (billing.readOnly || billing.access !== 'trial') return null;
+    return (
+      <Link
+        href="/app/plan"
+        className={styles.planPill}
+        data-tone={billing.trialDaysLeft <= 2 ? 'soon' : 'trial'}
+      >
+        {t('trialShort', { days: billing.trialDaysLeft })}
+        <span className="sr-only"> · {t('trialCta')}</span>
+      </Link>
+    );
+  }
   if (billing.readOnly) {
     return (
       <aside className={styles.planBanner} data-tone="expired" aria-label={t('label')}>
@@ -29,6 +49,7 @@ export function PlanBanner({ billing }: { billing: BillingView | null }) {
   return (
     <aside
       className={styles.planBanner}
+      data-pill-wide=""
       data-tone={billing.trialDaysLeft <= 2 ? 'soon' : 'trial'}
       aria-label={t('label')}
     >

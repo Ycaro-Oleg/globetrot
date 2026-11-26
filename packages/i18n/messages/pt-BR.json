@@ -356,6 +356,7 @@
     },
     "plan": {
       "trial": "{days, plural, one {Último dia da sua semana grátis} other {Faltam # dias da sua semana grátis}}",
+      "trialShort": "{days, plural, one {Último dia grátis} other {# dias grátis}}",
       "trialCta": "Ver planos",
       "expired": "Sua semana grátis acabou. Suas viagens estão seguras: veja e exporte quando quiser.",
       "expiredCta": "Escolher um plano para continuar",
@@ -702,7 +703,7 @@
     "nearbyEmpty": "Aproxime o mapa para ver restaurantes, cafés e atrações.",
     "markVisited": "Marcar como visitado",
     "visitedUndo": "Visitado · desfazer",
-    "visitHelp": "A primeira parada visitada num país carimba o visto Globetrot comemorativo dele. É uma lembrança, não um documento oficial.",
+    "visitHelp": "A primeira visita num país ganha um carimbo de lembrança, não um documento oficial.",
     "removeStop": "Remover parada",
     "cta": "Planejar os dias",
     "places": {

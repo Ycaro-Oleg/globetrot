@@ -190,23 +190,19 @@
 }
 
 /* The count of what the stop holds, on the pin's head (the head is turned 45°, the badge turns back). */
-.pinBadge {
-  position: absolute;
-  top: -9px;
-  right: -9px;
-  display: flex;
+.pinLabelCount {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 20px;
-  height: 20px;
+  min-width: 18px;
+  height: 18px;
+  margin-inline-start: 6px;
   padding: 0 5px;
-  border: 2px solid var(--surface);
   border-radius: 99px;
   background: var(--blue);
   color: #fff;
   font-size: 10px;
   font-weight: 800;
-  transform: rotate(45deg);
 }
 
 /* What a tap does, over the pin on hover or focus: the pin lifts, the hint shows. */
@@ -253,16 +249,20 @@
 .legBadge {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  height: 26px;
-  padding: 0 9px 0 6px;
-  border: 2px solid var(--ink);
+  gap: 4px;
+  height: 22px;
+  padding: 0 7px 0 5px;
+  border: 1.5px solid var(--ink);
   border-radius: 99px;
   background: var(--surface);
   color: var(--ink);
-  font-size: 13px;
+  font-size: 11px;
   white-space: nowrap;
   pointer-events: none;
+}
+
+.legIcon {
+  display: inline-flex;
 }
 
 .legDistance {
@@ -285,8 +285,54 @@
   pointer-events: none;
 }
 
+/* On a computer the place, the search and the tools are one bar. */
+.stage:not([data-phone]) .toolbar {
+  right: auto;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 4px;
+  max-width: calc(100% - 440px);
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: 99px;
+  background: var(--ink);
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.6);
+  pointer-events: auto;
+}
+
+.stage:not([data-phone]) .toolbar .crumbs,
+.stage:not([data-phone]) .toolbar .tools {
+  flex: none;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.stage:not([data-phone]) .toolbar .search {
+  flex: 1 1 360px;
+  min-width: 180px;
+  width: 360px;
+}
+
+.stage:not([data-phone]) .toolbar .searchBox {
+  height: 38px;
+  box-shadow: none;
+}
+
+/* On a phone: the search on its own row, the place and the tools together under it. */
 .stage[data-phone] .toolbar {
   right: 14px;
+}
+
+.stage[data-phone] .toolbar .search {
+  order: -1;
+  flex-basis: 100%;
+  max-width: none;
+}
+
+.stage[data-phone] .toolbar .tools {
+  margin-inline-start: auto;
 }
 
 .toolbar > * {
@@ -607,7 +653,7 @@
 
 .zoom {
   position: absolute;
-  right: 412px;
+  right: 14px;
   bottom: 14px;
   z-index: 4;
   display: flex;
@@ -619,8 +665,36 @@
   background: var(--ink);
 }
 
-.stage[data-phone] .zoom {
-  right: 14px;
+/* Layers and zoom share the lower-left corner on a computer; the map's credits stay clear on the right. */
+.dock {
+  position: absolute;
+  left: 14px;
+  bottom: 14px;
+  z-index: 4;
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.stage[data-phone] .dock {
+  display: contents;
+}
+
+.stage:not([data-phone]) .dock > * {
+  position: static;
+}
+
+.stage:not([data-phone]) .dock .zoom {
+  flex-direction: row;
+}
+
+.stage:not([data-phone]) .dock .zoom button {
+  width: 40px;
+  height: 36px;
+}
+
+.stage:not([data-phone]) .mapHost :global(.maplibregl-ctrl-bottom-right) {
+  right: 412px;
 }
 
 .zoom button {
@@ -1174,6 +1248,19 @@
   cursor: not-allowed;
 }
 
+/* On a computer the arrows show on the row under the pointer or the keyboard. */
+@media (hover: hover) {
+  .stage:not([data-phone]) .order {
+    opacity: 0;
+    transition: opacity 120ms ease;
+  }
+
+  .stage:not([data-phone]) li:hover .order,
+  .stage:not([data-phone]) li:focus-within .order {
+    opacity: 1;
+  }
+}
+
 .leg {
   display: flex;
   align-items: center;
@@ -1376,6 +1463,18 @@
   white-space: nowrap;
 }
 
+.legRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.legRow .select {
+  flex: none;
+  max-width: 50%;
+}
+
 .select {
   min-height: 44px;
   padding: 0 12px;
@@ -1407,9 +1506,11 @@
 .removeButton {
   align-self: flex-start;
   min-height: 44px;
-  padding: 0 14px;
-  border: 1px solid rgba(255, 140, 120, 0.6);
-  border-radius: 99px;
+  padding: 0 4px;
+  border: 0;
+  border-radius: 8px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
   background: transparent;
   color: #ffb4a6;
   font-size: 13px;
@@ -1758,7 +1859,7 @@
   cursor: pointer;
 }
 
-/* --- The first-visit hint, above the first pin --- */
+/* --- The first-visit hint, under the first pin (clear of the toolbar) --- */
 .pinHint {
   position: absolute;
   z-index: 5;
@@ -1774,12 +1875,12 @@
   font-size: 13px;
   font-weight: 600;
   line-height: 1.35;
-  transform: translate(-50%, calc(-100% - 58px));
+  transform: translate(-50%, 16px);
 }
 
 .pinHint::after {
   position: absolute;
-  bottom: -6px;
+  top: -6px;
   left: 50%;
   width: 12px;
   height: 12px;
