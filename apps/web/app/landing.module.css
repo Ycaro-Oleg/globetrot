@@ -365,6 +365,35 @@
   letter-spacing: -0.018em;
 }
 
+.calcHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+}
+
+.calcCurrency {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ink-2);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.calcCurrency select {
+  min-height: 44px;
+  max-width: 100%;
+  padding: 0 12px;
+  border: 1px solid var(--input-border);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
+  font-weight: 700;
+}
+
 .calcGrid {
   display: grid;
   gap: 18px;
