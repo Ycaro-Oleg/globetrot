@@ -26,6 +26,28 @@ import {
   type StopSpot,
 } from './board-route';
 import type { NearbyPlace } from './map-canvas';
+import { PipAvatar } from '../_components/pip-avatar';
+
+/** One spot Pip offered: always one of the real places the map showed near the stop. */
+export type PipSpotChange = {
+  kind: 'addSpot';
+  stopId: string;
+  name: string;
+  spotKind: SpotKind;
+  latitude: number;
+  longitude: number;
+  reason: string;
+};
+
+/** "Pip, suggest places" for one stop: the request, what Pip offered and which of them the person keeps. */
+export type PipFill = {
+  placeKey: string;
+  state: 'asking' | 'ready' | 'empty' | 'applied' | 'error';
+  proposalId: string | null;
+  changes: PipSpotChange[];
+  picked: number[];
+  error: string | null;
+};
 import { PhotoPicker } from '../_components/photo-picker';
 import styles from './world-map.module.css';
 
@@ -61,6 +83,7 @@ export function PinCard({
   focusSpot = null,
   onPinSpot,
   onShowRoute,
+  pip = null,
   onTab,
   onChange,
   onShowSpot,
@@ -82,6 +105,15 @@ export function PinCard({
   focusSpot?: number | null;
   /** "Mark on the map": the next tap on the map places this spot. */
   onPinSpot?: (draft: { name: string; kind: SpotKind }) => void;
+  /** "Pip, suggest places", when Pip is on for this trip. */
+  pip?: {
+    fill: PipFill | null;
+    onAsk: () => void;
+    onToggle: (index: number) => void;
+    onApply: () => void;
+    onDiscard: () => void;
+    onUndo: () => void;
+  } | null;
   /** Frames every placed spot of this stop on the map. */
   onShowRoute?: (points: [longitude: number, latitude: number][]) => void;
   onTab: (tab: KitTab) => void;
@@ -465,6 +497,82 @@ export function PinCard({
                     </div>
                   </>
                 ) : null}
+              </div>
+            ) : null}
+            {pip ? (
+              <div className={styles.pipFill} aria-live="polite">
+                {!pip.fill || pip.fill.state === 'error' ? (
+                  <>
+                    <button type="button" className={styles.pipFillAsk} onClick={pip.onAsk}>
+                      <PipAvatar size={28} still bare />
+                      <span>{t('pipAsk', { place: name })}</span>
+                    </button>
+                    {pip.fill?.error ? (
+                      <p className={styles.pipFillError} role="alert">
+                        {t(`pipErrors.${pip.fill.error}`)}
+                      </p>
+                    ) : (
+                      <small className={styles.cardHint}>{t('pipAskHint')}</small>
+                    )}
+                  </>
+                ) : pip.fill.state === 'asking' ? (
+                  <p className={styles.pipFillStatus}>
+                    <PipAvatar size={28} pose="research" bare /> {t('pipAsking')}
+                  </p>
+                ) : pip.fill.state === 'empty' ? (
+                  <p className={styles.pipFillStatus}>
+                    {t('pipEmpty')}{' '}
+                    <button type="button" className={styles.pipFillLink} onClick={pip.onDiscard}>
+                      {t('pipClose')}
+                    </button>
+                  </p>
+                ) : pip.fill.state === 'applied' ? (
+                  <p className={styles.pipFillStatus}>
+                    {t('pipApplied', { count: pip.fill.picked.length })}{' '}
+                    <button type="button" className={styles.pipFillLink} onClick={pip.onUndo}>
+                      {t('pipUndo')}
+                    </button>
+                  </p>
+                ) : (
+                  <>
+                    <strong className={styles.pipFillTitle}>
+                      {t('pipOffers', { place: name })}
+                    </strong>
+                    <ul className={styles.pipFillList}>
+                      {pip.fill.changes.map((change, index) => (
+                        <li key={`${change.name}-${index}`}>
+                          <input
+                            type="checkbox"
+                            id={`pip-spot-${index}`}
+                            checked={pip.fill!.picked.includes(index)}
+                            onChange={() => pip.onToggle(index)}
+                          />
+                          <label htmlFor={`pip-spot-${index}`}>
+                            <span aria-hidden="true">{SPOT_ICONS[change.spotKind]}</span>{' '}
+                            <strong>{change.name}</strong>
+                            <small>
+                              {t(`kinds.${change.spotKind}`)}
+                              {change.reason ? ` · ${change.reason}` : ''}
+                            </small>
+                          </label>
+                        </li>
+                      ))}
+                    </ul>
+                    <div className={styles.routeActions}>
+                      <button
+                        type="button"
+                        className={styles.pipFillApply}
+                        disabled={!pip.fill.picked.length}
+                        onClick={pip.onApply}
+                      >
+                        {t('pipApply', { count: pip.fill.picked.length })}
+                      </button>
+                      <button type="button" className={styles.markOnMap} onClick={pip.onDiscard}>
+                        {t('pipDiscard')}
+                      </button>
+                    </div>
+                  </>
+                )}
               </div>
             ) : null}
             <div className={styles.kindPicker} role="radiogroup" aria-label={t('kindPick')}>

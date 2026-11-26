@@ -147,6 +147,8 @@ export function PipView({
         return t('change.reorder', { order: change.order.map(stopName).join(' → ') });
       case 'addPlace':
         return t('change.addPlace', { name: change.name, stop: stopName(change.stopId) });
+      case 'addSpot':
+        return t('change.addSpot', { name: change.name, stop: stopName(change.stopId) });
       case 'addChecklistItem':
         return t('change.addChecklistItem', {
           group: t(`groups.${change.group}`),

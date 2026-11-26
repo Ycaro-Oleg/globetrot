@@ -762,7 +762,26 @@
       "routeShortest": "Ordem mais curta",
       "moveSpotUp": "Subir {name}",
       "moveSpotDown": "Descer {name}",
-      "routeShow": "Ver rota no mapa"
+      "routeShow": "Ver rota no mapa",
+      "pipAsk": "Pip, sugira lugares em {place}",
+      "pipAskHint": "O Pip escolhe entre os lugares reais deste mapa, nunca inventa. Usa 1 crédito do Pip.",
+      "pipAsking": "O Pip está escolhendo entre os lugares do mapa…",
+      "pipOffers": "O Pip sugere para {place}:",
+      "pipApply": "{count, plural, one {Adicionar # lugar} other {Adicionar # lugares}}",
+      "pipDiscard": "Descartar",
+      "pipEmpty": "O Pip não achou nada bom aqui. Aproxime o mapa da cidade e tente de novo.",
+      "pipClose": "Fechar",
+      "pipApplied": "{count, plural, one {# lugar do Pip está no mapa.} other {# lugares do Pip estão no mapa.}}",
+      "pipUndo": "Desfazer",
+      "pipErrors": {
+        "NO_PLACES": "Aproxime o mapa da cidade primeiro, para o Pip ver os lugares.",
+        "SAVING": "A rota ainda está salvando: tente de novo em um instante.",
+        "RATE_LIMITED": "O Pip precisa descansar: tente amanhã.",
+        "OUT_OF_CREDITS": "Seus créditos do Pip acabaram por agora.",
+        "PLAN_REQUIRED": "Sua semana grátis acabou: escolha um plano para seguir com o Pip.",
+        "SERVICE_UNAVAILABLE": "O Pip não está disponível agora: tente mais tarde.",
+        "UNKNOWN": "Algo deu errado. Tente de novo."
+      }
     },
     "visa": {
       "kicker": "VISTO GLOBETROT",
@@ -778,7 +797,10 @@
       "suggestionsTitle": "O Pip tem {count, plural, one {# sugestão} other {# sugestões}} para esta viagem",
       "suggestionsBody": "{count, plural, =0 {Rascunhadas no mapa antes de você decidir.} one {# parada nova está rascunhada no mapa.} other {# paradas novas estão rascunhadas no mapa.}}",
       "review": "Revisar",
-      "pencilled": "Sugerido pelo Pip: {name}"
+      "pencilled": "Sugerido pelo Pip: {name}",
+      "fillRequest": "Sugira lugares para {place}: onde dormir, onde comer e o que não perder.",
+      "fillApplied": "{count, plural, one {# lugar do Pip adicionado.} other {# lugares do Pip adicionados.}}",
+      "fillUndone": "Os lugares do Pip foram desfeitos."
     },
     "home": "Saída: {name}",
     "pinTip": "Toque para planejar {place}",
@@ -1485,7 +1507,8 @@
       "addPlace": "{name} → {stop}",
       "addChecklistItem": "{group}: {label}",
       "addExpense": "Custo: {description}",
-      "setMonthly": "Guardar {amount} por mês"
+      "setMonthly": "Guardar {amount} por mês",
+      "addSpot": "{name} → um ponto em {stop}"
     },
     "errors": {
       "RATE_LIMITED": "O Pip precisa descansar: você pediu bastante hoje. Tente amanhã.",

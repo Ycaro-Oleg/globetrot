@@ -6,8 +6,12 @@ import {
   PIP_CHANGES_MAX,
   PIP_DAILY_CAP,
   creditBalance,
+  distanceKm,
   PROPOSAL_STATUSES,
+  spotKindOf,
+  STOP_SPOTS_MAX,
   type ProposalStatus,
+  type SpotKind,
 } from '@globetrot/domain';
 import { z } from 'zod';
 import type { Actor } from '../actor';
@@ -37,6 +41,7 @@ import { systemPrompt, userPrompt, type PipContext } from './prompt';
 import {
   applyProposalFields,
   askPipFields,
+  PIP_SPOT_CANDIDATE_RADIUS_KM,
   pipChangeSchema,
   proposalListSchema,
   proposalSchema,
@@ -94,7 +99,7 @@ async function contextFor(
   deps: Pick<Ports, 'destinations' | 'dayPlaces' | 'checklist' | 'expenses' | 'savings'>,
   trip: TripRecord,
   now: Date,
-): Promise<{ context: PipContext; refs: Map<string, string> }> {
+): Promise<{ context: PipContext; refs: Map<string, string>; stops: DestinationRecord[] }> {
   const [stops, places, checklist, expenses, savings] = await Promise.all([
     deps.destinations.listByTrip(trip.id),
     deps.dayPlaces.listByTrip(trip.id),
@@ -106,6 +111,7 @@ async function contextFor(
   const budget = budgetOf(trip, expenses, savings, now);
   return {
     refs,
+    stops,
     context: {
       title: trip.title,
       currency: trip.currency,
@@ -147,10 +153,32 @@ export function validChanges(
   raw: unknown,
   refs: Map<string, string>,
   currency: string,
+  candidates: ReadonlyMap<string, SpotCandidate> = new Map(),
 ): PipChange[] {
   if (!Array.isArray(raw)) return [];
   const out: PipChange[] = [];
+  const picked = new Set<string>();
   for (const item of raw.slice(0, PIP_CHANGES_MAX * 2)) {
+    // A spot is only ever one of the real places the map offered: the model names a candidate ("c3") and the
+    // server fills in the name, the kind and the place. Anything else for a spot is dropped.
+    if (isRecord(item) && item.kind === 'addSpot') {
+      const ref = typeof item.candidate === 'string' ? item.candidate : '';
+      const candidate = candidates.get(ref);
+      if (!candidate || picked.has(ref)) continue;
+      picked.add(ref);
+      const spot = pipChangeSchema.safeParse({
+        kind: 'addSpot',
+        stopId: candidate.stopId,
+        name: candidate.name,
+        spotKind: candidate.spotKind,
+        latitude: candidate.latitude,
+        longitude: candidate.longitude,
+        reason: typeof item.reason === 'string' ? item.reason : '',
+      });
+      if (spot.success) out.push(spot.data);
+      if (out.length >= PIP_CHANGES_MAX) break;
+      continue;
+    }
     const parsed = pipChangeSchema.safeParse(item);
     if (!parsed.success) continue;
     const change = parsed.data;
@@ -181,6 +209,18 @@ export function validChanges(
   }
   return out;
 }
+
+/** A real place near a stop that the person's map offered, as Pip may pick it. */
+export interface SpotCandidate {
+  readonly stopId: string;
+  readonly name: string;
+  readonly spotKind: SpotKind;
+  readonly latitude: number;
+  readonly longitude: number;
+}
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null;
 
 async function loadOwnProposal(
   reader: Pick<Ports['assistant'], 'findProposal'>,
@@ -262,10 +302,44 @@ export function createAskPip(
         throw new PlanLimitError('OUT_OF_CREDITS', 'Pip credits are used up for this period');
       }
       const locale = (await deps.preferences.find(actor.userId))?.locale ?? 'en';
-      const { context, refs } = await contextFor(deps, trip, now);
+      const { context, refs, stops } = await contextFor(deps, trip, now);
+      // "Fill this pin": real places near one of this trip's stops, named "c1", "c2"… for the model.
+      const candidates = new Map<string, SpotCandidate>();
+      let pinContext: PipContext = context;
+      if (input.spotCandidates) {
+        const stop = stops.find(
+          (candidate) => candidate.placeKey === input.spotCandidates!.placeKey,
+        );
+        if (!stop) throw new NotFoundError();
+        const stopRef = [...refs].find(([, id]) => id === stop.id)?.[0] ?? '';
+        const taken = new Set(stop.spots.map((spot) => spot.name.toLowerCase()));
+        for (const place of input.spotCandidates.places) {
+          if (distanceKm(stop, place) > PIP_SPOT_CANDIDATE_RADIUS_KM) continue;
+          if (taken.has(place.name.toLowerCase())) continue;
+          taken.add(place.name.toLowerCase());
+          candidates.set(`c${candidates.size + 1}`, {
+            stopId: stop.id,
+            name: place.name,
+            spotKind: spotKindOf(place.kind),
+            latitude: place.latitude,
+            longitude: place.longitude,
+          });
+        }
+        pinContext = {
+          ...context,
+          candidates: {
+            stopId: stopRef,
+            places: [...candidates].map(([id, place]) => ({
+              id,
+              name: place.name,
+              kind: place.spotKind,
+            })),
+          },
+        };
+      }
       const answer = await deps.ai.completeJson({
         system: systemPrompt(locale),
-        user: userPrompt(input.request, context, now.toISOString().slice(0, 10)),
+        user: userPrompt(input.request, pinContext, now.toISOString().slice(0, 10)),
         maxTokens: MAX_OUTPUT_TOKENS,
       });
       if (!answer) throw new UnavailableError('Pip is not available right now');
@@ -275,7 +349,11 @@ export function createAskPip(
       } catch {
         parsed = {};
       }
-      const changes = validChanges(parsed.changes, refs, trip.currency);
+      const proposed = validChanges(parsed.changes, refs, trip.currency, candidates);
+      // Asked to fill one pin, Pip answers spots for that pin and nothing else.
+      const changes = input.spotCandidates
+        ? proposed.filter((change) => change.kind === 'addSpot')
+        : proposed;
       const summary = typeof parsed.summary === 'string' ? parsed.summary.trim().slice(0, 300) : '';
       const id = deps.ids.newId();
       return deps.unitOfWork.run(async (tx) => {
@@ -348,7 +426,7 @@ async function apply(
   const before = await tx.destinations.listByTrip(trip.id);
   let route: NewDestination[] = before.map(asNew);
   let routeChanged = false;
-  const order: PipChange['kind'][] = ['removeStop', 'setNights', 'addStop', 'reorder'];
+  const order: PipChange['kind'][] = ['removeStop', 'setNights', 'addStop', 'reorder', 'addSpot'];
   for (const kind of order) {
     for (const change of changes.filter((c) => c.kind === kind)) {
       if (change.kind === 'removeStop') {
@@ -383,6 +461,26 @@ async function apply(
           ? route.findIndex((s) => s.id === change.afterStopId) + 1
           : route.length;
         route = [...route.slice(0, at || route.length), stop, ...route.slice(at || route.length)];
+      } else if (change.kind === 'addSpot') {
+        route = route.map((stop) =>
+          stop.id === change.stopId &&
+          stop.spots.length < STOP_SPOTS_MAX &&
+          !stop.spots.some((spot) => spot.name.toLowerCase() === change.name.toLowerCase())
+            ? {
+                ...stop,
+                spots: [
+                  ...stop.spots,
+                  {
+                    name: change.name,
+                    kind: change.spotKind,
+                    latitude: change.latitude,
+                    longitude: change.longitude,
+                    done: false,
+                  },
+                ],
+              }
+            : stop,
+        );
       } else if (change.kind === 'reorder') {
         const rank = new Map(change.order.map((stopId, index) => [stopId, index]));
         route = [...route].sort(

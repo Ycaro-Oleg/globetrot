@@ -13,7 +13,7 @@ import {
   fetchVisas,
   SELECTED_TRIP_COOKIE,
 } from '../../../lib/trips';
-import { isLegMode, type RouteStop } from './board-route';
+import { fromDestination, type RouteStop } from './board-route';
 import { WorldMapBoard } from './world-map';
 
 export async function generateMetadata() {
@@ -68,22 +68,7 @@ export default async function BoardPage() {
       }
     : null;
 
-  const route: RouteStop[] = (destinations ?? []).map((stop) => ({
-    id: stop.placeKey,
-    name: stop.name,
-    countryCode: stop.countryCode ?? '',
-    region: stop.region ?? '',
-    longitude: stop.longitude,
-    latitude: stop.latitude,
-    nights: stop.nights,
-    note: stop.note ?? '',
-    legMode: isLegMode(stop.legMode) ? stop.legMode : null,
-    visited: stop.visited ?? false,
-    spotRoute: stop.spotRoute ?? false,
-    spots: (stop.spots ?? []).map((spot) => ({ ...spot, kind: spot.kind ?? 'sight' })),
-    todos: (stop.todos ?? []).map((todo) => ({ ...todo })),
-    photos: (stop.photos ?? []).map((photo) => ({ ...photo })),
-  }));
+  const route: RouteStop[] = (destinations ?? []).map(fromDestination);
 
   return (
     <WorldMapBoard

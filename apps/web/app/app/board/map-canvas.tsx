@@ -48,6 +48,8 @@ export type MapStop = RouteStop & { label: string; counts: Record<KitTab, string
 
 type Props = {
   stops: MapStop[];
+  /** Spots Pip offers for a stop's card, drawn dashed and see-through until the person keeps them. */
+  pencilledSpots: readonly { name: string; kind: SpotKind; latitude: number; longitude: number }[];
   /** Pip's suggested stops, drawn dashed and see-through until the person applies them. */
   pencilled: readonly { name: string; latitude: number; longitude: number; nights: number }[];
   /** Where the person's trips start (their home city from the city list), drawn as a house and a dashed leg. */
@@ -458,6 +460,26 @@ export function MapCanvas(props: Props) {
             .addTo(map),
         );
       });
+    }
+    // Pip's offers for the open card: the same mini-pins, dashed and see-through, not yet the person's.
+    for (const spot of latest.current.pencilledSpots) {
+      const el = document.createElement('span');
+      el.className = styles.spotPin ?? '';
+      el.dataset.kind = spot.kind;
+      el.dataset.pencil = 'true';
+      el.setAttribute('aria-hidden', 'true');
+      const icon = document.createElement('span');
+      icon.className = styles.spotPinIcon ?? '';
+      icon.textContent = SPOT_ICONS[spot.kind];
+      const label = document.createElement('span');
+      label.className = styles.spotPinLabel ?? '';
+      label.textContent = spot.name;
+      el.append(icon, label);
+      spotMarks.current.push(
+        new Marker({ element: el, anchor: 'center' })
+          .setLngLat([spot.longitude, spot.latitude])
+          .addTo(map),
+      );
     }
     (map.getSource('gt-spot-route') as GeoJSONSource | undefined)?.setData({
       type: 'FeatureCollection',
@@ -1062,6 +1084,13 @@ export function MapCanvas(props: Props) {
     updateSpots();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ready, selectedId]);
+
+  // Pip's offers come and go with the card: redraw the mini-pins when they change.
+  const { pencilledSpots } = props;
+  useEffect(() => {
+    if (!ready) return;
+    updateSpots();
+  }, [ready, pencilledSpots]);
 
   useEffect(() => {
     const map = mapRef.current;

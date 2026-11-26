@@ -940,8 +940,8 @@ try {
       VIEWPORTS.desktop,
     ]);
     // The pin's card on the map, opened from the route list (no tiles needed), then expanded.
-    const openPinCard = async (page) => {
-      await go(page, `${base}/app/board`);
+    const openPinCard = async (page, origin = base) => {
+      await go(page, `${origin}/app/board`);
       await page.locator('ol li').first().locator('button').first().click();
       await page
         .locator('[role=group] button', { hasText: /Spots|Pontos/ })
@@ -950,6 +950,18 @@ try {
       await page.locator('[data-pin-card]').waitFor();
     };
     entries.push(['board-pin-card-desktop', true, openPinCard, VIEWPORTS.desktop]);
+    // With Pip on, the Spots tab also offers "Pip, suggest places in …".
+    entries.push([
+      'board-pin-card-pip-desktop',
+      true,
+      async (page) => {
+        await openPinCard(page, pipBase);
+        await page
+          .getByRole('button', { name: /^(Pip, suggest places in|Pip, sugira lugares em)/ })
+          .waitFor();
+      },
+      VIEWPORTS.desktop,
+    ]);
     entries.push([
       'board-pin-card-expanded-desktop',
       true,

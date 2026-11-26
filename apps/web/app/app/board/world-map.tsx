@@ -31,7 +31,10 @@ import {
   type MapPlace,
   type RouteStop,
   type StopSpot,
+  fromDestination,
+  type ApiDestination,
 } from './board-route';
+import type { PipFill, PipSpotChange } from './pin-card';
 import {
   MapCanvas,
   type BoardMapController,
@@ -48,6 +51,8 @@ import { isPlanRequired, PLAN_REQUIRED_PATH } from '../../../lib/plan-required';
 
 /** Public browser key: map tiles only. Place search goes through the API (`/v1/places/*`), key on the server. */
 const API_KEY = process.env.NEXT_PUBLIC_GEOAPIFY_API_KEY ?? '';
+const NO_PENCILLED_SPOTS: { name: string; kind: SpotKind; latitude: number; longitude: number }[] =
+  [];
 const STYLE_KEY = 'globetrot.mapStyle';
 /** Set once the person has opened a pin's card: the first-visit hint over the first pin stops showing. */
 const PIN_HINT_KEY = 'globetrot.board.pinHint';
@@ -203,6 +208,26 @@ export function WorldMapBoard({
   /** "Mark on the map" from a card: the next tap on the map places this spot instead of adding a stop. */
   const [spotPin, setSpotPin] = useState<{ stopId: string; name: string; kind: SpotKind } | null>(
     null,
+  );
+  /**
+   * "Pip, suggest places": what Pip offered for one stop's card (only real places from this map), which of them
+   * the person keeps, and where the request stands.
+   */
+  const [pipFill, setPipFill] = useState<PipFill | null>(null);
+  // Pip's offers on the map, kept stable between renders (the map redraws its mini-pins when they change).
+  const pencilledSpots = useMemo(
+    () =>
+      pipFill?.state === 'ready'
+        ? pipFill.changes
+            .filter((_, index) => pipFill.picked.includes(index))
+            .map((change) => ({
+              name: change.name,
+              kind: change.spotKind,
+              latitude: change.latitude,
+              longitude: change.longitude,
+            }))
+        : NO_PENCILLED_SPOTS,
+    [pipFill],
   );
   /** A spot whose mini-pin was tapped, brought into view in its card. */
   const [focusSpot, setFocusSpot] = useState<{ stopId: string; index: number } | null>(null);
@@ -428,6 +453,87 @@ export function WorldMapBoard({
     },
     [stops, phone, sheet, locale],
   );
+
+  /** Reads the route back from the server after Pip changed it, so the board shows it and does not save over it. */
+  const reloadRoute = async () => {
+    if (!tripId) return;
+    const response = await fetch(`/v1/trips/${tripId}/destinations`).catch(() => null);
+    const json = (await response?.json().catch(() => null)) as {
+      destinations?: ApiDestination[];
+    } | null;
+    if (!response?.ok || !json?.destinations) return;
+    const route = json.destinations.map(fromDestination);
+    setStops(route);
+    setSavedBody(routeBody(route));
+  };
+
+  const askPipFill = async (stop: RouteStop) => {
+    if (!tripId) return;
+    const places = (nearby?.id === stop.id ? nearby.places : []).slice(0, 40).map((place) => ({
+      name: place.name.slice(0, 120),
+      kind: place.kind.slice(0, 40),
+      latitude: place.latitude,
+      longitude: place.longitude,
+    }));
+    const base = { placeKey: stop.id, proposalId: null, changes: [], picked: [] };
+    if (!places.length) return setPipFill({ ...base, state: 'error', error: 'NO_PLACES' });
+    // The route must be saved first: Pip reads the stop from the server.
+    if (unsaved) return setPipFill({ ...base, state: 'error', error: 'SAVING' });
+    setPipFill({ ...base, state: 'asking', error: null });
+    const response = await fetch(`/v1/trips/${tripId}/pip/proposals`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        request: t('pip.fillRequest', { place: stop.name }),
+        spotCandidates: { placeKey: stop.id, places },
+      }),
+    }).catch(() => null);
+    const json = (await response?.json().catch(() => null)) as {
+      id?: string;
+      code?: string;
+      changes?: { kind: string }[];
+    } | null;
+    if (!response?.ok || !json?.id) {
+      const code = json?.code ?? '';
+      const known = ['RATE_LIMITED', 'OUT_OF_CREDITS', 'PLAN_REQUIRED', 'SERVICE_UNAVAILABLE'];
+      return setPipFill({
+        ...base,
+        state: 'error',
+        error: known.includes(code) ? code : response ? 'UNKNOWN' : 'SERVICE_UNAVAILABLE',
+      });
+    }
+    const changes = (json.changes ?? []).filter(
+      (change): change is PipSpotChange => change.kind === 'addSpot',
+    );
+    setPipFill({
+      ...base,
+      proposalId: json.id,
+      changes,
+      picked: changes.map((_, index) => index),
+      state: changes.length ? 'ready' : 'empty',
+      error: null,
+    });
+  };
+
+  const decidePipFill = async (action: 'apply' | 'discard' | 'undo') => {
+    const fill = pipFill;
+    if (!fill?.proposalId) return setPipFill(null);
+    const response = await fetch(`/v1/pip/proposals/${fill.proposalId}/${action}`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      ...(action === 'apply' ? { body: JSON.stringify({ include: fill.picked }) } : {}),
+    }).catch(() => null);
+    if (!response?.ok) return setPipFill({ ...fill, state: 'error', error: 'UNKNOWN' });
+    if (action === 'discard') return setPipFill(null);
+    await reloadRoute();
+    if (action === 'apply') {
+      setPipFill({ ...fill, state: 'applied' });
+      flash(t('pip.fillApplied', { count: fill.picked.length }));
+    } else {
+      setPipFill(null);
+      flash(t('pip.fillUndone'));
+    }
+  };
 
   const openCard = useCallback(
     (id: string, tab: KitTab | null) => {
@@ -695,6 +801,7 @@ export function WorldMapBoard({
       <MapCanvas
         stops={mapStops}
         pencilled={pipSuggestion?.stops ?? NO_PENCILLED}
+        pencilledSpots={pencilledSpots}
         home={home}
         selectedId={selected}
         styleName={styleName}
@@ -995,6 +1102,28 @@ export function WorldMapBoard({
           onDragStart={dragCard}
           nearby={nearby?.id === cardStop.id ? nearby.places : null}
           focusSpot={focusSpot?.stopId === cardStop.id ? focusSpot.index : null}
+          pip={
+            pipEnabled && tripId
+              ? {
+                  fill: pipFill?.placeKey === cardStop.id ? pipFill : null,
+                  onAsk: () => void askPipFill(cardStop),
+                  onToggle: (index) =>
+                    setPipFill((current) =>
+                      current
+                        ? {
+                            ...current,
+                            picked: current.picked.includes(index)
+                              ? current.picked.filter((other) => other !== index)
+                              : [...current.picked, index].sort((a, b) => a - b),
+                          }
+                        : current,
+                    ),
+                  onApply: () => void decidePipFill('apply'),
+                  onDiscard: () => void decidePipFill('discard'),
+                  onUndo: () => void decidePipFill('undo'),
+                }
+              : null
+          }
           onShowRoute={(points) => {
             // The card steps aside so the route shows whole: docked on the left, or closed on a phone.
             if (phone) {

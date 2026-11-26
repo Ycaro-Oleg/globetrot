@@ -2197,3 +2197,131 @@
   flex-wrap: wrap;
   gap: 6px;
 }
+
+/* --- "Pip, suggest places": Pip's offers in the card and, dashed, on the map --- */
+.spotPin[data-pencil] .spotPinIcon {
+  border-style: dashed;
+  opacity: 0.7;
+}
+
+.spotPin[data-pencil] .spotPinLabel {
+  display: inline-block;
+  opacity: 0.85;
+}
+
+.pipFill {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px dashed #93c5fd;
+  border-radius: 14px;
+  background: #eff6ff;
+}
+
+.pipFillAsk {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 14px 0 6px;
+  border: 0;
+  border-radius: 99px;
+  background: var(--blue);
+  color: #fff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.pipFillAsk:focus-visible,
+.pipFillApply:focus-visible,
+.pipFillLink:focus-visible {
+  outline: 3px solid var(--ink);
+  outline-offset: 2px;
+}
+
+.pipFillStatus {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.pipFillError {
+  margin: 0;
+  color: #b91c1c;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.pipFillLink {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--blue);
+  font: inherit;
+  font-weight: 800;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.pipFillTitle {
+  font-size: 13px;
+}
+
+.pipFillList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pipFillList li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.pipFillList input {
+  width: 20px;
+  height: 20px;
+  margin-top: 2px;
+  flex: none;
+}
+
+.pipFillList label {
+  display: flex;
+  flex-direction: column;
+  font-size: 13px;
+}
+
+.pipFillList small {
+  color: var(--text-2);
+  font-size: 12px;
+}
+
+.pipFillApply {
+  min-height: 36px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 99px;
+  background: var(--ink);
+  color: #fff;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.pipFillApply:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
