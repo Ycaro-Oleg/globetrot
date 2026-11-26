@@ -745,11 +745,18 @@
   border-radius: 8px;
 }
 
-.start .ideaGroup {
+.start .ideaGroup,
+.moreIdeas .ideaGroup {
   padding: 4px 0;
 }
 
 .calendarButton:focus-visible {
   outline: 3px solid var(--gt-semantic-color-focus);
   outline-offset: 2px;
+}
+
+/* The person's own map spots among the ideas: a solid border, theirs already. */
+.idea[data-mine] {
+  border-color: var(--gt-semantic-color-primary);
+  background: var(--gt-semantic-color-primary-tint);
 }

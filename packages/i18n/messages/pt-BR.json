@@ -886,7 +886,8 @@
     "calendarDone": "Arquivo da agenda pronto: abra para adicionar os dias à sua agenda.",
     "startPick": "Comece por um destes: um toque e ele entra em “Sem dia”, depois você escolhe o dia.",
     "startOwn": "Adicionar outro lugar",
-    "freeDay": "Dia livre"
+    "freeDay": "Dia livre",
+    "ideasFromMap": "Do seu mapa em {stop}"
   },
   "budgetPage": {
     "title": "Orçamento e poupança",

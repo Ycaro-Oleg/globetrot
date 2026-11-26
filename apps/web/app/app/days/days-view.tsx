@@ -21,6 +21,10 @@ import styles from './days.module.css';
 
 const LEGS = ['flight', 'train', 'bus', 'car', 'boat', 'walk', 'other'] as const;
 type Toast = { text: string; undo?: () => void };
+/** A spot the person marked on the map for a stop, as the Days page offers it. */
+export type MapSpot = { readonly stopId: string; readonly name: string; readonly kind: string };
+/** A typical visit for each kind of map spot, when it goes on a day (sights take longer). */
+const SPOT_MINUTES: Record<string, number> = { sight: 120, food: 60, shop: 60, other: 60 };
 
 /**
  * The days of the current trip (design handoff v2, "Days"): a "No day" tray and one column per day, each with its
@@ -34,6 +38,7 @@ export function DaysView({
   places,
   pipEnabled = false,
   ideas = null,
+  mapSpots = [],
 }: {
   pipEnabled?: boolean;
   trip: { readonly id: string; readonly title: string; readonly startDate?: string | null } | null;
@@ -42,6 +47,8 @@ export function DaysView({
   places: readonly BoardPlace[] | null;
   /** Places worth a visit near each stop, or null when they could not be read. */
   ideas?: DayIdeas | null;
+  /** The spots the person marked on the map, per stop (sights, food, shops…), offered to plan on a day. */
+  mapSpots?: readonly MapSpot[];
 }) {
   const t = useTranslations('daysPage');
 
@@ -96,6 +103,7 @@ export function DaysView({
       initial={places}
       pipEnabled={pipEnabled}
       ideas={ideas}
+      mapSpots={mapSpots}
     />
   );
 }
@@ -109,9 +117,11 @@ function Board({
   initial,
   pipEnabled,
   ideas: initialIdeas,
+  mapSpots,
 }: {
   pipEnabled: boolean;
   ideas: DayIdeas | null;
+  mapSpots: readonly MapSpot[];
   tripId: string;
   tripTitle: string;
   startDate: string | null;
@@ -193,7 +203,20 @@ function Board({
     );
   };
   const addButton = useRef<HTMLButtonElement>(null);
-  const hasIdeas = Boolean(ideas && ideas.stops.some((stop) => stop.ideas.length > 0));
+  // The person's own map spots that are not on the plan yet, grouped by stop, first among the ideas.
+  const planned = new Set(
+    places.map((place) => `${place.destinationId}:${place.name.toLowerCase()}`),
+  );
+  const fromMap = stops
+    .map((stop) => ({
+      stopId: stop.id,
+      spots: mapSpots.filter(
+        (spot) => spot.stopId === stop.id && !planned.has(`${stop.id}:${spot.name.toLowerCase()}`),
+      ),
+    }))
+    .filter((group) => group.spots.length > 0);
+  const hasIdeas =
+    fromMap.length > 0 || Boolean(ideas && ideas.stops.some((stop) => stop.ideas.length > 0));
   const board = buildBoard(days, stops, places);
   const stopName = (id: string | null) => stops.find((stop) => stop.id === id)?.name ?? null;
   const hours = (value: number) =>
@@ -362,6 +385,34 @@ function Board({
     );
   };
 
+  const mapGroups = fromMap.map((group) => (
+    <div key={`map-${group.stopId}`} className={styles.ideaGroup}>
+      <h3>{t('ideasFromMap', { stop: stopName(group.stopId) ?? t('noStop') })}</h3>
+      <ul>
+        {group.spots.map((spot) => (
+          <li key={spot.name}>
+            <button
+              type="button"
+              className={styles.idea}
+              data-mine=""
+              disabled={addingIdea !== null}
+              onClick={() =>
+                addIdea(group.stopId, {
+                  name: spot.name,
+                  kind: 'landmark',
+                  minutes: SPOT_MINUTES[spot.kind] ?? 60,
+                } as DayIdea)
+              }
+            >
+              <span aria-hidden="true">+</span> {spot.name}
+              <span className={styles.ideaTime}>{duration(SPOT_MINUTES[spot.kind] ?? 60)}</span>
+              <span className="sr-only">{t('ideaAddHint')}</span>
+            </button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  ));
   const ideaGroups = ideas
     ? ideas.stops
         .filter((stop) => stop.ideas.length > 0)
@@ -434,7 +485,12 @@ function Board({
         <div className={styles.start}>
           <h2>{t('startTitle', { days: days.length })}</h2>
           <p>{hasIdeas ? t('startPick') : t('startText')}</p>
-          {hasIdeas ? ideaGroups : null}
+          {hasIdeas ? (
+            <>
+              {mapGroups}
+              {ideaGroups}
+            </>
+          ) : null}
           <div className={styles.startActions}>
             <button
               ref={addButton}
@@ -459,6 +515,7 @@ function Board({
               onToggle={(event) => setIdeasOpen(event.currentTarget.open)}
             >
               <summary>{t('ideasTitle')}</summary>
+              {mapGroups}
               {ideaGroups}
             </details>
           ) : null}
