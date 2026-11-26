@@ -183,6 +183,7 @@ describe('the board against a real database', () => {
     const listed = await call(ana.cookie, 'GET', `/v1/trips/${id}/destinations`);
     expect((listed.json.destinations as unknown[])[0]).toMatchObject({
       visited: true,
+      spotRoute: false,
       // Sent without a kind, stored and read back as a sight.
       spots: [
         { name: 'Senso-ji', kind: 'sight', latitude: 35.7148, longitude: 139.7967, done: true },

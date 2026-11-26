@@ -3441,6 +3441,9 @@
                           "visited": {
                             "type": "boolean"
                           },
+                          "spotRoute": {
+                            "type": "boolean"
+                          },
                           "spots": {
                             "type": "array",
                             "items": {
@@ -3536,6 +3539,7 @@
                           "note",
                           "legMode",
                           "visited",
+                          "spotRoute",
                           "spots",
                           "todos",
                           "photos"
@@ -3841,6 +3845,11 @@
                           "default": false,
                           "description": "The person marked it visited (their word, not a verification). The first visited stop in a country stamps a commemorative visa."
                         },
+                        "spotRoute": {
+                          "type": "boolean",
+                          "default": false,
+                          "description": "Draw the route between this stop's spots that have a place: A, B, C… in the order of `spots`, straight lines."
+                        },
                         "spots": {
                           "type": "array",
                           "items": {
@@ -4035,6 +4044,9 @@
                           "visited": {
                             "type": "boolean"
                           },
+                          "spotRoute": {
+                            "type": "boolean"
+                          },
                           "spots": {
                             "type": "array",
                             "items": {
@@ -4130,6 +4142,7 @@
                           "note",
                           "legMode",
                           "visited",
+                          "spotRoute",
                           "spots",
                           "todos",
                           "photos"

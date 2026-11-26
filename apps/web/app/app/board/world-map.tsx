@@ -995,6 +995,17 @@ export function WorldMapBoard({
           onDragStart={dragCard}
           nearby={nearby?.id === cardStop.id ? nearby.places : null}
           focusSpot={focusSpot?.stopId === cardStop.id ? focusSpot.index : null}
+          onShowRoute={(points) => {
+            // The card steps aside so the route shows whole: docked on the left, or closed on a phone.
+            if (phone) {
+              setCard(null);
+              setCardStyle({ visibility: 'hidden' });
+              controller.current?.fitPoints(points);
+            } else {
+              setCardMode('expanded');
+              controller.current?.fitPoints(points, 470);
+            }
+          }}
           onPinSpot={(draft) => {
             setSpotPin({ stopId: cardStop.id, ...draft });
             setTool('pin');

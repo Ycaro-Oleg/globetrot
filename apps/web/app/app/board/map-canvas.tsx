@@ -30,6 +30,8 @@ export type BoardMapController = {
   flyTo(longitude: number, latitude: number, zoom?: number): void;
   fitStops(animate: boolean): void;
   fitWorld(): void;
+  /** Frames a few places (a city's spots), never closer than street level, clear of `left` px on the left. */
+  fitPoints(points: [number, number][], left?: number): void;
   zoomBy(delta: 1 | -1): void;
   center(): { longitude: number; latitude: number };
   /** Screen position of a place inside the map box, or null when the map is not ready. */
@@ -140,6 +142,8 @@ export function MapCanvas(props: Props) {
   const pins = useRef(new Map<string, PinMarker>());
   const legBadges = useRef<MapLibreMarker[]>([]);
   const spotMarks = useRef<MapLibreMarker[]>([]);
+  /** Room a docked card takes on the left, for the next fit only. */
+  const extraLeft = useRef(0);
   const pencilMarks = useRef<MapLibreMarker[]>([]);
   const homeMark = useRef<MapLibreMarker | null>(null);
   const segments = useRef(
@@ -399,9 +403,27 @@ export function MapCanvas(props: Props) {
     spotMarks.current = [];
     if (!map || !Marker) return;
     const { stops, selectedId, text } = latest.current;
+    const lines: {
+      type: 'Feature';
+      properties: object;
+      geometry: { type: 'LineString'; coordinates: [number, number][] };
+    }[] = [];
     for (const stop of stops) {
+      let letter = 0;
+      if (stop.spotRoute) {
+        const coordinates = stop.spots
+          .filter((spot) => spot.latitude !== null && spot.longitude !== null)
+          .map((spot) => [spot.longitude!, spot.latitude!] as [number, number]);
+        if (coordinates.length >= 2)
+          lines.push({
+            type: 'Feature',
+            properties: {},
+            geometry: { type: 'LineString', coordinates },
+          });
+      }
       stop.spots.forEach((spot, index) => {
         if (spot.latitude === null || spot.longitude === null) return;
+        const mark = stop.spotRoute ? String.fromCharCode(65 + (letter++ % 26)) : null;
         const el = document.createElement('button');
         el.type = 'button';
         el.className = styles.spotPin ?? '';
@@ -417,6 +439,14 @@ export function MapCanvas(props: Props) {
         label.className = styles.spotPinLabel ?? '';
         label.setAttribute('aria-hidden', 'true');
         label.textContent = spot.name;
+        if (mark) {
+          const badge = document.createElement('span');
+          badge.className = styles.spotPinLetter ?? '';
+          badge.setAttribute('aria-hidden', 'true');
+          badge.textContent = mark;
+          el.append(badge);
+          el.setAttribute('aria-label', `${mark}. ${text.spot(spot.name, spot.kind, stop.label)}`);
+        }
         el.append(icon, label);
         el.addEventListener('click', (event) => {
           event.stopPropagation();
@@ -429,6 +459,10 @@ export function MapCanvas(props: Props) {
         );
       });
     }
+    (map.getSource('gt-spot-route') as GeoJSONSource | undefined)?.setData({
+      type: 'FeatureCollection',
+      features: lines,
+    });
   };
 
   /** How close the map is, for the mini-pins: hidden far away, marks near, marks and names close up. */
@@ -449,7 +483,7 @@ export function MapCanvas(props: Props) {
         top: inset.top + 30,
         right: inset.right + 30,
         bottom: inset.bottom + 30,
-        left: inset.left + 30,
+        left: Math.max(inset.left, extraLeft.current) + 30,
       },
       container?.clientWidth ?? 0,
       container?.clientHeight ?? 0,
@@ -567,6 +601,21 @@ export function MapCanvas(props: Props) {
               firstSymbol,
             ),
           );
+          // A city's own route between its spots (A, B, C…): a thin dashed line, only once spots show.
+          map.addSource('gt-spot-route', { type: 'geojson', data: empty });
+          map.addLayer({
+            id: 'gt-spot-route',
+            type: 'line',
+            source: 'gt-spot-route',
+            minzoom: 11,
+            layout: { 'line-cap': 'round', 'line-join': 'round' },
+            paint: {
+              'line-color': PIN.ink,
+              'line-width': ['interpolate', ['linear'], ['zoom'], 11, 1.6, 16, 3] as never,
+              'line-dasharray': [1.5, 1.5],
+              'line-opacity': 0.8,
+            },
+          });
           // Which way the trip goes: small chevrons along every leg.
           map.addLayer({
             id: 'gt-route-arrows',
@@ -798,6 +847,22 @@ export function MapCanvas(props: Props) {
           ],
           { duration: reducedMotion() ? 0 : 1200, essential: true },
         );
+      },
+      fitPoints(points, left = 0) {
+        const current = mapRef.current;
+        if (!current || !points.length) return;
+        extraLeft.current = left;
+        const lngs = points.map(([lng]) => lng);
+        const lats = points.map(([, lat]) => lat);
+        fit(
+          current,
+          [
+            [Math.min(...lngs), Math.min(...lats)],
+            [Math.max(...lngs), Math.max(...lats)],
+          ],
+          { maxZoom: 16, duration: reducedMotion() ? 0 : 1000, essential: true },
+        );
+        extraLeft.current = 0;
       },
       zoomBy(delta) {
         const current = mapRef.current;

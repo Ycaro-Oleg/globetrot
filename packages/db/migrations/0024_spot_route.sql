@@ -1,0 +1,1 @@
+ALTER TABLE "destination" ADD COLUMN "spot_route" boolean DEFAULT false NOT NULL;

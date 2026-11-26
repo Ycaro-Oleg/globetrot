@@ -80,6 +80,10 @@ export const destinationFields = z.object({
     description:
       'The person marked it visited (their word, not a verification). The first visited stop in a country stamps a commemorative visa.',
   }),
+  spotRoute: z.boolean().default(false).meta({
+    description:
+      "Draw the route between this stop's spots that have a place: A, B, C… in the order of `spots`, straight lines.",
+  }),
   spots: z
     .array(stopSpotSchema)
     .max(STOP_SPOTS_MAX)
@@ -119,6 +123,7 @@ export const destinationSchema = z.object({
   note: z.string().nullable(),
   legMode: z.enum(LEG_MODES).nullable(),
   visited: z.boolean(),
+  spotRoute: z.boolean(),
   spots: z.array(
     z.object({
       name: z.string(),
@@ -172,6 +177,7 @@ export const toDestinationView = (record: DestinationRecord): DestinationView =>
   note: record.note,
   legMode: (record.legMode as DestinationView['legMode']) ?? null,
   visited: record.visited,
+  spotRoute: record.spotRoute,
   spots: record.spots.map((spot) => ({ ...spot, kind: spot.kind ?? DEFAULT_SPOT_KIND })),
   todos: record.todos.map((todo) => ({ ...todo })),
   photos: record.photos.map((photo) => ({ ...photo })),

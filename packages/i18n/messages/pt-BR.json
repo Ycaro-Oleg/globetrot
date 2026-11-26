@@ -755,7 +755,14 @@
       "nearbyTitle": "Perto daqui, no mapa",
       "nearbyAddHint": ", adicionar com o local no mapa",
       "markOnMap": "Marcar no mapa",
-      "pinnedSpot": "Lugar marcado"
+      "pinnedSpot": "Lugar marcado",
+      "routeToggle": "Traçar rota",
+      "routeLegs": "O trajeto, em linha reta",
+      "routeTotal": "Total ≈ {km} em linha reta (aproximado)",
+      "routeShortest": "Ordem mais curta",
+      "moveSpotUp": "Subir {name}",
+      "moveSpotDown": "Descer {name}",
+      "routeShow": "Ver rota no mapa"
     },
     "visa": {
       "kicker": "VISTO GLOBETROT",

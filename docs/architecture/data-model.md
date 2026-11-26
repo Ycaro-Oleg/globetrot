@@ -111,6 +111,7 @@ Migration `0006_trip_destinations`. One row per stop in `destination`, `trip_id`
 | `note` | The person's note about the stop, 1 to 500 characters or null (blank is stored as null). Personal: never in logs or audit (migration `0009_stop_notes_and_legs`) |
 | `leg_mode` | How they travel to the **next** stop: `flight`, `train`, `bus`, `car`, `boat`, `walk`, `other` (`LEG_MODES`), or null. The application stores null on the last stop |
 | `visited` | `boolean`, default false. The person's own word that they went (migration `0010_stop_kit_and_visas`) |
+| `spot_route` | `boolean`, default `false`: the person drew the route between the stop's placed spots (A, B, C… in the order of `spots`, straight lines; migration `0024_spot_route`) |
 | `spots` | `jsonb` array (CHECKed to be an array) of `{ name, kind, latitude, longitude, done }`: places at the stop (`kind` is `stay`, `food`, `sight`, `shop`, `transport` or `other`, for its mini-pin; spots saved before kinds existed have none and are read as `sight`, so no migration), at most 30 (`STOP_SPOTS_MAX`), names 1 to 120 characters, coordinates optional. Personal: never in logs or audit |
 | `todos` | `jsonb` array of `{ text, done }`, at most 30 (`STOP_TODOS_MAX`), 1 to 120 characters. Personal: never in logs or audit |
 

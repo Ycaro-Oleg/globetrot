@@ -47,6 +47,18 @@ describe('stop spots, todos and visited', () => {
     ).rejects.toBeInstanceOf(ValidationError);
   });
 
+  it('keeps whether the route between a stop’s spots is drawn (off by default)', async () => {
+    const { app } = setup();
+    const trip = await app.createTrip.execute(ana, { title: 'Japan', startDate: null });
+    const { destinations } = await app.replaceDestinations.execute(ana, {
+      tripId: trip.id,
+      destinations: [stop('Kyoto', 'JP', { spotRoute: true }), stop('Osaka', 'JP')],
+    });
+    expect(destinations.map((d) => d.spotRoute)).toEqual([true, false]);
+    const listed = await app.listDestinations.execute(ana, { tripId: trip.id });
+    expect(listed.destinations.map((d) => d.spotRoute)).toEqual([true, false]);
+  });
+
   it('reads a spot saved before kinds existed as a sight', async () => {
     const { fake, app } = setup();
     const trip = await app.createTrip.execute(ana, { title: 'Japan', startDate: null });

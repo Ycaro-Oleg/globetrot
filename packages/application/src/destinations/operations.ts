@@ -69,6 +69,7 @@ export function createReplaceDestinations(deps: Pick<Ports, 'unitOfWork' | 'cloc
             // A leg leads to the next stop: the last stop has none.
             legMode: index === input.destinations.length - 1 ? null : (item.legMode ?? null),
             visited: item.visited,
+            spotRoute: item.spotRoute,
             spots: item.spots,
             todos: item.todos,
             photos: photos[index]!,

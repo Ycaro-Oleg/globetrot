@@ -829,6 +829,7 @@ export function createCopyRoute(deps: Writes) {
             note: null,
             legMode: null,
             visited: false,
+            spotRoute: false,
             spots: [],
             todos: [],
             photos: [],
