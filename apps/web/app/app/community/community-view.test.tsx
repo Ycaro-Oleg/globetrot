@@ -138,7 +138,7 @@ describe.each(SUPPORTED_LOCALES)('community (%s)', (locale) => {
       .split('<article')
       .slice(1)
       .map((chunk) => chunk.split('</article>')[0]!);
-    const withChip = articles.map((article) => article.includes(`>${copy.post.follow}</button>`));
+    const withChip = articles.map((article) => article.includes(` ${copy.post.follow}</button>`));
     // Posts 1 and 2 (not followed); the own visa post and the followed goal post have none.
     expect(withChip).toEqual([true, true, false, false]);
   });

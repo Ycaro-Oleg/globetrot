@@ -357,10 +357,11 @@
   color: var(--gt-semantic-color-text-secondary);
 }
 
+/* Following from the feed is a quiet text action: "Who to follow" and the post menu carry it too. */
 .followChip {
   min-height: 36px;
-  padding: 0 14px;
-  border: var(--gt-primitive-border-1) solid var(--gt-semantic-color-primary);
+  padding: 0 8px;
+  border: 0;
   border-radius: var(--gt-primitive-radius-pill);
   background: transparent;
   color: var(--gt-semantic-color-primary);
@@ -673,10 +674,28 @@
 
 .actions {
   display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
+  flex-wrap: nowrap;
+  gap: 2px;
   justify-content: space-between;
   max-width: 440px;
+}
+
+/* On a phone the four actions stay on one line: tighter, and the share keeps only its arrow. */
+@media (max-width: 719px) {
+  .actions button {
+    padding: 0 6px;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+
+  .actionText {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
 }
 
 .actions button,
