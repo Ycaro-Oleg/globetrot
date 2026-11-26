@@ -762,7 +762,26 @@
       "routeShortest": "Shortest order",
       "moveSpotUp": "Move {name} up",
       "moveSpotDown": "Move {name} down",
-      "routeShow": "Show the route on the map"
+      "routeShow": "Show the route on the map",
+      "pipAsk": "Pip, suggest places in {place}",
+      "pipAskHint": "Pip picks among the real places on this map, never invented ones. It uses 1 Pip credit.",
+      "pipAsking": "Pip is choosing among the places on the map…",
+      "pipOffers": "Pip suggests for {place}:",
+      "pipApply": "{count, plural, one {Add # place} other {Add # places}}",
+      "pipDiscard": "Discard",
+      "pipEmpty": "Pip found nothing good here. Zoom the map into the city and try again.",
+      "pipClose": "Close",
+      "pipApplied": "{count, plural, one {# place from Pip is on the map.} other {# places from Pip are on the map.}}",
+      "pipUndo": "Undo",
+      "pipErrors": {
+        "NO_PLACES": "Zoom the map into the city first, so Pip can see its places.",
+        "SAVING": "The route is still saving: try again in a moment.",
+        "RATE_LIMITED": "Pip needs a rest: try again tomorrow.",
+        "OUT_OF_CREDITS": "Your Pip credits are used up for now.",
+        "PLAN_REQUIRED": "Your free week is over: pick a plan to keep using Pip.",
+        "SERVICE_UNAVAILABLE": "Pip is not available right now: try again later.",
+        "UNKNOWN": "Something went wrong. Try again."
+      }
     },
     "visa": {
       "kicker": "GLOBETROT VISA",
@@ -778,7 +797,10 @@
       "suggestionsTitle": "Pip has {count, plural, one {# suggestion} other {# suggestions}} for this trip",
       "suggestionsBody": "{count, plural, =0 {Pencilled on the map before you decide.} one {# new stop is pencilled on the map.} other {# new stops are pencilled on the map.}}",
       "review": "Review",
-      "pencilled": "Suggested by Pip: {name}"
+      "pencilled": "Suggested by Pip: {name}",
+      "fillRequest": "Suggest places for {place}: where to sleep, where to eat and what not to miss.",
+      "fillApplied": "{count, plural, one {# place from Pip added.} other {# places from Pip added.}}",
+      "fillUndone": "Pip’s places were taken back."
     },
     "home": "From {name}",
     "pinTip": "Tap to plan {place}",
@@ -1485,7 +1507,8 @@
       "addPlace": "{name} → {stop}",
       "addChecklistItem": "{group}: {label}",
       "addExpense": "Cost: {description}",
-      "setMonthly": "Set aside {amount} a month"
+      "setMonthly": "Set aside {amount} a month",
+      "addSpot": "{name} → a spot in {stop}"
     },
     "errors": {
       "RATE_LIMITED": "Pip needs a rest: you asked a lot today. Try again tomorrow.",

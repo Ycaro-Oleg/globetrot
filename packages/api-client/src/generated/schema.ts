@@ -9047,6 +9047,17 @@ export interface operations {
                                 reason: string;
                             } | {
                                 /** @enum {string} */
+                                kind: "addSpot";
+                                stopId: string;
+                                name: string;
+                                /** @enum {string} */
+                                spotKind: "stay" | "food" | "sight" | "shop" | "transport" | "other";
+                                latitude: number;
+                                longitude: number;
+                                /** @default  */
+                                reason: string;
+                            } | {
+                                /** @enum {string} */
                                 kind: "addChecklistItem";
                                 /** @enum {string} */
                                 group: "documents" | "money" | "bookings" | "packing";
@@ -9147,6 +9158,17 @@ export interface operations {
                      * @example Make this trip ten days and add must-see places in Kyoto
                      */
                     request: string;
+                    /** @description "Fill this pin": real places near one stop, from the map the person sees (at most 40). Pip may then only suggest spots for that stop, chosen among these (places farther than 40 km from the stop are ignored). */
+                    spotCandidates?: {
+                        placeKey: string;
+                        places: {
+                            name: string;
+                            /** @default  */
+                            kind?: string;
+                            latitude: number;
+                            longitude: number;
+                        }[];
+                    };
                 };
             };
         };
@@ -9205,6 +9227,17 @@ export interface operations {
                             name: string;
                             /** @default 90 */
                             minutes: number;
+                            /** @default  */
+                            reason: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "addSpot";
+                            stopId: string;
+                            name: string;
+                            /** @enum {string} */
+                            spotKind: "stay" | "food" | "sight" | "shop" | "transport" | "other";
+                            latitude: number;
+                            longitude: number;
                             /** @default  */
                             reason: string;
                         } | {
@@ -9458,6 +9491,17 @@ export interface operations {
                             reason: string;
                         } | {
                             /** @enum {string} */
+                            kind: "addSpot";
+                            stopId: string;
+                            name: string;
+                            /** @enum {string} */
+                            spotKind: "stay" | "food" | "sight" | "shop" | "transport" | "other";
+                            latitude: number;
+                            longitude: number;
+                            /** @default  */
+                            reason: string;
+                        } | {
+                            /** @enum {string} */
                             kind: "addChecklistItem";
                             /** @enum {string} */
                             group: "documents" | "money" | "bookings" | "packing";
@@ -9631,6 +9675,17 @@ export interface operations {
                             reason: string;
                         } | {
                             /** @enum {string} */
+                            kind: "addSpot";
+                            stopId: string;
+                            name: string;
+                            /** @enum {string} */
+                            spotKind: "stay" | "food" | "sight" | "shop" | "transport" | "other";
+                            latitude: number;
+                            longitude: number;
+                            /** @default  */
+                            reason: string;
+                        } | {
+                            /** @enum {string} */
                             kind: "addChecklistItem";
                             /** @enum {string} */
                             group: "documents" | "money" | "bookings" | "packing";
@@ -9800,6 +9855,17 @@ export interface operations {
                             name: string;
                             /** @default 90 */
                             minutes: number;
+                            /** @default  */
+                            reason: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "addSpot";
+                            stopId: string;
+                            name: string;
+                            /** @enum {string} */
+                            spotKind: "stay" | "food" | "sight" | "shop" | "transport" | "other";
+                            latitude: number;
+                            longitude: number;
                             /** @default  */
                             reason: string;
                         } | {

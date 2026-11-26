@@ -1,6 +1,7 @@
 import {
   DEFAULT_SPOT_KIND,
   distanceKm,
+  spotKindOf,
   LEG_MODES,
   MEDIA_ALT_MAX,
   STOP_PHOTOS_MAX,
@@ -44,17 +45,8 @@ export const SPOT_ICONS: Record<SpotKind, string> = {
   other: '✳',
 };
 
-/** A sensible kind for a point of interest from the map tiles ("restaurant", "hotel", "bus_stop"…). */
-export function spotKindOf(poiKind: string): SpotKind {
-  const kind = poiKind.toLowerCase();
-  if (/hotel|hostel|motel|guest|apartment|camp|lodging|ryokan|chalet/.test(kind)) return 'stay';
-  if (/restaurant|cafe|bar|pub|food|bakery|ice_cream|bistro|izakaya|biergarten/.test(kind))
-    return 'food';
-  if (/station|stop|airport|aerodrome|terminal|ferry|subway|rail|bus|tram|halt/.test(kind))
-    return 'transport';
-  if (/shop|mall|market|store|supermarket|boutique|department/.test(kind)) return 'shop';
-  return 'sight';
-}
+/** A sensible kind for a point of interest from the map tiles (the domain's rule). */
+export { spotKindOf };
 /** A photo of the stop: an image the person uploaded and the words that describe it. */
 export type StopPhoto = { mediaId: string; alt: string };
 
@@ -138,6 +130,42 @@ export function toDestination(stop: RouteStop, isLast: boolean) {
       .map((photo) => ({ mediaId: photo.mediaId, alt: clip(photo.alt, MEDIA_ALT_MAX) })),
   };
 }
+
+/** A stop as the API answers it (`GET /v1/trips/{id}/destinations`), the fields the board reads. */
+export type ApiDestination = {
+  placeKey: string;
+  name: string;
+  countryCode?: string | null;
+  region?: string | null;
+  longitude: number;
+  latitude: number;
+  nights: number;
+  note?: string | null;
+  legMode?: string | null;
+  visited?: boolean;
+  spotRoute?: boolean;
+  spots?: readonly (Omit<StopSpot, 'kind'> & { kind?: SpotKind })[];
+  todos?: readonly StopTodo[];
+  photos?: readonly StopPhoto[];
+};
+
+/** The board's stop for a stop the API answered: its place key is the board's id. */
+export const fromDestination = (stop: ApiDestination): RouteStop => ({
+  id: stop.placeKey,
+  name: stop.name,
+  countryCode: stop.countryCode ?? '',
+  region: stop.region ?? '',
+  longitude: stop.longitude,
+  latitude: stop.latitude,
+  nights: stop.nights,
+  note: stop.note ?? '',
+  legMode: isLegMode(stop.legMode) ? stop.legMode : null,
+  visited: stop.visited ?? false,
+  spotRoute: stop.spotRoute ?? false,
+  spots: (stop.spots ?? []).map((spot) => ({ ...spot, kind: spot.kind ?? DEFAULT_SPOT_KIND })),
+  todos: (stop.todos ?? []).map((todo) => ({ ...todo })),
+  photos: (stop.photos ?? []).map((photo) => ({ ...photo })),
+});
 
 export const routeBody = (stops: readonly RouteStop[]) =>
   JSON.stringify(stops.map((stop, index) => toDestination(stop, index === stops.length - 1)));

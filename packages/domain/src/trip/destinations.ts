@@ -17,3 +17,15 @@ export const STOP_ITEM_TEXT_MAX_LENGTH = 120;
 export const SPOT_KINDS = ['stay', 'food', 'sight', 'shop', 'transport', 'other'] as const;
 export type SpotKind = (typeof SPOT_KINDS)[number];
 export const DEFAULT_SPOT_KIND: SpotKind = 'sight';
+
+/** A sensible kind for a point of interest from the map ("restaurant", "hotel", "bus_stop"…). */
+export function spotKindOf(poiKind: string): SpotKind {
+  const kind = poiKind.toLowerCase();
+  if (/hotel|hostel|motel|guest|apartment|camp|lodging|ryokan|chalet/.test(kind)) return 'stay';
+  if (/restaurant|cafe|bar|pub|food|bakery|ice_cream|bistro|izakaya|biergarten/.test(kind))
+    return 'food';
+  if (/station|stop|airport|aerodrome|terminal|ferry|subway|rail|bus|tram|halt/.test(kind))
+    return 'transport';
+  if (/shop|mall|market|store|supermarket|boutique|department/.test(kind)) return 'shop';
+  return 'sight';
+}
