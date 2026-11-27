@@ -22,7 +22,7 @@ import {
 } from '@globetrot/domain';
 import { useLocale, useTranslations } from 'next-intl';
 import { useEffect, useId, useRef, useState, type CSSProperties, type Ref } from 'react';
-import { PipAvatar } from './app/_components/pip-avatar';
+import { LazyPipAvatar as PipAvatar } from './app/_components/lazy-pip-avatar';
 import type { PipPose } from './app/_components/pip-pose';
 import { livePlan } from './app/budget/budget-plan';
 import styles from './landing.module.css';
@@ -120,7 +120,9 @@ export function LandingSuggest({ signupHref }: { signupHref: string }) {
 
   // The plan is ready: the live map below shows it too.
   useEffect(() => {
-    if (phase === 'done') sharePlan({ destination, likes, days, comfort });
+    if (phase !== 'done') return;
+    sharePlan({ destination, likes, days, comfort });
+    track('plan_built');
   }, [phase, destination, likes, days, comfort]);
 
   const go = (next: Phase) => {

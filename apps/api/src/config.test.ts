@@ -297,6 +297,28 @@ describe('Google sign-in settings', () => {
   );
 });
 
+describe('monitoring and the backup AI provider', () => {
+  it('are off without settings', () => {
+    const config = loadApiConfig({ DATABASE_URL });
+    expect(config.sentryDsn).toBeNull();
+    expect(config.aiFallback).toBeNull();
+  });
+
+  it('turn on with a DSN and an Anthropic key, defaulting to Claude Haiku', () => {
+    const config = loadApiConfig({
+      DATABASE_URL,
+      SENTRY_DSN: 'https://public@o1.ingest.sentry.io/2',
+      ANTHROPIC_API_KEY: 'test-key',
+    });
+    expect(config.sentryDsn).toBe('https://public@o1.ingest.sentry.io/2');
+    expect(config.aiFallback).toEqual({
+      apiKey: 'test-key',
+      baseUrl: 'https://api.anthropic.com',
+      model: 'claude-haiku-5-5',
+    });
+  });
+});
+
 describe('Stripe', () => {
   const stripe = (key = 'sk_test_abc123') => ({
     STRIPE_SECRET_KEY: key,

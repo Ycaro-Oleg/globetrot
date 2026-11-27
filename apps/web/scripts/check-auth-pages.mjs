@@ -553,8 +553,9 @@ async function waitUntilUp(url) {
   }
 }
 
-// The main app has Pip switched off (the default); a second copy has the flag on, to check both states.
-const main = launch();
+// The main app has Pip switched off (the default) and the community on, so its screens are checked; a second
+// copy has Pip on and the community off (the default), to check both states of each flag.
+const main = launch({ FEATURE_COMMUNITY: 'true' });
 const withPip = launch({ FEATURE_PIP: 'true' });
 const base = main.url;
 const pipBase = withPip.url;
@@ -1003,6 +1004,21 @@ try {
       },
       VIEWPORTS.phone,
     ]);
+    entries.push([
+      'shell-community-off-404',
+      true,
+      async (page) => {
+        // The community is hidden by default (FEATURE_COMMUNITY): the copy with Pip on has it off.
+        const response = await page.goto(`${pipBase}/app/community`);
+        await page.waitForLoadState('networkidle');
+        if (response?.status() !== 404) {
+          throw new Error(`/app/community answered ${response?.status()} with the flag off`);
+        }
+      },
+      VIEWPORTS.phone,
+    ]);
+    entries.push(['shell-discover-desktop', true, ...at('/app/discover', VIEWPORTS.desktop)]);
+    entries.push(['shell-discover-phone', true, ...at('/app/discover', VIEWPORTS.phone)]);
     entries.push(['shell-pip-home-phone', true, ...at('/app', VIEWPORTS.phone, pipBase)]);
     entries.push(['shell-pip-home-desktop', true, ...at('/app', VIEWPORTS.desktop, pipBase)]);
     entries.push(['shell-pip-page', true, ...at('/app/pip', VIEWPORTS.phone, pipBase)]);
@@ -1326,8 +1342,7 @@ try {
         'desktop: expected exactly one visible account navigation',
       );
       check(
-        JSON.stringify(await names(places)) ===
-          JSON.stringify([shell.nav.trips, shell.nav.community, shell.nav.passport]),
+        JSON.stringify(await names(places)) === JSON.stringify([shell.nav.discover]),
         `desktop: the account places are ${JSON.stringify(await names(places))}`,
       );
       const bar = await page.locator('header').first().boundingBox();
@@ -1376,7 +1391,7 @@ try {
           if (!onMap) {
             check(
               JSON.stringify(await names(bottom)) ===
-                JSON.stringify([nav.trip, nav.community, nav.passport, nav.profile]),
+                JSON.stringify([nav.trip, nav.discover, nav.profile]),
               `${where}: the bottom bar is ${JSON.stringify(await names(bottom))}`,
             );
           }
@@ -1491,7 +1506,7 @@ try {
       );
       await nav.getByRole('link', { name: shell.nav.budget, exact: true }).click();
       await page.waitForURL(`${base}/app/budget`);
-      await page.getByRole('heading', { name: shell.nav.budget, level: 1 }).waitFor();
+      await page.getByRole('heading', { name: CATALOGS.en.budgetPage.title, level: 1 }).waitFor();
       check(
         (await nav.locator('[aria-current="page"]').allInnerTexts()).join() === shell.nav.budget,
         'Budget is not the marked tool on /app/budget',
@@ -1501,15 +1516,15 @@ try {
         'the Budget page does not show the savings answer',
       );
       check(
-        (await page.title()).startsWith(shell.nav.budget),
+        (await page.title()).startsWith(CATALOGS.en.budgetPage.title),
         `the Budget page title is "${await page.title()}"`,
       );
-      await placesNav(page).getByRole('link', { name: shell.nav.passport, exact: true }).click();
-      await page.waitForURL(`${base}/app/passport`);
+      await placesNav(page).getByRole('link', { name: shell.nav.discover, exact: true }).click();
+      await page.waitForURL(`${base}/app/discover`);
       check(
         (await placesNav(page).locator('[aria-current="page"]').allInnerTexts()).join() ===
-          shell.nav.passport,
-        'Passport is not the marked place on /app/passport',
+          shell.nav.discover,
+        'Discover is not the marked place on /app/discover',
       );
       await context.close();
     }
@@ -1599,7 +1614,8 @@ try {
           `the Pip entry point is under 44px at ${viewport.width}px`,
         );
         await entry.click();
-        await on.page.waitForURL(`${pipBase}/app/pip`);
+        // The floating button opens Pip on the screen's topic (here the budget).
+        await on.page.waitForURL((next) => next.pathname === '/app/pip');
         // The URL changes before the page streams in behind the loading state: wait for the text itself.
         const pipCopy = CATALOGS.en.pipPage;
         await on.page

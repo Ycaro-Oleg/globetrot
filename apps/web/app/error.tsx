@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { useEffect } from 'react';
 import { isStaleVersionError, reloadOnceForNewVersion } from '../lib/stale-version';
-import { PipAvatar } from './app/_components/pip-avatar';
+import { LazyPipAvatar as PipAvatar } from './app/_components/lazy-pip-avatar';
 import styles from './status-page.module.css';
 
 /**

@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
-import { PipAvatar } from './app/_components/pip-avatar';
+import { LazyPipAvatar as PipAvatar } from './app/_components/lazy-pip-avatar';
 import styles from './status-page.module.css';
 
 /** Any address that does not exist: Pip, a plain sentence, and the two ways people usually want to go. */

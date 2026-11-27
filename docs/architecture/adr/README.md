@@ -30,3 +30,5 @@ ADRs 0010 to 0012 were written after the work they describe (#53 to #61), which 
 | [0018](0018-launch-measurement-and-consent.md) | Launch measurement: cookieless analytics, and the Meta Pixel only with consent | Accepted |
 | [0019](0019-plans-trial-and-pip-credits.md) | Plans, the free week and Pip credits: read-only after the trial, credits per request, payments behind a port | Accepted |
 | [0020](0020-suggested-plans-and-curated-cost-ranges.md) | Suggested plans: curated destinations, experiences and typical cost ranges with a research date; the landing plans the trip | Accepted |
+| [0021](0021-error-monitoring-and-product-analytics.md) | Error monitoring with Sentry and product analytics with PostHog, both off unless configured and without personal data | Accepted |
+| [0022](0022-backup-ai-provider.md) | A backup AI provider for Pip: Claude Haiku, asked when DeepSeek does not answer | Accepted |

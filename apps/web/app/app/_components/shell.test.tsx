@@ -85,16 +85,11 @@ describe.each(SUPPORTED_LOCALES)('app shell (%s)', (locale) => {
     ).toHaveLength(2);
     const tools = [copy.nav.board, copy.nav.days, copy.nav.budget, copy.nav.lists];
     expect(linkLabels(found[0] ?? '')).toEqual(tools);
-    expect(linkLabels(found[1] ?? '')).toEqual([
-      copy.nav.trips,
-      copy.nav.community,
-      copy.nav.passport,
-    ]);
+    expect(linkLabels(found[1] ?? '')).toEqual([copy.nav.discover]);
     expect(linkLabels(found[2] ?? '')).toEqual(tools);
     expect(linkLabels(found[3] ?? '')).toEqual([
       copy.nav.trip,
-      copy.nav.community,
-      copy.nav.passport,
+      copy.nav.discover,
       copy.nav.profile,
     ]);
   });
@@ -110,11 +105,11 @@ describe.each(SUPPORTED_LOCALES)('app shell (%s)', (locale) => {
   });
 
   it('drops the trip row off trip pages and marks the account place instead', () => {
-    const found = navs(shell(locale, false, '/app/passport'));
+    const found = navs(shell(locale, false, '/app/discover'));
     expect(found).toHaveLength(3);
     const [inline, places, bottom] = found;
     expect(inline).not.toContain('aria-current');
-    expect(places).toMatch(new RegExp(`aria-current="page"[^>]*>${copy.nav.passport}`));
+    expect(places).toMatch(new RegExp(`aria-current="page"[^>]*>${copy.nav.discover}`));
     expect(bottom?.match(/aria-current="page"/g)).toHaveLength(1);
   });
 
@@ -140,10 +135,9 @@ describe.each(SUPPORTED_LOCALES)('app shell (%s)', (locale) => {
     expect(html).not.toContain(copy.pip.ask);
   });
 
-  it('adds Pip to the account places when the flag is on', () => {
+  it('floats one Pip button when the flag is on', () => {
     const html = shell(locale, true);
-    // In the account places (wide screens) and in the bottom bar (phones).
-    expect(html.match(/href="\/app\/pip"/g)).toHaveLength(2);
+    expect(html.match(/href="\/app\/pip[^"]*"/g)).toHaveLength(1);
     expect(html).toContain(copy.pip.ask);
   });
 

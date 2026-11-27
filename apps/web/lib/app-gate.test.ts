@@ -20,6 +20,14 @@ describe('app gate', () => {
     expect(isFlagGatedOff('/app/pip', { pip: true })).toBe(false);
   });
 
+  it('hides the community pages while its flag is off', () => {
+    const off = { pip: true, community: false };
+    expect(isFlagGatedOff('/app/community', off)).toBe(true);
+    expect(isFlagGatedOff('/app/community/p/1', off)).toBe(true);
+    expect(isFlagGatedOff('/app/communityx', off)).toBe(false);
+    expect(isFlagGatedOff('/app/community', { pip: true, community: true })).toBe(false);
+  });
+
   it('sends an anonymous visitor to log in, remembering where they were going', () => {
     expect(loginRedirect('/app')).toBe('/login?next=%2Fapp');
     expect(loginRedirect('/app/trips/1', '?tab=budget')).toBe(

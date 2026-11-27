@@ -33,8 +33,8 @@ export function TripTabs({ variant }: { variant: 'inline' | 'row' }) {
   );
 }
 
-/** The account's places on the right of the bar, with a blue underline on the current one. */
-export function GlobalNav({ pipEnabled }: { pipEnabled: boolean }) {
+/** Discover, on the right of the bar, with a blue underline when it is the current area. */
+export function GlobalNav() {
   const t = useTranslations('shell');
   const pathname = usePathname();
   return (
@@ -49,15 +49,6 @@ export function GlobalNav({ pipEnabled }: { pipEnabled: boolean }) {
           {t(`nav.${link.key}`)}
         </Link>
       ))}
-      {pipEnabled ? (
-        <Link
-          href="/app/pip"
-          className={styles.globalLink}
-          aria-current={pathname === '/app/pip' ? 'page' : undefined}
-        >
-          {t('pip.ask')}
-        </Link>
-      ) : null}
     </nav>
   );
 }
@@ -66,7 +57,7 @@ export function GlobalNav({ pipEnabled }: { pipEnabled: boolean }) {
  * The phone's bottom bar. It steps aside on the map, where the route sheet takes the bottom of the screen.
  * `data-shell-tabbar` lets the board measure what is left of the viewport.
  */
-export function BottomBar({ pipEnabled }: { pipEnabled: boolean }) {
+export function BottomBar() {
   const t = useTranslations('shell');
   const pathname = usePathname();
   if (pathname === '/app/board' || pathname.startsWith('/app/board/')) return null;
@@ -83,16 +74,6 @@ export function BottomBar({ pipEnabled }: { pipEnabled: boolean }) {
           {t(`nav.${entry.key}`)}
         </Link>
       ))}
-      {pipEnabled ? (
-        <Link
-          href="/app/pip"
-          className={styles.bottomLink}
-          aria-current={pathname === '/app/pip' ? 'page' : undefined}
-        >
-          <span aria-hidden="true" className={styles.bottomMark} />
-          {t('pip.ask')}
-        </Link>
-      ) : null}
     </nav>
   );
 }

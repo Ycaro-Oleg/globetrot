@@ -21,7 +21,7 @@ n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0
  */
 export function Analytics() {
   const t = useTranslations('consent');
-  const { plausibleDomain, plausibleSrc, metaPixelId } = analyticsConfig();
+  const { plausibleDomain, plausibleSrc, metaPixelId, posthogKey, posthogHost } = analyticsConfig();
   // The cookie is the source of truth; the server knows nothing ('unknown'), so nothing renders there.
   const consent = useSyncExternalStore<Consent | null | 'unknown'>(
     (notify) => {
@@ -37,7 +37,34 @@ export function Analytics() {
     window.addEventListener('globetrot:consent-open', reopen);
     return () => window.removeEventListener('globetrot:consent-open', reopen);
   }, []);
-  const open = metaPixelId !== null && (consent === null || reopened);
+  const asks = metaPixelId !== null || posthogKey !== null;
+  const open = asks && (consent === null || reopened);
+
+  // PostHog loads only when configured: in memory until the visitor accepts, then remembered across visits.
+  useEffect(() => {
+    if (!posthogKey || consent === 'unknown') return;
+    let cancelled = false;
+    void import('posthog-js').then(({ default: posthog }) => {
+      if (cancelled) return;
+      const persistence = consent === 'granted' ? 'localStorage+cookie' : 'memory';
+      if (window.posthog) {
+        posthog.set_config({ persistence });
+        return;
+      }
+      posthog.init(posthogKey, {
+        api_host: posthogHost,
+        persistence,
+        person_profiles: 'identified_only',
+        autocapture: false,
+        disable_session_recording: true,
+        capture_pageview: 'history_change',
+      });
+      window.posthog = posthog;
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [posthogKey, posthogHost, consent]);
 
   const choose = (value: Consent) => {
     setReopened(false);
@@ -81,9 +108,10 @@ export function Analytics() {
   );
 }
 
-/** Reopens the consent banner (the footer's "Cookie preferences"); shown only when the Pixel is configured. */
+/** Reopens the consent banner (the footer's "Cookie preferences"); shown only when something asks for consent. */
 export function ConsentLink({ label }: { label: string }) {
-  if (!analyticsConfig().metaPixelId) return null;
+  const { metaPixelId, posthogKey } = analyticsConfig();
+  if (!metaPixelId && !posthogKey) return null;
   return (
     <button
       type="button"

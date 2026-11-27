@@ -1,8 +1,8 @@
 /**
- * The shell's navigation (design handoff v2, "Shell & Navigation", option 1a): one sticky bar on every screen
- * with two levels. The trip's own tools sit in a segmented control next to the trip switcher; the places that
- * belong to the whole account sit on the right. On a phone the trip tools become a second row and the account
- * places a bottom bar.
+ * The shell's navigation, in three areas: the trip (its tools in a segmented control next to the trip switcher),
+ * Discover (ready plans, and the community when it is on) and you (the avatar menu: profile, passport, plan,
+ * trips, settings). Pip is a floating button that opens on the screen's topic. On a phone the trip tools become a
+ * second row and the areas a bottom bar.
  */
 
 /** Keys of the `shell.nav` catalog entries. */
@@ -16,7 +16,8 @@ export type NavKey =
   | 'trip'
   | 'settings'
   | 'profile'
-  | 'community';
+  | 'community'
+  | 'discover';
 
 export interface NavItem {
   readonly key: NavKey;
@@ -33,21 +34,16 @@ export const TRIP_TABS: readonly NavItem[] = [
   item('lists', '/app/lists'),
 ];
 
-/** The account's own places, on the right of the bar (from 720 px). */
-export const GLOBAL_LINKS: readonly NavItem[] = [
-  item('trips', '/app/trips'),
-  item('community', '/app/community'),
-  item('passport', '/app/passport'),
-];
+/** The other area on the right of the bar (from 720 px); "you" is the avatar menu beside it. */
+export const GLOBAL_LINKS: readonly NavItem[] = [item('discover', '/app/discover')];
 
 /**
- * The phone's bottom bar (handoff: Trip · Community · Passport · Profile). The trip list is one tap away in the
- * trip switcher and the avatar menu.
+ * The phone's bottom bar: the three areas. The trip list, the passport and the plan are one tap away in the trip
+ * switcher and the avatar menu.
  */
 export const BOTTOM_ITEMS: readonly NavItem[] = [
   item('trip', '/app/board'),
-  item('community', '/app/community'),
-  item('passport', '/app/passport'),
+  item('discover', '/app/discover'),
   item('profile', '/app/profile'),
 ];
 

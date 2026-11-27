@@ -12,6 +12,8 @@ export interface WorkerOptions {
   /** Time before the first round, so a fresh deploy settles first. */
   readonly firstDelayMs: number;
   readonly log?: Log;
+  /** Called with the error of a failed round, after it is logged: error monitoring, when on. */
+  readonly onError?: (error: unknown) => void;
 }
 
 /**
@@ -28,6 +30,7 @@ export function startWorker(options: WorkerOptions): RunningWorker {
       .runOnce()
       .catch((error: unknown) => {
         log(`worker round failed (${error instanceof Error ? error.name : 'unknown'})`);
+        options.onError?.(error);
       })
       .finally(() => {
         running = null;
