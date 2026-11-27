@@ -110,4 +110,7 @@ export const OPEN_WHEN_READ_ONLY: ReadonlySet<string> = new Set([
   'getReferral',
   'claimReferral',
   'redeemPassCredit',
+  // Miles are the person's own, like their savings.
+  'setMiles',
+  'setTripMiles',
 ]);

@@ -9,6 +9,7 @@ import type {
   SubscriptionState,
   PriceCurrency,
   TripPassState,
+  MilesProgram,
   TripStatus,
   TripVisibility,
   UnitSystem,
@@ -312,6 +313,15 @@ export interface SavingsReader {
   find(tripId: string): Promise<SavingsRecord | null>;
   /** The person's check-ins on the trip, newest week first (at most a year's worth). */
   listCheckins(tripId: string, userId: string): Promise<CheckinRecord[]>;
+  /** The person's miles per programme (ADR-0030). */
+  listMiles(
+    userId: string,
+  ): Promise<{ readonly program: MilesProgram; readonly balance: number }[]>;
+  /** The miles the person put towards a trip, per programme. */
+  listTripMiles(
+    tripId: string,
+    userId: string,
+  ): Promise<{ readonly program: MilesProgram; readonly miles: number }[]>;
 }
 
 /** One weekly check-in (ADR-0026). */
@@ -321,6 +331,16 @@ export interface CheckinRecord {
 }
 
 export interface SavingsWriter extends SavingsReader {
+  /** Sets a programme's balance; zero removes it (and what was put towards trips from it). */
+  setMiles(userId: string, program: MilesProgram, balance: number, at: Date): Promise<void>;
+  /** Sets how many miles of a programme go towards a trip; zero removes it. */
+  setTripMiles(
+    tripId: string,
+    userId: string,
+    program: MilesProgram,
+    miles: number,
+    at: Date,
+  ): Promise<void>;
   /** Records the week's check-in; answers the amount it replaced (null for a first check-in that week). */
   upsertCheckin(row: {
     readonly tripId: string;

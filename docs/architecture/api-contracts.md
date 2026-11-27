@@ -84,6 +84,9 @@ Today:
 | `setShares` | `PUT /v1/trips/{id}/shares` | Owner only. Everyone's `shareBp` adding up to 10 000, or `shares: null` to split equally |
 | `getHabit` | `GET /v1/trips/{id}/habit` | The ISO `week` in the caller's time zone, `checkedIn` (or null), `streak`, `suggested` and the `countdown` (`daysLeft`, `phase`, `tasks`) ([ADR-0026](adr/0026-saving-habit-and-countdown.md)) |
 | `checkIn` | `POST /v1/trips/{id}/checkin` | `amount` set aside this week; adds to the caller's savings, replacing this week's earlier check-in. Anyone on the trip |
+| `getMiles` | `GET /v1/trips/{id}/miles` | The caller's `programs` (balance, miles on this trip, typical value in reais), `researchedOn`, `sources`, the `applied` value in the trip's currency and the answer `withMiles` (`left`, `readyMonth`) ([ADR-0030](adr/0030-miles-in-the-savings.md)) |
+| `setMiles` | `PUT /v1/me/miles/{program}` | `balance`; zero removes it and what went towards trips |
+| `setTripMiles` | `PUT /v1/trips/{id}/miles/{program}` | `miles` towards the trip; never more than the balance (`422`) |
 | `openBillingPortal` | `POST /v1/me/billing/portal` | The provider's page to change the card, switch or cancel. `404` before the first payment, `503` while payments are off |
 | `getReferral` | `POST /v1/me/referral` | The caller's `code` (made the first time), how many friends `joined` and `passCredits` left ([ADR-0029](adr/0029-referrals.md)) |
 | `claimReferral` | `POST /v1/me/referral/claim` | `code`; within 7 days of signing up, never one's own, once. `claimed: false` otherwise |

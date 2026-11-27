@@ -18,6 +18,7 @@ import { registerBillingRoutes } from './routes/billing';
 import { registerShareRoutes, registerSharedTripRoute } from './routes/shares';
 import { registerMemberRoutes } from './routes/members';
 import { registerHabitRoutes } from './routes/habit';
+import { registerMilesRoutes } from './routes/miles';
 import { registerPipRoutes } from './routes/pip';
 import { registerDayPlaceRoutes } from './routes/day-places';
 import { registerDestinationRoutes } from './routes/destinations';
@@ -216,6 +217,7 @@ export function createApp({
   registerShareRoutes(app, application);
   registerMemberRoutes(app, application);
   registerHabitRoutes(app, application);
+  registerMilesRoutes(app, application);
 
   app.notFound(() => problem(404, 'NOT_FOUND', { detail: 'No such route' }));
 

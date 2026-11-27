@@ -191,6 +191,14 @@ Decided in [ADR-0028](../architecture/adr/0028-public-itineraries-and-story-card
 - Prices are in US dollars until the visitor picks another currency on the page; the conversion says its source.
 - The trip's page offers a progress image for stories from the trip's public link: amounts only when the link shows amounts, otherwise the percentage saved.
 
+## Miles
+
+Decided in [ADR-0030](../architecture/adr/0030-miles-in-the-savings.md).
+
+- A person can keep their balances in Smiles, LATAM Pass, Azul Fidelidade, Livelo and Esfera, and choose how many miles of each go towards a trip (never more than the balance).
+- Each balance shows a typical value in reais (a researched range per thousand miles, with its date and sources). It is always an estimate: what miles buy depends on the route, the date and the programme.
+- On the Money screen the answer counts the middle of that value, in the trip's currency at the reference rates: what is left and when it is ready (the person's own part on a shared trip).
+
 ## Referrals
 
 Decided in [ADR-0029](../architecture/adr/0029-referrals.md).

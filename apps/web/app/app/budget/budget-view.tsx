@@ -27,6 +27,7 @@ import { addExpense, removeExpense, saveSavings, type ExpenseInput } from './act
 import { chartBars, livePlan, parseAmount } from './budget-plan';
 import { AskPipLink } from '../_components/ask-pip-link';
 import { GroupMoney, type GroupMoneyData } from './group-money';
+import { MilesCard, type MilesData } from './miles-card';
 import styles from './budget.module.css';
 
 /** Status glyphs (business rules: a status always shows a glyph and a word, never colour alone). */
@@ -61,6 +62,7 @@ export function BudgetView({
   currencies,
   pipEnabled = false,
   group = null,
+  miles = null,
 }: {
   pipEnabled?: boolean;
   trip: Trip | null;
@@ -69,6 +71,8 @@ export function BudgetView({
   currencies: readonly Option[];
   /** Each person's part and the settling up, when the trip is planned together (ADR-0025). */
   group?: GroupMoneyData | null;
+  /** The person's miles and the answer counting them (ADR-0030); null hides the card. */
+  miles?: MilesData | null;
 }) {
   const t = useTranslations('budgetPage');
 
@@ -101,6 +105,7 @@ export function BudgetView({
       currencies={currencies}
       pipEnabled={pipEnabled}
       group={group}
+      miles={miles}
     />
   );
 }
@@ -112,9 +117,11 @@ function Board({
   currencies,
   pipEnabled,
   group,
+  miles,
 }: {
   pipEnabled: boolean;
   group: GroupMoneyData | null;
+  miles: MilesData | null;
   trip: Trip;
   budget: BudgetData;
   expenses: readonly ExpenseData[];
@@ -310,6 +317,7 @@ function Board({
       </div>
 
       {group ? <GroupMoney tripId={trip.id} group={group} /> : null}
+      {miles ? <MilesCard tripId={trip.id} miles={miles} /> : null}
 
       <section className={styles.card} aria-labelledby="expenses-title">
         <div className={styles.listHead}>
