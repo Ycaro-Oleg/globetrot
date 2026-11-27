@@ -1,6 +1,6 @@
 # Current state
 
-_Last updated: 2026-11-26, release v0.1.0. Code state: `main` is release **v0.1.0** (#130, `develop` at #129); `develop` includes #83 to #129. The [launch runbook](../engineering/launch-runbook.md) lists what the owner must provide. Since 2026-11-26 the repository is public, so GitHub Actions runs every job again (CI green on `develop` at #151); if it goes private again, Actions stops until the account's billing is fixed (owner)._
+_Last updated: 2026-11-27, release v0.2.0. Code state: `main` is release **v0.2.0** (#158, `develop` at #157); `develop` includes #83 to #157. The suggested plans' copy and the ranges marked approximate in [`suggested-plans.md`](../product/research/suggested-plans.md) wait for the owner's review. The [launch runbook](../engineering/launch-runbook.md) lists what the owner must provide. Since 2026-11-26 the repository is public, so GitHub Actions runs every job again (CI green on `develop` at #157); if it goes private again, Actions stops until the account's billing is fixed (owner)._
 
 Read this first. It says where the project is, what exists, what is open, what only the owner can unblock and what to do next. Procedure for working: [`playbook.md`](playbook.md). Feature-by-feature progress: [`../product/progress.md`](../product/progress.md). Milestones and exit criteria: [`../product/roadmap.md`](../product/roadmap.md).
 
@@ -72,6 +72,7 @@ These cannot be finished by an agent. Do not work around them, and do not mark t
 | **Regional pricing** | A business decision (base prices are approved: [ADR-0019](../architecture/adr/0019-plans-trial-and-pip-credits.md)) | Later |
 | **Imagery licensing source** | Choose where destination images come from | Imagery in the board and landing |
 | **Production object storage** ([ADR-0014](../architecture/adr/0014-photos-and-storage.md)) | Choose an S3-compatible provider (or self-host on the Hetzner box) and provide `S3_*` settings as secrets | Photos in production (M11) |
+| **Suggested plans review** ([ADR-0020](../architecture/adr/0020-suggested-plans-and-curated-cost-ranges.md)) | Review the landing's suggested-plan texts and the cost ranges marked approximate in [`suggested-plans.md`](../product/research/suggested-plans.md); later, decide which destinations to add | Confidence in the estimates shown on the landing |
 | **DeepSeek key and privacy text** ([ADR-0016](../architecture/adr/0016-pip-on-deepseek.md)) | Rotate the key that was shared in chat and keep the new one only in local `.env` and the production secret store; say in the privacy policy that Pip sends trip plans to DeepSeek; decide when to switch `FEATURE_PIP` on | Pip in production |
 | **Community before a public launch** ([ADR-0013](../architecture/adr/0013-community.md)) | Decide who reviews reported posts (and with what tool), whether to add blocking and private accounts, and the community rules text | A public release with the community on |
 | **Launch infrastructure** ([launch runbook](../engineering/launch-runbook.md)) | Server, domain, database with backups, email provider, photo bucket, production secrets, Plausible site and Meta Pixel ID | The public launch |
