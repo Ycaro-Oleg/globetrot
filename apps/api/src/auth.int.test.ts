@@ -232,6 +232,22 @@ describe('sessions', () => {
     const { rows } = await database.pool.query('SELECT ip_address FROM session');
     expect(rows[0].ip_address).toBe('198.51.100.77');
   });
+
+  it('take the rightmost address that is not a private hop, so a value the client sent on the left is ignored', async () => {
+    const { signUp, database } = await harness();
+    // What the API sees in production: <client-supplied>, <address the edge saw>, <web proxy peer>.
+    await signUp({}, '1.2.3.4, 198.51.100.78, fd12:0:8::1');
+    const { rows } = await database.pool.query('SELECT ip_address FROM session');
+    expect(rows[0].ip_address).toBe('198.51.100.78');
+  });
+
+  it('count clients behind the same private hops separately for the rate limit', async () => {
+    const { signIn } = await harness({ AUTH_SIGN_IN_ATTEMPTS_PER_MINUTE: '1' });
+    const wrong = { email: 'nobody@example.com', password: 'wrong-password-123' };
+    expect((await signIn(wrong, '198.51.100.90, 10.0.0.5')).status).not.toBe(429);
+    expect((await signIn(wrong, '198.51.100.91, 10.0.0.5')).status).not.toBe(429);
+    expect((await signIn(wrong, '198.51.100.90, 10.0.0.5')).status).toBe(429);
+  });
 });
 
 describe('session cookie', () => {

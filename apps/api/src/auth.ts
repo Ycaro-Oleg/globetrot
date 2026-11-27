@@ -22,6 +22,24 @@ const RATE_LIMIT_WINDOW = 60;
 /** The endpoints that make us send an email. Each has a per-address cooldown and a per-client limit. */
 const EMAIL_REQUEST_PATHS = new Set(['/send-verification-email', '/request-password-reset']);
 
+/**
+ * Hops that sit between the client and the API on private networks: the web proxy and the hosting edge
+ * (Railway reaches the web service from a private address). The client address is the rightmost
+ * `X-Forwarded-For` entry that is not one of these, so a value the client put on the left is ignored.
+ * Without this list Better Auth refuses any header with more than one entry and every client shares one
+ * rate-limit bucket. See docs/architecture/authentication.md#which-client-address-counts-trust-model.
+ */
+export const TRUSTED_PROXY_RANGES = [
+  '127.0.0.0/8',
+  '10.0.0.0/8',
+  '172.16.0.0/12',
+  '192.168.0.0/16',
+  '100.64.0.0/10',
+  '::1/128',
+  'fc00::/7',
+  'fe80::/10',
+];
+
 export interface AuthDependencies {
   readonly email: EmailPort;
 }
@@ -164,6 +182,7 @@ export function createAuth(db: Database, config: AuthConfig, { email }: AuthDepe
       cookiePrefix: 'globetrot',
       useSecureCookies: config.secureCookies,
       defaultCookieAttributes: { httpOnly: true, sameSite: 'lax', path: '/' },
+      ipAddress: { trustedProxies: TRUSTED_PROXY_RANGES },
     },
     databaseHooks: {
       user: {
