@@ -40,7 +40,7 @@
 }
 
 .google:focus-visible {
-  outline: 3px solid #2563eb;
+  outline: 3px solid #1c1c1e;
   outline-offset: 2px;
 }
 

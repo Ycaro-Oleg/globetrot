@@ -9,7 +9,7 @@ export async function confetti(host: HTMLElement, at: { x: number; y: number }, 
   )
     return;
   const { gsap } = await import('gsap');
-  const colors = ['#f97316', '#2563eb', '#10b981', '#f59e0b', '#ec4899'];
+  const colors = ['#d63f24', '#2563eb', '#10b981', '#f59e0b', '#ec4899'];
   for (let i = 0; i < pieces; i++) {
     const bit = document.createElement('span');
     Object.assign(bit.style, {

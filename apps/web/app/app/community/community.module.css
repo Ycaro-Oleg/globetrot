@@ -513,7 +513,7 @@
   gap: 10px;
   padding: 16px;
   border-radius: 18px;
-  background: #0f172a;
+  background: #111111;
   color: #f8f9fa;
 }
 
@@ -524,7 +524,7 @@
 
 .routeTitle span {
   margin-inline-end: 6px;
-  color: #93c5fd;
+  color: #f2f2f2;
   font-family: var(--gt-primitive-font-mono);
   font-size: 11px;
   letter-spacing: 0.12em;
@@ -553,7 +553,7 @@
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  background: #3b82f6;
+  background: #2a2a2d;
   color: #f8f9fa;
   font-size: 12px;
   font-weight: 800;
@@ -561,7 +561,7 @@
 
 .routeMeta {
   margin: 0;
-  color: #cbd5e1;
+  color: #c7c7cc;
   font-size: 13px;
 }
 
@@ -586,7 +586,7 @@
   text-decoration: none;
   border-color: #10b981;
   background: #10b981;
-  color: #0f172a;
+  color: #111111;
 }
 
 /* Visa: a stamp, never shaped like an official document. */
@@ -1036,11 +1036,11 @@
   max-width: min(32rem, calc(100vw - 32px));
   padding: 10px 10px 10px 18px;
   border-radius: var(--gt-primitive-radius-pill);
-  background: #1d4ed8;
+  background: #1c1c1e;
   color: #fff;
   font-size: 14px;
   font-weight: 600;
-  box-shadow: 0 16px 40px -16px rgb(15 23 42 / 0.5);
+  box-shadow: 0 16px 40px -16px rgb(17 17 17 / 0.5);
 }
 
 .toast button {
@@ -1049,7 +1049,7 @@
   border: 0;
   border-radius: var(--gt-primitive-radius-pill);
   background: #fff;
-  color: #1d4ed8;
+  color: #1c1c1e;
   font: inherit;
   font-weight: 800;
   cursor: pointer;

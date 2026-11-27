@@ -14,7 +14,7 @@
   --text-2: #4f545a;
   --blue: #2563eb;
   --blue-tint: #dbeafe;
-  --coral: #f97316;
+  --coral: #d63f24;
   --green: #10b981;
   --green-strong: #047857;
   --amber: #f59e0b;
@@ -761,7 +761,7 @@
   border: 0;
   border-radius: 99px;
   background: var(--coral);
-  color: var(--ink);
+  color: #ffffff;
   box-shadow: 0 12px 30px -8px rgba(0, 0, 0, 0.6);
   font-size: 15px;
   font-weight: 800;
@@ -1608,7 +1608,7 @@
   border-radius: 99px;
   background: var(--coral);
   box-shadow: 0 10px 24px -10px var(--coral);
-  color: var(--ink);
+  color: #ffffff;
   font-size: 16px;
   font-weight: 800;
   letter-spacing: -0.02em;
@@ -1773,7 +1773,7 @@
 .visaContinue {
   border: 0;
   background: var(--coral);
-  color: var(--ink);
+  color: #ffffff;
 }
 
 .visaSee {
@@ -1815,7 +1815,7 @@
   border: 1.5px dashed #2563eb;
   border-radius: 8px;
   background: rgb(255 255 255 / 0.9);
-  color: #1e3a8a;
+  color: #1c1c1e;
   font-size: 12px;
   font-weight: 700;
   white-space: nowrap;

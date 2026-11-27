@@ -14,9 +14,9 @@
   margin: 0 auto;
   padding: 16px 18px;
   border-radius: 18px;
-  background: #0f172a;
+  background: #111111;
   color: #f8f9fa;
-  box-shadow: 0 20px 50px -20px rgb(15 23 42 / 0.6);
+  box-shadow: 0 20px 50px -20px rgb(17 17 17 / 0.6);
 }
 
 .banner h2 {
@@ -28,13 +28,13 @@
 .banner p {
   max-width: 60ch;
   margin: 0;
-  color: #cbd5e1;
+  color: #c7c7cc;
   font-size: 14px;
   line-height: 1.5;
 }
 
 .banner a {
-  color: #93c5fd;
+  color: #a1a1a6;
 }
 
 .actions {
@@ -49,7 +49,7 @@
   border: 1px solid rgb(248 249 250 / 0.4);
   border-radius: 99px;
   background: #f8f9fa;
-  color: #0f172a;
+  color: #111111;
   font: inherit;
   font-size: 14px;
   font-weight: 800;
@@ -58,7 +58,7 @@
 
 .banner button:focus-visible,
 .banner a:focus-visible {
-  outline: 3px solid #93c5fd;
+  outline: 3px solid #f2f2f2;
   outline-offset: 2px;
 }
 

@@ -46,9 +46,9 @@ export default async function OpengraphImage() {
         display: 'flex',
         padding: 64,
         gap: 40,
-        color: '#f8fafc',
+        color: '#1c1c1e',
         fontFamily: 'Bricolage Grotesque',
-        background: 'radial-gradient(circle at 30% 0%, #1e3a8a 0%, #0f172a 62%)',
+        background: 'radial-gradient(circle at 30% 0%, #ffffff 0%, #f3f4f5 62%)',
       }}
     >
       <div
@@ -59,7 +59,7 @@ export default async function OpengraphImage() {
           flex: 1,
         }}
       >
-        <BrandLockup fontSize={38} color="#f8fafc" />
+        <BrandLockup fontSize={38} color="#1c1c1e" />
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           <div
             style={{
@@ -79,7 +79,7 @@ export default async function OpengraphImage() {
               fontWeight: 800,
               lineHeight: 1.04,
               letterSpacing: -2,
-              color: '#60a5fa',
+              color: '#d63f24',
             }}
           >
             {line2.trim()}
@@ -91,8 +91,8 @@ export default async function OpengraphImage() {
             alignSelf: 'flex-start',
             padding: '14px 28px',
             borderRadius: 999,
-            background: '#f97316',
-            color: '#0f172a',
+            background: '#d63f24',
+            color: '#ffffff',
             fontSize: 30,
             fontWeight: 800,
           }}
@@ -108,8 +108,8 @@ export default async function OpengraphImage() {
           justifyContent: 'space-between',
           width: 392,
           borderRadius: 32,
-          background: '#172554',
-          border: '2px solid #1e40af',
+          background: '#f3f4f5',
+          border: '2px solid #e4e6e9',
           padding: 20,
         }}
       >
@@ -120,7 +120,7 @@ export default async function OpengraphImage() {
               cx={(n % 19) * 20 + 10}
               cy={Math.floor(n / 19) * 20 + 10}
               r="2"
-              fill="#2f4fbf"
+              fill="#c7cbd1"
             />
           ))}
           {STOPS.slice(1).map((stop, index) => (
@@ -128,7 +128,7 @@ export default async function OpengraphImage() {
               key={`a${index}`}
               d={arc(STOPS[index]!, stop)}
               fill="none"
-              stroke="#f87171"
+              stroke="#d63f24"
               strokeWidth="6"
               strokeDasharray="16 12"
             />
@@ -139,8 +139,8 @@ export default async function OpengraphImage() {
               cx={stop.x}
               cy={stop.y}
               r="16"
-              fill="#fbbf24"
-              stroke="#0f172a"
+              fill="#f59e0b"
+              stroke="#111111"
               strokeWidth="5"
             />
           ))}
@@ -152,11 +152,11 @@ export default async function OpengraphImage() {
             gap: 6,
             padding: '18px 22px',
             borderRadius: 22,
-            background: '#f8fafc',
-            color: '#0f172a',
+            background: '#f3f4f5',
+            color: '#1c1c1e',
           }}
         >
-          <div style={{ display: 'flex', fontSize: 22, color: '#475569', fontWeight: 600 }}>
+          <div style={{ display: 'flex', fontSize: 22, color: '#4f545a', fontWeight: 600 }}>
             {t('ogQuestion')}
           </div>
           <div

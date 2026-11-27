@@ -18,7 +18,7 @@ import './globals.css';
 
 /** Absolute links (the social image) resolve against the request's own origin on every page. */
 /** The phone's browser bar takes the app's ink colour, as the installed app does. */
-export const viewport: Viewport = { themeColor: '#0f172a' };
+export const viewport: Viewport = { themeColor: '#ffffff' };
 
 export async function generateMetadata(): Promise<Metadata> {
   return { metadataBase: await siteOrigin(), title: SITE_NAME };

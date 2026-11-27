@@ -1054,7 +1054,7 @@ export function MapCanvas(props: Props) {
         type: 'line',
         source: 'gt-home',
         paint: {
-          'line-color': '#0f172a',
+          'line-color': '#111111',
           'line-width': 2.5,
           'line-dasharray': [2, 2],
           'line-opacity': 0.6,

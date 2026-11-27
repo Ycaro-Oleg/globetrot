@@ -32,17 +32,17 @@ export async function itineraryImage(
         flexDirection: 'column',
         justifyContent: 'space-between',
         padding: 72,
-        background: '#0f172a',
-        color: '#f8fafc',
+        background: '#ffffff',
+        color: '#1c1c1e',
         fontFamily: 'sans-serif',
       }}
     >
-      <BrandLockup fontSize={32} color="#f8fafc" />
+      <BrandLockup fontSize={32} color="#1c1c1e" />
       <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
         <div style={{ display: 'flex', fontSize: 66, fontWeight: 800, lineHeight: 1.05 }}>
           {title}
         </div>
-        <div style={{ display: 'flex', fontSize: 32, color: '#cbd5e1' }}>{route}</div>
+        <div style={{ display: 'flex', fontSize: 32, color: '#4f545a' }}>{route}</div>
       </div>
       <div style={{ display: 'flex', fontSize: 34, fontWeight: 700 }}>
         {cost ? t('imageCost', { cost }) : ''}

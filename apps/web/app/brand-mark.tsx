@@ -1,4 +1,4 @@
-import { BRAND_MARK_ON_DARK_SRC, BRAND_MARK_SRC } from './brand-mark-svg';
+import { BRAND_MARK_SRC } from './brand-mark-svg';
 import { SITE_NAME } from './site';
 
 /**
@@ -33,13 +33,13 @@ export function BrandMark({
   );
 }
 
-/** The mark and the name side by side, for the share images (dark backgrounds, so the mark carries its halo). */
+/** The mark and the name side by side, for the share images (light backgrounds, white palette). */
 export function BrandLockup({ fontSize, color }: { fontSize: number; color: string }) {
   const mark = Math.round(fontSize * 1.35);
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: Math.round(fontSize * 0.35) }}>
       {/* eslint-disable-next-line @next/next/no-img-element -- ImageResponse renders plain elements, not next/image */}
-      <img src={BRAND_MARK_ON_DARK_SRC} width={mark} height={mark} alt="" />
+      <img src={BRAND_MARK_SRC} width={mark} height={mark} alt="" />
       <div style={{ display: 'flex', fontSize, fontWeight: 800, letterSpacing: -1, color }}>
         {SITE_NAME}
       </div>

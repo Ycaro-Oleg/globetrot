@@ -24,7 +24,7 @@ const STAMP_INK: Record<Milestone, string> = {
   docs: '#B45309',
   stays: '#7C3AED',
   itin: '#DB2777',
-  check: '#1E293B',
+  check: '#1C1C1E',
   ready: '#1D4ED8',
 };
 

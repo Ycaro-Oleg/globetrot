@@ -126,17 +126,17 @@ export function renderEmail(
   const html = `<!doctype html>
 <html lang="${locale}">
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>${escapeHtml(subject)}</title></head>
-<body style="margin:0;padding:24px;background:#f8f9fa;color:#1e293b;font-family:Arial,Helvetica,sans-serif;line-height:1.5">
-<div style="max-width:520px;margin:0 auto;padding:28px;background:#ffffff;border:1px solid #dde2e8;border-radius:16px">
-<p style="margin:0 0 20px;font-size:20px;font-weight:bold;color:#ea580c">globetrot</p>
-<p>${escapeHtml(greeting)}</p>${tripLine ? `\n<p style="font-size:18px;font-weight:bold;color:#0f172a">${escapeHtml(tripLine)}</p>` : ''}
+<body style="margin:0;padding:24px;background:#f3f4f5;color:#1c1c1e;font-family:Arial,Helvetica,sans-serif;line-height:1.5">
+<div style="max-width:520px;margin:0 auto;padding:28px;background:#ffffff;border:1px solid #e4e6e9;border-radius:16px">
+<p style="margin:0 0 20px;font-size:20px;font-weight:bold;color:#1c1c1e">Globetrot</p>
+<p>${escapeHtml(greeting)}</p>${tripLine ? `\n<p style="font-size:18px;font-weight:bold;color:#111111">${escapeHtml(tripLine)}</p>` : ''}
 <p>${escapeHtml(body)}</p>
-<p><a href="${url}" style="display:inline-block;padding:12px 22px;background:#f97316;color:#0f172a;text-decoration:none;font-weight:bold;border-radius:999px">${escapeHtml(action)}</a></p>
-<p style="font-size:14px;color:#475569">${escapeHtml(linkHint)}<br><a href="${url}" style="color:#2563eb;word-break:break-all">${url}</a></p>
+<p><a href="${url}" style="display:inline-block;padding:12px 22px;background:#d63f24;color:#ffffff;text-decoration:none;font-weight:bold;border-radius:999px">${escapeHtml(action)}</a></p>
+<p style="font-size:14px;color:#4f545a">${escapeHtml(linkHint)}<br><a href="${url}" style="color:#1c1c1e;word-break:break-all">${url}</a></p>
 <p>${escapeHtml(expiry)}</p>
 <p>${escapeHtml(ignore)}</p>
-<hr style="border:0;border-top:1px solid #dde2e8">
-<p style="font-size:12px;color:#475569">${escapeHtml(footer)}</p>
+<hr style="border:0;border-top:1px solid #e4e6e9">
+<p style="font-size:12px;color:#4f545a">${escapeHtml(footer)}</p>
 </div>
 </body>
 </html>

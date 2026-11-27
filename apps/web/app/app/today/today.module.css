@@ -126,7 +126,7 @@
 .cta {
   border: 0;
   background: var(--gt-semantic-color-cta, var(--gt-semantic-color-primary));
-  color: var(--gt-semantic-color-on-cta, #0f172a);
+  color: var(--gt-semantic-color-on-cta, #ffffff);
 }
 
 .cta:hover {
