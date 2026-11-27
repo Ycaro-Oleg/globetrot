@@ -58,7 +58,7 @@ Full details: [`docs/engineering/git-workflow.md`](docs/engineering/git-workflow
 
 - Branches: `main` (release-ready), `develop` (integration), `feature/issue-<n>-<slug>`, `fix/issue-<n>-<slug>`, `docs/<slug>`, `chore/<slug>`, `spike/issue-<n>-<slug>`, `hotfix/<slug>`.
 - Branch from `develop` and open a PR into `develop`. Only release PRs go `develop → main`.
-- **Never push directly to `main` or `develop`.** Protection is by convention plus CI (the private repo is on GitHub Free), so it depends on you.
+- **Never push directly to `main` or `develop`.** Protection is by convention plus CI, not by a GitHub setting, so it depends on you.
 - One issue → one focused branch → one reviewable PR. Don't mix unrelated changes.
 - Commits follow [Conventional Commits](https://www.conventionalcommits.org/): `feat(budget): …`, `fix(map): …`, `docs: …`, `chore: …`.
 - **The owner approves every merge, per PR, in chat.** Open the PR, get every active CI job green, report what you verified and what you did not, then **wait for an explicit yes**. After it: squash-merge, delete the branch, close the issue manually, confirm CI on `develop`. Full procedure: [`docs/agents/playbook.md`](docs/agents/playbook.md).

@@ -17,7 +17,7 @@ Decision record: [ADR-0009](../architecture/adr/0009-git-workflow.md).
 
 Examples: `feature/issue-12-trip-creation`, `fix/issue-42-mobile-pin-selection`.
 
-**Never push directly to `main` or `develop`.** On the GitHub Free private plan nothing technically stops it, so the rule depends on everyone following it.
+**Never push directly to `main` or `develop`.** Protection is by convention plus CI, not by a GitHub setting ([ADR-0009](../architecture/adr/0009-git-workflow.md)), so the rule depends on everyone following it.
 
 ## Lifecycle
 
