@@ -15,7 +15,7 @@ Each milestone maps to a GitHub milestone. Issues for a milestone are created wh
 | M8 | Landing & MVP RC | **Started** (landing done in code, example trips, #74) | Landing (i18n, mock pricing), example trips, accessibility and performance QA, closed beta | M3–M7 |
 | M9 | Passport & Identity | Not started | Account passport, place stamps, profile | M8 |
 | M10 | Commercial | Not started | Approved pricing, Stripe sandbox, entitlements, customer portal, NFS-e integration | Pricing decision |
-| M11 | Production Readiness | Not started | Hetzner + Coolify, backups and restore test, monitoring, security review, account data export and deletion | M8 |
+| M11 | Production Readiness | Not started | Railway ([ADR-0034](../architecture/adr/0034-hosting-on-railway.md)), backups and restore test, monitoring, security review, account data export and deletion | M8 |
 | M12+ | Social → Ranks → Native apps (Expo) → MCP | **Social started early** (the v2 community, at the owner's request, [ADR-0013](../architecture/adr/0013-community.md)); the rest not started | Each scoped when started | M9–M11 |
 
 ## What each active milestone contains
@@ -62,14 +62,14 @@ What is already decided, what is built, and what must be settled first, so plann
 | Map stack | Decided in [ADR-0003](../architecture/adr/0003-map-stack.md): MapLibre GL JS, Protomaps PMTiles served as z/x/y tiles, a DOM overlay for trip pins, our own places table seeded from GeoNames |
 | Spike code | Throwaway, **not merged**. It lives on the branches `spike/issue-2-maplibre-poster-style` (poster style, overlay, crosshair) and `spike/issue-3-places-geonames` (import and benchmark SQL). Read the findings first: [`maplibre.md`](../architecture/spikes/maplibre.md), [`places.md`](../architecture/spikes/places.md) |
 | Needs the owner | Real-device frame-rate test; the geocoder choice (#4); remaining #7 screen/copy reviews; the imagery licensing source |
-| Open technical decisions | Country-polygon source for the trip highlight (Natural Earth 10m or OSM admin level 2, decided in M4); where the tile server runs (a Coolify service behind the CDN); first render must get under 2.5 s on 4G (3.4 s measured; fixes listed in the spike) |
+| Open technical decisions | Country-polygon source for the trip highlight (Natural Earth 10m or OSM admin level 2, decided in M4); where the tile server runs (a Railway service behind the CDN); first render must get under 2.5 s on 4G (3.4 s measured; fixes listed in the spike) |
 | Needed from M3 first | The authenticated shell (#59) and the trip list (#62): the board lives inside a trip. The preferences and trips API exist |
 | Data to add | A `place` table (PostGIS) with the GeoNames import as a worker job (so the worker gets its first real job and `pg-boss`), then stops, pins and connections (domain model: Trip Planning) |
 | Rules already written | Stops, days, connections, stage and next steps in [`business-rules.md`](business-rules.md#trips); derivations built in `packages/domain/src/trip` |
 
 ## Notes
 
-- A lightweight **preview environment** on Coolify can be set up from M4, only for usability testing. It is not production.
+- A lightweight **preview environment** on Railway can be set up from M4, only for usability testing. It is not production.
 - M5 and M6 can run in parallel.
 - Pricing, regional pricing and plan limits are decided in a dedicated business decision before M10.
 - Account data export and deletion (LGPD/GDPR) must be designed and built before any public release. It is listed under M11 but its design should start earlier, because the append-only audit log and the owner foreign keys constrain it ([ADR-0011](../architecture/adr/0011-idempotency-audit-and-units-of-work.md)).

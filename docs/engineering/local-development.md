@@ -1,6 +1,6 @@
 # Local development
 
-One command starts the services the apps need, close to the eventual Hetzner + Coolify setup. Monorepo layout and commands: [`project-structure.md`](project-structure.md).
+One command starts the services the apps need, close to the production setup on Railway ([ADR-0034](../architecture/adr/0034-hosting-on-railway.md)). Monorepo layout and commands: [`project-structure.md`](project-structure.md).
 
 ## Requirements
 
@@ -46,12 +46,12 @@ Then open <http://localhost:3000/signup>. A fresh clone needs no other step: `pn
 | Service | What | Host port (`.env`) | Notes |
 |---|---|---|---|
 | `postgres` | PostgreSQL 17 + PostGIS 3.7 | `POSTGRES_PORT=5455` | `postgis`, `pg_trgm` and `unaccent` are created on first start (`infra/postgres/init/`). Use `DATABASE_URL` |
-| `storage` | S3-compatible object storage (SeaweedFS) | `S3_PORT=8333` | Stands in for Hetzner Object Storage. Use path-style URLs (`S3_FORCE_PATH_STYLE=true`), region `us-east-1` |
+| `storage` | S3-compatible object storage (SeaweedFS) | `S3_PORT=8333` | Stands in for the Railway Bucket. Use path-style URLs (`S3_FORCE_PATH_STYLE=true`), region `us-east-1` |
 | `storage-init` | One-shot | — | Creates `S3_BUCKET` (idempotent), then exits |
 | `mailpit` | Catches all outgoing email | `SMTP_PORT=1025`, UI `MAILPIT_UI_PORT=8025` | Open http://localhost:8025 to read emails. The API sends its verification and password-reset emails here, and the integration tests read them over its HTTP API |
 
 - Port defaults avoid common clashes. 5455 is used because another Postgres often runs on 5432. Change any port in `.env` and keep `DATABASE_URL`/`S3_ENDPOINT` in sync.
-- The credentials in `.env.example` are **local-only defaults, not secrets**. Real credentials live only in Coolify (M11) and never in the repository.
+- The credentials in `.env.example` are **local-only defaults, not secrets**. Real credentials live only in Railway's service variables and never in the repository.
 - **Why SeaweedFS, not MinIO:** the official MinIO images are no longer published on Docker Hub. The apps talk plain S3 through a storage port, so the local backend can change without touching code.
 
 ## Commands
@@ -77,7 +77,7 @@ Conventions and the migration rules are in [`data-model.md`](../architecture/dat
 
 ## How the apps get configuration
 
-- `apps/api` and `apps/worker` start with `tsx --env-file-if-exists=../../.env` in `pnpm dev`, so the root `.env` is loaded when present. Deployed containers receive environment variables from Coolify instead.
+- `apps/api` and `apps/worker` start with `tsx --env-file-if-exists=../../.env` in `pnpm dev`, so the root `.env` is loaded when present. Deployed containers receive environment variables from Railway instead.
 - `apps/web` (Next.js) reads `apps/web/.env*` files, not the root `.env`. Its one server-side variable is `API_INTERNAL_URL` (where `/api/auth/*` and `/v1/*` are proxied, and where the web server itself reads a signed-in user's settings; default `http://localhost:4000`, so `pnpm dev` needs nothing). Open <http://localhost:3000/signup> to create an account: with the services up, the confirmation email appears in Mailpit (<http://localhost:8025>); open its link, then log in at `/login` and you land on `/app`. `/settings` changes the language and region.
 - The API reads its auth settings (secret, public URL, trusted origins, session and rate-limit knobs) from the environment. Without `BETTER_AUTH_SECRET` it uses the public development secret and warns; with `NODE_ENV=production` it refuses to start. Full table: [`authentication.md`](../architecture/authentication.md).
 - Open http://localhost:3000 and call `/api/auth/*` there, not on :4000: the browser always goes through the web origin so the session cookie is first-party.

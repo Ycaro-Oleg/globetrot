@@ -82,7 +82,7 @@ Policy (decided in #54, to be confirmed by the owner): **a password sign-in requ
 
 The rate limits and the stored `ip_address` use the **leftmost** `X-Forwarded-For` value. Next's proxy appends the address of the connection it received, so the header the API sees is `<what the client or edge sent>, <peer>`.
 
-- **In production** the entry point is Traefik (Coolify), which does not trust a client-supplied `X-Forwarded-For` by default and replaces it with the real client address. Keep it that way: do not configure `forwardedHeaders.trustedIPs` for the public entry point.
+- **In production** the entry point is Railway's edge ([ADR-0034](adr/0034-hosting-on-railway.md)), which is expected to replace a client-supplied `X-Forwarded-For` with the real client address. Railway's own answers on this disagree, so the [launch runbook](../engineering/launch-runbook.md#4-first-deploy-in-order) proves it on the real domain before opening: six wrong sign-ins with six different made-up headers must still end in `429`. Do not put another proxy in front of the web service without repeating that check.
 - **The API must not be reachable from the internet.** Only the web container may call it (internal network, `API_INTERNAL_URL`). If the API were public, any caller could choose its own address and bypass the limits.
 - **Without a trusted edge** (for example `pnpm dev`, or the built web served directly) a client can send its own `X-Forwarded-For` and be counted under that address. This was observed in the end-to-end run. It is acceptable on a developer machine and is the reason for the two rules above.
 

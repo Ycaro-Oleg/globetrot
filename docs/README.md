@@ -37,7 +37,7 @@ Agents: don't read everything. Use [`agents/context-map.md`](agents/context-map.
 - [`architecture/i18n.md`](architecture/i18n.md): languages, locales, formatting, message catalogs, the web integration, emails.
 - [`architecture/api-contracts.md`](architecture/api-contracts.md): the `/v1` API: actor, problem+json errors, every operation, idempotency, audit, how to add an operation, the typed client.
 - [`architecture/authentication.md`](architecture/authentication.md): sessions, the web proxy and first-party cookie, email verification and recovery, the account screens, redirect rules, rate limits, error codes.
-- [`architecture/adr/`](architecture/adr/README.md): Architecture Decision Records (0001 to 0033).
+- [`architecture/adr/`](architecture/adr/README.md): Architecture Decision Records (0001 to 0034).
 - [`architecture/spikes/maplibre.md`](architecture/spikes/maplibre.md): the map stack spike (#2). [`places.md`](architecture/spikes/places.md): places search on GeoNames + PostGIS (#3). [`geocoding.md`](architecture/spikes/geocoding.md): managed geocoding evaluation (#4, open).
 
 ### Engineering
@@ -45,7 +45,7 @@ Agents: don't read everything. Use [`agents/context-map.md`](agents/context-map.
 - [`engineering/project-structure.md`](engineering/project-structure.md): monorepo layout, what is in each app and package, commands, Docker images.
 - [`engineering/configuration.md`](engineering/configuration.md): every environment variable, who reads it, what production requires.
 - [`engineering/local-development.md`](engineering/local-development.md): local services, `.env`, running the apps, troubleshooting.
-- [`engineering/launch-runbook.md`](engineering/launch-runbook.md): putting Globetrot in production (Coolify services, required settings, first deploy, smoke test) and the owner's launch decisions.
+- [`engineering/launch-runbook.md`](engineering/launch-runbook.md): putting Globetrot in production (Railway services, required settings, first deploy, smoke test) and the owner's launch decisions.
 - [`engineering/coding-standards.md`](engineering/coding-standards.md): TypeScript, naming, architecture boundaries, money/dates/copy, errors, config, React, dependencies.
 - [`engineering/testing-strategy.md`](engineering/testing-strategy.md): test layers, what each change must test, deterministic tests, coverage, flaky tests.
 - [`engineering/m3-foundation-breakdown.md`](engineering/m3-foundation-breakdown.md): the M3 plan, the dependency table and the PR that delivered each slice. A model for breaking down a milestone.

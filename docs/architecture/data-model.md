@@ -250,11 +250,11 @@ Migration `0018_billing`. Rules: [business rules](../product/business-rules.md#p
 
 The first migration (`0000_extensions.sql`) enables `postgis`, `pg_trgm` and `unaccent`, using `IF NOT EXISTS`. The local Docker init script (`infra/postgres/init/`) enables the same ones as a convenience, and production relies on the migration.
 
-`postgis` needs a superuser or a pre-created extension. On a managed database, create it once by hand and the migration becomes a no-op. The Postgres container on Coolify runs the application user as superuser, so no manual step is needed there.
+`postgis` needs a superuser or a pre-created extension. On a managed database, create it once by hand and the migration becomes a no-op. The PostGIS container on Railway runs the application user as superuser, so no manual step is needed there.
 
 ## Migrations
 
-- **In production** the API image ships the migrations and a release command: Coolify's pre-deployment command `node dist/migrate.js` applies them before the new version starts ([launch runbook](../engineering/launch-runbook.md)).
+- **In production** the API image ships the migrations and a release command: Railway's pre-deploy command `node dist/migrate.js` applies them before the new version starts ([launch runbook](../engineering/launch-runbook.md)).
 
 - **Forward-only.** Never edit a migration that was applied anywhere. Fix mistakes with a new one.
 - **Generate:** edit `src/schema`, run `pnpm --filter @globetrot/db generate`, review the SQL and commit it **with** `migrations/meta/`. For hand-written SQL (extensions, data fixes, special indexes) use `pnpm --filter @globetrot/db exec drizzle-kit generate --custom --name=<what>`.
