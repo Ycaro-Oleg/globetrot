@@ -88,3 +88,31 @@ describe('groupSavings', () => {
     expect(result.leftMinor).toBe(1300n);
   });
 });
+
+describe('edge cases of the split', () => {
+  it('returns nothing for nobody, zero for parts that are all zero, and skips zero parts for leftovers', () => {
+    expect(memberShares(100n, []).size).toBe(0);
+    expect([
+      ...memberShares(100n, [
+        { userId: 'ana', shareBp: 0 },
+        { userId: 'bruno', shareBp: 0 },
+      ]).values(),
+    ]).toEqual([0n, 0n]);
+    const shares = memberShares(101n, [
+      { userId: 'ana', shareBp: 0 },
+      { userId: 'bruno', shareBp: 5000 },
+      { userId: 'carla', shareBp: 5000 },
+    ]);
+    expect(Object.fromEntries(shares)).toEqual({ ana: 0n, bruno: 51n, carla: 50n });
+  });
+
+  it('treats someone who saved nothing as having saved zero, and a group with more than enough as done', () => {
+    const result = groupSavings(
+      100n,
+      [ana, bruno],
+      [{ userId: 'ana', savedMinor: 500n, monthlyMinor: 0n }],
+    );
+    expect(result.people[1]).toMatchObject({ savedMinor: 0n, monthlyMinor: 0n, leftMinor: 50n });
+    expect(result.leftMinor).toBe(0n);
+  });
+});

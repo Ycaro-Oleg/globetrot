@@ -181,6 +181,7 @@ Decided in [ADR-0024](../architecture/adr/0024-trip-members.md).
 - Someone who is not on a trip gets "not found" for it, exactly like a trip that does not exist.
 - Trips shared with a person appear in their list and switcher as "Shared" and do not count towards their own active-trip limit.
 - Screens of a shared trip refresh every 30 seconds while open, and every trip refreshes when the person comes back to the tab. There is no live sync yet: the last save of the route wins.
+- **Money between the people** ([ADR-0025](../architecture/adr/0025-money-between-members.md)): the trip's total is split equally, or in custom parts the owner sets (adding up to the whole trip). Each person keeps their own "already set aside" and "each month" for their part and sees when they will have it. A cost can say who paid it (someone on the trip). **Settling up** counts only paid costs (never the rough guess) and says who pays whom, in as few payments as it finds; paid costs with nobody named stay out and the screen says how much. Paying each other happens outside Globetrot.
 
 ## Plans, trial and Pip credits
 
