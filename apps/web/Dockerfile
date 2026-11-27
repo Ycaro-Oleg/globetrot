@@ -14,9 +14,22 @@ COPY --from=pruner /repo/out/json/ .
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 COPY --from=pruner /repo/out/full/ .
 # A NEXT_PUBLIC_* value is written into the browser bundle at build time, so it is a build argument. The map key
-# is a public, domain-restricted key (never a secret); without it the board shows its search as unavailable.
+# is a public, domain-restricted key (never a secret); without it the board shows its search as unavailable. The
+# others switch on browser error monitoring and analytics; each stays off when empty.
 ARG NEXT_PUBLIC_GEOAPIFY_API_KEY=
-ENV NEXT_PUBLIC_GEOAPIFY_API_KEY=$NEXT_PUBLIC_GEOAPIFY_API_KEY
+ARG NEXT_PUBLIC_SENTRY_DSN=
+ARG NEXT_PUBLIC_POSTHOG_KEY=
+ARG NEXT_PUBLIC_POSTHOG_HOST=
+ARG NEXT_PUBLIC_PLAUSIBLE_DOMAIN=
+ARG NEXT_PUBLIC_PLAUSIBLE_SRC=
+ARG NEXT_PUBLIC_META_PIXEL_ID=
+ENV NEXT_PUBLIC_GEOAPIFY_API_KEY=$NEXT_PUBLIC_GEOAPIFY_API_KEY \
+    NEXT_PUBLIC_SENTRY_DSN=$NEXT_PUBLIC_SENTRY_DSN \
+    NEXT_PUBLIC_POSTHOG_KEY=$NEXT_PUBLIC_POSTHOG_KEY \
+    NEXT_PUBLIC_POSTHOG_HOST=$NEXT_PUBLIC_POSTHOG_HOST \
+    NEXT_PUBLIC_PLAUSIBLE_DOMAIN=$NEXT_PUBLIC_PLAUSIBLE_DOMAIN \
+    NEXT_PUBLIC_PLAUSIBLE_SRC=$NEXT_PUBLIC_PLAUSIBLE_SRC \
+    NEXT_PUBLIC_META_PIXEL_ID=$NEXT_PUBLIC_META_PIXEL_ID
 RUN pnpm turbo run build --filter=@globetrot/web
 
 # Next.js standalone output (see next.config.ts).
