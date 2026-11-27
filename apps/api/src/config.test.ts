@@ -14,6 +14,7 @@ const production = (extra: Record<string, string> = {}) => ({
   S3_BUCKET: 'globetrot-photos',
   S3_ACCESS_KEY_ID: 'production-key',
   S3_SECRET_ACCESS_KEY: 'production-secret',
+  CLIENT_IP_HEADER: 'x-real-ip',
   ...extra,
 });
 
@@ -247,6 +248,27 @@ describe('email and verification settings', () => {
     );
     expect(() => loadApiConfig({ ...production(), SMTP_HOST: '' })).toThrow(/SMTP_HOST/);
     expect(loadApiConfig(production()).email.host).toBe('smtp.example.test');
+  });
+
+  it('requires CLIENT_IP_HEADER in production, so the rate limits never fall back to a header the edge passes through', () => {
+    const env: Record<string, string | undefined> = production();
+    delete env.CLIENT_IP_HEADER;
+    expect(() => loadApiConfig(env)).toThrow(/CLIENT_IP_HEADER is required in production/);
+    expect(() => loadApiConfig({ ...production(), CLIENT_IP_HEADER: '' })).toThrow(
+      /CLIENT_IP_HEADER is required in production/,
+    );
+    expect(loadApiConfig(production()).auth.clientIpHeader).toBe('x-real-ip');
+    // Development and tests keep the default, so local runs need no setting.
+    expect(loadApiConfig({ DATABASE_URL }).auth.clientIpHeader).toBe('x-forwarded-for');
+  });
+
+  it('refuses a CLIENT_IP_HEADER that is not a lowercase header name', () => {
+    expect(() => loadApiConfig(production({ CLIENT_IP_HEADER: 'X-Real-IP' }))).toThrow(
+      /CLIENT_IP_HEADER/,
+    );
+    expect(() =>
+      loadApiConfig(production({ CLIENT_IP_HEADER: 'x-real-ip, x-forwarded-for' })),
+    ).toThrow(/CLIENT_IP_HEADER/);
   });
 
   it('requires real object storage in production, never the local credentials', () => {
