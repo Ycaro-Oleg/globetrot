@@ -96,6 +96,9 @@ Today:
 | (webhook) | `POST /v1/inbound/email` | No session; the `x-inbound-secret` header must match. Postmark-compatible body. Answers `{ outcome }`: `proposed`, `unknown-address`, `no-trip`, `not-answered`. `404` while off |
 | `getTripShare` / `shareTrip` / `unshareTrip` | `GET`/`PUT`/`DELETE /v1/trips/{id}/share` | The trip's public link: `{ slug, showAmounts }`. `PUT` keeps the address when it is on and sets `showAmounts`; `DELETE` ends it for good and works when the account is read-only ([business rules](../product/business-rules.md#sharing-a-trip)) |
 | `getSharedTrip` | `GET /v1/shared/{slug}` | **No session.** Title, the owner's interface language (`locale`, for the social card), start month, nights, stops (name, country, nights, coordinates), the savings status, progress and ready month, and amounts only when shared. Unknown, malformed, stopped or archived all answer `404` |
+| `joinInterestList` | `POST /v1/leads` | **No session.** The interest list ([ADR-0037](adr/0037-interest-list.md), [contract below](#the-interest-list-v1leads)). Always `202 { accepted: true }` for a valid request, whatever the address's state; `422` without `consent: true`; `429` per client address |
+| `confirmInterest` | `POST /v1/leads/confirm` | **No session.** `token` from the confirmation link. `{ result, internal }`, `result` one of `confirmed`, `already_confirmed`, `expired`, `not_found` |
+| `leaveInterestList` | `POST /v1/leads/unsubscribe` | **No session.** `token` from any list email, in the JSON body or the `token` query parameter (RFC 8058 one-click: a form body `List-Unsubscribe=One-Click`). Always `{ result: "unsubscribed" }` for a well-formed token, also the second time |
 | (webhook) | `POST /v1/webhooks/stripe` | Stripe's events, trusted only by the `Stripe-Signature` over the raw body (no session). `400` for a bad or old signature, `500` so Stripe retries, `200` otherwise, `404` while Stripe is off. Not in the OpenAPI contract: no client calls it ([stripe](../integrations/stripe.md#how-it-is-built)) |
 | `updatePreferences` | `PATCH /v1/me/preferences` | Only the fields sent change, and none affects another. `null` clears `homeCountry`, `nationality` or `timeZone`; `homePoint` (`{ latitude, longitude }` of the home city, or `null`) is cleared when `homeCity` changes without it; `locale`, `currency`, `units`, `theme` and `motion` cannot be cleared. At least one field. Audited (`preferences.update`, field names only). Also `homeCity` (1 to 120 characters, `null` clears it) `pipOptIn` (boolean), `pipLook` (`{hat, outfit, bag, bagColor}`, each from its closed list, all four together) and `pipName` (1 to 16 characters after trimming, `null` brings back "Pip") |
 | `listTrips` | `GET /v1/trips[?includeArchived=true]` | The caller's trips, newest first, then the trips shared with them, at most 200 each (no pagination yet). Each has `role` (`owner`, `editor`, `viewer`). Archived ones only on request |
@@ -150,6 +153,59 @@ Today:
 Trip rules: the title is trimmed and has 1 to 120 characters; `startDate` is a real calendar date or null; `currency` is an active ISO 4217 code (`VALIDATION_FAILED`, field `currency`, code `custom` when unknown); `status` is one of `active`, `traveling`, `completed`, `archived`. Status is set by the user and never derived. `visibility` is always `private` for now. The response never includes the owner. Field error codes are Zod's issue codes (`too_small`, `too_big`, `invalid_format`, `invalid_value`, `custom`).
 
 Preference rules: `locale` is a supported language (`en`, `pt-BR`, exact case); `currency` an active ISO 4217 code; `homeCountry` and `nationality` an assigned ISO 3166-1 alpha-2 code in upper case; `timeZone` an IANA name (UTC offsets are refused); `units` `metric` or `imperial`; `theme` `day`, `red-eye` or `system`; `motion` `full` or `reduced`. Errors are `VALIDATION_FAILED` with the field name and a Zod code (`custom` for an unknown value, `invalid_format` for the wrong shape, `invalid_value` for a unit system, theme or motion setting, `invalid_type` when a field that cannot be cleared is `null`). There is no user id in the request: the actor is the only source of "whose".
+
+### The interest list (`/v1/leads`)
+
+Public routes, registered before the session middleware, for visitors without an account ([ADR-0037](adr/0037-interest-list.md), [business rules](../product/business-rules.md#interest-list)). The `Origin` check applies as for every state-changing request.
+
+**`POST /v1/leads`**
+
+```json
+{
+  "email": "someone@example.com",
+  "locale": "pt-BR",
+  "consent": true,
+  "source": "landing",
+  "origin": {
+    "utm_source": "x",
+    "utm_medium": "social",
+    "utm_campaign": "launch",
+    "referrer_domain": "t.co",
+    "landing_path": "/roteiros/japao"
+  },
+  "internal": false
+}
+```
+
+- `email`: required, at most 254 characters, a valid address. Stored trimmed and in lower case; nothing else is changed (dots and `+` stay).
+- `locale`: required, `en` or `pt-BR`. The confirmation email is in this language.
+- `consent`: required and must be `true` (the unchecked box was ticked). Anything else is `422 VALIDATION_FAILED`, field `consent`.
+- `source`: required, `landing` or `itinerary`.
+- `origin`: optional, the first visit's origin. Each field optional, trimmed, 1 to 100 characters (`landing_path` up to 200). `referrer_domain` is a host name only (no scheme, path or query); `landing_path` starts with `/` and has no `?` or `#`. Anything else is `422`.
+- `internal`: optional boolean, `true` from a device marked with `?interno=1`. An entry is also internal when the address is in `ADMIN_EMAILS` or on a reserved test domain (`example.com`, `example.org`, `example.net`, `*.test`, `*.example`, `*.invalid`). Internal entries go through the whole flow and never count.
+- The text version agreed to is set by the server (the current consent version), not sent by the client.
+
+| Status | Body | When |
+|---|---|---|
+| `202` | `{ "accepted": true }` | Every valid request: a new address, a repeat, an address already confirmed, one that unsubscribed, or one whose confirmation emails are capped. The answer and its timing never say which. The email, when one is due, is sent in the background |
+| `422` | problem `VALIDATION_FAILED` | A field above is missing or invalid; `errors` names the field |
+| `429` | problem `RATE_LIMITED`, `Retry-After` | Too many requests from the client address (the address is only counted in memory, never stored) |
+| `403` | problem `INVALID_ORIGIN` | An untrusted `Origin` |
+
+**`POST /v1/leads/confirm`** with `{ "token": "…" }` (the token from the link, 20 to 200 characters):
+
+| `result` | Meaning |
+|---|---|
+| `confirmed` | The entry is now on the list |
+| `already_confirmed` | It was confirmed before; nothing changes |
+| `expired` | The link is older than 48 hours; signing up again sends a new one |
+| `not_found` | Unknown token, or the entry was removed (unsubscribed, deleted after 7 days unconfirmed) |
+
+Always `200 { "result": …, "internal": boolean }`; `internal` is `false` unless the entry is internal and the token matched. `422` for a malformed token.
+
+**`POST /v1/leads/unsubscribe`** with `{ "token": "…" }`, or `?token=…` with the form body `List-Unsubscribe=One-Click` (what mail clients send for the `List-Unsubscribe-Post` header). Deletes the entry and keeps only a keyed hash of the address, so the list never emails it again. Always `200 { "result": "unsubscribed" }` for a well-formed token, also when it was already used or is unknown. `422` for a malformed token.
+
+**The links in the emails** point at web pages (#192), never at the API: `{web origin}/list/confirm?token=…` and `{web origin}/list/unsubscribe?token=…`, plus `lang=en|pt-BR`. The confirm page calls `POST /v1/leads/confirm`; the unsubscribe page shows a button that calls `POST /v1/leads/unsubscribe`, so a link scanner opening the page unsubscribes nobody. The `List-Unsubscribe` header points at `{web origin}/v1/leads/unsubscribe?token=…` (proxied to the API) for one-click unsubscribing from the mail client.
 
 ### Idempotency (mutations)
 

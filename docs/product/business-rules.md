@@ -37,7 +37,7 @@ Implemented in #53, #54, #57 and #58. Mechanics: [`../architecture/authenticatio
 - **Sessions** last 30 days and are renewed daily when used. The cookie is `HttpOnly`, `SameSite=Lax` and belongs to the web origin.
 - **Language at sign-up:** the language the person was using is recorded as their language. Currency, country, nationality and time zone are not inferred from it.
 - **Terms and privacy:** creating the account is the acceptance, stated next to the submit button with links to both (no checkbox to tick). Acceptance is not stored yet, and the legal text is a draft the owner has to write.
-- **Email** is transactional only (verification and reset): plain, in the person's language, with no tracking and no remote images. Marketing email needs explicit consent and does not exist.
+- **Email** is transactional only (verification and reset): plain, in the person's language, with no tracking and no remote images. Marketing email needs explicit consent: the [interest list](#interest-list) collects it with double opt-in, and no campaign is sent today.
 - **Every mutation is audited** with the names of the fields it changed, never their values. Another user's data is reported as not found.
 
 ## Trips
@@ -218,6 +218,20 @@ Decided in [ADR-0029](../architecture/adr/0029-referrals.md).
 - Each person has a link with their code (on the plan page). A visit through it keeps the code for 30 days.
 - A new account counts for whoever sent it once, within 7 days of signing up, never for itself.
 - When that friend first pays (a plan or a trip pass), the referrer gets one free trip pass, once per friend. It is used on any of their own trips from the trip's page and lasts like a bought pass.
+
+## Interest list
+
+Decided in [ADR-0037](../architecture/adr/0037-interest-list.md). For visitors who are not ready to sign up.
+
+- **Joining** needs an email, the language and a ticked consent box (unchecked by default). Only the address, the language, the form it came from (`landing` or `itinerary`), the first visit's origin (campaign tags, the referring site's domain, the page path), the consent time and the consent text version are kept. **No IP address.**
+- **Double opt-in:** a confirmation email in the person's language; only confirmed addresses are on the list. The link works for 48 hours. **Unconfirmed entries are deleted after 7 days.**
+- **Confirmed entries are kept** until the person unsubscribes or deletes their account.
+- **Unsubscribing** takes one click, without signing in, from any list email (a link and the mail client's own unsubscribe button). It deletes the entry and keeps only an irreversible keyed hash of the address, so **the list never emails that address again**, also when someone types it into the form later. Rejoining needs a future path where the person proves they own the address (for example from a verified account).
+- **The answer never says** whether an address was already on the list.
+- **Anti-flooding:** at most 3 confirmation emails per address in 24 hours, and a daily ceiling for all of them; over it, nothing is sent and the answer is the same.
+- **Internal entries** (the team's and test addresses, or a device marked with `?interno=1`) work like any other and never count.
+- **With an account:** when the account's verified email is on the list, the account export includes the entry and deleting the account deletes it.
+- **No campaign is sent today.** Sending anything to the list needs the owner's yes.
 
 ## Offline reading
 
