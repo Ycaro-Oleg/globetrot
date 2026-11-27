@@ -208,7 +208,7 @@ export function Pricing() {
               </div>
               <p className={styles.planPrice}>
                 {free ? (
-                  <strong>{p('free.price')}</strong>
+                  <strong>{price(0n)}</strong>
                 ) : (
                   <>
                     <strong>{price(annual ? plan.annualMinor : plan.monthlyMinor)}</strong>

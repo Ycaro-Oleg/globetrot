@@ -1663,7 +1663,7 @@
       "tagline": "Para a viagem que você está juntando dinheiro.",
       "f1": "{trips} viagens ativas",
       "f2": "{credits} créditos do Pip por mês",
-      "f3": "Planeje com quem quiser e use offline",
+      "f3": "Planeje com quantas pessoas quiser",
       "cta": "Comece grátis, depois Explorer"
     },
     "voyager": {
@@ -1679,7 +1679,6 @@
     "after": "Depois da primeira semana, uma viagem continua grátis, para sempre. Arquive uma para começar outra, adicione um passe ou escolha um plano.",
     "free": {
       "name": "Grátis",
-      "price": "Grátis",
       "tagline": "Uma viagem por vez, pelo tempo que quiser.",
       "f1": "{trips, plural, one {# viagem ativa} other {# viagens ativas}} com mapa, dias, dinheiro e checklist",
       "f2": "{credits} créditos do Pip por mês",
@@ -1713,7 +1712,7 @@
     "creditsMeter": "{left, number} de {total, number} restantes neste período",
     "creditsReset": "Mais créditos em {date}.",
     "topUpLeft": "{count, plural, one {# crédito extra} other {# créditos extras}} que nunca expiram",
-    "trips": "{max, select, none {{count, number} viagens ativas (sem limite)} other {{count, number} de {max} viagens ativas}}",
+    "trips": "{max, select, none {{count, number} ativas (sem limite)} other {{count, number} ativas, o plano mantém {max}}}",
     "choose": "Escolher {plan}",
     "current": "Seu plano",
     "checkoutSoon": "Os pagamentos estão sendo ativados. Nada é cobrado ainda.",

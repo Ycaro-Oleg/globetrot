@@ -1663,7 +1663,7 @@
       "tagline": "For the trip you are saving for.",
       "f1": "{trips} active trips",
       "f2": "{credits} Pip credits a month",
-      "f3": "Plan with anyone, and use it offline",
+      "f3": "Plan with as many people as you like",
       "cta": "Start free, then Explorer"
     },
     "voyager": {
@@ -1679,7 +1679,6 @@
     "after": "After the first week you keep one trip free, for good. Archive one to start another, add a trip pass, or choose a plan.",
     "free": {
       "name": "Free",
-      "price": "Free",
       "tagline": "One trip at a time, for as long as you like.",
       "f1": "{trips, plural, one {# active trip} other {# active trips}} with the map, days, money and checklist",
       "f2": "{credits} Pip credits a month",
@@ -1713,7 +1712,7 @@
     "creditsMeter": "{left, number} of {total, number} left this period",
     "creditsReset": "More credits on {date}.",
     "topUpLeft": "{count, plural, one {# extra credit} other {# extra credits}} that never expire",
-    "trips": "{max, select, none {{count, number} active trips (no limit)} other {{count, number} of {max} active trips}}",
+    "trips": "{max, select, none {{count, number} active (no limit)} other {{count, number} active, the plan keeps {max}}}",
     "choose": "Choose {plan}",
     "current": "Your plan",
     "checkoutSoon": "Payments are being switched on. Nothing is charged yet.",

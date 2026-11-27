@@ -110,7 +110,8 @@ describe('Globetrot landing page', () => {
     (locale) => {
       const text = visibleText(render(locale));
       const plans = catalogs[locale].plans;
-      expect(text).toContain(plans.free.price);
+      expect(text).toContain(plans.free.name);
+      expect(text).toMatch(locale === 'en' ? /\$0\b/ : /US\$\s?0\b/);
       expect(text).toContain(plans.pass.name);
       expect(text).toContain(plans.explorer.name);
       expect(text).toContain(plans.voyager.name);
