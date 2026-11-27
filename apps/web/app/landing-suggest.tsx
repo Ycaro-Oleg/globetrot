@@ -28,6 +28,7 @@ import { livePlan } from './app/budget/budget-plan';
 import styles from './landing.module.css';
 import { track } from '../lib/analytics';
 import { saveDraft } from '../lib/plan-draft';
+import { sharePlan } from './landing-plan';
 
 /**
  * The currencies offered, each with the top of its monthly slider (a round number in that currency, not a
@@ -116,6 +117,11 @@ export function LandingSuggest({ signupHref }: { signupHref: string }) {
     timers.push(window.setTimeout(() => setPhase('done'), PLANNING.length * PLANNING_STEP_MS));
     return () => timers.forEach((timer) => window.clearTimeout(timer));
   }, [phase]);
+
+  // The plan is ready: the live map below shows it too.
+  useEffect(() => {
+    if (phase === 'done') sharePlan({ destination, likes, days, comfort });
+  }, [phase, destination, likes, days, comfort]);
 
   const go = (next: Phase) => {
     moved.current = true;
@@ -428,9 +434,14 @@ export function SuggestResult({
                 })}`
               : ''}
           </small>
-          <a href={signupHref} className={styles.cta} onClick={keep}>
-            {t('cta')} <span aria-hidden="true">→</span>
-          </a>
+          <div className={styles.resultActions}>
+            <a href={signupHref} className={styles.cta} onClick={keep}>
+              {t('cta')} <span aria-hidden="true">→</span>
+            </a>
+            <a href="#see" className={styles.stepBack}>
+              {t('seeOnMap')} <span aria-hidden="true">↓</span>
+            </a>
+          </div>
         </div>
 
         <div className={styles.planResult} tabIndex={0} role="region" aria-label={t('itinerary')}>

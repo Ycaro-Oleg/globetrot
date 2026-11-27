@@ -497,7 +497,9 @@
       "altTorii": "The red torii of Hakone Shrine standing in Lake Ashi",
       "altFushimi": "A path of orange torii gates at Fushimi Inari",
       "altKiyomizu": "Kiyomizu-dera among red autumn trees",
-      "altDotonbori": "Dotonbori canal at night with neon signs"
+      "altDotonbori": "Dotonbori canal at night with neon signs",
+      "yours": "Your plan on the app's map: open a city to see its experiences and the route between them.",
+      "backToExample": "Back to the Japan example"
     },
     "howKicker": "How it works",
     "howTitle": "Three steps from a dream to a date.",
@@ -602,7 +604,8 @@
       "planning2": "Looking for experiences few people talk about…",
       "planning3": "Adding up the costs and the route…",
       "restart": "Start over",
-      "itinerary": "Itinerary"
+      "itinerary": "Itinerary",
+      "seeOnMap": "See it on the map"
     },
     "cookiePrefs": "Cookie preferences",
     "stickyCta": "Start free",

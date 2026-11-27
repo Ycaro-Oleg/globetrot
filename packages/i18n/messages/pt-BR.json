@@ -497,7 +497,9 @@
       "altTorii": "O torii vermelho do santuário de Hakone dentro do lago Ashi",
       "altFushimi": "Um caminho de torii laranja em Fushimi Inari",
       "altKiyomizu": "O Kiyomizu-dera entre árvores vermelhas de outono",
-      "altDotonbori": "O canal de Dotonbori à noite com letreiros de neon"
+      "altDotonbori": "O canal de Dotonbori à noite com letreiros de neon",
+      "yours": "O seu plano no mapa do app: abra uma cidade para ver os passeios e a rota entre eles.",
+      "backToExample": "Voltar ao exemplo do Japão"
     },
     "howKicker": "Como funciona",
     "howTitle": "Três passos do sonho até a data.",
@@ -602,7 +604,8 @@
       "planning2": "Procurando passeios que quase ninguém conhece…",
       "planning3": "Somando os custos e o trajeto…",
       "restart": "Refazer",
-      "itinerary": "Roteiro"
+      "itinerary": "Roteiro",
+      "seeOnMap": "Ver no mapa"
     },
     "cookiePrefs": "Preferências de cookies",
     "stickyCta": "Começar grátis",
