@@ -63,6 +63,11 @@ type Props = {
   inset: Inset;
   phone: boolean;
   apiKey: string;
+  /**
+   * On a page that scrolls (the landing's live demo) the map only zooms with Ctrl or two fingers, so scrolling
+   * the page over it still scrolls the page; the texts are the hint MapLibre shows.
+   */
+  cooperative?: { windows: string; mac: string; mobile: string } | null;
   text: {
     map: string;
     loading: string;
@@ -550,6 +555,16 @@ export function MapCanvas(props: Props) {
           dragRotate: false,
           pitchWithRotate: false,
           attributionControl: { compact: true },
+          cooperativeGestures: Boolean(latest.current.cooperative),
+          ...(latest.current.cooperative
+            ? {
+                locale: {
+                  'CooperativeGesturesHandler.WindowsHelpText': latest.current.cooperative.windows,
+                  'CooperativeGesturesHandler.MacHelpText': latest.current.cooperative.mac,
+                  'CooperativeGesturesHandler.MobileHelpText': latest.current.cooperative.mobile,
+                },
+              }
+            : {}),
         });
         map.touchZoomRotate.disableRotation();
         mapRef.current = map;

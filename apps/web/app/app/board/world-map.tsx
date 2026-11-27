@@ -163,6 +163,7 @@ export function WorldMapBoard({
   pipEnabled = false,
   pipSuggestion = null,
   home = null,
+  demo = false,
 }: {
   /** The trip the route belongs to, or `null` when there is no trip yet (the board then works unsaved). */
   tripId: string | null;
@@ -176,6 +177,11 @@ export function WorldMapBoard({
   pipSuggestion?: PipSuggestion | null;
   /** The person's home city, when it has a point: where the trip starts on the map. */
   home?: { name: string; latitude: number; longitude: number } | null;
+  /**
+   * The landing's live demo: the board fills its box (not the window), search asks to sign up, photos are only
+   * shown, nothing is saved or remembered, and the map leaves the page's scrolling alone.
+   */
+  demo?: boolean;
 }) {
   const t = useTranslations('mapBoard');
   const locale = useLocale();
@@ -248,15 +254,20 @@ export function WorldMapBoard({
   const [drawerOpen, setDrawerOpen] = useState(true);
   const drawerClosed = !phone && !drawerOpen;
   const panelInset = phone ? 0 : drawerOpen ? PANEL_INSET : DRAWER_CLOSED_INSET;
-  const toggleDrawer = useCallback((open: boolean) => {
-    setDrawerOpen(open);
-    try {
-      window.localStorage.setItem(DRAWER_KEY, open ? 'open' : 'closed');
-    } catch {
-      /* The choice just is not remembered. */
-    }
-  }, []);
+  const toggleDrawer = useCallback(
+    (open: boolean) => {
+      setDrawerOpen(open);
+      if (demo) return;
+      try {
+        window.localStorage.setItem(DRAWER_KEY, open ? 'open' : 'closed');
+      } catch {
+        /* The choice just is not remembered. */
+      }
+    },
+    [demo],
+  );
   useEffect(() => {
+    if (demo) return;
     const frame = requestAnimationFrame(() => {
       try {
         if (window.localStorage.getItem(DRAWER_KEY) === 'closed') setDrawerOpen(false);
@@ -265,7 +276,7 @@ export function WorldMapBoard({
       }
     });
     return () => cancelAnimationFrame(frame);
-  }, []);
+  }, [demo]);
   const searchActive = query.trim().length >= 2;
 
   // The card sits next to its pin and follows the map; on a phone it opens full width at the top.
@@ -348,6 +359,14 @@ export function WorldMapBoard({
   // The board fills the space under the app's top bar (and above the phone's tab bar).
   useEffect(() => {
     const measure = () => {
+      if (demo) {
+        // The demo lives in a box on a scrolling page: its size is the box's.
+        const box = stage.current?.getBoundingClientRect();
+        const width = box?.width ?? window.innerWidth;
+        const height = box?.height ?? 600;
+        setView({ w: width, h: height, phone: width < PHONE_MAX, stageH: height });
+        return;
+      }
       const top = stage.current?.getBoundingClientRect().top ?? 0;
       const isPhone = window.innerWidth < PHONE_MAX;
       const tabBar = document.querySelector('[data-shell-tabbar]')?.getBoundingClientRect();
@@ -361,8 +380,13 @@ export function WorldMapBoard({
     };
     measure();
     window.addEventListener('resize', measure);
-    return () => window.removeEventListener('resize', measure);
-  }, []);
+    const observer = demo && stage.current ? new ResizeObserver(measure) : null;
+    if (observer && stage.current) observer.observe(stage.current);
+    return () => {
+      window.removeEventListener('resize', measure);
+      observer?.disconnect();
+    };
+  }, [demo]);
 
   const sheetHeight = {
     peek: 150,
@@ -437,7 +461,7 @@ export function WorldMapBoard({
   // Place search through the API: the provider key stays on the server.
   useEffect(() => {
     const text = query.trim();
-    if (text.length < 2) return;
+    if (text.length < 2 || demo) return;
     const abort = new AbortController();
     const timer = window.setTimeout(async () => {
       setSearching(true);
@@ -462,7 +486,7 @@ export function WorldMapBoard({
       window.clearTimeout(timer);
       abort.abort();
     };
-  }, [query, locale]);
+  }, [query, locale, demo]);
 
   const select = useCallback(
     (id: string | null) => {
@@ -808,23 +832,22 @@ export function WorldMapBoard({
   );
 
   const level = zoomLevel(zoom);
-  const saveStatus =
-    tripId === null ? (
-      <>
-        {t('notSaved')} <Link href="/app/trips">{t('notSavedLink')}</Link>
-      </>
-    ) : unsaved && !failed ? (
-      t('saving')
-    ) : unsaved ? (
-      <>
-        {t('saveError')}{' '}
-        <button type="button" onClick={() => setRetry((count) => count + 1)}>
-          {t('saveRetry')}
-        </button>
-      </>
-    ) : (
-      t('saved')
-    );
+  const saveStatus = demo ? null : tripId === null ? (
+    <>
+      {t('notSaved')} <Link href="/app/trips">{t('notSavedLink')}</Link>
+    </>
+  ) : unsaved && !failed ? (
+    t('saving')
+  ) : unsaved ? (
+    <>
+      {t('saveError')}{' '}
+      <button type="button" onClick={() => setRetry((count) => count + 1)}>
+        {t('saveRetry')}
+      </button>
+    </>
+  ) : (
+    t('saved')
+  );
 
   return (
     <div
@@ -832,9 +855,10 @@ export function WorldMapBoard({
       className={styles.stage}
       data-phone={phone || undefined}
       data-drawer={drawerClosed ? 'closed' : undefined}
+      data-demo={demo || undefined}
       style={
         {
-          height: view.stageH || undefined,
+          height: demo ? undefined : view.stageH || undefined,
           '--panel-inset': `${panelInset}px`,
         } as CSSProperties
       }
@@ -852,6 +876,9 @@ export function WorldMapBoard({
         inset={inset}
         phone={phone}
         apiKey={API_KEY}
+        cooperative={
+          demo ? { windows: t('coopWindows'), mac: t('coopMac'), mobile: t('coopMobile') } : null
+        }
         controllerRef={controller}
         text={{
           map: t('mapLabel'),
@@ -916,7 +943,11 @@ export function WorldMapBoard({
           </label>
           {searchActive && !searching ? (
             <div className={styles.results} aria-live="polite" aria-label={t('searchResults')}>
-              {searchError === 'busy' ? (
+              {demo ? (
+                <p>
+                  {t('demoSearch')} <Link href="/signup">{t('demoSearchLink')}</Link>
+                </p>
+              ) : searchError === 'busy' ? (
                 <p>{t('searchBusy')}</p>
               ) : searchError ? (
                 <p>{t('searchUnavailable')}</p>
@@ -1144,6 +1175,7 @@ export function WorldMapBoard({
           }}
           onDragStart={dragCard}
           nearby={nearby?.id === cardStop.id ? nearby.places : null}
+          photosReadOnly={demo}
           focusSpot={focusSpot?.stopId === cardStop.id ? focusSpot.index : null}
           pip={
             pipEnabled && tripId
@@ -1490,8 +1522,8 @@ export function WorldMapBoard({
         )}
 
         <div className={styles.panelFoot}>
-          <Link href="/app/days" className={styles.cta}>
-            {t('cta')} <span aria-hidden="true">→</span>
+          <Link href={demo ? '/signup' : '/app/days'} className={styles.cta}>
+            {demo ? t('demoCta') : t('cta')} <span aria-hidden="true">→</span>
           </Link>
           <span className={styles.saveStatus} role="status" aria-live="polite">
             {saveStatus}

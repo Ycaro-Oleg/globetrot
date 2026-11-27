@@ -1610,12 +1610,44 @@
   }
 }
 
-/* --- Scroll story (landing-scroll.tsx): zoom reveal, the step path, focus words, the destination band --- */
-.zoomFrame {
+/* --- The live map: the real board with a finished trip, loaded when it comes into view --- */
+.liveMap {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.liveMapBox {
+  position: relative;
+  height: min(720px, 82vh);
+  min-height: 560px;
   overflow: hidden;
   border-radius: 28px;
-  will-change: transform;
+  background: var(--deep);
+  box-shadow: 0 40px 80px -40px rgba(15, 23, 42, 0.55);
 }
+
+.liveMapLoading {
+  display: grid;
+  height: 100%;
+  margin: 0;
+  place-items: center;
+  color: #cbd5e1;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.liveMapCredits {
+  margin: 0;
+  color: var(--ink-2);
+  font-size: 12px;
+}
+
+.liveMapCredits a {
+  color: inherit;
+}
+
+/* --- Scroll story (landing-scroll.tsx): the step path, focus words, the destination band --- */
 
 /* The airmail line across the three steps (wide screens; on phones the steps still rise one by one). */
 .stepsWrap {

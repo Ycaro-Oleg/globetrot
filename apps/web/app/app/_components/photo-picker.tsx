@@ -8,6 +8,9 @@ import styles from './photo-picker.module.css';
 export interface PickedPhoto {
   readonly mediaId: string;
   readonly alt: string;
+  /** A static image instead of an upload (the landing's demo only), with its author and licence. */
+  readonly src?: string;
+  readonly credit?: string;
 }
 
 /**
@@ -19,12 +22,15 @@ export function PhotoPicker({
   max,
   onChange,
   label,
+  readOnly = false,
 }: {
   photos: readonly PickedPhoto[];
   max: number;
   onChange: (photos: PickedPhoto[]) => void;
   /** The visible name of the add button's group, e.g. "Photos". */
   label: string;
+  /** Only shows the photos, each with its description and credit (the landing's demo). */
+  readOnly?: boolean;
 }) {
   const t = useTranslations('photos');
   const id = useId();
@@ -57,6 +63,29 @@ export function PhotoPicker({
       latest.current = next;
       onChange(next);
     }
+  }
+
+  if (readOnly) {
+    return (
+      <div className={styles.picker}>
+        <ul className={styles.grid}>
+          {photos.map((photo) => (
+            <li key={photo.mediaId}>
+              <figure className={styles.figure}>
+                {/* eslint-disable-next-line @next/next/no-img-element -- small static demo photos, already sized */}
+                <img
+                  src={photo.src ?? mediaUrl(photo.mediaId)}
+                  alt={photo.alt}
+                  className={styles.thumb}
+                  loading="lazy"
+                />
+                {photo.credit ? <figcaption>{photo.credit}</figcaption> : null}
+              </figure>
+            </li>
+          ))}
+        </ul>
+      </div>
+    );
   }
 
   return (

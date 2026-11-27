@@ -6,8 +6,6 @@ import { useEffect } from 'react';
  * The landing's scroll story (GSAP ScrollTrigger), on top of the plain page: everything below works and reads the
  * same without scripts or with reduced motion, where none of this runs.
  *
- * - `[data-zoom-reveal]`: the demo map lies tilted back and a little small, and stands up to full size as it scrolls
- *   into view, like a map unfolded on a table being lifted to the eye.
  * - `[data-step-path]`: a flight from step 1 to step 3: the route draws itself behind a plane as the section scrolls,
  *   each step's pin drops when the plane reaches it, and the step's card rises.
  * - `[data-words]`: a heading's words come into focus (blur to sharp) one after another as it scrolls up.
@@ -27,38 +25,6 @@ export function LandingScroll() {
       ([{ gsap }, { ScrollTrigger }]) => {
         if (cancelled) return;
         gsap.registerPlugin(ScrollTrigger);
-        const media = gsap.matchMedia();
-
-        // The map stands up: tilted back and small, then flat and full size.
-        media.add({ wide: '(min-width: 860px)', narrow: '(max-width: 859px)' }, (context) => {
-          const wide = Boolean(context.conditions?.wide);
-          document.querySelectorAll<HTMLElement>('[data-zoom-reveal]').forEach((frame) => {
-            gsap.fromTo(
-              frame,
-              {
-                rotateX: wide ? 38 : 24,
-                scale: wide ? 0.82 : 0.9,
-                y: wide ? 60 : 30,
-                transformPerspective: 1400,
-                transformOrigin: '50% 100%',
-                boxShadow: '0 0 0 rgb(15 23 42 / 0)',
-              },
-              {
-                rotateX: 0,
-                scale: 1,
-                y: 0,
-                boxShadow: '0 40px 80px -40px rgb(15 23 42 / 0.45)',
-                ease: 'power1.out',
-                scrollTrigger: {
-                  trigger: frame,
-                  start: 'top 95%',
-                  end: wide ? 'center 55%' : 'top 35%',
-                  scrub: 0.7,
-                },
-              },
-            );
-          });
-        });
 
         const context = gsap.context(() => {
           // The flight through the three steps: route, plane, pins and cards, all on the scroll.
@@ -169,10 +135,7 @@ export function LandingScroll() {
           });
         });
 
-        revert = () => {
-          context.revert();
-          media.revert();
-        };
+        revert = () => context.revert();
       },
     );
     return () => {
