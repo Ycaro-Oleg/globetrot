@@ -1506,7 +1506,7 @@ try {
       );
       await nav.getByRole('link', { name: shell.nav.budget, exact: true }).click();
       await page.waitForURL(`${base}/app/budget`);
-      await page.getByRole('heading', { name: shell.nav.budget, level: 1 }).waitFor();
+      await page.getByRole('heading', { name: CATALOGS.en.budgetPage.title, level: 1 }).waitFor();
       check(
         (await nav.locator('[aria-current="page"]').allInnerTexts()).join() === shell.nav.budget,
         'Budget is not the marked tool on /app/budget',
@@ -1516,15 +1516,15 @@ try {
         'the Budget page does not show the savings answer',
       );
       check(
-        (await page.title()).startsWith(shell.nav.budget),
+        (await page.title()).startsWith(CATALOGS.en.budgetPage.title),
         `the Budget page title is "${await page.title()}"`,
       );
-      await placesNav(page).getByRole('link', { name: shell.nav.passport, exact: true }).click();
-      await page.waitForURL(`${base}/app/passport`);
+      await placesNav(page).getByRole('link', { name: shell.nav.discover, exact: true }).click();
+      await page.waitForURL(`${base}/app/discover`);
       check(
         (await placesNav(page).locator('[aria-current="page"]').allInnerTexts()).join() ===
-          shell.nav.passport,
-        'Passport is not the marked place on /app/passport',
+          shell.nav.discover,
+        'Discover is not the marked place on /app/discover',
       );
       await context.close();
     }
