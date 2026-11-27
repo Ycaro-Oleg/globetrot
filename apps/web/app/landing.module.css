@@ -1846,8 +1846,30 @@
 
 .destinations {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 12px;
+}
+
+/* On a phone, two compact columns so all the destinations fit in one look. */
+@media (max-width: 560px) {
+  .destinations {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .destinations button {
+    min-height: 84px;
+    padding: 12px;
+    border-radius: 14px;
+  }
+
+  .destinations strong {
+    font-size: 16px;
+  }
+
+  .destinations small {
+    font-size: 12px;
+  }
 }
 
 .destinations button {
