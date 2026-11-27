@@ -37,7 +37,7 @@ Agents: don't read everything. Use [`agents/context-map.md`](agents/context-map.
 - [`architecture/i18n.md`](architecture/i18n.md): languages, locales, formatting, message catalogs, the web integration, emails.
 - [`architecture/api-contracts.md`](architecture/api-contracts.md): the `/v1` API: actor, problem+json errors, every operation, idempotency, audit, how to add an operation, the typed client.
 - [`architecture/authentication.md`](architecture/authentication.md): sessions, the web proxy and first-party cookie, email verification and recovery, the account screens, redirect rules, rate limits, error codes.
-- [`architecture/adr/`](architecture/adr/README.md): Architecture Decision Records (0001 to 0027).
+- [`architecture/adr/`](architecture/adr/README.md): Architecture Decision Records (0001 to 0028).
 - [`architecture/spikes/maplibre.md`](architecture/spikes/maplibre.md): the map stack spike (#2). [`places.md`](architecture/spikes/places.md): places search on GeoNames + PostGIS (#3). [`geocoding.md`](architecture/spikes/geocoding.md): managed geocoding evaluation (#4, open).
 
 ### Engineering

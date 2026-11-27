@@ -65,6 +65,9 @@ export interface SuggestedDestination {
   readonly id: string;
   readonly name: string;
   readonly namePt: string;
+  /** Its public itinerary page's address: `/itineraries/{slug}` and `/roteiros/{slugPt}`. */
+  readonly slug: string;
+  readonly slugPt: string;
   readonly stops: readonly SuggestedStop[];
   /** `legs[i]` goes from `stops[i]` to `stops[i + 1]`. */
   readonly legs: readonly SuggestedLeg[];
@@ -99,6 +102,8 @@ const JAPAN: SuggestedDestination = {
   id: 'japan',
   name: 'Japan',
   namePt: 'Japão',
+  slug: 'japan',
+  slugPt: 'japao',
   stops: [
     {
       key: 'tokyo',
@@ -211,6 +216,8 @@ const PORTUGAL: SuggestedDestination = {
   id: 'portugal',
   name: 'Portugal',
   namePt: 'Portugal',
+  slug: 'portugal',
+  slugPt: 'portugal',
   stops: [
     {
       key: 'lisbon',
@@ -295,6 +302,8 @@ const RIO_DE_LA_PLATA: SuggestedDestination = {
   id: 'rio-de-la-plata',
   name: 'Argentina and Uruguay',
   namePt: 'Argentina e Uruguai',
+  slug: 'argentina-and-uruguay',
+  slugPt: 'argentina-e-uruguai',
   stops: [
     {
       key: 'buenos-aires',
@@ -381,4 +390,16 @@ export const SUGGESTED_DESTINATIONS: readonly SuggestedDestination[] = [
 
 export function suggestedDestination(id: string): SuggestedDestination | null {
   return SUGGESTED_DESTINATIONS.find((destination) => destination.id === id) ?? null;
+}
+
+/** The destination behind a public itinerary address, in either language. */
+export function destinationBySlug(
+  slug: string,
+  language: 'en' | 'pt',
+): SuggestedDestination | null {
+  return (
+    SUGGESTED_DESTINATIONS.find(
+      (destination) => (language === 'pt' ? destination.slugPt : destination.slug) === slug,
+    ) ?? null
+  );
 }
