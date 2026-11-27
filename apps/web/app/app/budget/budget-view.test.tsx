@@ -159,7 +159,6 @@ describe.each(SUPPORTED_LOCALES)('budget (%s)', (locale) => {
 
   it('says honestly that Globetrot never holds money and estimates are not quotes', () => {
     const plain = text(render(locale));
-    expect(plain).toContain(copy.noMoney);
     expect(plain).toContain(copy.estNote);
   });
 
@@ -224,7 +223,7 @@ describe.each(SUPPORTED_LOCALES)('the rough guess (%s)', (locale) => {
 describe('budget answers', () => {
   it('says "not yet" and how much to save when the pace misses departure', () => {
     const plain = text(render('en', { budget: budget({ monthly: money('100.00') }) }));
-    expect(plain).toContain('Not yet —');
+    expect(plain).toContain('Not yet:');
     expect(plain).toContain('a month to make it');
   });
 

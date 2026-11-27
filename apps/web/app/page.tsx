@@ -9,6 +9,7 @@ import { demoMap } from '../lib/demo-map';
 import { AnswerCalculator } from './landing-calculator';
 import { DemoMapBoard } from './landing-demo-map';
 import { HeroRoutes } from './landing-hero-routes';
+import { LandingAnchors } from './landing-anchors';
 import { LandingPip } from './landing-pip';
 import { LandingReveal } from './landing-reveal';
 import { LandingScroll, Words } from './landing-scroll';
@@ -214,7 +215,6 @@ export default function HomePage() {
               {t('heroCta2')}
             </a>
           </div>
-          <span className={styles.heroNote}>{t('heroNote')}</span>
         </div>
 
         <div className={styles.world} aria-hidden="true">
@@ -231,15 +231,6 @@ export default function HomePage() {
         </div>
         <AnswerCalculator signupHref="/signup" />
       </section>
-
-      <ul className={styles.facts} aria-label={t('factsLabel')}>
-        {(['fact1', 'fact2', 'fact4', 'fact5'] as const).map((key) => (
-          <li key={key}>
-            <strong>{t(`${key}Title`)}</strong>
-            <span>{t(`${key}Body`)}</span>
-          </li>
-        ))}
-      </ul>
 
       <main>
         <section className={styles.section} id="see" aria-labelledby="see-title">
@@ -376,7 +367,7 @@ export default function HomePage() {
         <section className={styles.band} id="faq" aria-labelledby="faq-title">
           <div className={styles.faq}>
             <h2 id="faq-title">{t('faqTitle')}</h2>
-            {([5, 6, 1, 7, 2, 8, 4, 3] as const).map((n) => (
+            {([5, 6, 7, 8] as const).map((n) => (
               <details key={n} className={styles.question}>
                 <summary>
                   {t(`faq${n}Q`)}
@@ -401,10 +392,10 @@ export default function HomePage() {
               {t('closeLogin')}
             </Link>
           </div>
-          <span className={styles.heroNote}>{t('heroNote')}</span>
         </section>
         <LandingReveal />
         <LandingScroll />
+        <LandingAnchors />
       </main>
       <StickyCta label={t('stickyCta')} note={t('stickyNote')} />
 
