@@ -92,6 +92,13 @@ const MEMBERS = {
   invites: [{ id: '0193c0a8-7b1e-7c4a-9e2f-3d5a6b7c9a55', role: 'viewer', expiresAt: NOW }],
   guestLimit: null,
 };
+const HABIT = {
+  week: '2026-W45',
+  checkedIn: null,
+  streak: 2,
+  suggested: { amount: '20000.00', currency: 'JPY' },
+  countdown: { daysLeft: 153, phase: 'six-months', tasks: ['passport', 'entryRules', 'flights'] },
+};
 const INVITE_TOKEN = 'abcdefghijklmnopqrstuv';
 const INVITE_PREVIEW = {
   tripTitle: 'Patagonia',
@@ -474,6 +481,10 @@ const stub = createServer(async (request, response) => {
     if (!signedIn) return reply(response, 401, { code: 'UNAUTHENTICATED' });
     return reply(response, 200, MEMBERS);
   }
+  if (/^\/v1\/trips\/[^/]+\/habit$/.test(url.pathname) && request.method === 'GET') {
+    if (!signedIn) return reply(response, 401, { code: 'UNAUTHENTICATED' });
+    return reply(response, 200, HABIT);
+  }
   if (/^\/v1\/invites\/[^/]+$/.test(url.pathname) && request.method === 'GET') {
     if (!signedIn) return reply(response, 401, { code: 'UNAUTHENTICATED' });
     return url.pathname.endsWith(INVITE_TOKEN)
@@ -835,6 +846,14 @@ try {
         `invite-${layout}`,
         true,
         async (page) => go(page, `${base}/app/invite/${INVITE_TOKEN}`),
+        VIEWPORTS[layout],
+      ]);
+    }
+    for (const layout of ['desktop', 'phone']) {
+      entries.push([
+        `today-${layout}`,
+        true,
+        async (page) => go(page, `${base}/app/today`),
         VIEWPORTS[layout],
       ]);
     }

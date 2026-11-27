@@ -75,9 +75,14 @@ export function TripSwitcher({
         )}
         <span className={styles.menuRule} aria-hidden="true" />
         {activeTrip ? (
-          <Link className={styles.menuAction} href={`/app/trips/${activeTrip.id}`}>
-            {t('switcher.details')}
-          </Link>
+          <>
+            <Link className={styles.menuAction} href="/app/today">
+              {t('switcher.today')}
+            </Link>
+            <Link className={styles.menuAction} href={`/app/trips/${activeTrip.id}`}>
+              {t('switcher.details')}
+            </Link>
+          </>
         ) : null}
         <Link className={styles.menuAction} href="/app/trips">
           {t('switcher.manage')}

@@ -183,6 +183,17 @@ Decided in [ADR-0024](../architecture/adr/0024-trip-members.md).
 - Screens of a shared trip refresh every 30 seconds while open, and every trip refreshes when the person comes back to the tab. There is no live sync yet: the last save of the route wins.
 - **Money between the people** ([ADR-0025](../architecture/adr/0025-money-between-members.md)): the trip's total is split equally, or in custom parts the owner sets (adding up to the whole trip). Each person keeps their own "already set aside" and "each month" for their part and sees when they will have it. A cost can say who paid it (someone on the trip). **Settling up** counts only paid costs (never the rough guess) and says who pays whom, in as few payments as it finds; paid costs with nobody named stay out and the screen says how much. Paying each other happens outside Globetrot.
 
+## The saving habit
+
+Decided in [ADR-0026](../architecture/adr/0026-saving-habit-and-countdown.md).
+
+- **Weekly check-in:** "I set this aside this week" adds the amount to the person's savings for the trip (their own part on a shared trip, the trip's savings otherwise). One per person, trip and week; checking in again that week changes the amount. Weeks follow the person's time zone.
+- **Streak:** weeks in a row with a check-in, up to this week (or last week while this week's is still to come).
+- **Suggested amount:** a week of the person's monthly amount.
+- **Countdown phases** from the start date: more than three months, one to three months, under a month, the last week, travelling, back. Each phase suggests checklist items the person can add. They are reminders, not entry rules or deadlines.
+- **Today** (`/app/today`) shows the countdown, the check-in and the phase's suggestions.
+- **Weekly reminder email:** on Sundays (the person's time), only when they save monthly for an active trip and the week has no check-in, at most once a week, to a verified address. On by default; off in Settings.
+
 ## Plans, trial and Pip credits
 
 Decided in [ADR-0019](../architecture/adr/0019-plans-trial-and-pip-credits.md), changed by [ADR-0023](../architecture/adr/0023-free-plan-trip-pass-and-prices-in-reais.md). Prices come from `PLAN_PRICES`, `TRIP_PASS` and `TOP_UP_PRICES` in the domain, never from components.

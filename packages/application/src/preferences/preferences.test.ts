@@ -23,6 +23,7 @@ const FULL = {
   homeCity: 'São Paulo',
   homePoint: null,
   pipOptIn: true,
+  weeklyReminder: false,
   pipLook: { hat: 'cap', outfit: 'vest', bag: 'backpack', bagColor: 'cyan' },
   pipName: 'Pipoca',
 } as const;
@@ -56,6 +57,7 @@ describe('getPreferences', () => {
       homeCity: null,
       homePoint: null,
       pipOptIn: false,
+      weeklyReminder: true,
       pipLook: { hat: 'straw', outfit: 'none', bag: 'trolley', bagColor: 'amber' },
       pipName: null,
     });
@@ -102,6 +104,7 @@ describe('updatePreferences changes one field and nothing else', () => {
       homeCity: null,
       homePoint: null,
       pipOptIn: false,
+      weeklyReminder: true,
       pipLook: { hat: 'straw', outfit: 'none', bag: 'trolley', bagColor: 'amber' },
       pipName: null,
     });

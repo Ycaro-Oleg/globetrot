@@ -30,6 +30,7 @@ const DEFAULTS = {
   homeCity: null,
   homePoint: null,
   pipOptIn: false,
+  weeklyReminder: true,
   pipLook: { hat: 'straw', outfit: 'none', bag: 'trolley', bagColor: 'amber' },
   pipName: null,
 };
@@ -132,6 +133,7 @@ describe('preferences against a real database', () => {
       homeCity: 'São Paulo',
       homePoint: { latitude: -23.548, longitude: -46.636 },
       pipOptIn: true,
+      weeklyReminder: false,
       pipLook: { hat: 'cap', outfit: 'vest', bag: 'backpack', bagColor: 'cyan' },
       pipName: 'Pipoca',
     };
@@ -149,6 +151,7 @@ describe('preferences against a real database', () => {
       ['homeCity', 'Lisbon'],
       ['homePoint', { latitude: 38.717, longitude: -9.133 }],
       ['pipOptIn', false],
+      ['weeklyReminder', true],
       ['pipName', 'Globinho'],
       ['pipLook', { hat: 'none', outfit: 'scarf', bag: 'vintage', bagColor: 'pink' }],
     ] as const) {

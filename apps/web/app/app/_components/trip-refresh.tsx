@@ -15,7 +15,8 @@ const EVERY_MS = 30_000;
 export function TripRefresh({ shared }: { shared: boolean }) {
   const router = useRouter();
   const pathname = usePathname();
-  const onTrip = isTripPage(pathname) || pathname.startsWith('/app/trips/');
+  const onTrip =
+    isTripPage(pathname) || pathname.startsWith('/app/trips/') || pathname === '/app/today';
   useEffect(() => {
     if (!onTrip) return;
     const refresh = () => {
