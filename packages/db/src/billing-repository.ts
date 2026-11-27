@@ -1,7 +1,15 @@
 import type { BillingInterval, PaidPlan, SubscriptionStatus } from '@globetrot/domain';
-import { eq, sql } from 'drizzle-orm';
+import { and, eq, isNull, sql } from 'drizzle-orm';
 import type { Database } from './client';
-import { creditLedger, subscription, tripPass, user } from './schema';
+import {
+  creditLedger,
+  passCredit,
+  referral,
+  referralCode,
+  subscription,
+  tripPass,
+  user,
+} from './schema';
 
 /** PostgreSQL adapter for plans, bought credits and trip passes (packages/application/src/ports.ts, ADR-0019, ADR-0023). */
 
@@ -40,6 +48,14 @@ export function createBillingRepository(executor: Executor) {
           : null,
         topUpBalance: Number(ledger?.balance ?? 0),
         passes,
+        passCredits: Number(
+          (
+            await executor
+              .select({ n: sql<string>`count(*)` })
+              .from(passCredit)
+              .where(and(eq(passCredit.userId, userId), isNull(passCredit.usedAt)))
+          )[0]?.n ?? 0,
+        ),
       };
     },
     async findProviderCustomer(userId: string) {
@@ -70,6 +86,74 @@ export function createBillingRepository(executor: Executor) {
         .onConflictDoNothing({ target: creditLedger.ref })
         .returning({ id: creditLedger.id });
       return inserted.length > 0;
+    },
+    async ensureReferralCode(userId: string, candidate: string, at: Date) {
+      await executor
+        .insert(referralCode)
+        .values({ userId, code: candidate, createdAt: at })
+        .onConflictDoNothing();
+      const [row] = await executor
+        .select({ code: referralCode.code })
+        .from(referralCode)
+        .where(eq(referralCode.userId, userId));
+      if (!row) throw new Error('referral code was not stored');
+      return row.code;
+    },
+    async findReferrer(code: string) {
+      const [row] = await executor
+        .select({ userId: referralCode.userId })
+        .from(referralCode)
+        .where(eq(referralCode.code, code));
+      return row?.userId ?? null;
+    },
+    async claimReferral(referredUserId: string, referrerUserId: string, at: Date) {
+      const rows = await executor
+        .insert(referral)
+        .values({ referredUserId, referrerUserId, createdAt: at })
+        .onConflictDoNothing()
+        .returning({ id: referral.referredUserId });
+      return rows.length > 0;
+    },
+    async countReferrals(userId: string) {
+      const [row] = await executor
+        .select({ n: sql<string>`count(*)` })
+        .from(referral)
+        .where(eq(referral.referrerUserId, userId));
+      return Number(row?.n ?? 0);
+    },
+    async rewardReferral(referredUserId: string, creditId: string, at: Date) {
+      const [row] = await executor
+        .update(referral)
+        .set({ rewardedAt: at })
+        .where(and(eq(referral.referredUserId, referredUserId), isNull(referral.rewardedAt)))
+        .returning({ referrer: referral.referrerUserId });
+      if (!row) return null;
+      await executor
+        .insert(passCredit)
+        .values({
+          id: creditId,
+          userId: row.referrer,
+          reason: 'referral',
+          ref: `referral:${referredUserId}`,
+          createdAt: at,
+        })
+        .onConflictDoNothing({ target: passCredit.ref });
+      return row.referrer;
+    },
+    async useCredit(userId: string, tripId: string, at: Date) {
+      const [free] = await executor
+        .select({ id: passCredit.id })
+        .from(passCredit)
+        .where(and(eq(passCredit.userId, userId), isNull(passCredit.usedAt)))
+        .orderBy(passCredit.createdAt)
+        .limit(1);
+      if (!free) return null;
+      const [used] = await executor
+        .update(passCredit)
+        .set({ usedTripId: tripId, usedAt: at })
+        .where(and(eq(passCredit.id, free.id), isNull(passCredit.usedAt)))
+        .returning({ id: passCredit.id });
+      return used?.id ?? null;
     },
     async grantTripPass(row: {
       readonly id: string;

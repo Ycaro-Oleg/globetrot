@@ -9,6 +9,7 @@ import { chooseAppearance, MOTION_COOKIE, THEME_COOKIE, THEME_SCRIPT } from '../
 import { getStoredPreferences } from '../lib/request-preferences';
 import { siteOrigin } from '../lib/site-url';
 import { Analytics } from './analytics';
+import { ReferralCapture } from './referral-capture';
 import { LanguageSuggestion } from './language-suggestion';
 import { SITE_NAME } from './site';
 import '@globetrot/tokens/tokens.css';
@@ -74,6 +75,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
           ) : null}
           {children}
           <Analytics />
+          <ReferralCapture />
         </NextIntlClientProvider>
       </body>
     </html>

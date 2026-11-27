@@ -106,4 +106,8 @@ export const OPEN_WHEN_READ_ONLY: ReadonlySet<string> = new Set([
   'updateMyMoney',
   // The saving habit never stops, whatever the plan.
   'checkIn',
+  // Referrals and a free pass are how an account opens again, like paying.
+  'getReferral',
+  'claimReferral',
+  'redeemPassCredit',
 ]);

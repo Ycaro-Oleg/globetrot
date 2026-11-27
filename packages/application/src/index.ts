@@ -17,6 +17,11 @@ import {
 import { createGetGroupMoney, createSetShares, createUpdateMyMoney } from './members/money';
 import { createCheckIn, createGetHabit } from './habit/operations';
 import {
+  createClaimReferral,
+  createGetReferral,
+  createRedeemPassCredit,
+} from './billing/referrals';
+import {
   createGetBilling,
   createOpenBillingPortal,
   createStartCheckout,
@@ -39,6 +44,7 @@ export { assertOwner } from './authorization';
 export { billingSchema } from './billing/operations';
 export { groupMoneySchema } from './members/money';
 export { habitSchema } from './habit/operations';
+export { referralSchema } from './billing/referrals';
 export {
   createWeeklyReminders,
   type WeeklyNoticeStore,
@@ -463,6 +469,9 @@ export function createApplication(ports: Ports) {
     setShares: createSetShares(ports),
     getHabit: createGetHabit(ports),
     checkIn: createCheckIn(ports),
+    getReferral: createGetReferral(ports),
+    claimReferral: createClaimReferral(ports),
+    redeemPassCredit: createRedeemPassCredit(ports),
     shareTrip: createShareTrip(ports),
     unshareTrip: createUnshareTrip(ports),
     suggestDayPlaces: createSuggestDayPlaces(ports),

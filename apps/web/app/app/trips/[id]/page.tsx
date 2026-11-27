@@ -229,6 +229,7 @@ export default async function TripHub({
               currency={billing.priceCurrency}
               validUntil={pass?.validUntil ?? null}
               justPaid={paid === 'trip-pass'}
+              freePasses={billing.passCredits}
             />
           ) : null}
 

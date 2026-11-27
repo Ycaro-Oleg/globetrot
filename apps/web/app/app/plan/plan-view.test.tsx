@@ -15,6 +15,7 @@ const trial: BillingView = {
   access: 'trial',
   overLimit: false,
   priceCurrency: 'USD',
+  passCredits: 0,
   passes: [],
   trialEndsAt: '2026-11-08T12:00:00.000Z',
   trialDaysLeft: 5,

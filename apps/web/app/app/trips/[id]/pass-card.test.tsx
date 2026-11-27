@@ -22,6 +22,12 @@ describe.each(SUPPORTED_LOCALES)('trip pass card (%s)', (locale) => {
     expect(render({ currency: 'BRL' })).toMatch(/R\$\s?39[,.]00/);
   });
 
+  it('offers a free pass first when the person earned one', () => {
+    const html = render({ freePasses: 1 });
+    expect(html).toContain(copy.useFree.split('(')[0]!.trim());
+    expect(html.match(/<button/g)).toHaveLength(2);
+  });
+
   it('says until when a bought pass holds, with no button', () => {
     const html = render({ validUntil: '2027-04-06T00:00:00.000Z' });
     expect(html).toMatch(/2027/);

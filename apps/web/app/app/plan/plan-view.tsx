@@ -14,6 +14,7 @@ import {
   tripPassPrice,
 } from '../../../lib/plan-config';
 import { openPortal, startCheckout } from './actions';
+import { ReferralCard } from './referral-card';
 import styles from './plan.module.css';
 
 type Interval = 'month' | 'year';
@@ -23,8 +24,11 @@ export function PlanView({
   billing,
   paid = null,
   planRequired = false,
+  referral = null,
 }: {
   billing: BillingView | null;
+  /** The person's referral link and counts; null hides the card. */
+  referral?: { code: string; joined: number; passCredits: number } | null;
   /** Back from a paid checkout: Stripe confirms it to us a moment later. */
   paid?: 'plan' | 'top-up' | null;
   /** Sent here because a change could not be saved: more trips are active than the plan keeps. */
@@ -264,6 +268,8 @@ export function PlanView({
           </Link>
         </div>
       )}
+
+      {referral ? <ReferralCard referral={referral} /> : null}
 
       <p className={styles.notice} role="status" aria-live="polite">
         {notice}

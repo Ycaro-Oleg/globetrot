@@ -191,6 +191,14 @@ Decided in [ADR-0028](../architecture/adr/0028-public-itineraries-and-story-card
 - Prices are in US dollars until the visitor picks another currency on the page; the conversion says its source.
 - The trip's page offers a progress image for stories from the trip's public link: amounts only when the link shows amounts, otherwise the percentage saved.
 
+## Referrals
+
+Decided in [ADR-0029](../architecture/adr/0029-referrals.md).
+
+- Each person has a link with their code (on the plan page). A visit through it keeps the code for 30 days.
+- A new account counts for whoever sent it once, within 7 days of signing up, never for itself.
+- When that friend first pays (a plan or a trip pass), the referrer gets one free trip pass, once per friend. It is used on any of their own trips from the trip's page and lasts like a bought pass.
+
 ## Offline reading
 
 Decided in [ADR-0027](../architecture/adr/0027-offline-reading.md).
