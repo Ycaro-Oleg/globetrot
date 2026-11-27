@@ -135,8 +135,20 @@ try {
       await page.getByRole('dialog').waitFor();
       await page.keyboard.press('Escape');
       await page.getByRole('dialog').waitFor({ state: 'hidden' });
-      if (!(await opener.evaluate((element) => element === document.activeElement)))
-        failures.push(theme + '/' + locale + ': modal did not restore focus');
+      // Focus comes back a moment after the dialog closes: wait for it instead of reading it at once.
+      const restored = await page
+        .waitForFunction(
+          (element) => element === document.activeElement,
+          await opener.elementHandle(),
+          {
+            timeout: 2000,
+          },
+        )
+        .then(
+          () => true,
+          () => false,
+        );
+      if (!restored) failures.push(theme + '/' + locale + ': modal did not restore focus');
       const rangeParams = new URLSearchParams({
         id: 'primitives-range--default',
         globals: 'theme:' + theme + ';locale:' + locale,
