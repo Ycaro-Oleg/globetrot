@@ -77,11 +77,11 @@ packages/
 | UI | React Aria Components + Tailwind v4 + tokens, Storybook | — ([design-system](../design/design-system.md)) |
 | Motion | motion/react, CSS, Rive (Pip) | — |
 | AI | Vercel AI SDK (provider-agnostic), structured output via Zod | 0007 |
-| Media | S3-compatible (Hetzner Object Storage; MinIO locally) | — |
+| Media | S3-compatible (a Railway Bucket; SeaweedFS locally) | — |
 | Email | An `EmailPort` with an SMTP adapter (Mailpit locally). The production provider (Resend or Postmark) is still to be chosen; it is a settings change | 0012 |
 | Errors | Sentry-compatible (Sentry or self-hosted GlitchTip) | — |
 | Tests | Vitest, fast-check, Playwright, axe-core | — ([testing-strategy](../engineering/testing-strategy.md)) |
 
 ## Deployment shape (executed in M11)
 
-Containers `web`, `api` and `worker` run on Hetzner via Coolify, alongside PostgreSQL + PostGIS on a persistent volume. PMTiles and media live in object storage behind a CDN. All configuration comes from environment variables, and secrets live in Coolify. Scheduled `pg_dump` backups go to off-server storage, with a tested restore. Dockerfiles exist from M2, so local and production stay close.
+Containers `web`, `api` and `worker` run on Railway ([ADR-0034](adr/0034-hosting-on-railway.md)), alongside PostgreSQL + PostGIS on a volume with daily backups and a tested restore. Media lives in a Railway Bucket. All configuration comes from environment variables, and secrets live in Railway's service variables. Dockerfiles exist from M2, so local and production stay close.
