@@ -2,7 +2,6 @@ import Link from 'next/link';
 import { getLocale, getTranslations } from 'next-intl/server';
 import { cookies } from 'next/headers';
 import { apiInternalUrl } from '../../../../lib/api-proxy';
-import { isPipEnabled } from '../../../../lib/flags';
 import { createServerApiClient, sessionCookieHeader } from '../../../../lib/stored-preferences';
 import {
   fetchBudget,
@@ -40,7 +39,8 @@ const STEPS = [
 
 /**
  * A trip's own page (where the trip switcher leads): its name and start date, how far along it is (the nine
- * stamps), what to do next with a button that opens the right tool, the trip's tools, and archive.
+ * stamps), what to do next with a button that opens the right tool, and archive. Opening it makes the trip current, so the
+ * bar's Map, Days, Budget and Lists already point at it (no second copy of them here).
  */
 export default async function TripHub({ params }: { params: Promise<{ id: string }> }) {
   const [{ id }, locale, t, tm, store] = await Promise.all([
@@ -101,13 +101,6 @@ export default async function TripHub({ params }: { params: Promise<{ id: string
           ? t('answer.by', { month: month(savings.readyMonth) })
           : t('answer.notYet');
   const archived = trip.status === 'archived';
-  const tools = [
-    ['/app/board', t('tools.board')],
-    ['/app/days', t('tools.days')],
-    ['/app/budget', t('tools.budget')],
-    ['/app/lists', t('tools.lists')],
-    ...(isPipEnabled() ? [['/app/pip', t('tools.pip')] as const] : []),
-  ] as const;
 
   return (
     <section className={styles.page} aria-labelledby="trip-title">
@@ -197,23 +190,6 @@ export default async function TripHub({ params }: { params: Promise<{ id: string
           </section>
 
           {!archived ? <ShareCard tripId={trip.id} title={trip.title} initial={share} /> : null}
-
-          <section className={styles.card} aria-labelledby="tools-title">
-            <h2 id="tools-title">{t('toolsTitle')}</h2>
-            <ul className={styles.tools}>
-              {tools.map(([to, label]) => (
-                <li key={to}>
-                  <form action={openTripAt}>
-                    <input type="hidden" name="tripId" value={trip.id} />
-                    <input type="hidden" name="to" value={to} />
-                    <button type="submit" className={styles.tool}>
-                      {label} <span aria-hidden="true">→</span>
-                    </button>
-                  </form>
-                </li>
-              ))}
-            </ul>
-          </section>
 
           {!archived ? (
             <form action={archiveTrip} className={styles.archive}>

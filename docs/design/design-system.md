@@ -1,6 +1,6 @@
 # Design system
 
-Status: **design handoff v2 implemented in the tokens and the shell** (slate, blue and coral, 60·30·10; Plus Jakarta Sans; the TopBar). The v2 handoff supersedes `design/reference/claude-design-v1` and the v1.1 tokens; its values (colours, type, radii, spacing, shadows, copy and behaviour) are final unless the handoff lists them as open decisions. The handoff lives outside the repository (the owner's `design_handoff_globetrot_v2` folder: `README.md` plus one `.dc.html` per screen); this doc defines how it becomes a production system.
+Status: **design handoff v2 implemented in the tokens and the shell** (slate, blue and coral, 60·30·10; the TopBar). Typography changed with the owner's approval in November 2026: Bricolage Grotesque for headings, Instrument Sans for the interface. The v2 handoff supersedes `design/reference/claude-design-v1` and the v1.1 tokens; its values (colours, type, radii, spacing, shadows, copy and behaviour) are final unless the handoff lists them as open decisions. The handoff lives outside the repository (the owner's `design_handoff_globetrot_v2` folder: `README.md` plus one `.dc.html` per screen); this doc defines how it becomes a production system.
 
 ## Tokens
 
@@ -70,7 +70,7 @@ The inventory covers the handoff's token-level values, not every one-off prototy
 
 ## Typography and fonts
 
-The v2 fonts, **Plus Jakarta Sans** (400 to 800, everything) and **JetBrains Mono** (400 to 600, codes, dates, coordinates and small labels), are **self-hosted** under `apps/web/public/fonts/` as `woff2` subsets (latin, latin-ext, vietnamese) with their OFL licences next to them, and declared with `@font-face` and `font-display: swap` in `apps/web/app/globals.css`. Nothing is loaded from a font CDN (LGPD/GDPR and performance). The token `primitive.font` still names the stack with system fallbacks, so text stays readable while a font loads.
+The fonts are **Bricolage Grotesque** (200 to 800, variable with optical size: headings `h1` to `h3`, the big answer sentences and the destination band, through `primitive.font.display`), **Instrument Sans** (400 to 700: everything else, through `primitive.font.body`) and **JetBrains Mono** (400 to 600, codes, dates, coordinates and small labels). They replaced the handoff's Plus Jakarta Sans at the owner's request (November 2026), for a face with more character than the one most generated interfaces share. They are **self-hosted** under `apps/web/public/fonts/` as `woff2` subsets (latin and latin-ext; Bricolage also vietnamese) with their OFL licences next to them, and declared with `@font-face` and `font-display: swap` in `apps/web/app/globals.css`. Nothing is loaded from a font CDN (LGPD/GDPR and performance). The token `primitive.font` still names the stack with system fallbacks, so text stays readable while a font loads.
 
 ## Surfaces that are light in both themes
 
@@ -84,6 +84,8 @@ Some surfaces are cream or white in the red-eye theme too (the account pages' pa
 | Phone < 720 | TopBar, trip tabs as a second sticky row, bottom bar (hidden on the map) | Fixed crosshair + "Pin here". Bottom sheet with peek/half/full detents |
 
 Phones get equivalent essential capabilities through patterns that suit the device, not shrunken desktop components.
+
+**The map's reading order** (November 2026): borders in two tiers (a country is a firm line on a halo of land; a state a thin dashed line from z4), the trip's countries outlined, and the route apart from both (thicker, cased, chevrons for direction, the way of travel in the line: flight dashed, walk dotted, boat long dash, with a mode-and-distance badge on each leg). A pin says it holds something (a count badge) and what a tap does (a hint on hover or focus); its card can be dragged by the title bar and expanded into a tall side panel, with Expand and Close as buttons so the keyboard never needs to drag. The map key is folded into a **Layers** button.
 
 ### The shell as built (design handoff v2, the TopBar)
 

@@ -148,6 +148,34 @@
       "when": 1794673966286,
       "tag": "0020_trip_share",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1795546982264,
+      "tag": "0021_expense_guess",
+      "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1795551873223,
+      "tag": "0022_stamps_and_route_copies",
+      "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1795566142588,
+      "tag": "0023_home_point",
+      "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1795651216954,
+      "tag": "0024_spot_route",
+      "breakpoints": true
     }
   ]
 }

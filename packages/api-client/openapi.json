@@ -712,6 +712,24 @@
                         "null"
                       ]
                     },
+                    "homePoint": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "latitude": {
+                          "type": "number"
+                        },
+                        "longitude": {
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "latitude",
+                        "longitude"
+                      ]
+                    },
                     "pipOptIn": {
                       "type": "boolean"
                     },
@@ -777,6 +795,7 @@
                     "theme",
                     "motion",
                     "homeCity",
+                    "homePoint",
                     "pipOptIn",
                     "pipLook",
                     "pipName"
@@ -937,6 +956,29 @@
                     "description": "The city the person usually leaves from; null clears it.",
                     "example": "São Paulo"
                   },
+                  "homePoint": {
+                    "type": [
+                      "object",
+                      "null"
+                    ],
+                    "properties": {
+                      "latitude": {
+                        "type": "number",
+                        "minimum": -90,
+                        "maximum": 90
+                      },
+                      "longitude": {
+                        "type": "number",
+                        "minimum": -180,
+                        "maximum": 180
+                      }
+                    },
+                    "required": [
+                      "latitude",
+                      "longitude"
+                    ],
+                    "description": "Where the home city is (from the city list), so the map shows where trips start. Changing `homeCity` without it clears it."
+                  },
                   "pipOptIn": {
                     "type": "boolean",
                     "description": "Whether the person wants Pip’s suggestions."
@@ -1066,6 +1108,24 @@
                         "null"
                       ]
                     },
+                    "homePoint": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "latitude": {
+                          "type": "number"
+                        },
+                        "longitude": {
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "latitude",
+                        "longitude"
+                      ]
+                    },
                     "pipOptIn": {
                       "type": "boolean"
                     },
@@ -1131,6 +1191,7 @@
                     "theme",
                     "motion",
                     "homeCity",
+                    "homePoint",
                     "pipOptIn",
                     "pipLook",
                     "pipName"
@@ -3380,6 +3441,9 @@
                           "visited": {
                             "type": "boolean"
                           },
+                          "spotRoute": {
+                            "type": "boolean"
+                          },
                           "spots": {
                             "type": "array",
                             "items": {
@@ -3387,6 +3451,17 @@
                               "properties": {
                                 "name": {
                                   "type": "string"
+                                },
+                                "kind": {
+                                  "type": "string",
+                                  "enum": [
+                                    "stay",
+                                    "food",
+                                    "sight",
+                                    "shop",
+                                    "transport",
+                                    "other"
+                                  ]
                                 },
                                 "latitude": {
                                   "type": [
@@ -3406,6 +3481,7 @@
                               },
                               "required": [
                                 "name",
+                                "kind",
                                 "latitude",
                                 "longitude",
                                 "done"
@@ -3463,6 +3539,7 @@
                           "note",
                           "legMode",
                           "visited",
+                          "spotRoute",
                           "spots",
                           "todos",
                           "photos"
@@ -3768,6 +3845,11 @@
                           "default": false,
                           "description": "The person marked it visited (their word, not a verification). The first visited stop in a country stamps a commemorative visa."
                         },
+                        "spotRoute": {
+                          "type": "boolean",
+                          "default": false,
+                          "description": "Draw the route between this stop's spots that have a place: A, B, C… in the order of `spots`, straight lines."
+                        },
                         "spots": {
                           "type": "array",
                           "items": {
@@ -3778,6 +3860,19 @@
                                 "minLength": 1,
                                 "maxLength": 120,
                                 "example": "Fushimi Inari"
+                              },
+                              "kind": {
+                                "type": "string",
+                                "enum": [
+                                  "stay",
+                                  "food",
+                                  "sight",
+                                  "shop",
+                                  "transport",
+                                  "other"
+                                ],
+                                "default": "sight",
+                                "description": "What the spot is, for its mini-pin: stay (where you sleep), food, sight, shop, transport (a station or airport) or other. Defaults to sight."
                               },
                               "latitude": {
                                 "type": [
@@ -3949,6 +4044,9 @@
                           "visited": {
                             "type": "boolean"
                           },
+                          "spotRoute": {
+                            "type": "boolean"
+                          },
                           "spots": {
                             "type": "array",
                             "items": {
@@ -3956,6 +4054,17 @@
                               "properties": {
                                 "name": {
                                   "type": "string"
+                                },
+                                "kind": {
+                                  "type": "string",
+                                  "enum": [
+                                    "stay",
+                                    "food",
+                                    "sight",
+                                    "shop",
+                                    "transport",
+                                    "other"
+                                  ]
                                 },
                                 "latitude": {
                                   "type": [
@@ -3975,6 +4084,7 @@
                               },
                               "required": [
                                 "name",
+                                "kind",
                                 "latitude",
                                 "longitude",
                                 "done"
@@ -4032,6 +4142,7 @@
                           "note",
                           "legMode",
                           "visited",
+                          "spotRoute",
                           "spots",
                           "todos",
                           "photos"
@@ -4421,6 +4532,52 @@
                         "currency"
                       ]
                     },
+                    "guess": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "amount": {
+                          "type": "object",
+                          "properties": {
+                            "amount": {
+                              "type": "string",
+                              "description": "Major units, exact.",
+                              "example": "1250.00"
+                            },
+                            "currency": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "amount",
+                            "currency"
+                          ]
+                        },
+                        "counted": {
+                          "type": "object",
+                          "properties": {
+                            "amount": {
+                              "type": "string",
+                              "description": "Major units, exact.",
+                              "example": "1250.00"
+                            },
+                            "currency": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "amount",
+                            "currency"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "amount",
+                        "counted"
+                      ]
+                    },
                     "byCategory": {
                       "type": "array",
                       "items": {
@@ -4685,6 +4842,7 @@
                   "required": [
                     "currency",
                     "total",
+                    "guess",
                     "byCategory",
                     "byStatus",
                     "savings"
@@ -4997,6 +5155,9 @@
                               "asOf"
                             ]
                           },
+                          "guess": {
+                            "type": "boolean"
+                          },
                           "createdAt": {
                             "type": "string",
                             "format": "date-time"
@@ -5010,6 +5171,7 @@
                           "original",
                           "inTripCurrency",
                           "fx",
+                          "guess",
                           "createdAt"
                         ]
                       }
@@ -5204,7 +5366,7 @@
           "Budget"
         ],
         "summary": "Add a cost",
-        "description": "The amount is in `currency`. When that is not the trip’s currency, send `fxRate` (how much of the trip’s currency 1 unit is worth); the server converts, and keeps the rate, its source (`manual`) and its date with the cost. The converted amount is never taken from the client.",
+        "description": "The amount is in `currency`. When that is not the trip’s currency, send `fxRate` (how much of the trip’s currency 1 unit is worth); the server converts, and keeps the rate, its source (`manual`) and its date with the cost. The converted amount is never taken from the client. `guess: true` marks the rough guess of the whole trip (at most one per trip): totals count it minus every other cost, never below zero.",
         "security": [
           {
             "cookieAuth": []
@@ -5292,6 +5454,10 @@
                     "format": "date",
                     "description": "The day the rate was taken. Defaults to today.",
                     "example": "2027-04-03"
+                  },
+                  "guess": {
+                    "type": "boolean",
+                    "description": "True for the rough guess of the whole trip (at most one per trip). It counts minus every other cost, never below zero, so real costs replace it instead of adding on top."
                   }
                 },
                 "required": [
@@ -5402,6 +5568,9 @@
                         "asOf"
                       ]
                     },
+                    "guess": {
+                      "type": "boolean"
+                    },
                     "createdAt": {
                       "type": "string",
                       "format": "date-time"
@@ -5415,6 +5584,7 @@
                     "original",
                     "inTripCurrency",
                     "fx",
+                    "guess",
                     "createdAt"
                   ]
                 }
@@ -5811,6 +5981,9 @@
                         "asOf"
                       ]
                     },
+                    "guess": {
+                      "type": "boolean"
+                    },
                     "createdAt": {
                       "type": "string",
                       "format": "date-time"
@@ -5824,6 +5997,7 @@
                     "original",
                     "inTripCurrency",
                     "fx",
+                    "guess",
                     "createdAt"
                   ]
                 }
@@ -6315,6 +6489,52 @@
                         "currency"
                       ]
                     },
+                    "guess": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "amount": {
+                          "type": "object",
+                          "properties": {
+                            "amount": {
+                              "type": "string",
+                              "description": "Major units, exact.",
+                              "example": "1250.00"
+                            },
+                            "currency": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "amount",
+                            "currency"
+                          ]
+                        },
+                        "counted": {
+                          "type": "object",
+                          "properties": {
+                            "amount": {
+                              "type": "string",
+                              "description": "Major units, exact.",
+                              "example": "1250.00"
+                            },
+                            "currency": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "amount",
+                            "currency"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "amount",
+                        "counted"
+                      ]
+                    },
                     "byCategory": {
                       "type": "array",
                       "items": {
@@ -6579,6 +6799,7 @@
                   "required": [
                     "currency",
                     "total",
+                    "guess",
                     "byCategory",
                     "byStatus",
                     "savings"
@@ -6862,11 +7083,29 @@
                           "type": "boolean"
                         }
                       }
+                    },
+                    "firstTime": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "enum": [
+                          "dest",
+                          "route",
+                          "budget",
+                          "saved",
+                          "docs",
+                          "stays",
+                          "itin",
+                          "check",
+                          "ready"
+                        ]
+                      }
                     }
                   },
                   "required": [
                     "items",
-                    "readiness"
+                    "readiness",
+                    "firstTime"
                   ]
                 }
               }
@@ -7190,11 +7429,29 @@
                           "type": "boolean"
                         }
                       }
+                    },
+                    "firstTime": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "enum": [
+                          "dest",
+                          "route",
+                          "budget",
+                          "saved",
+                          "docs",
+                          "stays",
+                          "itin",
+                          "check",
+                          "ready"
+                        ]
+                      }
                     }
                   },
                   "required": [
                     "items",
-                    "readiness"
+                    "readiness",
+                    "firstTime"
                   ]
                 }
               }
@@ -7504,11 +7761,29 @@
                           "type": "boolean"
                         }
                       }
+                    },
+                    "firstTime": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "enum": [
+                          "dest",
+                          "route",
+                          "budget",
+                          "saved",
+                          "docs",
+                          "stays",
+                          "itin",
+                          "check",
+                          "ready"
+                        ]
+                      }
                     }
                   },
                   "required": [
                     "items",
-                    "readiness"
+                    "readiness",
+                    "firstTime"
                   ]
                 }
               }
@@ -7795,11 +8070,29 @@
                           "type": "boolean"
                         }
                       }
+                    },
+                    "firstTime": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "enum": [
+                          "dest",
+                          "route",
+                          "budget",
+                          "saved",
+                          "docs",
+                          "stays",
+                          "itin",
+                          "check",
+                          "ready"
+                        ]
+                      }
                     }
                   },
                   "required": [
                     "items",
-                    "readiness"
+                    "readiness",
+                    "firstTime"
                   ]
                 }
               }
@@ -8053,7 +8346,8 @@
                                     "viewpoint",
                                     "neighbourhood",
                                     "market",
-                                    "beach"
+                                    "beach",
+                                    "daytrip"
                                   ]
                                 },
                                 "minutes": {
@@ -9719,6 +10013,286 @@
         }
       }
     },
+    "/v1/places/cities": {
+      "get": {
+        "operationId": "searchCities",
+        "tags": [
+          "Places"
+        ],
+        "summary": "Search cities by name",
+        "description": "Cities of 15 000 people or more from the built-in GeoNames index (CC BY 4.0): instant, no provider. Accents and case are ignored, and big cities also match a name in another language (\"Londres\"). Shared limit of 60 lookups a minute with the other place lookups.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 100,
+              "example": "Kyoto"
+            },
+            "required": true,
+            "name": "query",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "en",
+                "pt-BR"
+              ],
+              "default": "en",
+              "description": "Language for place names."
+            },
+            "required": false,
+            "description": "Language for place names.",
+            "name": "language",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Up to 8 cities, most populous first.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "places": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "key": {
+                            "type": "string",
+                            "description": "Stable key of the place (use it as `placeKey`)."
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "countryCode": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "region": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "latitude": {
+                            "type": "number"
+                          },
+                          "longitude": {
+                            "type": "number"
+                          },
+                          "attribution": {
+                            "type": "string",
+                            "example": "© OpenStreetMap contributors · Geoapify"
+                          }
+                        },
+                        "required": [
+                          "key",
+                          "name",
+                          "countryCode",
+                          "region",
+                          "latitude",
+                          "longitude",
+                          "attribution"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "places"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid session.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "description": "A URN identifying the kind of problem."
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "integer"
+                    },
+                    "code": {
+                      "type": "string",
+                      "description": "Stable machine-readable code. Clients switch on this."
+                    },
+                    "detail": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "field": {
+                            "type": "string"
+                          },
+                          "code": {
+                            "type": "string"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "field",
+                          "code",
+                          "message"
+                        ]
+                      },
+                      "description": "Per-field problems, present for VALIDATION_FAILED."
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "title",
+                    "status",
+                    "code"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The query is not valid.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "description": "A URN identifying the kind of problem."
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "integer"
+                    },
+                    "code": {
+                      "type": "string",
+                      "description": "Stable machine-readable code. Clients switch on this."
+                    },
+                    "detail": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "field": {
+                            "type": "string"
+                          },
+                          "code": {
+                            "type": "string"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "field",
+                          "code",
+                          "message"
+                        ]
+                      },
+                      "description": "Per-field problems, present for VALIDATION_FAILED."
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "title",
+                    "status",
+                    "code"
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many lookups in a minute. Wait and try again.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "description": "A URN identifying the kind of problem."
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "integer"
+                    },
+                    "code": {
+                      "type": "string",
+                      "description": "Stable machine-readable code. Clients switch on this."
+                    },
+                    "detail": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "field": {
+                            "type": "string"
+                          },
+                          "code": {
+                            "type": "string"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "field",
+                          "code",
+                          "message"
+                        ]
+                      },
+                      "description": "Per-field problems, present for VALIDATION_FAILED."
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "title",
+                    "status",
+                    "code"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/places/reverse": {
       "get": {
         "operationId": "reversePlace",
@@ -10483,6 +11057,13 @@
                               "name",
                               "pipLook"
                             ]
+                          },
+                          "copiedTripId": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "format": "uuid"
                           }
                         },
                         "required": [
@@ -10502,7 +11083,8 @@
                           "liked",
                           "saved",
                           "comments",
-                          "likedBy"
+                          "likedBy",
+                          "copiedTripId"
                         ]
                       }
                     },
@@ -11605,6 +12187,13 @@
                         "name",
                         "pipLook"
                       ]
+                    },
+                    "copiedTripId": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "format": "uuid"
                     }
                   },
                   "required": [
@@ -11624,7 +12213,8 @@
                     "liked",
                     "saved",
                     "comments",
-                    "likedBy"
+                    "likedBy",
+                    "copiedTripId"
                   ]
                 }
               }
@@ -12304,6 +12894,13 @@
                         "name",
                         "pipLook"
                       ]
+                    },
+                    "copiedTripId": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "format": "uuid"
                     }
                   },
                   "required": [
@@ -12323,7 +12920,8 @@
                     "liked",
                     "saved",
                     "comments",
-                    "likedBy"
+                    "likedBy",
+                    "copiedTripId"
                   ]
                 }
               }
@@ -12904,6 +13502,13 @@
                         "name",
                         "pipLook"
                       ]
+                    },
+                    "copiedTripId": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "format": "uuid"
                     }
                   },
                   "required": [
@@ -12923,7 +13528,8 @@
                     "liked",
                     "saved",
                     "comments",
-                    "likedBy"
+                    "likedBy",
+                    "copiedTripId"
                   ]
                 }
               }
@@ -13930,6 +14536,13 @@
                         "name",
                         "pipLook"
                       ]
+                    },
+                    "copiedTripId": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "format": "uuid"
                     }
                   },
                   "required": [
@@ -13949,7 +14562,8 @@
                     "liked",
                     "saved",
                     "comments",
-                    "likedBy"
+                    "likedBy",
+                    "copiedTripId"
                   ]
                 }
               }
@@ -14511,6 +15125,13 @@
                         "name",
                         "pipLook"
                       ]
+                    },
+                    "copiedTripId": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "format": "uuid"
                     }
                   },
                   "required": [
@@ -14530,7 +15151,8 @@
                     "liked",
                     "saved",
                     "comments",
-                    "likedBy"
+                    "likedBy",
+                    "copiedTripId"
                   ]
                 }
               }
@@ -15095,6 +15717,13 @@
                         "name",
                         "pipLook"
                       ]
+                    },
+                    "copiedTripId": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "format": "uuid"
                     }
                   },
                   "required": [
@@ -15114,7 +15743,8 @@
                     "liked",
                     "saved",
                     "comments",
-                    "likedBy"
+                    "likedBy",
+                    "copiedTripId"
                   ]
                 }
               }
@@ -15677,6 +16307,13 @@
                         "name",
                         "pipLook"
                       ]
+                    },
+                    "copiedTripId": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "format": "uuid"
                     }
                   },
                   "required": [
@@ -15696,7 +16333,8 @@
                     "liked",
                     "saved",
                     "comments",
-                    "likedBy"
+                    "likedBy",
+                    "copiedTripId"
                   ]
                 }
               }
@@ -18672,6 +19310,13 @@
                               "name",
                               "pipLook"
                             ]
+                          },
+                          "copiedTripId": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "format": "uuid"
                           }
                         },
                         "required": [
@@ -18691,7 +19336,8 @@
                           "liked",
                           "saved",
                           "comments",
-                          "likedBy"
+                          "likedBy",
+                          "copiedTripId"
                         ]
                       }
                     },
@@ -20769,6 +21415,56 @@
                     "maxLength": 500,
                     "description": "What the person asks Pip, in their own words.",
                     "example": "Make this trip ten days and add must-see places in Kyoto"
+                  },
+                  "spotCandidates": {
+                    "type": "object",
+                    "properties": {
+                      "placeKey": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 200
+                      },
+                      "places": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 120
+                            },
+                            "kind": {
+                              "type": "string",
+                              "maxLength": 40,
+                              "default": ""
+                            },
+                            "latitude": {
+                              "type": "number",
+                              "minimum": -90,
+                              "maximum": 90
+                            },
+                            "longitude": {
+                              "type": "number",
+                              "minimum": -180,
+                              "maximum": 180
+                            }
+                          },
+                          "required": [
+                            "name",
+                            "latitude",
+                            "longitude"
+                          ]
+                        },
+                        "minItems": 1,
+                        "maxItems": 40
+                      }
+                    },
+                    "required": [
+                      "placeKey",
+                      "places"
+                    ],
+                    "description": "\"Fill this pin\": real places near one stop, from the map the person sees (at most 40). Pip may then only suggest spots for that stop, chosen among these (places farther than 40 km from the stop are ignored)."
                   }
                 },
                 "required": [
@@ -20981,6 +21677,59 @@
                             "required": [
                               "kind",
                               "name"
+                            ]
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "kind": {
+                                "type": "string",
+                                "enum": [
+                                  "addSpot"
+                                ]
+                              },
+                              "stopId": {
+                                "type": "string"
+                              },
+                              "name": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 120
+                              },
+                              "spotKind": {
+                                "type": "string",
+                                "enum": [
+                                  "stay",
+                                  "food",
+                                  "sight",
+                                  "shop",
+                                  "transport",
+                                  "other"
+                                ]
+                              },
+                              "latitude": {
+                                "type": "number",
+                                "minimum": -90,
+                                "maximum": 90
+                              },
+                              "longitude": {
+                                "type": "number",
+                                "minimum": -180,
+                                "maximum": 180
+                              },
+                              "reason": {
+                                "type": "string",
+                                "maxLength": 240,
+                                "default": ""
+                              }
+                            },
+                            "required": [
+                              "kind",
+                              "stopId",
+                              "name",
+                              "spotKind",
+                              "latitude",
+                              "longitude"
                             ]
                           },
                           {
@@ -21730,6 +22479,59 @@
                                     "kind": {
                                       "type": "string",
                                       "enum": [
+                                        "addSpot"
+                                      ]
+                                    },
+                                    "stopId": {
+                                      "type": "string"
+                                    },
+                                    "name": {
+                                      "type": "string",
+                                      "minLength": 1,
+                                      "maxLength": 120
+                                    },
+                                    "spotKind": {
+                                      "type": "string",
+                                      "enum": [
+                                        "stay",
+                                        "food",
+                                        "sight",
+                                        "shop",
+                                        "transport",
+                                        "other"
+                                      ]
+                                    },
+                                    "latitude": {
+                                      "type": "number",
+                                      "minimum": -90,
+                                      "maximum": 90
+                                    },
+                                    "longitude": {
+                                      "type": "number",
+                                      "minimum": -180,
+                                      "maximum": 180
+                                    },
+                                    "reason": {
+                                      "type": "string",
+                                      "maxLength": 240,
+                                      "default": ""
+                                    }
+                                  },
+                                  "required": [
+                                    "kind",
+                                    "stopId",
+                                    "name",
+                                    "spotKind",
+                                    "latitude",
+                                    "longitude"
+                                  ]
+                                },
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "kind": {
+                                      "type": "string",
+                                      "enum": [
                                         "addChecklistItem"
                                       ]
                                     },
@@ -22258,6 +23060,59 @@
                             "required": [
                               "kind",
                               "name"
+                            ]
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "kind": {
+                                "type": "string",
+                                "enum": [
+                                  "addSpot"
+                                ]
+                              },
+                              "stopId": {
+                                "type": "string"
+                              },
+                              "name": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 120
+                              },
+                              "spotKind": {
+                                "type": "string",
+                                "enum": [
+                                  "stay",
+                                  "food",
+                                  "sight",
+                                  "shop",
+                                  "transport",
+                                  "other"
+                                ]
+                              },
+                              "latitude": {
+                                "type": "number",
+                                "minimum": -90,
+                                "maximum": 90
+                              },
+                              "longitude": {
+                                "type": "number",
+                                "minimum": -180,
+                                "maximum": 180
+                              },
+                              "reason": {
+                                "type": "string",
+                                "maxLength": 240,
+                                "default": ""
+                              }
+                            },
+                            "required": [
+                              "kind",
+                              "stopId",
+                              "name",
+                              "spotKind",
+                              "latitude",
+                              "longitude"
                             ]
                           },
                           {
@@ -22829,6 +23684,59 @@
                               "kind": {
                                 "type": "string",
                                 "enum": [
+                                  "addSpot"
+                                ]
+                              },
+                              "stopId": {
+                                "type": "string"
+                              },
+                              "name": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 120
+                              },
+                              "spotKind": {
+                                "type": "string",
+                                "enum": [
+                                  "stay",
+                                  "food",
+                                  "sight",
+                                  "shop",
+                                  "transport",
+                                  "other"
+                                ]
+                              },
+                              "latitude": {
+                                "type": "number",
+                                "minimum": -90,
+                                "maximum": 90
+                              },
+                              "longitude": {
+                                "type": "number",
+                                "minimum": -180,
+                                "maximum": 180
+                              },
+                              "reason": {
+                                "type": "string",
+                                "maxLength": 240,
+                                "default": ""
+                              }
+                            },
+                            "required": [
+                              "kind",
+                              "stopId",
+                              "name",
+                              "spotKind",
+                              "latitude",
+                              "longitude"
+                            ]
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "kind": {
+                                "type": "string",
+                                "enum": [
                                   "addChecklistItem"
                                 ]
                               },
@@ -23384,6 +24292,59 @@
                             "required": [
                               "kind",
                               "name"
+                            ]
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "kind": {
+                                "type": "string",
+                                "enum": [
+                                  "addSpot"
+                                ]
+                              },
+                              "stopId": {
+                                "type": "string"
+                              },
+                              "name": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 120
+                              },
+                              "spotKind": {
+                                "type": "string",
+                                "enum": [
+                                  "stay",
+                                  "food",
+                                  "sight",
+                                  "shop",
+                                  "transport",
+                                  "other"
+                                ]
+                              },
+                              "latitude": {
+                                "type": "number",
+                                "minimum": -90,
+                                "maximum": 90
+                              },
+                              "longitude": {
+                                "type": "number",
+                                "minimum": -180,
+                                "maximum": 180
+                              },
+                              "reason": {
+                                "type": "string",
+                                "maxLength": 240,
+                                "default": ""
+                              }
+                            },
+                            "required": [
+                              "kind",
+                              "stopId",
+                              "name",
+                              "spotKind",
+                              "latitude",
+                              "longitude"
                             ]
                           },
                           {

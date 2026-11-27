@@ -1,12 +1,19 @@
 import {
+  DEFAULT_SPOT_KIND,
+  distanceKm,
+  spotKindOf,
   LEG_MODES,
   MEDIA_ALT_MAX,
   STOP_PHOTOS_MAX,
   STOP_ITEM_TEXT_MAX_LENGTH,
   STOP_SPOTS_MAX,
   STOP_TODOS_MAX,
+  SPOT_KINDS,
   type LegMode,
+  type SpotKind,
 } from '@globetrot/domain';
+
+export { DEFAULT_SPOT_KIND, SPOT_KINDS, type SpotKind };
 
 /** A place on the map, as the board shows it. */
 export type MapPlace = {
@@ -20,13 +27,29 @@ export type MapPlace = {
 
 export type StopSpot = {
   name: string;
+  /** What it is, for its mini-pin: stay, food, sight, shop, transport or other. */
+  kind: SpotKind;
   latitude: number | null;
   longitude: number | null;
   done: boolean;
 };
 export type StopTodo = { text: string; done: boolean };
+
+/** The mini-pin's mark for each kind of spot (decoration: the kind is also said in words). */
+export const SPOT_ICONS: Record<SpotKind, string> = {
+  stay: '🛏',
+  food: '🍽',
+  sight: '📍',
+  shop: '🛍',
+  transport: '🚉',
+  other: '✳',
+};
+
+/** A sensible kind for a point of interest from the map tiles (the domain's rule). */
+export { spotKindOf };
 /** A photo of the stop: an image the person uploaded and the words that describe it. */
-export type StopPhoto = { mediaId: string; alt: string };
+/** A stop's photo: an upload (`mediaId`), or, only in the landing's demo, a static image with its credit. */
+export type StopPhoto = { mediaId: string; alt: string; src?: string; credit?: string };
 
 /** A stop on the board: the place, the nights, the person's own notes and lists, and how they reach the next. */
 export type RouteStop = MapPlace & {
@@ -34,6 +57,8 @@ export type RouteStop = MapPlace & {
   note: string;
   legMode: LegMode | null;
   visited: boolean;
+  /** The route between this stop's placed spots is drawn: A, B, C… in the order of `spots`. */
+  spotRoute: boolean;
   spots: StopSpot[];
   todos: StopTodo[];
   photos: StopPhoto[];
@@ -61,6 +86,7 @@ export const newStop = (place: MapPlace): RouteStop => ({
   note: '',
   legMode: null,
   visited: false,
+  spotRoute: false,
   spots: [],
   todos: [],
   photos: [],
@@ -91,6 +117,7 @@ export function toDestination(stop: RouteStop, isLast: boolean) {
     note: clip(stop.note, NOTE_MAX) || null,
     legMode: isLast ? null : stop.legMode,
     visited: stop.visited,
+    spotRoute: stop.spotRoute,
     spots: stop.spots
       .map((spot) => ({ ...spot, name: clip(spot.name, ITEM_MAX) }))
       .filter((spot) => spot.name)
@@ -105,22 +132,48 @@ export function toDestination(stop: RouteStop, isLast: boolean) {
   };
 }
 
+/** A stop as the API answers it (`GET /v1/trips/{id}/destinations`), the fields the board reads. */
+export type ApiDestination = {
+  placeKey: string;
+  name: string;
+  countryCode?: string | null;
+  region?: string | null;
+  longitude: number;
+  latitude: number;
+  nights: number;
+  note?: string | null;
+  legMode?: string | null;
+  visited?: boolean;
+  spotRoute?: boolean;
+  spots?: readonly (Omit<StopSpot, 'kind'> & { kind?: SpotKind })[];
+  todos?: readonly StopTodo[];
+  photos?: readonly StopPhoto[];
+};
+
+/** The board's stop for a stop the API answered: its place key is the board's id. */
+export const fromDestination = (stop: ApiDestination): RouteStop => ({
+  id: stop.placeKey,
+  name: stop.name,
+  countryCode: stop.countryCode ?? '',
+  region: stop.region ?? '',
+  longitude: stop.longitude,
+  latitude: stop.latitude,
+  nights: stop.nights,
+  note: stop.note ?? '',
+  legMode: isLegMode(stop.legMode) ? stop.legMode : null,
+  visited: stop.visited ?? false,
+  spotRoute: stop.spotRoute ?? false,
+  spots: (stop.spots ?? []).map((spot) => ({ ...spot, kind: spot.kind ?? DEFAULT_SPOT_KIND })),
+  todos: (stop.todos ?? []).map((todo) => ({ ...todo })),
+  photos: (stop.photos ?? []).map((photo) => ({ ...photo })),
+});
+
 export const routeBody = (stops: readonly RouteStop[]) =>
   JSON.stringify(stops.map((stop, index) => toDestination(stop, index === stops.length - 1)));
 
 /** Great-circle distance in kilometres ("as the crow flies"). */
-export function distanceKm(
-  a: { latitude: number; longitude: number },
-  b: { latitude: number; longitude: number },
-) {
-  const rad = Math.PI / 180;
-  const dLat = (b.latitude - a.latitude) * rad;
-  const dLng = (b.longitude - a.longitude) * rad;
-  const h =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(a.latitude * rad) * Math.cos(b.latitude * rad) * Math.sin(dLng / 2) ** 2;
-  return 2 * 6371 * Math.asin(Math.sqrt(h));
-}
+/** As the crow flies, from the domain (one formula for the whole app). */
+export { distanceKm };
 
 const toMercator = (lng: number, lat: number) => {
   const clamped = Math.max(-85.0511, Math.min(85.0511, lat));
@@ -202,13 +255,3 @@ export function isEditable(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) return false;
   return target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName);
 }
-
-export const LEG_ICONS: Record<LegMode, string> = {
-  flight: '✈',
-  train: '🚆',
-  bus: '🚌',
-  car: '🚗',
-  boat: '⛴',
-  walk: '🚶',
-  other: '•',
-};

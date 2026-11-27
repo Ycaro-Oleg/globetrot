@@ -19,7 +19,7 @@ export {
   type StampUpdate,
 } from './milestones';
 export { roundUpFriendly, savingsPlan, type SavingsPlan, type SavingsStatus } from './savings';
-export { tripTotals, type TripTotals } from './totals';
+export { guessRemainder, tripTotals, type TripTotals } from './totals';
 export {
   CHECKLIST_GROUPS,
   EXPENSE_CATEGORIES,
@@ -46,3 +46,4 @@ export {
   type TripVisibility,
 } from './status';
 export * from './destinations';
+export { shortestSpotOrder, spotLegs, type RoutableSpot } from './spot-route';

@@ -4,6 +4,7 @@ import {
   DESTINATION_NOTE_MAX_LENGTH,
   LEG_MODES,
   MAX_NIGHTS_PER_DESTINATION,
+  type SpotKind,
 } from '@globetrot/domain';
 import { sql } from 'drizzle-orm';
 import {
@@ -25,6 +26,8 @@ import { trip } from './trip';
 /** One place to see at a stop. Coordinates are optional: a spot can be just a name. */
 export interface StopSpot {
   readonly name: string;
+  /** stay, food, sight, shop, transport or other; missing on spots saved before kinds existed (a sight). */
+  readonly kind?: SpotKind;
   readonly latitude: number | null;
   readonly longitude: number | null;
   readonly done: boolean;
@@ -62,6 +65,8 @@ export const destination = pgTable(
     legMode: text('leg_mode'),
     /** Marked visited by the person (their word, not a verification). The first one in a country stamps a visa. */
     visited: boolean('visited').notNull().default(false),
+    /** The person drew the route between this stop's spots: A, B, C… in the order of `spots`. */
+    spotRoute: boolean('spot_route').notNull().default(false),
     /** Places to see at this stop, `StopSpot[]`. Personal: never logged or audited. */
     spots: jsonb('spots').$type<StopSpot[]>().notNull().default([]),
     /** Things to do for this stop, `StopTodo[]`. Personal: never logged or audited. */

@@ -1,0 +1,82 @@
+/* Google's sign-in button, the way large sites show it: full width, white, the four-colour "G", text centred. */
+.wrap {
+  display: grid;
+  gap: 8px;
+  width: 100%;
+}
+
+.google {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 52px;
+  padding: 0 20px;
+  border: 1px solid #dadce0;
+  border-radius: 99px;
+  background: #ffffff;
+  color: #1f1f1f;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+
+.google:hover {
+  border-color: #c6cbd1;
+  background: #f8faff;
+  box-shadow: 0 2px 10px -4px rgb(15 23 42 / 0.25);
+}
+
+.google:active {
+  transform: scale(0.99);
+}
+
+.google:focus-visible {
+  outline: 3px solid #2563eb;
+  outline-offset: 2px;
+}
+
+.google:disabled {
+  cursor: progress;
+  opacity: 0.75;
+}
+
+.mark {
+  flex: none;
+  width: 20px;
+  height: 20px;
+}
+
+.spinner {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  border: 2px solid #dadce0;
+  border-top-color: #4285f4;
+  border-radius: 50%;
+  animation: spin 800ms linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .google {
+    transition: none;
+  }
+
+  .spinner {
+    animation: none;
+  }
+}

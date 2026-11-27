@@ -111,7 +111,7 @@ describe('the board against a real database', () => {
     expect(bad.response.status).toBe(422);
   });
 
-  it('searches places through the port, needs a session, and falls back to popular cities when the provider is down', async () => {
+  it('searches places through the port, needs a session, and falls back to the city index when the provider is down', async () => {
     let down = false;
     const geocoding: GeocodingPort = {
       search: async () => (down ? null : [KYOTO]),
@@ -128,12 +128,23 @@ describe('the board against a real database', () => {
     expect((await call(ana.cookie, 'GET', '/v1/places/search?query=k')).response.status).toBe(422);
     expect((await call(null, 'GET', '/v1/places/search?query=kyoto')).response.status).toBe(401);
     down = true;
-    // With the provider down, popular cities still answer from the built-in list; anything else is a 503.
+    // With the provider down, cities still answer from the built-in index (in Portuguese when known); a village
+    // the index does not have is a 503.
     const fallback = await call(ana.cookie, 'GET', '/v1/places/search?query=kyoto&language=pt-BR');
     expect(fallback.response.status).toBe(200);
-    expect(fallback.json).toMatchObject({
-      places: [{ key: 'gt:kyoto', name: 'Quioto', countryCode: 'JP', attribution: 'Globetrot' }],
+    expect((fallback.json.places as unknown[])[0]).toMatchObject({
+      name: 'Quioto',
+      countryCode: 'JP',
+      attribution: 'GeoNames',
     });
+    // The city list for onboarding: no provider at all, accents ignored, biggest first.
+    const cities = await call(ana.cookie, 'GET', '/v1/places/cities?query=fortal&language=pt-BR');
+    expect((cities.json.places as unknown[])[0]).toMatchObject({
+      name: 'Fortaleza',
+      region: 'Ceará',
+      countryCode: 'BR',
+    });
+    expect((await call(null, 'GET', '/v1/places/cities?query=paris')).response.status).toBe(401);
     expect(
       (await call(ana.cookie, 'GET', '/v1/places/search?query=Shirakawa-go')).response.status,
     ).toBe(503);
@@ -172,7 +183,11 @@ describe('the board against a real database', () => {
     const listed = await call(ana.cookie, 'GET', `/v1/trips/${id}/destinations`);
     expect((listed.json.destinations as unknown[])[0]).toMatchObject({
       visited: true,
-      spots: [{ name: 'Senso-ji', latitude: 35.7148, longitude: 139.7967, done: true }],
+      spotRoute: false,
+      // Sent without a kind, stored and read back as a sight.
+      spots: [
+        { name: 'Senso-ji', kind: 'sight', latitude: 35.7148, longitude: 139.7967, done: true },
+      ],
       todos: [{ text: 'Buy a Suica card', done: false }],
     });
 

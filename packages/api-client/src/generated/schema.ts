@@ -254,7 +254,7 @@ export interface paths {
         put?: never;
         /**
          * Add a cost
-         * @description The amount is in `currency`. When that is not the trip’s currency, send `fxRate` (how much of the trip’s currency 1 unit is worth); the server converts, and keeps the rate, its source (`manual`) and its date with the cost. The converted amount is never taken from the client.
+         * @description The amount is in `currency`. When that is not the trip’s currency, send `fxRate` (how much of the trip’s currency 1 unit is worth); the server converts, and keeps the rate, its source (`manual`) and its date with the cost. The converted amount is never taken from the client. `guess: true` marks the rough guess of the whole trip (at most one per trip): totals count it minus every other cost, never below zero.
          */
         post: operations["createExpense"];
         delete?: never;
@@ -420,6 +420,26 @@ export interface paths {
          * @description Cities, regions and addresses from the geocoding provider, in the language asked for. The provider key stays on the server. Show each result’s `attribution`. At most 60 lookups a minute per person.
          */
         get: operations["searchPlaces"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/places/cities": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Search cities by name
+         * @description Cities of 15 000 people or more from the built-in GeoNames index (CC BY 4.0): instant, no provider. Accents and case are ignored, and big cities also match a name in another language ("Londres"). Shared limit of 60 lookups a minute with the other place lookups.
+         */
+        get: operations["searchCities"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1345,6 +1365,10 @@ export interface operations {
                          */
                         motion: "full" | "reduced";
                         homeCity: string | null;
+                        homePoint: {
+                            latitude: number;
+                            longitude: number;
+                        } | null;
                         pipOptIn: boolean;
                         pipLook: {
                             /** @enum {string} */
@@ -1439,6 +1463,11 @@ export interface operations {
                      * @example São Paulo
                      */
                     homeCity?: string | null;
+                    /** @description Where the home city is (from the city list), so the map shows where trips start. Changing `homeCity` without it clears it. */
+                    homePoint?: {
+                        latitude: number;
+                        longitude: number;
+                    } | null;
                     /** @description Whether the person wants Pip’s suggestions. */
                     pipOptIn?: boolean;
                     /** @description The person’s Pip: hat, outfit, bag and bag colour. */
@@ -1488,6 +1517,10 @@ export interface operations {
                          */
                         motion: "full" | "reduced";
                         homeCity: string | null;
+                        homePoint: {
+                            latitude: number;
+                            longitude: number;
+                        } | null;
                         pipOptIn: boolean;
                         pipLook: {
                             /** @enum {string} */
@@ -2453,8 +2486,11 @@ export interface operations {
                             /** @enum {string|null} */
                             legMode: "flight" | "train" | "bus" | "car" | "boat" | "walk" | "other" | null;
                             visited: boolean;
+                            spotRoute: boolean;
                             spots: {
                                 name: string;
+                                /** @enum {string} */
+                                kind: "stay" | "food" | "sight" | "shop" | "transport" | "other";
                                 latitude: number | null;
                                 longitude: number | null;
                                 done: boolean;
@@ -2594,12 +2630,23 @@ export interface operations {
                          */
                         visited?: boolean;
                         /**
+                         * @description Draw the route between this stop's spots that have a place: A, B, C… in the order of `spots`, straight lines.
+                         * @default false
+                         */
+                        spotRoute?: boolean;
+                        /**
                          * @description Places to see here (at most 30).
                          * @default []
                          */
                         spots?: {
                             /** @example Fushimi Inari */
                             name: string;
+                            /**
+                             * @description What the spot is, for its mini-pin: stay (where you sleep), food, sight, shop, transport (a station or airport) or other. Defaults to sight.
+                             * @default sight
+                             * @enum {string}
+                             */
+                            kind?: "stay" | "food" | "sight" | "shop" | "transport" | "other";
                             /** @default null */
                             latitude?: number | null;
                             /** @default null */
@@ -2657,8 +2704,11 @@ export interface operations {
                             /** @enum {string|null} */
                             legMode: "flight" | "train" | "bus" | "car" | "boat" | "walk" | "other" | null;
                             visited: boolean;
+                            spotRoute: boolean;
                             spots: {
                                 name: string;
+                                /** @enum {string} */
+                                kind: "stay" | "food" | "sight" | "shop" | "transport" | "other";
                                 latitude: number | null;
                                 longitude: number | null;
                                 done: boolean;
@@ -2842,6 +2892,24 @@ export interface operations {
                             amount: string;
                             currency: string;
                         };
+                        guess: {
+                            amount: {
+                                /**
+                                 * @description Major units, exact.
+                                 * @example 1250.00
+                                 */
+                                amount: string;
+                                currency: string;
+                            };
+                            counted: {
+                                /**
+                                 * @description Major units, exact.
+                                 * @example 1250.00
+                                 */
+                                amount: string;
+                                currency: string;
+                            };
+                        } | null;
                         byCategory: {
                             /** @enum {string} */
                             category: "flights" | "stay" | "local_transport" | "intercity_transport" | "food" | "experiences" | "insurance" | "documents" | "taxes" | "shopping" | "buffer" | "other";
@@ -3047,6 +3115,7 @@ export interface operations {
                                 source: string;
                                 asOf: string;
                             } | null;
+                            guess: boolean;
                             /** Format: date-time */
                             createdAt: string;
                         }[];
@@ -3167,6 +3236,8 @@ export interface operations {
                      * @example 2027-04-03
                      */
                     fxAsOf?: string | null;
+                    /** @description True for the rough guess of the whole trip (at most one per trip). It counts minus every other cost, never below zero, so real costs replace it instead of adding on top. */
+                    guess?: boolean;
                 };
             };
         };
@@ -3206,6 +3277,7 @@ export interface operations {
                             source: string;
                             asOf: string;
                         } | null;
+                        guess: boolean;
                         /** Format: date-time */
                         createdAt: string;
                     };
@@ -3365,6 +3437,7 @@ export interface operations {
                             source: string;
                             asOf: string;
                         } | null;
+                        guess: boolean;
                         /** Format: date-time */
                         createdAt: string;
                     };
@@ -3582,6 +3655,24 @@ export interface operations {
                             amount: string;
                             currency: string;
                         };
+                        guess: {
+                            amount: {
+                                /**
+                                 * @description Major units, exact.
+                                 * @example 1250.00
+                                 */
+                                amount: string;
+                                currency: string;
+                            };
+                            counted: {
+                                /**
+                                 * @description Major units, exact.
+                                 * @example 1250.00
+                                 */
+                                amount: string;
+                                currency: string;
+                            };
+                        } | null;
                         byCategory: {
                             /** @enum {string} */
                             category: "flights" | "stay" | "local_transport" | "intercity_transport" | "food" | "experiences" | "insurance" | "documents" | "taxes" | "shopping" | "buffer" | "other";
@@ -3777,6 +3868,7 @@ export interface operations {
                             check?: boolean;
                             ready?: boolean;
                         };
+                        firstTime: ("dest" | "route" | "budget" | "saved" | "docs" | "stays" | "itin" | "check" | "ready")[];
                     };
                 };
             };
@@ -3901,6 +3993,7 @@ export interface operations {
                             check?: boolean;
                             ready?: boolean;
                         };
+                        firstTime: ("dest" | "route" | "budget" | "saved" | "docs" | "stays" | "itin" | "check" | "ready")[];
                     };
                 };
             };
@@ -4014,6 +4107,7 @@ export interface operations {
                             check?: boolean;
                             ready?: boolean;
                         };
+                        firstTime: ("dest" | "route" | "budget" | "saved" | "docs" | "stays" | "itin" | "check" | "ready")[];
                     };
                 };
             };
@@ -4135,6 +4229,7 @@ export interface operations {
                             check?: boolean;
                             ready?: boolean;
                         };
+                        firstTime: ("dest" | "route" | "budget" | "saved" | "docs" | "stays" | "itin" | "check" | "ready")[];
                     };
                 };
             };
@@ -4235,7 +4330,7 @@ export interface operations {
                             ideas: {
                                 name: string;
                                 /** @enum {string} */
-                                kind: "landmark" | "museum" | "park" | "viewpoint" | "neighbourhood" | "market" | "beach";
+                                kind: "landmark" | "museum" | "park" | "viewpoint" | "neighbourhood" | "market" | "beach" | "daytrip";
                                 minutes: number;
                             }[];
                             /** @enum {string|null} */
@@ -4876,6 +4971,111 @@ export interface operations {
             };
         };
     };
+    searchCities: {
+        parameters: {
+            query: {
+                query: string;
+                /** @description Language for place names. */
+                language?: "en" | "pt-BR";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Up to 8 cities, most populous first. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        places: {
+                            /** @description Stable key of the place (use it as `placeKey`). */
+                            key: string;
+                            name: string;
+                            countryCode: string | null;
+                            region: string | null;
+                            latitude: number;
+                            longitude: number;
+                            /** @example © OpenStreetMap contributors · Geoapify */
+                            attribution: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description The query is not valid. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description Too many lookups in a minute. Wait and try again. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
     reversePlace: {
         parameters: {
             query?: {
@@ -5113,6 +5313,8 @@ export interface operations {
                                     bagColor: "amber" | "cyan" | "pink";
                                 };
                             } | null;
+                            /** Format: uuid */
+                            copiedTripId: string | null;
                         }[];
                         /** Format: uuid */
                         nextBefore: string | null;
@@ -5499,6 +5701,8 @@ export interface operations {
                                 bagColor: "amber" | "cyan" | "pink";
                             };
                         } | null;
+                        /** Format: uuid */
+                        copiedTripId: string | null;
                     };
                 };
             };
@@ -5724,6 +5928,8 @@ export interface operations {
                                 bagColor: "amber" | "cyan" | "pink";
                             };
                         } | null;
+                        /** Format: uuid */
+                        copiedTripId: string | null;
                     };
                 };
             };
@@ -6003,6 +6209,8 @@ export interface operations {
                                 bagColor: "amber" | "cyan" | "pink";
                             };
                         } | null;
+                        /** Format: uuid */
+                        copiedTripId: string | null;
                     };
                 };
             };
@@ -6276,6 +6484,8 @@ export interface operations {
                                 bagColor: "amber" | "cyan" | "pink";
                             };
                         } | null;
+                        /** Format: uuid */
+                        copiedTripId: string | null;
                     };
                 };
             };
@@ -6455,6 +6665,8 @@ export interface operations {
                                 bagColor: "amber" | "cyan" | "pink";
                             };
                         } | null;
+                        /** Format: uuid */
+                        copiedTripId: string | null;
                     };
                 };
             };
@@ -6634,6 +6846,8 @@ export interface operations {
                                 bagColor: "amber" | "cyan" | "pink";
                             };
                         } | null;
+                        /** Format: uuid */
+                        copiedTripId: string | null;
                     };
                 };
             };
@@ -6813,6 +7027,8 @@ export interface operations {
                                 bagColor: "amber" | "cyan" | "pink";
                             };
                         } | null;
+                        /** Format: uuid */
+                        copiedTripId: string | null;
                     };
                 };
             };
@@ -7964,6 +8180,8 @@ export interface operations {
                                     bagColor: "amber" | "cyan" | "pink";
                                 };
                             } | null;
+                            /** Format: uuid */
+                            copiedTripId: string | null;
                         }[];
                         /** Format: uuid */
                         nextBefore: string | null;
@@ -8829,6 +9047,17 @@ export interface operations {
                                 reason: string;
                             } | {
                                 /** @enum {string} */
+                                kind: "addSpot";
+                                stopId: string;
+                                name: string;
+                                /** @enum {string} */
+                                spotKind: "stay" | "food" | "sight" | "shop" | "transport" | "other";
+                                latitude: number;
+                                longitude: number;
+                                /** @default  */
+                                reason: string;
+                            } | {
+                                /** @enum {string} */
                                 kind: "addChecklistItem";
                                 /** @enum {string} */
                                 group: "documents" | "money" | "bookings" | "packing";
@@ -8929,6 +9158,17 @@ export interface operations {
                      * @example Make this trip ten days and add must-see places in Kyoto
                      */
                     request: string;
+                    /** @description "Fill this pin": real places near one stop, from the map the person sees (at most 40). Pip may then only suggest spots for that stop, chosen among these (places farther than 40 km from the stop are ignored). */
+                    spotCandidates?: {
+                        placeKey: string;
+                        places: {
+                            name: string;
+                            /** @default  */
+                            kind?: string;
+                            latitude: number;
+                            longitude: number;
+                        }[];
+                    };
                 };
             };
         };
@@ -8987,6 +9227,17 @@ export interface operations {
                             name: string;
                             /** @default 90 */
                             minutes: number;
+                            /** @default  */
+                            reason: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "addSpot";
+                            stopId: string;
+                            name: string;
+                            /** @enum {string} */
+                            spotKind: "stay" | "food" | "sight" | "shop" | "transport" | "other";
+                            latitude: number;
+                            longitude: number;
                             /** @default  */
                             reason: string;
                         } | {
@@ -9240,6 +9491,17 @@ export interface operations {
                             reason: string;
                         } | {
                             /** @enum {string} */
+                            kind: "addSpot";
+                            stopId: string;
+                            name: string;
+                            /** @enum {string} */
+                            spotKind: "stay" | "food" | "sight" | "shop" | "transport" | "other";
+                            latitude: number;
+                            longitude: number;
+                            /** @default  */
+                            reason: string;
+                        } | {
+                            /** @enum {string} */
                             kind: "addChecklistItem";
                             /** @enum {string} */
                             group: "documents" | "money" | "bookings" | "packing";
@@ -9413,6 +9675,17 @@ export interface operations {
                             reason: string;
                         } | {
                             /** @enum {string} */
+                            kind: "addSpot";
+                            stopId: string;
+                            name: string;
+                            /** @enum {string} */
+                            spotKind: "stay" | "food" | "sight" | "shop" | "transport" | "other";
+                            latitude: number;
+                            longitude: number;
+                            /** @default  */
+                            reason: string;
+                        } | {
+                            /** @enum {string} */
                             kind: "addChecklistItem";
                             /** @enum {string} */
                             group: "documents" | "money" | "bookings" | "packing";
@@ -9582,6 +9855,17 @@ export interface operations {
                             name: string;
                             /** @default 90 */
                             minutes: number;
+                            /** @default  */
+                            reason: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "addSpot";
+                            stopId: string;
+                            name: string;
+                            /** @enum {string} */
+                            spotKind: "stay" | "food" | "sight" | "shop" | "transport" | "other";
+                            latitude: number;
+                            longitude: number;
                             /** @default  */
                             reason: string;
                         } | {

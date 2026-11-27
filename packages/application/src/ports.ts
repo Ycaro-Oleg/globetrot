@@ -5,6 +5,7 @@ import type {
   MotionChoice,
   ThemeChoice,
   SightKind,
+  SpotKind,
   SubscriptionState,
   TripStatus,
   TripVisibility,
@@ -39,6 +40,8 @@ export interface TripRecord {
   readonly currency: string;
   readonly status: TripStatus;
   readonly visibility: TripVisibility;
+  /** The community route post this trip was copied from, if any. */
+  readonly copiedFromPostId?: string | null;
   readonly createdAt: Date;
   readonly updatedAt: Date;
 }
@@ -51,6 +54,8 @@ export interface NewTrip {
   readonly currency: string;
   readonly status: TripStatus;
   readonly visibility: TripVisibility;
+  /** Set when the trip is a copy of a community route post. */
+  readonly copiedFromPostId?: string | null;
   readonly createdAt: Date;
 }
 
@@ -70,6 +75,8 @@ export interface TripReader {
     ownerId: string,
     options: { readonly includeArchived: boolean },
   ): Promise<TripRecord[]>;
+  /** The owner's trips (not archived) copied from these route posts: post id to trip id. */
+  copiesOf(ownerId: string, postIds: readonly string[]): Promise<Map<string, string>>;
 }
 
 export interface TripWriter extends TripReader {
@@ -90,6 +97,8 @@ export interface PreferencesRecord {
   readonly motion: MotionChoice;
   /** The city the person usually leaves from, or null. */
   readonly homeCity: string | null;
+  /** Where that city is, when it was picked from the city list; null when typed or unknown. */
+  readonly homePoint: { readonly latitude: number; readonly longitude: number } | null;
   readonly pipOptIn: boolean;
   /** The person's Pip: hat, outfit, bag and bag colour (values from the domain's lists). */
   readonly pipLook: { hat: string; outfit: string; bag: string; bagColor: string };
@@ -108,6 +117,7 @@ export interface PreferencesPatch {
   readonly theme?: ThemeChoice | undefined;
   readonly motion?: MotionChoice | undefined;
   readonly homeCity?: string | null | undefined;
+  readonly homePoint?: { readonly latitude: number; readonly longitude: number } | null | undefined;
   readonly pipOptIn?: boolean | undefined;
   readonly pipLook?: { hat: string; outfit: string; bag: string; bagColor: string } | undefined;
   readonly pipName?: string | null | undefined;
@@ -140,6 +150,8 @@ export interface DestinationRecord {
   readonly note: string | null;
   readonly legMode: string | null;
   readonly visited: boolean;
+  /** The route between the stop's spots is drawn (A, B, C… in the order of `spots`). */
+  readonly spotRoute: boolean;
   readonly spots: readonly StopSpotRecord[];
   readonly todos: readonly StopTodoRecord[];
   readonly photos: readonly PhotoRecord[];
@@ -156,6 +168,8 @@ export interface PhotoRecord {
 /** A place to see at a stop. */
 export interface StopSpotRecord {
   readonly name: string;
+  /** Missing on spots saved before kinds existed: read as a sight. */
+  readonly kind?: SpotKind;
   readonly latitude: number | null;
   readonly longitude: number | null;
   readonly done: boolean;
@@ -178,6 +192,8 @@ export interface NewDestination {
   readonly note: string | null;
   readonly legMode: string | null;
   readonly visited: boolean;
+  /** The route between the stop's spots is drawn (A, B, C… in the order of `spots`). */
+  readonly spotRoute: boolean;
   readonly spots: readonly StopSpotRecord[];
   readonly todos: readonly StopTodoRecord[];
   readonly photos: readonly PhotoRecord[];
@@ -236,13 +252,16 @@ export interface ExpenseRecord {
   readonly fxRate: string | null;
   readonly fxSource: string | null;
   readonly fxAsOf: string | null;
+  /** The onboarding's rough guess for the whole trip: it counts minus every other cost (at most one per trip). */
+  readonly guess: boolean;
   readonly createdAt: Date;
   readonly updatedAt: Date;
 }
 
 export type NewExpense = Omit<ExpenseRecord, 'updatedAt'>;
+/** A cost's role (guess or not) is set when it is created and never changed. */
 export type ExpensePatch = Partial<
-  Omit<ExpenseRecord, 'id' | 'tripId' | 'createdAt' | 'updatedAt'>
+  Omit<ExpenseRecord, 'id' | 'tripId' | 'guess' | 'createdAt' | 'updatedAt'>
 >;
 
 export interface ExpenseReader {
@@ -299,10 +318,18 @@ export interface ChecklistItemRecord {
 export type NewChecklistItem = Omit<ChecklistItemRecord, 'updatedAt'>;
 export type ChecklistItemPatch = Partial<Pick<ChecklistItemRecord, 'label' | 'done'>>;
 
+/** A readiness stamp the trip earned, and the day it was first earned (`YYYY-MM-DD`). */
+export interface StampRecordRow {
+  readonly milestone: string;
+  readonly earnedOn: string;
+}
+
 export interface ChecklistReader {
   /** In the order the items were added. */
   listByTrip(tripId: string): Promise<ChecklistItemRecord[]>;
   findById(id: string): Promise<ChecklistItemRecord | null>;
+  /** The stamps the trip has earned, each with its first day. */
+  stamps(tripId: string): Promise<StampRecordRow[]>;
 }
 
 export interface ChecklistWriter extends ChecklistReader {
@@ -310,6 +337,8 @@ export interface ChecklistWriter extends ChecklistReader {
   update(id: string, patch: ChecklistItemPatch, updatedAt: Date): Promise<ChecklistItemRecord>;
   delete(id: string): Promise<void>;
   countByTrip(tripId: string): Promise<number>;
+  /** Records stamps earned for the first time; one already recorded keeps its first day. */
+  addStamps(tripId: string, stamps: readonly StampRecordRow[]): Promise<void>;
 }
 
 // --- Day plan (places to see, each on a day or not yet) -----------------------------------------------
@@ -644,6 +673,17 @@ export interface PlaceResult {
  * Looks places up by name or by point. Adapters (Geoapify today) keep their keys on the server. `null` means the
  * provider is not configured or did not answer; an empty list means it answered with nothing.
  */
+/**
+ * Cities from a built-in index (GeoNames, every city of 15 000 people or more): fast, free and always there, for
+ * picking a home city or a destination. `language` picks the name shown when the query matched another name.
+ */
+export interface CityIndexPort {
+  search(
+    query: string,
+    options: { readonly language: 'en' | 'pt-BR'; readonly limit: number },
+  ): PlaceResult[];
+}
+
 export interface GeocodingPort {
   search(
     query: string,
@@ -846,5 +886,6 @@ export interface Ports {
   readonly clock: Clock;
   readonly ids: IdGenerator;
   readonly geocoding: GeocodingPort;
+  readonly cities: CityIndexPort;
   readonly rateLimiter: RateLimiter;
 }

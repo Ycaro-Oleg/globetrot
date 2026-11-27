@@ -22,6 +22,7 @@ import {
   trip,
   tripPlace,
   tripSavings,
+  tripStamp,
   userPreference,
   visa,
   mediaAsset,
@@ -82,7 +83,24 @@ export function createTripRepository(executor: Executor) {
       return rows.map(asTripRow);
     },
 
-    async insert(input: Omit<TripRow, 'updatedAt'>): Promise<TripRow> {
+    async copiesOf(ownerId: string, postIds: readonly string[]): Promise<Map<string, string>> {
+      if (postIds.length === 0) return new Map();
+      const rows = await executor
+        .select({ id: trip.id, postId: trip.copiedFromPostId })
+        .from(trip)
+        .where(
+          and(
+            eq(trip.ownerId, ownerId),
+            ne(trip.status, 'archived'),
+            inArray(trip.copiedFromPostId, [...postIds]),
+          ),
+        );
+      return new Map(rows.flatMap((row) => (row.postId ? [[row.postId, row.id] as const] : [])));
+    },
+
+    async insert(
+      input: Omit<TripRow, 'updatedAt'> & { readonly copiedFromPostId?: string | null },
+    ): Promise<TripRow> {
       const [row] = await executor
         .insert(trip)
         .values({ ...input, updatedAt: input.createdAt })
@@ -129,6 +147,7 @@ export interface PreferencesRow {
   readonly theme: ThemeChoice;
   readonly motion: MotionChoice;
   readonly homeCity: string | null;
+  readonly homePoint: { readonly latitude: number; readonly longitude: number } | null;
   readonly pipOptIn: boolean;
   readonly pipLook: { hat: string; outfit: string; bag: string; bagColor: string };
   readonly pipName: string | null;
@@ -144,6 +163,10 @@ const asPreferencesRow = (row: typeof userPreference.$inferSelect): PreferencesR
   theme: row.theme as ThemeChoice,
   motion: row.motion as MotionChoice,
   homeCity: row.homeCity,
+  homePoint:
+    row.homeLatitude === null || row.homeLongitude === null
+      ? null
+      : { latitude: row.homeLatitude, longitude: row.homeLongitude },
   pipOptIn: row.pipOptIn,
   pipLook: { hat: row.pipHat, outfit: row.pipOutfit, bag: row.pipBag, bagColor: row.pipBagColor },
   pipName: row.pipName,
@@ -177,6 +200,8 @@ export function createPreferencesRepository(executor: Executor) {
         readonly theme?: ThemeChoice | undefined;
         readonly motion?: MotionChoice | undefined;
         readonly homeCity?: string | null | undefined;
+        readonly homePoint?:
+          { readonly latitude: number; readonly longitude: number } | null | undefined;
         readonly pipOptIn?: boolean | undefined;
         readonly pipLook?:
           { hat: string; outfit: string; bag: string; bagColor: string } | undefined;
@@ -194,6 +219,12 @@ export function createPreferencesRepository(executor: Executor) {
         ...(patch.theme === undefined ? {} : { theme: patch.theme }),
         ...(patch.motion === undefined ? {} : { motion: patch.motion }),
         ...(patch.homeCity === undefined ? {} : { homeCity: patch.homeCity }),
+        ...(patch.homePoint === undefined
+          ? {}
+          : {
+              homeLatitude: patch.homePoint?.latitude ?? null,
+              homeLongitude: patch.homePoint?.longitude ?? null,
+            }),
         ...(patch.pipOptIn === undefined ? {} : { pipOptIn: patch.pipOptIn }),
         ...(patch.pipLook === undefined
           ? {}
@@ -345,6 +376,7 @@ export interface DestinationRow {
   readonly note: string | null;
   readonly legMode: string | null;
   readonly visited: boolean;
+  readonly spotRoute: boolean;
   readonly spots: StopSpot[];
   readonly todos: StopTodo[];
   readonly photos: PhotoRef[];
@@ -364,6 +396,7 @@ export interface NewDestinationRow {
   readonly note: string | null;
   readonly legMode: string | null;
   readonly visited: boolean;
+  readonly spotRoute: boolean;
   readonly spots: readonly StopSpot[];
   readonly todos: readonly StopTodo[];
   readonly photos: readonly PhotoRef[];
@@ -453,6 +486,8 @@ export interface ExpenseRow {
   readonly fxRate: string | null;
   readonly fxSource: string | null;
   readonly fxAsOf: string | null;
+  /** The trip's rough guess (at most one per trip); fixed when the cost is created. */
+  readonly guess: boolean;
   readonly createdAt: Date;
   readonly updatedAt: Date;
 }
@@ -460,7 +495,7 @@ export interface ExpenseRow {
 export type NewExpenseRow = Omit<ExpenseRow, 'updatedAt'>;
 
 export type ExpensePatchRow = Partial<
-  Omit<ExpenseRow, 'id' | 'tripId' | 'createdAt' | 'updatedAt'>
+  Omit<ExpenseRow, 'id' | 'tripId' | 'guess' | 'createdAt' | 'updatedAt'>
 >;
 
 export function createExpenseRepository(executor: Executor) {
@@ -566,6 +601,24 @@ export function createChecklistRepository(executor: Executor) {
         .from(checklistItem)
         .where(eq(checklistItem.tripId, tripId));
       return row?.count ?? 0;
+    },
+    /** The stamps the trip has earned, with the day each was first earned. */
+    async stamps(tripId: string): Promise<{ milestone: string; earnedOn: string }[]> {
+      return executor
+        .select({ milestone: tripStamp.milestone, earnedOn: tripStamp.earnedOn })
+        .from(tripStamp)
+        .where(eq(tripStamp.tripId, tripId));
+    },
+    /** Records stamps earned for the first time; one already recorded keeps its first day. */
+    async addStamps(
+      tripId: string,
+      stamps: readonly { milestone: string; earnedOn: string }[],
+    ): Promise<void> {
+      if (stamps.length === 0) return;
+      await executor
+        .insert(tripStamp)
+        .values(stamps.map((stamp) => ({ tripId, ...stamp })))
+        .onConflictDoNothing();
     },
   };
 }

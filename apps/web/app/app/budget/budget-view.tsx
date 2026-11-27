@@ -125,8 +125,14 @@ function Board({
     fmt(fromDecimal(value.amount, value.currency));
 
   const total = fromDecimal(budget.total.amount, currency);
-  const [savedText, setSavedText] = useState(budget.savings.saved.amount);
-  const [ceilingText, setCeilingText] = useState(budget.savings.ceiling?.amount ?? '');
+  /** What the rough guess still counts for, in words: whole, partly covered by real costs, or covered. */
+  const guessNote = (guess: NonNullable<BudgetData['guess']>, hasOthers: boolean) => {
+    if (Number(guess.counted.amount) <= 0) return t('guessCovered');
+    if (!hasOthers) return t('guessNote');
+    return t('guessLeft', { counted: view(guess.counted), amount: view(guess.amount) });
+  };
+  const [savedText, setSavedText] = useState(plainAmount(budget.savings.saved.amount));
+  const [ceilingText, setCeilingText] = useState(plainAmount(budget.savings.ceiling?.amount ?? ''));
   const [monthly, setMonthly] = useState(() => Math.round(Number(budget.savings.monthly.amount)));
   const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [today] = useState(todayLocal);
@@ -284,7 +290,6 @@ function Board({
               />
             </label>
             <p className={styles.noMoney}>
-              {t('noMoney')}{' '}
               <span role="status" className={styles.saveState}>
                 {saveState === 'saving' ? t('saving') : null}
                 {saveState === 'saved' ? `✓ ${t('saved')}` : null}
@@ -311,6 +316,11 @@ function Board({
                 <div className={styles.rowMain}>
                   <strong>{expense.description}</strong>
                   <span>{t(`categories.${expense.category}`)}</span>
+                  {expense.guess && budget.guess ? (
+                    <span className={styles.guessNote}>
+                      {guessNote(budget.guess, expenses.length > 1)}
+                    </span>
+                  ) : null}
                 </div>
                 <span className={styles.chip} data-status={expense.status}>
                   <span className={styles.dot} data-status={expense.status} aria-hidden="true">
@@ -335,7 +345,10 @@ function Board({
                 </span>
                 <span className={styles.converted}>
                   {expense.status === 'estimate' ? '≈ ' : ''}
-                  {view(expense.inTripCurrency)}
+                  {/* The guess shows what it still counts for once real costs came out of it. */}
+                  {view(
+                    expense.guess && budget.guess ? budget.guess.counted : expense.inTripCurrency,
+                  )}
                 </span>
                 <button
                   type="button"
@@ -489,6 +502,26 @@ function Answer({
           <div className={styles.bars} aria-hidden="true">
             {bars.map((bar) => (
               <div key={bar.month} className={styles.barSlot}>
+                {/* The jar each month fills: up to the goal, so the gap reads as what is still to save. */}
+                <div
+                  className={styles.barGoal}
+                  style={{ height: `${scale(total.amountMinor)}%` }}
+                />
+                {bar.now && !bar.done && total.amountMinor > bar.value.amountMinor ? (
+                  <span
+                    className={styles.gapLabel}
+                    style={{
+                      bottom: `calc(${(scale(bar.value.amountMinor) + scale(total.amountMinor)) / 2}% - 8px)`,
+                    }}
+                  >
+                    {t('chartGap', {
+                      amount: fmt(
+                        money(total.amountMinor - bar.value.amountMinor, total.currency),
+                        true,
+                      ),
+                    })}
+                  </span>
+                ) : null}
                 <div
                   className={styles.bar}
                   data-done={bar.done || undefined}
@@ -823,4 +856,9 @@ function ExpenseDrawer({
       </form>
     </>
   );
+}
+
+/** "1200.00" → "1200", "12.50" → "12.5": an amount as a person types it, for the fields. */
+function plainAmount(amount: string): string {
+  return amount.includes('.') ? amount.replace(/0+$/, '').replace(/\.$/, '') : amount;
 }

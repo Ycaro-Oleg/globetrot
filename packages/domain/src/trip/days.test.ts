@@ -4,9 +4,9 @@ import { emptyDays, plannedStops, tripDays } from './days';
 import { InvalidTripError, type TripPlan } from './types';
 
 describe('tripDays', () => {
-  it('lays out the Japan demo as 10 consecutive days from 3 April 2027', () => {
+  it('lays out the Japan demo as 10 nights from 3 April 2027, then the departure day', () => {
     const days = tripDays(japanDemo());
-    expect(days).toHaveLength(10);
+    expect(days).toHaveLength(11);
     expect(days.map((d) => d.date)).toEqual([
       '2027-04-03',
       '2027-04-04',
@@ -18,6 +18,7 @@ describe('tripDays', () => {
       '2027-04-10',
       '2027-04-11',
       '2027-04-12',
+      '2027-04-13',
     ]);
     expect(days.map((d) => d.stopId)).toEqual([
       'tokyo',
@@ -30,11 +31,13 @@ describe('tripDays', () => {
       'kyoto',
       'osaka',
       'osaka',
+      'osaka',
     ]);
     expect(days.filter((d) => d.arrival).map((d) => d.index)).toEqual([1, 5, 6, 9]);
+    expect(days.filter((d) => d.departure).map((d) => d.index)).toEqual([11]);
   });
 
-  it('ignores draft stops and day trips add no day', () => {
+  it('ignores draft stops; day trips add no day, and the departure day is at the last stop slept in', () => {
     const trip: TripPlan = {
       ...japanDemo(),
       stops: [
@@ -42,19 +45,32 @@ describe('tripDays', () => {
         { id: 'daytrip', nights: 0, state: 'planned', places: [] },
         { id: 'pip', nights: 3, state: 'draft', places: [] },
         { id: 'b', nights: 1, state: 'planned', places: [] },
+        { id: 'last-daytrip', nights: 0, state: 'planned', places: [] },
       ],
     };
-    expect(tripDays(trip).map((d) => [d.index, d.stopId])).toEqual([
-      [1, 'a'],
-      [2, 'a'],
-      [3, 'b'],
+    expect(tripDays(trip).map((d) => [d.index, d.stopId, d.departure])).toEqual([
+      [1, 'a', false],
+      [2, 'a', false],
+      [3, 'b', false],
+      [4, 'b', true],
     ]);
-    expect(plannedStops(trip).map((s) => s.id)).toEqual(['a', 'daytrip', 'b']);
+    expect(plannedStops(trip).map((s) => s.id)).toEqual(['a', 'daytrip', 'b', 'last-daytrip']);
+  });
+
+  it('makes a route of day trips only one day, and no route no day', () => {
+    const oneDay: TripPlan = {
+      ...japanDemo(),
+      stops: [{ id: 'sintra', nights: 0, state: 'planned', places: [] }],
+    };
+    expect(tripDays(oneDay)).toEqual([
+      { index: 1, date: '2027-04-03', stopId: 'sintra', arrival: true, departure: true },
+    ]);
+    expect(tripDays({ ...japanDemo(), stops: [] })).toEqual([]);
   });
 
   it('has no dates until the trip has a start date', () => {
     const days = tripDays({ ...japanDemo(), startDate: null });
-    expect(days).toHaveLength(10);
+    expect(days).toHaveLength(11);
     expect(days.every((d) => d.date === null)).toBe(true);
   });
 
@@ -68,7 +84,7 @@ describe('tripDays', () => {
 });
 
 describe('emptyDays', () => {
-  it('finds the 3 unplanned days of the Japan demo', () => {
+  it('finds the 3 unplanned days of the Japan demo, never counting the departure day', () => {
     expect(emptyDays(japanDemo()).map((d) => d.index)).toEqual([4, 8, 10]);
   });
 

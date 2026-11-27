@@ -144,7 +144,12 @@ function Lists({
       return;
     }
     setError(false);
-    const earned = newlyEarned(confirmed.current.readiness, next.readiness);
+    // Celebrate a stamp this change earned, and only the first time the trip ever earned it. An older API without
+    // `firstTime` (mid-deploy) just celebrates nothing.
+    const firstTime: readonly string[] = next.firstTime ?? [];
+    const earned = newlyEarned(confirmed.current.readiness, next.readiness).filter((key) =>
+      firstTime.includes(key),
+    );
     confirmed.current = next;
     setChecklist(next);
     if (earned.length) setCelebrating(earned[0]!);

@@ -1,4 +1,4 @@
-/* Days (design handoff v2, "Days"): a "No day" tray and one 264px column per day. */
+/* Days: a "No day" tray beside a grid of days (one column of cards on a phone). */
 .page {
   display: flex;
   flex-direction: column;
@@ -120,7 +120,7 @@
   margin: 0;
   font-size: 16px;
   font-weight: 800;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.012em;
 }
 
 .count,
@@ -189,6 +189,17 @@
   border-radius: 12px;
   background: var(--gt-semantic-color-primary-soft);
   color: var(--gt-semantic-color-primary-hover);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* The departure day: the morning is free, the rest is the way out. */
+.departure {
+  margin: 0;
+  padding: 8px 10px;
+  border: 1px dashed var(--gt-semantic-color-input-border);
+  border-radius: 12px;
+  color: var(--gt-semantic-color-text-secondary);
   font-size: 12px;
   font-weight: 600;
 }
@@ -303,6 +314,25 @@
   text-align: center;
 }
 
+/* An empty day is just "Free day", until something is being dragged: then it shows where to drop. */
+.empty[data-free] {
+  padding: 4px 0 0;
+  border-color: transparent;
+  text-align: start;
+}
+
+.board[data-dragging] .empty[data-free] {
+  padding: 18px 12px;
+  border-color: var(--gt-semantic-color-input-border);
+  text-align: center;
+}
+
+.days {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
 /* --- Add place dialog --- */
 .scrim {
   position: fixed;
@@ -338,7 +368,7 @@
   margin: 0;
   font-size: 24px;
   font-weight: 800;
-  letter-spacing: -0.05em;
+  letter-spacing: -0.022em;
 }
 
 .close {
@@ -462,15 +492,24 @@
 }
 
 @media (min-width: 720px) {
+  /* "No day" on the left, staying in view while the days below it scroll; the days wrap in a grid. */
   .board {
-    flex-direction: row;
-    align-items: flex-start;
-    overflow-x: auto;
+    display: grid;
+    grid-template-columns: minmax(220px, 260px) minmax(0, 1fr);
+    align-items: start;
   }
 
-  .column {
-    flex: none;
-    width: 264px;
+  .column[data-tray] {
+    position: sticky;
+    top: 88px;
+    max-height: calc(100vh - 112px);
+    overflow-y: auto;
+  }
+
+  .days {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 12px;
   }
 
   .toast {
@@ -562,22 +601,6 @@
   margin-top: 4px;
 }
 
-.ideas {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  margin: 0 0 16px;
-  padding: 18px;
-  border: 1px solid var(--gt-semantic-color-hairline);
-  border-radius: 18px;
-  background: var(--gt-semantic-color-surface-card);
-}
-
-.ideas h2 {
-  margin: 0;
-  font-size: 1.125rem;
-}
-
 .ideaGroup {
   display: flex;
   flex-direction: column;
@@ -642,8 +665,24 @@
 }
 
 .calendarButton {
-  /* Sits with "Add place" on the right, not in the middle of the header. */
+  /* A quiet extra beside the one main action: text, not a second big button. */
   margin-inline-start: auto;
+  min-height: var(--gt-component-hit-target);
+  padding: 0 12px;
+  border: 0;
+  border-radius: var(--gt-primitive-radius-pill);
+  background: transparent;
+  color: var(--gt-semantic-color-primary-hover);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+/* The secondary way to begin, under the ideas. */
+.ghost {
   min-height: var(--gt-component-hit-target);
   padding: 0 18px;
   border: 1px solid var(--gt-semantic-color-input-border);
@@ -656,7 +695,68 @@
   cursor: pointer;
 }
 
+.ghost:focus-visible {
+  outline: 3px solid var(--gt-semantic-color-focus);
+  outline-offset: 2px;
+}
+
+/* Once there are places, the ideas wait behind one line. */
+.moreIdeas {
+  padding: 4px 16px;
+  border: 1px solid var(--gt-semantic-color-hairline);
+  border-radius: 16px;
+  background: var(--gt-semantic-color-surface-card);
+}
+
+.moreIdeas > summary {
+  min-height: var(--gt-component-hit-target);
+  display: flex;
+  align-items: center;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.moreIdeas[open] {
+  padding-bottom: 16px;
+}
+
+.moreIdeas > summary::-webkit-details-marker {
+  display: none;
+}
+
+.moreIdeas > summary::after {
+  margin-inline-start: auto;
+  color: var(--gt-semantic-color-text-secondary);
+  content: '▾';
+  transition: transform 160ms ease;
+}
+
+.moreIdeas[open] > summary::after {
+  transform: rotate(180deg);
+}
+
+.moreIdeas > summary {
+  list-style: none;
+}
+
+.moreIdeas > summary:focus-visible {
+  outline: 3px solid var(--gt-semantic-color-focus);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+.start .ideaGroup,
+.moreIdeas .ideaGroup {
+  padding: 4px 0;
+}
+
 .calendarButton:focus-visible {
   outline: 3px solid var(--gt-semantic-color-focus);
   outline-offset: 2px;
+}
+
+/* The person's own map spots among the ideas: a solid border, theirs already. */
+.idea[data-mine] {
+  border-color: var(--gt-semantic-color-primary);
+  background: var(--gt-semantic-color-primary-tint);
 }

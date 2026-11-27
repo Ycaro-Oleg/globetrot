@@ -18,17 +18,23 @@ import { sessionCookieHeader } from './lib/stored-preferences';
  *    asks the API too; this only saves rendering for anonymous visitors.
  *    Pages behind a feature flag that is off (`FEATURE_PIP`, see lib/flags.ts) are a 404 for everyone.
  * 3. A link may name its language (`/?lang=pt-BR`, for ads and posts aimed at one language). That is the
- *    visitor's explicit choice, so it is stored like a click on the language switch, and this very page already
- *    renders in it. Unsupported values are ignored.
+ *    visitor's explicit choice, so it is stored like a click on the language switch, and the visitor lands on the
+ *    same address without `lang` (other parameters kept): the language then lives in the cookie, and a later
+ *    switch is not undone by a reload. Unsupported values are ignored.
  */
 export function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
 
   const linked = request.nextUrl.searchParams.get('lang');
   if (!isAppPath(pathname) && !isApiPath(pathname)) {
-    if (!isSupportedLocale(linked)) return NextResponse.next();
-    request.cookies.set(LOCALE_COOKIE, linked);
-    const response = NextResponse.next({ request: { headers: request.headers } });
+    // Only a page visit: a form posted from such an address (the language switch itself) must not be overridden.
+    if (!isSupportedLocale(linked) || (request.method !== 'GET' && request.method !== 'HEAD')) {
+      return NextResponse.next();
+    }
+    // Stored, then the same address without `lang`, so a later switch is not undone by a reload.
+    const clean = request.nextUrl.clone();
+    clean.searchParams.delete('lang');
+    const response = NextResponse.redirect(clean);
     response.cookies.set(LOCALE_COOKIE, linked, localeCookieOptions());
     return response;
   }

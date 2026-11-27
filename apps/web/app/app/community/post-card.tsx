@@ -7,6 +7,7 @@ import { useEffect, useId, useRef, useState, useTransition, type FormEvent } fro
 import type { CommentData, PostData } from '../../../lib/community';
 import { mediaUrl } from '../../../lib/upload';
 import { PipAvatar } from '../_components/pip-avatar';
+import { openTripAt } from '../_components/trip-actions';
 import {
   addComment,
   copyRoute,
@@ -90,7 +91,8 @@ export function PostCard({
   const [draft, setDraft] = useState(post.body);
   const [commentsOpen, setCommentsOpen] = useState(startOpen);
   const [placeSaved, setPlaceSaved] = useState(false);
-  const [copied, setCopied] = useState(false);
+  // The viewer's copy of this route, if they made one (now or before).
+  const [copiedTripId, setCopiedTripId] = useState(post.copiedTripId);
   const [, startTransition] = useTransition();
   const menuId = useId();
   const root = useRef<HTMLDivElement>(null);
@@ -244,7 +246,7 @@ export function PostCard({
           </span>
           {!post.mine && !isFollowing ? (
             <button type="button" className={styles.followChip} onClick={() => follow(true)}>
-              {t('post.follow')}
+              <span aria-hidden="true">+</span> {t('post.follow')}
             </button>
           ) : null}
           <div className={styles.menuWrap}>
@@ -388,22 +390,29 @@ export function PostCard({
                 })}
               </p>
             ) : null}
-            {!post.mine ? (
+            {!post.mine && copiedTripId ? (
+              // Already copied: the next step is to open that copy, never to make a second one.
+              <form action={openTripAt}>
+                <input type="hidden" name="tripId" value={copiedTripId} />
+                <input type="hidden" name="to" value="/app/board" />
+                <button type="submit" className={styles.copyRoute} data-done="">
+                  {t('post.openCopied')}
+                </button>
+              </form>
+            ) : !post.mine ? (
               <button
                 type="button"
                 className={styles.copyRoute}
-                aria-pressed={copied}
                 onClick={() => {
-                  if (copied) return;
                   startTransition(async () => {
-                    const title = await copyRoute(post.id);
-                    if (!title) return failed();
-                    setCopied(true);
-                    toast(t('toasts.copied', { title }));
+                    const copy = await copyRoute(post.id);
+                    if (!copy) return failed();
+                    setCopiedTripId(copy.id);
+                    toast(t('toasts.copied', { title: copy.title }));
                   });
                 }}
               >
-                {copied ? t('post.copied') : t('post.copyRoute')}
+                {t('post.copyRoute')}
               </button>
             ) : null}
           </div>
@@ -500,7 +509,8 @@ export function PostCard({
             {post.saved ? t('post.saved') : t('post.save')}
           </button>
           <button type="button" onClick={copyLink}>
-            <span aria-hidden="true">↗</span> {t('post.share')}
+            <span aria-hidden="true">↗</span>{' '}
+            <span className={styles.actionText}>{t('post.share')}</span>
           </button>
         </div>
 

@@ -34,6 +34,7 @@ import { createApp, type AuthService } from './app';
 import { createAuth, type Auth } from './auth';
 import type { ApiConfig } from './config';
 import { createSmtpEmail } from '@globetrot/mailer';
+import { createCityIndex } from './cities';
 import { createGeoapifyGeocoder, createMemoryRateLimiter } from './places';
 import { createS3Storage } from '@globetrot/storage';
 import { createDeepSeekAi } from './ai';
@@ -134,6 +135,7 @@ export function createServices(
       clock,
       ids,
       geocoding: overrides.geocoding ?? createGeoapifyGeocoder(config.geoapifyKey),
+      cities: createCityIndex(),
       rateLimiter: createMemoryRateLimiter(),
     }),
     trustedOrigins: config.auth.trustedOrigins,

@@ -28,6 +28,12 @@
   font-family: var(--gt-primitive-font-body);
 }
 
+/* The landing's live demo fills the box it is given. */
+.stage[data-demo] {
+  height: 100%;
+  min-height: 0;
+}
+
 /* The board is full-bleed: the shell's content padding goes away on this page only. */
 :global(#main):has(> .stage) {
   padding: 0;
@@ -81,7 +87,7 @@
 }
 
 .mapError {
-  padding-inline-end: calc(412px + 2rem);
+  padding-inline-end: calc(var(--panel-inset, 412px) + 2rem);
 }
 
 .stage[data-phone] .mapError {
@@ -189,71 +195,15 @@
   cursor: pointer;
 }
 
-.petals {
-  position: absolute;
-  left: 17px;
-  top: 17px;
-  z-index: 2;
-  width: 0;
-  height: 0;
-  pointer-events: none;
-}
-
-.petals[data-open] {
-  pointer-events: auto;
-}
-
-.petal {
-  position: absolute;
-  left: calc(var(--x) - 21px);
-  top: calc(var(--y) - 21px);
-  display: flex;
+/* The count of what the stop holds, on the pin's head (the head is turned 45°, the badge turns back). */
+.pinLabelCount {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 42px;
-  height: 42px;
-  border: 2px solid var(--ink);
-  border-radius: 50%;
-  background: var(--surface);
-  color: var(--ink);
-  box-shadow: 0 8px 18px -6px rgba(15, 23, 42, 0.55);
-  font-size: 16px;
-  font-weight: 800;
-  cursor: pointer;
-  opacity: 0;
-  transform: translate(calc(-1 * var(--x)), calc(-1 * var(--y))) scale(0.3);
-}
-
-.petals[data-open] .petal {
-  opacity: 1;
-  transform: none;
-}
-
-.petal:hover,
-.petal:focus-visible {
-  background: var(--blue-tint);
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  :root:not([data-motion='reduced']) .petal {
-    transition:
-      transform 0.26s cubic-bezier(0.3, 1.5, 0.5, 1) var(--delay),
-      opacity 0.16s var(--delay),
-      background-color 0.15s;
-  }
-}
-
-.petalBadge {
-  position: absolute;
-  top: -6px;
-  right: -6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 20px;
-  height: 20px;
+  min-width: 18px;
+  height: 18px;
+  margin-inline-start: 6px;
   padding: 0 5px;
-  border: 2px solid var(--surface);
   border-radius: 99px;
   background: var(--blue);
   color: #fff;
@@ -261,16 +211,70 @@
   font-weight: 800;
 }
 
-.legBadge {
-  display: grid;
-  place-items: center;
-  width: 26px;
-  height: 26px;
-  border: 2px solid var(--ink);
-  border-radius: 50%;
-  background: var(--surface);
-  font-size: 13px;
+/* What a tap does, over the pin on hover or focus: the pin lifts, the hint shows. */
+.pinTip {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  padding: 6px 10px;
+  border-radius: 10px;
+  background: var(--ink);
+  color: #f8f9fa;
+  box-shadow: 0 8px 18px -8px rgba(15, 23, 42, 0.6);
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translate(-50%, 4px);
   pointer-events: none;
+}
+
+.pin[data-hover] .pinTip {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+.pin[data-hover] .pinDrop {
+  transform: translateY(-4px);
+}
+
+.pin[data-hover] .pinHead {
+  box-shadow: -4px 9px 16px -4px rgba(0, 0, 0, 0.5);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  :root:not([data-motion='reduced']) .pinTip,
+  :root:not([data-motion='reduced']) .pinDrop {
+    transition:
+      opacity 0.16s ease,
+      transform 0.2s cubic-bezier(0.3, 1.4, 0.5, 1);
+  }
+}
+
+/* Where a leg is: its way of travel and the straight-line distance. */
+.legBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 22px;
+  padding: 0 7px 0 5px;
+  border: 1.5px solid var(--ink);
+  border-radius: 99px;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 11px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.legIcon {
+  display: inline-flex;
+}
+
+.legDistance {
+  font-family: var(--gt-primitive-font-mono);
+  font-size: 11px;
+  font-weight: 600;
 }
 
 /* --- Toolbar: breadcrumb, search, tools --- */
@@ -287,8 +291,54 @@
   pointer-events: none;
 }
 
+/* On a computer the place, the search and the tools are one bar. */
+.stage:not([data-phone]) .toolbar {
+  right: auto;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 4px;
+  max-width: calc(100% - var(--panel-inset, 412px) - 28px);
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: 99px;
+  background: var(--ink);
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.6);
+  pointer-events: auto;
+}
+
+.stage:not([data-phone]) .toolbar .crumbs,
+.stage:not([data-phone]) .toolbar .tools {
+  flex: none;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.stage:not([data-phone]) .toolbar .search {
+  flex: 1 1 360px;
+  min-width: 180px;
+  width: 360px;
+}
+
+.stage:not([data-phone]) .toolbar .searchBox {
+  height: 38px;
+  box-shadow: none;
+}
+
+/* On a phone: the search on its own row, the place and the tools together under it. */
 .stage[data-phone] .toolbar {
   right: 14px;
+}
+
+.stage[data-phone] .toolbar .search {
+  order: -1;
+  flex-basis: 100%;
+  max-width: none;
+}
+
+.stage[data-phone] .toolbar .tools {
+  margin-inline-start: auto;
 }
 
 .toolbar > * {
@@ -609,7 +659,7 @@
 
 .zoom {
   position: absolute;
-  right: 412px;
+  right: 14px;
   bottom: 14px;
   z-index: 4;
   display: flex;
@@ -621,8 +671,36 @@
   background: var(--ink);
 }
 
-.stage[data-phone] .zoom {
-  right: 14px;
+/* Layers and zoom share the lower-left corner on a computer; the map's credits stay clear on the right. */
+.dock {
+  position: absolute;
+  left: 14px;
+  bottom: 14px;
+  z-index: 4;
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.stage[data-phone] .dock {
+  display: contents;
+}
+
+.stage:not([data-phone]) .dock > * {
+  position: static;
+}
+
+.stage:not([data-phone]) .dock .zoom {
+  flex-direction: row;
+}
+
+.stage:not([data-phone]) .dock .zoom button {
+  width: 40px;
+  height: 36px;
+}
+
+.stage:not([data-phone]) .mapHost :global(.maplibregl-ctrl-bottom-right) {
+  right: var(--panel-inset, 412px);
 }
 
 .zoom button {
@@ -745,7 +823,7 @@
 .cardTitle strong {
   font-size: 19px;
   font-weight: 800;
-  letter-spacing: -0.04em;
+  letter-spacing: -0.018em;
   line-height: 1.1;
 }
 
@@ -912,10 +990,15 @@
   font-size: 11px;
 }
 
+/* The note grows with what is written (never wider than the card); the card scrolls when it gets long. */
 .noteField {
+  box-sizing: border-box;
+  display: block;
   width: 100%;
   min-height: 140px;
   padding: 12px;
+  overflow: hidden;
+  field-sizing: content;
   border: 1px solid #8a94a3;
   border-radius: 14px;
   background: #fff;
@@ -923,7 +1006,7 @@
   font: inherit;
   font-size: 14px;
   line-height: 1.55;
-  resize: vertical;
+  resize: none;
 }
 
 .autosave {
@@ -958,6 +1041,49 @@
   font-size: 11px;
 }
 
+/* --- The drawer: the route panel folds away on a computer, a tab brings it back --- */
+.stage[data-drawer='closed'] .toolbar {
+  max-width: calc(100% - 200px);
+}
+
+.drawerToggle {
+  position: absolute;
+  top: calc(50% - 22px);
+  right: calc(14px + 384px - 16px);
+  z-index: 6;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 32px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid rgba(241, 243, 245, 0.25);
+  border-radius: 99px;
+  background: var(--ink);
+  color: var(--on-ink);
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.6);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.drawerToggle > span[aria-hidden] {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.drawerToggle:hover {
+  background: var(--ink-2);
+}
+
+.stage[data-drawer='closed'] .drawerToggle {
+  top: 14px;
+  right: 14px;
+  height: 46px;
+  padding: 0 16px 0 12px;
+}
+
 /* --- Route panel (a right column on desktop, a bottom sheet on a phone) --- */
 .panel {
   position: absolute;
@@ -973,6 +1099,24 @@
   border-radius: 26px;
   background: var(--ink);
   box-shadow: 0 20px 60px -20px rgba(0, 0, 0, 0.7);
+  transition:
+    transform 260ms cubic-bezier(0.2, 0.7, 0.3, 1),
+    visibility 0s linear 0s;
+}
+
+.stage[data-drawer='closed'] .panel {
+  visibility: hidden;
+  transform: translateX(calc(100% + 28px));
+  transition:
+    transform 260ms cubic-bezier(0.2, 0.7, 0.3, 1),
+    visibility 0s linear 260ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .panel,
+  .stage[data-drawer='closed'] .panel {
+    transition: none;
+  }
 }
 
 .stage[data-phone] .panel {
@@ -1029,7 +1173,7 @@
   margin: 0;
   font-size: 2.25rem;
   font-weight: 800;
-  letter-spacing: -0.06em;
+  letter-spacing: -0.028em;
   line-height: 0.95;
   overflow-wrap: anywhere;
 }
@@ -1056,6 +1200,25 @@
 .back,
 .clear {
   align-self: flex-start;
+}
+
+/* The next stop starts in the search box: the most visible action after the list. */
+.addStop {
+  align-self: stretch;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px dashed rgba(241, 243, 245, 0.45);
+  border-radius: 14px;
+  background: rgba(37, 99, 235, 0.18);
+  color: var(--on-ink);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.addStop:hover {
+  background: rgba(37, 99, 235, 0.3);
 }
 
 .stops {
@@ -1157,6 +1320,19 @@
   cursor: not-allowed;
 }
 
+/* On a computer the arrows show on the row under the pointer or the keyboard. */
+@media (hover: hover) {
+  .stage:not([data-phone]) .order {
+    opacity: 0;
+    transition: opacity 120ms ease;
+  }
+
+  .stage:not([data-phone]) li:hover .order,
+  .stage:not([data-phone]) li:focus-within .order {
+    opacity: 1;
+  }
+}
+
 .leg {
   display: flex;
   align-items: center;
@@ -1187,7 +1363,7 @@
 
 .empty strong {
   font-size: 20px;
-  letter-spacing: -0.04em;
+  letter-spacing: -0.018em;
 }
 
 .empty p {
@@ -1219,7 +1395,7 @@
   margin: 0;
   font-size: 2.75rem;
   font-weight: 800;
-  letter-spacing: -0.065em;
+  letter-spacing: -0.03em;
   line-height: 0.92;
   overflow-wrap: anywhere;
 }
@@ -1359,6 +1535,18 @@
   white-space: nowrap;
 }
 
+.legRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.legRow .select {
+  flex: none;
+  max-width: 50%;
+}
+
 .select {
   min-height: 44px;
   padding: 0 12px;
@@ -1390,9 +1578,11 @@
 .removeButton {
   align-self: flex-start;
   min-height: 44px;
-  padding: 0 14px;
-  border: 1px solid rgba(255, 140, 120, 0.6);
-  border-radius: 99px;
+  padding: 0 4px;
+  border: 0;
+  border-radius: 8px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
   background: transparent;
   color: #ffb4a6;
   font-size: 13px;
@@ -1533,7 +1723,7 @@
   max-width: 150px;
   font-size: 26px;
   font-weight: 800;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.012em;
   line-height: 1;
   text-transform: uppercase;
 }
@@ -1542,7 +1732,7 @@
   margin: 0;
   font-size: 2.25rem;
   font-weight: 800;
-  letter-spacing: -0.06em;
+  letter-spacing: -0.028em;
   line-height: 1;
 }
 
@@ -1631,6 +1821,39 @@
   white-space: nowrap;
 }
 
+/* Home: where the trip starts (the person's city from the city list). */
+.homePin {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  pointer-events: none;
+}
+
+.homeHead {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 3px solid #ffffff;
+  border-radius: 50%;
+  background: #0f172a;
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: 800;
+  box-shadow: 0 6px 16px -6px rgb(15 23 42 / 0.6);
+}
+
+.homeLabel {
+  padding: 3px 9px;
+  border-radius: 99px;
+  background: #0f172a;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
 .pipNote {
   display: flex;
   flex-wrap: wrap;
@@ -1672,4 +1895,606 @@
 .pipReview:focus-visible {
   outline: 3px solid #93c5fd;
   outline-offset: 2px;
+}
+
+/* --- "Layers": the map key folds into one button until asked for --- */
+.layersButton {
+  position: absolute;
+  left: 14px;
+  bottom: 14px;
+  z-index: 4;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 14px 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 99px;
+  background: var(--ink);
+  color: #f8f9fa;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.legendClose {
+  min-height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 99px;
+  background: transparent;
+  color: #f8f9fa;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* --- The first-visit hint, under the first pin (clear of the toolbar) --- */
+.pinHint {
+  position: absolute;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 300px;
+  padding: 10px 10px 10px 14px;
+  border-radius: 14px;
+  background: var(--blue);
+  color: #fff;
+  box-shadow: 0 14px 30px -12px rgba(15, 23, 42, 0.6);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.35;
+  transform: translate(-50%, 16px);
+}
+
+.pinHint::after {
+  position: absolute;
+  top: -6px;
+  left: 50%;
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  background: inherit;
+  transform: translateX(-50%) rotate(45deg);
+  content: '';
+}
+
+.pinHint button {
+  flex: none;
+  min-height: 36px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 99px;
+  background: #fff;
+  color: var(--blue);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+/* --- The pin card: dragged by its title bar, or expanded into a tall panel --- */
+.cardHead[data-draggable] {
+  cursor: grab;
+  touch-action: none;
+}
+
+.cardHead[data-draggable]:active {
+  cursor: grabbing;
+}
+
+.cardGrip {
+  flex: none;
+  color: var(--text-2);
+  font-size: 14px;
+  line-height: 1;
+}
+
+.card[data-expanded] {
+  border-radius: 24px;
+}
+
+.card[data-expanded] .cardBody {
+  flex: 1;
+}
+
+/* What a stop's spots are for, while there are none yet. */
+.cardGuide {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 14px;
+  border: 1px dashed #cbd2da;
+  border-radius: 14px;
+}
+
+.cardGuide strong {
+  font-size: 14px;
+}
+
+.cardGuide ul {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  color: var(--text-2);
+  font-size: 13px;
+  list-style: none;
+}
+
+/* --- Mini-pins: a city's own places (stay, food, sight…), each with the mark of its kind --- */
+.spotPin {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.mapCanvas[data-spots='off'] .spotPin {
+  display: none;
+}
+
+.spotPinIcon {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+  background: var(--surface);
+  box-shadow: 0 4px 10px -4px rgba(15, 23, 42, 0.55);
+  font-size: 15px;
+  line-height: 1;
+}
+
+.spotPin[data-kind='stay'] .spotPinIcon {
+  background: #ede9fe;
+}
+
+.spotPin[data-kind='food'] .spotPinIcon {
+  background: #ffedd5;
+}
+
+.spotPin[data-kind='shop'] .spotPinIcon {
+  background: #fce7f3;
+}
+
+.spotPin[data-kind='transport'] .spotPinIcon {
+  background: #e0f2fe;
+}
+
+.spotPin[data-done] .spotPinIcon {
+  border-color: var(--green);
+  box-shadow: 0 0 0 2px var(--green);
+}
+
+.spotPin[data-current] .spotPinIcon {
+  border-width: 2.5px;
+}
+
+.spotPinLabel {
+  display: none;
+  padding: 3px 8px;
+  border-radius: 99px;
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: 0 4px 10px -4px rgba(15, 23, 42, 0.45);
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.mapCanvas[data-spots='names'] .spotPinLabel,
+.spotPin:hover .spotPinLabel,
+.spotPin:focus-visible .spotPinLabel {
+  display: inline-block;
+}
+
+.spotPin:focus-visible {
+  outline: 3px solid var(--blue);
+  outline-offset: 2px;
+  border-radius: 99px;
+}
+
+/* --- The Spots tab: kinds, real places nearby, "mark on the map" --- */
+.spotIcon {
+  flex: none;
+  font-size: 15px;
+}
+
+.spotMain {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.spotMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.spotNoPlace {
+  color: var(--text-2);
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.spotKind {
+  flex: none;
+  max-width: 140px;
+  min-height: 32px;
+  padding: 0 6px;
+  border: 1px solid #cbd2da;
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: 12px;
+}
+
+.checkList li[data-focus] {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+  border-radius: 12px;
+}
+
+.kindPicker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.kindPicker button {
+  min-height: 34px;
+  padding: 0 10px;
+  border: 1px solid #cbd2da;
+  border-radius: 99px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.kindPicker button[aria-checked='true'] {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: #fff;
+}
+
+.spotSuggest {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.spotSuggestTitle {
+  color: var(--text-2);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.spotSuggest ul {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.spotSuggest button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 40px;
+  padding: 0 10px;
+  border: 1px dashed #cbd2da;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: start;
+  cursor: pointer;
+}
+
+.spotSuggest button small {
+  margin-inline-start: auto;
+  color: var(--text-2);
+  font-size: 11px;
+}
+
+.spotSuggest button:hover {
+  border-style: solid;
+  border-color: var(--blue);
+}
+
+.markOnMap {
+  align-self: flex-start;
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid #cbd2da;
+  border-radius: 99px;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.cardGuide button {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  text-decoration: underline;
+  text-decoration-color: #cbd2da;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+/* --- A city's spot route: letters on the mini-pins and the legs in the card ---
+   (the mini-pin keeps MapLibre's own absolute position: the marker is the letter's containing block). */
+.spotPinLetter {
+  position: absolute;
+  top: -8px;
+  left: -8px;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--surface);
+  border-radius: 50%;
+  background: var(--ink);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.spotLetter {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.spotOrder {
+  display: inline-flex;
+  flex: none;
+  gap: 2px;
+}
+
+.spotOrder button {
+  width: 32px;
+  height: 32px;
+  border: 1px solid #cbd2da;
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.spotOrder button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.spotRoute {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: #f1f4f8;
+}
+
+.routeToggle {
+  align-self: flex-start;
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid #cbd2da;
+  border-radius: 99px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.routeToggle[aria-pressed='true'] {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: #fff;
+}
+
+.routeLegs {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  font-size: 13px;
+  list-style: none;
+}
+
+.routeLegs li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.routeLegs li span:last-child {
+  font-family: var(--gt-primitive-font-mono);
+  font-size: 12px;
+}
+
+.routeTotal {
+  margin: 0;
+  color: var(--text-2);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.routeActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* --- "Pip, suggest places": Pip's offers in the card and, dashed, on the map --- */
+.spotPin[data-pencil] .spotPinIcon {
+  border-style: dashed;
+  opacity: 0.7;
+}
+
+.spotPin[data-pencil] .spotPinLabel {
+  display: inline-block;
+  opacity: 0.85;
+}
+
+.pipFill {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px dashed #93c5fd;
+  border-radius: 14px;
+  background: #eff6ff;
+}
+
+.pipFillAsk {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 14px 0 6px;
+  border: 0;
+  border-radius: 99px;
+  background: var(--blue);
+  color: #fff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.pipFillAsk:focus-visible,
+.pipFillApply:focus-visible,
+.pipFillLink:focus-visible {
+  outline: 3px solid var(--ink);
+  outline-offset: 2px;
+}
+
+.pipFillStatus {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.pipFillError {
+  margin: 0;
+  color: #b91c1c;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.pipFillLink {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--blue);
+  font: inherit;
+  font-weight: 800;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.pipFillTitle {
+  font-size: 13px;
+}
+
+.pipFillList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pipFillList li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.pipFillList input {
+  width: 20px;
+  height: 20px;
+  margin-top: 2px;
+  flex: none;
+}
+
+.pipFillList label {
+  display: flex;
+  flex-direction: column;
+  font-size: 13px;
+}
+
+.pipFillList small {
+  color: var(--text-2);
+  font-size: 12px;
+}
+
+.pipFillApply {
+  min-height: 36px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 99px;
+  background: var(--ink);
+  color: #fff;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.pipFillApply:disabled {
+  opacity: 0.45;
+  cursor: default;
 }

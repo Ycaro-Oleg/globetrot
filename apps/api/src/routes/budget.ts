@@ -1,5 +1,6 @@
 import {
   budgetSchema,
+  expenseCreateFields,
   expenseFields,
   expenseListSchema,
   expenseSchema,
@@ -62,11 +63,12 @@ const createExpenseRoute = createRoute({
   description:
     'The amount is in `currency`. When that is not the trip’s currency, send `fxRate` (how much of the trip’s ' +
     'currency 1 unit is worth); the server converts, and keeps the rate, its source (`manual`) and its date with the ' +
-    'cost. The converted amount is never taken from the client.',
+    'cost. The converted amount is never taken from the client. `guess: true` marks the rough guess of the whole ' +
+    'trip (at most one per trip): totals count it minus every other cost, never below zero.',
   security,
   request: {
     params: tripParams,
-    body: { required: true, content: { 'application/json': { schema: expenseFields } } },
+    body: { required: true, content: { 'application/json': { schema: expenseCreateFields } } },
   },
   responses: {
     201: { description: 'The cost.', content: { 'application/json': { schema: expenseSchema } } },

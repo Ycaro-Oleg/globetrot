@@ -27,6 +27,7 @@ import type {
   AuditMetadata,
   CommentRecord,
   CommunityReader,
+  TripReader,
   PersonRecord,
   PostAttachmentRecord,
   PostRecord,
@@ -88,20 +89,26 @@ function attachmentView(attachment: PostAttachmentRecord | null): PostView['atta
   return attachment;
 }
 
-/** Turns stored posts into what this viewer reads: author, counts, and their own likes and saves. */
+/**
+ * Turns stored posts into what this viewer reads: author, counts, their own likes and saves, and their copy of a
+ * shared route.
+ */
 async function postViews(
-  reader: CommunityReader,
+  ports: { readonly community: CommunityReader; readonly trips: Pick<TripReader, 'copiesOf'> },
   viewerId: string,
   posts: readonly PostRecord[],
 ): Promise<PostView[]> {
   if (posts.length === 0) return [];
+  const reader = ports.community;
   const authorIds = [...new Set(posts.map((post) => post.authorId))];
-  const [relations, stats] = await Promise.all([
+  const routeIds = posts.filter((post) => post.attachment?.kind === 'route').map((post) => post.id);
+  const [relations, stats, copies] = await Promise.all([
     reader.relations(viewerId, authorIds),
     reader.stats(
       viewerId,
       posts.map((post) => post.id),
     ),
+    ports.trips.copiesOf(viewerId, routeIds),
   ]);
   const likerIds = [...stats.values()].flatMap((stat) => (stat.likedBy ? [stat.likedBy] : []));
   const people = new Map(
@@ -134,6 +141,7 @@ async function postViews(
         saved: stat?.saved ?? false,
         comments: stat?.comments ?? 0,
         likedBy: likedBy ? personView(likedBy) : null,
+        copiedTripId: copies.get(post.id) ?? null,
       },
     ];
   });
@@ -228,7 +236,7 @@ async function record(
   });
 }
 
-type Reads = Pick<Ports, 'community' | 'users' | 'clock'>;
+type Reads = Pick<Ports, 'community' | 'users' | 'clock' | 'trips'>;
 type Writes = Pick<Ports, 'unitOfWork' | 'clock' | 'ids' | 'users'>;
 
 // --- Queries ---------------------------------------------------------------------------------------------
@@ -247,7 +255,7 @@ export function createListFeed(deps: Reads) {
         limit: input.limit,
       });
       return {
-        posts: await postViews(deps.community, actor.userId, posts),
+        posts: await postViews(deps, actor.userId, posts),
         nextBefore: posts.length === input.limit ? posts[posts.length - 1]!.id : null,
       };
     },
@@ -262,7 +270,7 @@ export function createGetPost(deps: Reads) {
     output: postSchema,
     async handler(actor, input) {
       const post = await loadVisiblePost(deps.community, actor.userId, input.postId);
-      const [view] = await postViews(deps.community, actor.userId, [post]);
+      const [view] = await postViews(deps, actor.userId, [post]);
       if (!view) throw new NotFoundError();
       return view;
     },
@@ -351,7 +359,7 @@ export function createListPersonPosts(deps: Reads) {
         limit: input.limit,
       });
       return {
-        posts: await postViews(deps.community, actor.userId, posts),
+        posts: await postViews(deps, actor.userId, posts),
         nextBefore: posts.length === input.limit ? posts[posts.length - 1]!.id : null,
       };
     },
@@ -527,9 +535,7 @@ export function createCreatePost(deps: Writes) {
           kind: input.kind,
           audience: input.audience,
         });
-        const [view] = await postViews(tx.community, actor.userId, [
-          (await tx.community.findPost(id))!,
-        ]);
+        const [view] = await postViews(tx, actor.userId, [(await tx.community.findPost(id))!]);
         if (key !== undefined) await tx.idempotency.complete(actor.userId, key, view);
         return view!;
       });
@@ -553,9 +559,7 @@ export function createUpdatePost(deps: Writes) {
         }
         await tx.community.updatePost(post.id, { body: input.body, editedAt: now });
         await record(tx, deps, actor, now, 'post.update', 'post', post.id, { fields: ['body'] });
-        const [view] = await postViews(tx.community, actor.userId, [
-          (await tx.community.findPost(post.id))!,
-        ]);
+        const [view] = await postViews(tx, actor.userId, [(await tx.community.findPost(post.id))!]);
         return view!;
       });
     },
@@ -608,7 +612,7 @@ export function createSetPostReaction(deps: Writes, which: 'like' | 'save') {
           await tx.community.setSave(post.id, actor.userId, input.on, now);
         }
         await record(tx, deps, actor, now, `post.${which}`, 'post', post.id, { on: input.on });
-        const [view] = await postViews(tx.community, actor.userId, [post]);
+        const [view] = await postViews(tx, actor.userId, [post]);
         return view!;
       });
     },
@@ -797,6 +801,14 @@ export function createCopyRoute(deps: Writes) {
         const post = await loadVisiblePost(tx.community, actor.userId, input.postId);
         if (post.attachment?.kind !== 'route') throw new NotFoundError();
         const route = post.attachment;
+        // One copy per person: copying again hands back the trip they already have.
+        const existingId = (await tx.trips.copiesOf(actor.userId, [post.id])).get(post.id);
+        const existing = existingId ? await tx.trips.findById(existingId) : null;
+        if (existing) {
+          const view = toTripView(existing);
+          if (key !== undefined) await tx.idempotency.complete(actor.userId, key, view);
+          return view;
+        }
         await assertTripRoom(tx, actor, now);
         const trip = await tx.trips.insert({
           id: deps.ids.newId(),
@@ -806,6 +818,7 @@ export function createCopyRoute(deps: Writes) {
           currency: DEFAULT_CURRENCY,
           status: DEFAULT_TRIP_STATUS,
           visibility: DEFAULT_TRIP_VISIBILITY,
+          copiedFromPostId: post.id,
           createdAt: now,
         });
         await tx.destinations.replaceForTrip(
@@ -816,6 +829,7 @@ export function createCopyRoute(deps: Writes) {
             note: null,
             legMode: null,
             visited: false,
+            spotRoute: false,
             spots: [],
             todos: [],
             photos: [],

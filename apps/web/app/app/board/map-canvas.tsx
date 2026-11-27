@@ -10,15 +10,17 @@ import type {
 } from 'maplibre-gl';
 import {
   arcBetween,
-  KIT_TABS,
-  LEG_ICONS,
+  distanceKm,
+  SPOT_ICONS,
   partialLine,
   type KitTab,
   type RouteStop,
+  type SpotKind,
 } from './board-route';
 import { PIN, relabel, restyle, styleCountries, type MapStyleName } from './map-styles';
 import styles from './world-map.module.css';
 import { fitPadding } from './fit-padding';
+import { legIconMarkup } from './leg-icon';
 
 export type Inset = { top: number; right: number; bottom: number; left: number };
 export type NearbyPlace = { name: string; kind: string; longitude: number; latitude: number };
@@ -28,6 +30,8 @@ export type BoardMapController = {
   flyTo(longitude: number, latitude: number, zoom?: number): void;
   fitStops(animate: boolean): void;
   fitWorld(): void;
+  /** Frames a few places (a city's spots), never closer than street level, clear of `left` px on the left. */
+  fitPoints(points: [number, number][], left?: number): void;
   zoomBy(delta: 1 | -1): void;
   center(): { longitude: number; latitude: number };
   /** Screen position of a place inside the map box, or null when the map is not ready. */
@@ -44,8 +48,12 @@ export type MapStop = RouteStop & { label: string; counts: Record<KitTab, string
 
 type Props = {
   stops: MapStop[];
+  /** Spots Pip offers for a stop's card, drawn dashed and see-through until the person keeps them. */
+  pencilledSpots: readonly { name: string; kind: SpotKind; latitude: number; longitude: number }[];
   /** Pip's suggested stops, drawn dashed and see-through until the person applies them. */
   pencilled: readonly { name: string; latitude: number; longitude: number; nights: number }[];
+  /** Where the person's trips start (their home city from the city list), drawn as a house and a dashed leg. */
+  home: { name: string; latitude: number; longitude: number } | null;
   selectedId: string | null;
   styleName: MapStyleName;
   locale: string;
@@ -55,17 +63,31 @@ type Props = {
   inset: Inset;
   phone: boolean;
   apiKey: string;
+  /**
+   * On a page that scrolls (the landing's live demo) the map only zooms with Ctrl or two fingers, so scrolling
+   * the page over it still scrolls the page; the texts are the hint MapLibre shows.
+   */
+  cooperative?: { windows: string; mac: string; mobile: string } | null;
   text: {
     map: string;
     loading: string;
     error: string;
     petal: Record<KitTab, string>;
     stop: (name: string, index: number) => string;
+    /** The hint over a pin on hover or focus: "Tap to plan Hakone". */
+    tip: (name: string) => string;
+    /** How many things a stop holds, for the pin's name: "5 things". */
+    items: (count: number) => string;
+    /** A mini-pin's name: "Lake Ashi, sight, in Hakone". */
+    spot: (name: string, kind: SpotKind, place: string) => string;
     pencilled: (name: string) => string;
+    home: (name: string) => string;
   };
   controllerRef: MutableRefObject<BoardMapController | null>;
   onSelect: (id: string) => void;
   onOpenCard: (id: string, tab: KitTab | null) => void;
+  /** A mini-pin was tapped: open its stop's card on that spot. */
+  onOpenSpot: (stopId: string, index: number) => void;
   onPin: (longitude: number, latitude: number, name: string | null) => void;
   onZoom: (zoom: number) => void;
   onMove: () => void;
@@ -80,14 +102,12 @@ type PinMarker = {
   ring: HTMLSpanElement;
   label: HTMLSpanElement;
   button: HTMLButtonElement;
-  petals: HTMLDivElement;
-  petalButtons: { button: HTMLButtonElement; badge: HTMLSpanElement; x: number; y: number }[];
+  /** How many things the stop holds (photos, spots, notes, to-dos), on the pin's head. */
+  tip: HTMLSpanElement;
   hideTimer?: number;
   name: string;
 };
 
-const PETAL_GLYPHS: Record<KitTab, string> = { photos: '▣', spots: '⌖', notes: '✎', todos: '✓' };
-const PETAL_ANGLES = [158, 114, 66, 22];
 const DRAW_MS = 1100;
 const COMET_MS = 2800;
 
@@ -127,8 +147,14 @@ export function MapCanvas(props: Props) {
   const markerClass = useRef<typeof MapLibreMarker | null>(null);
   const pins = useRef(new Map<string, PinMarker>());
   const legBadges = useRef<MapLibreMarker[]>([]);
+  const spotMarks = useRef<MapLibreMarker[]>([]);
+  /** Room a docked card takes on the left, for the next fit only. */
+  const extraLeft = useRef(0);
   const pencilMarks = useRef<MapLibreMarker[]>([]);
-  const segments = useRef(new Map<string, { coords: [number, number][]; born: number }>());
+  const homeMark = useRef<MapLibreMarker | null>(null);
+  const segments = useRef(
+    new Map<string, { coords: [number, number][]; born: number; mode: string }>(),
+  );
   const routeDirty = useRef(false);
   const poiLayers = useRef<string[]>([]);
   const firstSync = useRef(true);
@@ -181,12 +207,13 @@ export function MapCanvas(props: Props) {
     }
   };
 
-  const showPetals = (pin: PinMarker) => {
-    pin.petals.dataset.open = 'true';
+  // Hover or focus lifts the pin and shows what a tap does; the contents live in the card, not around the pin.
+  const showTip = (pin: PinMarker) => {
+    pin.el.dataset.hover = 'true';
     pin.el.style.zIndex = '5';
   };
-  const hidePetals = (pin: PinMarker, id: string) => {
-    delete pin.petals.dataset.open;
+  const hideTip = (pin: PinMarker, id: string) => {
+    delete pin.el.dataset.hover;
     pin.el.style.zIndex = latest.current.selectedId === id ? '3' : '1';
   };
 
@@ -213,8 +240,9 @@ export function MapCanvas(props: Props) {
     const button = document.createElement('button');
     button.type = 'button';
     button.className = styles.pinButton ?? '';
-    const petals = document.createElement('div');
-    petals.className = styles.petals ?? '';
+    const tip = document.createElement('span');
+    tip.className = styles.pinTip ?? '';
+    tip.setAttribute('aria-hidden', 'true');
     const pin: PinMarker = {
       marker: null as unknown as MapLibreMarker,
       el,
@@ -224,51 +252,17 @@ export function MapCanvas(props: Props) {
       ring,
       label,
       button,
-      petals,
-      petalButtons: [],
+      tip,
       name: stop.label,
     };
-    KIT_TABS.forEach((tab, i) => {
-      const angle = (PETAL_ANGLES[i]! * Math.PI) / 180;
-      const x = Math.cos(angle) * 62;
-      const y = -Math.sin(angle) * 62;
-      const petal = document.createElement('button');
-      petal.type = 'button';
-      petal.className = styles.petal ?? '';
-      petal.style.setProperty('--x', `${x}px`);
-      petal.style.setProperty('--y', `${y}px`);
-      petal.style.setProperty('--delay', `${i * 35}ms`);
-      const glyph = document.createElement('span');
-      glyph.setAttribute('aria-hidden', 'true');
-      glyph.textContent = PETAL_GLYPHS[tab];
-      const badge = document.createElement('span');
-      badge.className = styles.petalBadge ?? '';
-      badge.setAttribute('aria-hidden', 'true');
-      petal.append(glyph, badge);
-      petal.addEventListener('mouseenter', () => {
-        label.textContent = latest.current.text.petal[tab];
-        label.style.display = 'block';
-      });
-      petal.addEventListener('mouseleave', () => {
-        label.textContent = pin.name;
-        updateLabels();
-      });
-      petal.addEventListener('click', (event) => {
-        event.stopPropagation();
-        latest.current.onOpenCard(stop.id, tab);
-        hidePetals(pin, stop.id);
-      });
-      petals.append(petal);
-      pin.petalButtons.push({ button: petal, badge, x, y });
-    });
-    el.append(ground, ring, drop, label, button, petals);
+    el.append(ground, ring, drop, label, tip, button);
     const show = () => {
       window.clearTimeout(pin.hideTimer);
-      if (!latest.current.phone) showPetals(pin);
+      if (!latest.current.phone) showTip(pin);
     };
     const hide = () => {
       window.clearTimeout(pin.hideTimer);
-      pin.hideTimer = window.setTimeout(() => hidePetals(pin, stop.id), 220);
+      pin.hideTimer = window.setTimeout(() => hideTip(pin, stop.id), 120);
     };
     el.addEventListener('mouseenter', show);
     el.addEventListener('mouseleave', hide);
@@ -329,17 +323,23 @@ export function MapCanvas(props: Props) {
       pin.name = stop.label;
       pin.head.dataset.state = selected ? 'selected' : stop.visited ? 'visited' : 'planned';
       pin.num.textContent = stop.visited && !selected ? '✓' : String(index + 1);
-      pin.label.textContent = stop.label;
-      pin.button.setAttribute('aria-label', text.stop(stop.label, index + 1));
+      const total =
+        stop.photos.length + stop.spots.length + stop.todos.length + (stop.note.trim() ? 1 : 0);
+      // One number on the pin (its place in the route); what it holds rides with the name.
+      const count = document.createElement('span');
+      count.className = styles.pinLabelCount ?? '';
+      count.textContent = String(total);
+      pin.label.replaceChildren(stop.label, ...(total > 0 ? [count] : []));
+      pin.button.setAttribute(
+        'aria-label',
+        total > 0
+          ? `${text.stop(stop.label, index + 1)} · ${text.items(total)}`
+          : text.stop(stop.label, index + 1),
+      );
       pin.button.setAttribute('aria-pressed', String(selected));
       pin.el.setAttribute('aria-label', stop.label);
       pin.el.style.zIndex = selected ? '3' : '1';
-      KIT_TABS.forEach((tab, j) => {
-        const petal = pin.petalButtons[j]!;
-        petal.badge.textContent = stop.counts[tab];
-        petal.badge.style.display = stop.counts[tab] ? 'flex' : 'none';
-        petal.button.setAttribute('aria-label', `${text.petal[tab]} · ${stop.label}`);
-      });
+      pin.tip.textContent = text.tip(stop.label);
       pin.marker.setLngLat([stop.longitude, stop.latitude]);
     });
     updateLabels();
@@ -352,7 +352,7 @@ export function MapCanvas(props: Props) {
     const now = performance.now();
     const reduced = reducedMotion();
     const previous = segments.current;
-    const next = new Map<string, { coords: [number, number][]; born: number }>();
+    const next = new Map<string, { coords: [number, number][]; born: number; mode: string }>();
     for (let i = 0; i < stops.length - 1; i++) {
       const a = stops[i]!;
       const b = stops[i + 1]!;
@@ -361,6 +361,7 @@ export function MapCanvas(props: Props) {
       next.set(key, {
         coords: arcBetween(a, b, 120),
         born: reduced ? now - 2 * DRAW_MS : (old?.born ?? now + (initial ? 900 + i * 420 : 150)),
+        mode: a.legMode ?? 'none',
       });
     }
     segments.current = next;
@@ -376,30 +377,122 @@ export function MapCanvas(props: Props) {
       const badge = document.createElement('span');
       badge.className = styles.legBadge ?? '';
       badge.setAttribute('aria-hidden', 'true');
-      badge.textContent = LEG_ICONS[stop.legMode];
+      // The mode and the straight-line distance, where the leg is (the route list says it in words).
+      const km = new Intl.NumberFormat(latest.current.locale, {
+        style: 'unit',
+        unit: 'kilometer',
+        maximumFractionDigits: 0,
+      }).format(distanceKm(stop, stops[i + 1]!));
+      const icon = document.createElement('span');
+      icon.className = styles.legIcon ?? '';
+      icon.innerHTML = legIconMarkup(stop.legMode);
+      const distance = document.createElement('span');
+      distance.className = styles.legDistance ?? '';
+      distance.textContent = km;
+      badge.append(icon, distance);
       legBadges.current.push(
         new Marker({ element: badge }).setLngLat(arc[Math.floor(arc.length / 2)]!).addTo(map),
       );
     });
   };
 
+  /**
+   * Every stop's spots that have a place, as mini-pins with the mark of their kind. They show from z11 (the
+   * city pin's badge counts them before that) and add their name from z13.5; a tap opens the card on that spot.
+   */
   const updateSpots = () => {
     const map = mapRef.current;
-    const source = map?.getSource('gt-spots') as GeoJSONSource | undefined;
-    if (!source) return;
-    const stop = latest.current.stops.find(
-      (candidate) => candidate.id === latest.current.selectedId,
-    );
-    source.setData({
+    const Marker = markerClass.current;
+    spotMarks.current.forEach((marker) => marker.remove());
+    spotMarks.current = [];
+    if (!map || !Marker) return;
+    const { stops, selectedId, text } = latest.current;
+    const lines: {
+      type: 'Feature';
+      properties: object;
+      geometry: { type: 'LineString'; coordinates: [number, number][] };
+    }[] = [];
+    for (const stop of stops) {
+      let letter = 0;
+      if (stop.spotRoute) {
+        const coordinates = stop.spots
+          .filter((spot) => spot.latitude !== null && spot.longitude !== null)
+          .map((spot) => [spot.longitude!, spot.latitude!] as [number, number]);
+        if (coordinates.length >= 2)
+          lines.push({
+            type: 'Feature',
+            properties: {},
+            geometry: { type: 'LineString', coordinates },
+          });
+      }
+      stop.spots.forEach((spot, index) => {
+        if (spot.latitude === null || spot.longitude === null) return;
+        const mark = stop.spotRoute ? String.fromCharCode(65 + (letter++ % 26)) : null;
+        const el = document.createElement('button');
+        el.type = 'button';
+        el.className = styles.spotPin ?? '';
+        el.dataset.kind = spot.kind;
+        if (spot.done) el.dataset.done = 'true';
+        if (stop.id === selectedId) el.dataset.current = 'true';
+        el.setAttribute('aria-label', text.spot(spot.name, spot.kind, stop.label));
+        const icon = document.createElement('span');
+        icon.className = styles.spotPinIcon ?? '';
+        icon.setAttribute('aria-hidden', 'true');
+        icon.textContent = SPOT_ICONS[spot.kind];
+        const label = document.createElement('span');
+        label.className = styles.spotPinLabel ?? '';
+        label.setAttribute('aria-hidden', 'true');
+        label.textContent = spot.name;
+        if (mark) {
+          const badge = document.createElement('span');
+          badge.className = styles.spotPinLetter ?? '';
+          badge.setAttribute('aria-hidden', 'true');
+          badge.textContent = mark;
+          el.append(badge);
+          el.setAttribute('aria-label', `${mark}. ${text.spot(spot.name, spot.kind, stop.label)}`);
+        }
+        el.append(icon, label);
+        el.addEventListener('click', (event) => {
+          event.stopPropagation();
+          latest.current.onOpenSpot(stop.id, index);
+        });
+        spotMarks.current.push(
+          new Marker({ element: el, anchor: 'center' })
+            .setLngLat([spot.longitude, spot.latitude])
+            .addTo(map),
+        );
+      });
+    }
+    // Pip's offers for the open card: the same mini-pins, dashed and see-through, not yet the person's.
+    for (const spot of latest.current.pencilledSpots) {
+      const el = document.createElement('span');
+      el.className = styles.spotPin ?? '';
+      el.dataset.kind = spot.kind;
+      el.dataset.pencil = 'true';
+      el.setAttribute('aria-hidden', 'true');
+      const icon = document.createElement('span');
+      icon.className = styles.spotPinIcon ?? '';
+      icon.textContent = SPOT_ICONS[spot.kind];
+      const label = document.createElement('span');
+      label.className = styles.spotPinLabel ?? '';
+      label.textContent = spot.name;
+      el.append(icon, label);
+      spotMarks.current.push(
+        new Marker({ element: el, anchor: 'center' })
+          .setLngLat([spot.longitude, spot.latitude])
+          .addTo(map),
+      );
+    }
+    (map.getSource('gt-spot-route') as GeoJSONSource | undefined)?.setData({
       type: 'FeatureCollection',
-      features: (stop?.spots ?? [])
-        .filter((spot) => spot.latitude !== null && spot.longitude !== null)
-        .map((spot) => ({
-          type: 'Feature' as const,
-          properties: { name: spot.name, done: spot.done },
-          geometry: { type: 'Point' as const, coordinates: [spot.longitude!, spot.latitude!] },
-        })),
+      features: lines,
     });
+  };
+
+  /** How close the map is, for the mini-pins: hidden far away, marks near, marks and names close up. */
+  const spotScale = (zoom: number) => {
+    if (host.current)
+      host.current.dataset.spots = zoom < 11 ? 'off' : zoom < 13.5 ? 'marks' : 'names';
   };
 
   const tripCountries = () => [
@@ -414,7 +507,7 @@ export function MapCanvas(props: Props) {
         top: inset.top + 30,
         right: inset.right + 30,
         bottom: inset.bottom + 30,
-        left: inset.left + 30,
+        left: Math.max(inset.left, extraLeft.current) + 30,
       },
       container?.clientWidth ?? 0,
       container?.clientHeight ?? 0,
@@ -462,6 +555,16 @@ export function MapCanvas(props: Props) {
           dragRotate: false,
           pitchWithRotate: false,
           attributionControl: { compact: true },
+          cooperativeGestures: Boolean(latest.current.cooperative),
+          ...(latest.current.cooperative
+            ? {
+                locale: {
+                  'CooperativeGesturesHandler.WindowsHelpText': latest.current.cooperative.windows,
+                  'CooperativeGesturesHandler.MacHelpText': latest.current.cooperative.mac,
+                  'CooperativeGesturesHandler.MobileHelpText': latest.current.cooperative.mobile,
+                },
+              }
+            : {}),
         });
         map.touchZoomRotate.disableRotation();
         mapRef.current = map;
@@ -495,16 +598,80 @@ export function MapCanvas(props: Props) {
             },
             firstSymbol,
           );
+          // The leg's way of travel shows in the line itself: a flight is an airmail dash, a walk a dotted
+          // line, a boat a long dash; train, bus and car a solid line.
+          const dashed = ['flight', 'walk', 'boat'];
           map.addLayer(
             {
               id: 'gt-route-core',
               type: 'line',
               source: 'gt-route',
+              filter: ['!', ['in', ['get', 'mode'], ['literal', dashed]]],
               layout: { 'line-cap': 'round', 'line-join': 'round' },
               paint: { 'line-width': width(1.8, 3, 4.5) as never, 'line-color': PIN.route },
             },
             firstSymbol,
           );
+          (
+            [
+              ['flight', [2.2, 1.4]],
+              ['walk', [0.1, 1.8]],
+              ['boat', [3.5, 1.6]],
+            ] as const
+          ).forEach(([mode, dash]) =>
+            map!.addLayer(
+              {
+                id: `gt-route-${mode}`,
+                type: 'line',
+                source: 'gt-route',
+                filter: ['==', ['get', 'mode'], mode],
+                layout: { 'line-cap': 'round', 'line-join': 'round' },
+                paint: {
+                  'line-width': width(1.8, 3, 4.5) as never,
+                  'line-color': PIN.route,
+                  'line-dasharray': [...dash],
+                },
+              },
+              firstSymbol,
+            ),
+          );
+          // A city's own route between its spots (A, B, C…): a thin dashed line, only once spots show.
+          map.addSource('gt-spot-route', { type: 'geojson', data: empty });
+          map.addLayer({
+            id: 'gt-spot-route',
+            type: 'line',
+            source: 'gt-spot-route',
+            minzoom: 11,
+            layout: { 'line-cap': 'round', 'line-join': 'round' },
+            paint: {
+              'line-color': PIN.ink,
+              'line-width': ['interpolate', ['linear'], ['zoom'], 11, 1.6, 16, 3] as never,
+              'line-dasharray': [1.5, 1.5],
+              'line-opacity': 0.8,
+            },
+          });
+          // Which way the trip goes: small chevrons along every leg.
+          map.addLayer({
+            id: 'gt-route-arrows',
+            type: 'symbol',
+            source: 'gt-route',
+            layout: {
+              'symbol-placement': 'line',
+              'symbol-spacing': ['interpolate', ['linear'], ['zoom'], 1, 70, 8, 140] as never,
+              'text-field': '›',
+              'text-font': ['Noto Sans Bold'],
+              'text-size': ['interpolate', ['linear'], ['zoom'], 1, 13, 8, 19] as never,
+              'text-keep-upright': false,
+              'text-rotation-alignment': 'map',
+              'text-allow-overlap': true,
+              'text-ignore-placement': true,
+            },
+            paint: {
+              'text-color': '#FFFFFF',
+              'text-halo-color': PIN.route,
+              'text-halo-width': 1.2,
+            },
+          });
           map.addLayer(
             {
               id: 'gt-route-comet',
@@ -520,38 +687,6 @@ export function MapCanvas(props: Props) {
             },
             firstSymbol,
           );
-          map.addSource('gt-spots', { type: 'geojson', data: empty });
-          map.addLayer({
-            id: 'gt-spots-dot',
-            type: 'circle',
-            source: 'gt-spots',
-            minzoom: 9,
-            paint: {
-              'circle-radius': ['interpolate', ['linear'], ['zoom'], 9, 3, 14, 7],
-              'circle-color': ['case', ['get', 'done'], '#10B981', '#FFFFFF'],
-              'circle-stroke-color': '#0F172A',
-              'circle-stroke-width': 2,
-            },
-          });
-          map.addLayer({
-            id: 'gt-spots-label',
-            type: 'symbol',
-            source: 'gt-spots',
-            minzoom: 10.5,
-            layout: {
-              'text-field': ['get', 'name'],
-              'text-font': ['Noto Sans Bold'],
-              'text-size': 12,
-              'text-offset': [0, 1.1],
-              'text-anchor': 'top',
-              'text-optional': true,
-            },
-            paint: {
-              'text-color': '#0F172A',
-              'text-halo-color': '#FFFFFF',
-              'text-halo-width': 1.6,
-            },
-          });
           poiLayers.current = restyle(map, latest.current.styleName);
           relabel(map, latest.current.locale);
           // Country fills come from a small Natural Earth file served by the app (public domain).
@@ -569,6 +704,21 @@ export function MapCanvas(props: Props) {
                   type: 'fill',
                   source: 'gt-countries',
                   paint: { 'fill-color': '#000', 'fill-opacity': 0 },
+                },
+                water,
+              );
+              map.addLayer(
+                {
+                  id: 'gt-countries-trip',
+                  type: 'line',
+                  source: 'gt-countries',
+                  filter: ['in', ['get', 'iso'], ['literal', ['__']]],
+                  layout: { 'line-join': 'round' },
+                  paint: {
+                    'line-color': PIN.route,
+                    'line-width': ['interpolate', ['linear'], ['zoom'], 1, 1.2, 5, 2] as never,
+                    'line-opacity': ['interpolate', ['linear'], ['zoom'], 1, 0.9, 6, 0.55] as never,
+                  },
                 },
                 water,
               );
@@ -612,7 +762,7 @@ export function MapCanvas(props: Props) {
                 const eased = p < 0.5 ? 4 * p * p * p : 1 - (-2 * p + 2) ** 3 / 2;
                 features.push({
                   type: 'Feature' as const,
-                  properties: {},
+                  properties: { mode: segment.mode },
                   geometry: {
                     type: 'LineString' as const,
                     coordinates: partialLine(segment.coords, eased),
@@ -668,6 +818,7 @@ export function MapCanvas(props: Props) {
         });
         map.on('moveend', updateLabels);
         map.on('zoom', () => {
+          spotScale(map!.getZoom());
           latest.current.onZoom(map!.getZoom());
           updateLabels();
         });
@@ -703,8 +854,10 @@ export function MapCanvas(props: Props) {
         const current = mapRef.current;
         const stops = latest.current.stops;
         if (!current || !stops.length) return;
-        const lngs = stops.map((stop) => stop.longitude);
-        const lats = stops.map((stop) => stop.latitude);
+        // With a single stop the trip is "home to there": show both. With a route, the route.
+        const home = stops.length === 1 ? latest.current.home : null;
+        const lngs = [...stops.map((stop) => stop.longitude), ...(home ? [home.longitude] : [])];
+        const lats = [...stops.map((stop) => stop.latitude), ...(home ? [home.latitude] : [])];
         const sw: [number, number] = [Math.min(...lngs), Math.min(...lats)];
         const ne: [number, number] = [Math.max(...lngs), Math.max(...lats)];
         if (sw[0] === ne[0] && sw[1] === ne[1]) {
@@ -728,6 +881,22 @@ export function MapCanvas(props: Props) {
           ],
           { duration: reducedMotion() ? 0 : 1200, essential: true },
         );
+      },
+      fitPoints(points, left = 0) {
+        const current = mapRef.current;
+        if (!current || !points.length) return;
+        extraLeft.current = left;
+        const lngs = points.map(([lng]) => lng);
+        const lats = points.map(([, lat]) => lat);
+        fit(
+          current,
+          [
+            [Math.min(...lngs), Math.min(...lats)],
+            [Math.max(...lngs), Math.max(...lats)],
+          ],
+          { maxZoom: 16, duration: reducedMotion() ? 0 : 1000, essential: true },
+        );
+        extraLeft.current = 0;
       },
       zoomBy(delta) {
         const current = mapRef.current;
@@ -845,6 +1014,71 @@ export function MapCanvas(props: Props) {
     };
   }, [ready, pencilled]);
 
+  // Home: a house where the person's trips start, and a dashed leg to the first stop.
+  const { home } = props;
+  const firstStop = stops[0];
+  useEffect(() => {
+    const map = mapRef.current;
+    const Marker = markerClass.current;
+    homeMark.current?.remove();
+    homeMark.current = null;
+    if (!ready || !map || !Marker) return;
+    const line = {
+      type: 'FeatureCollection' as const,
+      features:
+        home && firstStop
+          ? [
+              {
+                type: 'Feature' as const,
+                properties: {},
+                geometry: {
+                  type: 'LineString' as const,
+                  coordinates: [
+                    [home.longitude, home.latitude],
+                    [firstStop.longitude, firstStop.latitude],
+                  ],
+                },
+              },
+            ]
+          : [],
+    };
+    const source = map.getSource('gt-home') as GeoJSONSource | undefined;
+    if (source) source.setData(line);
+    else {
+      map.addSource('gt-home', { type: 'geojson', data: line });
+      map.addLayer({
+        id: 'gt-home-leg',
+        type: 'line',
+        source: 'gt-home',
+        paint: {
+          'line-color': '#0f172a',
+          'line-width': 2.5,
+          'line-dasharray': [2, 2],
+          'line-opacity': 0.6,
+        },
+      });
+    }
+    if (!home) return;
+    const el = document.createElement('div');
+    el.className = styles.homePin ?? '';
+    el.setAttribute('aria-hidden', 'true');
+    el.title = latest.current.text.home(home.name);
+    const head = document.createElement('span');
+    head.className = styles.homeHead ?? '';
+    head.textContent = '⌂';
+    const label = document.createElement('span');
+    label.className = styles.homeLabel ?? '';
+    label.textContent = latest.current.text.home(home.name);
+    el.append(head, label);
+    homeMark.current = new Marker({ element: el, anchor: 'bottom' })
+      .setLngLat([home.longitude, home.latitude])
+      .addTo(map);
+    return () => {
+      homeMark.current?.remove();
+      homeMark.current = null;
+    };
+  }, [ready, home, firstStop]);
+
   useEffect(() => {
     if (!ready) return;
     syncPins();
@@ -862,6 +1096,13 @@ export function MapCanvas(props: Props) {
     updateSpots();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ready, selectedId]);
+
+  // Pip's offers come and go with the card: redraw the mini-pins when they change.
+  const { pencilledSpots } = props;
+  useEffect(() => {
+    if (!ready) return;
+    updateSpots();
+  }, [ready, pencilledSpots]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -885,7 +1126,13 @@ export function MapCanvas(props: Props) {
 
   return (
     <div className={styles.mapHost}>
-      <div ref={host} className={styles.mapCanvas} role="region" aria-label={props.text.map} />
+      <div
+        ref={host}
+        className={styles.mapCanvas}
+        role="region"
+        aria-label={props.text.map}
+        data-spots="off"
+      />
       {!ready && !error ? <div className={styles.mapLoading}>{props.text.loading}</div> : null}
       {error ? <div className={styles.mapError}>{props.text.error}</div> : null}
     </div>

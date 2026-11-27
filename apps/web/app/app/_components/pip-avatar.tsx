@@ -33,6 +33,12 @@ export const PIP_COLORS = { color: '#2B45C4', eyeColor: '#FFF5E1' } as const;
 
 export type PipMood = 'idle' | 'thinking' | 'happy';
 
+/**
+ * The wardrobe (hat, outfit, bag) is switched off for now: it did not sit right on the body in every pose, so Pip
+ * shows as the globe it is everywhere. The drawings and the stored looks stay, ready to come back.
+ */
+const WARDROBE = false;
+
 const INK = '#1E293B';
 const BAG_COLORS: Record<PipLook['bagColor'], [string, string]> = {
   amber: ['#F59E0B', '#B45309'],
@@ -52,8 +58,41 @@ const matrix = (m: Matrix) => `matrix(${m.map((n) => +n.toFixed(4)).join(' ')})`
 /** Where the look sits in a frame: the bag moves with the body, outfit and hat with the face. */
 function placement(frame: AvatarFrame) {
   const face = frame.shapes.find((shape) => shape.kind === 'eye')?.matrix ?? IDENTITY;
-  return { back: matrix(frame.root), front: `${matrix(frame.root)} ${matrix(face)}` };
+  return {
+    back: matrix(frame.root),
+    face: matrix(face),
+    front: `${matrix(frame.root)} ${matrix(face)}`,
+  };
 }
+
+/*
+ * Pip is the globe: dotted continents (like the landing's halftone world) painted on the body, around the face so
+ * they never cover the eyes. They move with the face, so the globe seems to turn towards whatever Pip looks at,
+ * and are clipped to the body.
+ */
+/** Two parallels and two meridians, wide of the eyes: the lines that say "globe" at a glance. */
+const GRID = [
+  'M20.5 45 Q48 51.5 75.5 45',
+  'M20 75 Q48 83 76 75',
+  'M48 31 Q13 60 48 89',
+  'M48 31 Q83 60 48 89',
+];
+const LAND = [
+  // North America and Greenland, top left
+  'M21 50 C20 41 27 33 37 31 C44 30 50 32 49 37 C48 41 43 41 40 44 C38 47 33 48 30 47 C27 49 24 51 21 50Z',
+  'M49 31.5 C52 30 56 31 56 34 C56 37 52 38 50 37 C48 36 47.5 33 49 31.5Z',
+  // Europe and Asia, top right
+  'M57 34 C63 31 72 34 76 42 C78 47 75 50 71 48 C68 47 66 47.5 63 46.5 C59 45 55 41 57 34Z',
+  // South America, left edge
+  'M20 55 C24 52 29 54 28.5 60 C28 67 26 73 23 78 C20 73 18.5 63 20 55Z',
+  // Africa, right edge
+  'M69.5 50 C75 49 78.5 54 78 61 C77.5 68 73 73 70.5 71 C68.5 66 68.5 56 69.5 50Z',
+  // Australia, islands and the ice at the bottom
+  'M51 77 C56 74 63 75 64 80 C65 85 59 88 54 87 C49 86 47 81 51 77Z',
+  'M37 79 a2.2 2.2 0 1 0 0.1 0Z',
+  'M42 84 a1.6 1.6 0 1 0 0.1 0Z',
+  'M28 86 C38 91 58 92 68 86 L68 96 L28 96Z',
+];
 
 function reducedMotion(): boolean {
   return (
@@ -74,6 +113,7 @@ export function PipAvatar({
   mood: moodProp,
   followPointer = false,
   still = false,
+  bare = false,
   className,
 }: {
   size?: number;
@@ -83,16 +123,21 @@ export function PipAvatar({
   mood?: PipMood;
   followPointer?: boolean;
   still?: boolean;
+  /** Just the globe: no hat, outfit or bag (the landing and onboarding show Pip as itself). */
+  bare?: boolean;
   className?: string;
 }) {
   // A page may dress Pip itself; otherwise it wears the person's own look (or the default outside the app).
   const saved = usePipLook();
+  const dressed = WARDROBE && !bare;
   const mood = moodProp ?? moodOfPose(pose);
   const look = lookProp ?? saved.look;
   const clip = `pip-${useId().replace(/[^a-zA-Z0-9]/g, '')}`;
   const host = useRef<HTMLSpanElement>(null);
   const back = useRef<SVGGElement>(null);
   const front = useRef<SVGGElement>(null);
+  const globe = useRef<SVGGElement>(null);
+  const globeFace = useRef<SVGGElement>(null);
   const avatar = useRef<MountedAvatar | null>(null);
   const settings = useRef({ mood, followPointer });
   useEffect(() => {
@@ -157,6 +202,8 @@ export function PipAvatar({
         const next = placement(frame);
         back.current?.setAttribute('transform', next.back);
         front.current?.setAttribute('transform', next.front);
+        globe.current?.setAttribute('transform', next.back);
+        globeFace.current?.setAttribute('transform', next.face);
         const more = !reduced || step.moving;
         return more && size < SMALL_SIZE ? SMALL_STEP : more;
       },
@@ -175,7 +222,7 @@ export function PipAvatar({
       style={{ width: size, height: size }}
       aria-hidden="true"
     >
-      {size >= 40 ? (
+      {size >= 40 && dressed ? (
         <svg className={styles.layer} viewBox="0 0 100 100">
           <g ref={back} transform={at.back}>
             <g transform={BAG_FROM_HANDOFF}>
@@ -186,32 +233,56 @@ export function PipAvatar({
       ) : null}
       {still ? null : <span ref={host} className={styles.live} />}
       <span className={styles.still} dangerouslySetInnerHTML={{ __html: body }} />
-      <svg className={styles.layer} viewBox="0 0 100 100">
-        <g ref={front} transform={at.front}>
-          <g transform={FROM_HANDOFF}>
-            <defs>
-              <clipPath id={clip}>
-                <circle cx="105" cy="118" r="55" />
-              </clipPath>
-            </defs>
-            <g clipPath={`url(#${clip})`}>
-              <Outfit kind={look.outfit} />
-            </g>
-            {look.outfit === 'scarf' ? (
-              <path
-                d="M134 156 L144 186 L156 182 L146 154Z"
-                fill="#EF4444"
-                stroke={INK}
-                strokeWidth="2.5"
-                strokeLinejoin="round"
-              />
-            ) : null}
-            <g transform="rotate(-7 105 64)">
-              <Hat kind={look.hat} />
+      <svg className={`${styles.layer} ${styles.globe}`} viewBox="0 0 100 100">
+        <defs>
+          <pattern id={`${clip}-dots`} width="3.2" height="3.2" patternUnits="userSpaceOnUse">
+            <circle cx="1.6" cy="1.6" r="1.25" fill="#BFDBFE" />
+          </pattern>
+          <clipPath id={`${clip}-body`}>
+            <circle cx="48" cy="60" r="28.6" />
+          </clipPath>
+        </defs>
+        <g ref={globe} transform={at.back}>
+          <g clipPath={`url(#${clip}-body)`}>
+            <g ref={globeFace} transform={at.face} fill={`url(#${clip}-dots)`}>
+              {LAND.map((d) => (
+                <path key={d} d={d} />
+              ))}
+              <g className={styles.grid}>
+                {GRID.map((d) => (
+                  <path key={d} d={d} />
+                ))}
+              </g>
             </g>
           </g>
         </g>
       </svg>
+      {!dressed ? null : (
+        <svg className={`${styles.layer} ${styles.front}`} viewBox="0 0 100 100">
+          <g ref={front} transform={at.front}>
+            <g transform={FROM_HANDOFF}>
+              <defs>
+                <clipPath id={clip}>
+                  <circle cx="105" cy="118" r="62" />
+                </clipPath>
+              </defs>
+              <g clipPath={`url(#${clip})`}>
+                <Outfit kind={look.outfit} />
+              </g>
+              {look.outfit === 'scarf' ? (
+                <g fill="#EF4444" stroke={INK} strokeWidth="2.5" strokeLinejoin="round">
+                  <path d="M136 152 L139 188 L150 186 L146 151Z" />
+                  <path d="M143 151 L153 182 L163 177 L151 149Z" />
+                  <circle cx="142" cy="150" r="6.5" />
+                </g>
+              ) : null}
+              <g transform="rotate(-7 105 64)">
+                <Hat kind={look.hat} />
+              </g>
+            </g>
+          </g>
+        </svg>
+      )}
       {size >= 40 && pose !== 'idle' ? (
         <svg className={styles.pose} viewBox="0 0 100 100" data-pose={pose}>
           <PipPoseProps pose={pose} />
@@ -221,75 +292,115 @@ export function PipAvatar({
   );
 }
 
-/** Outfits, from the handoff's Pip, clipped to the globe. */
+/*
+ * Outfits, worn on the globe (handoff box: centre 105,118, radius 58). Each garment hugs the lower half of the body:
+ * a curved neckline on top and an arc a hair outside the body below, so it reads as clothing, not a stripe.
+ */
+const R = 59;
+/** The two points where a garment's neckline at height `y` meets the body's outline. */
+const edge = (y: number) => {
+  const dx = Math.sqrt(R * R - (y - 118) ** 2);
+  return [+(105 - dx).toFixed(2), +(105 + dx).toFixed(2)] as const;
+};
+/** A garment from a neckline at `y` (sagging `sag` in the middle) down to the bottom of the body. */
+const garment = (y: number, sag: number) => {
+  const [left, right] = edge(y);
+  return `M${left} ${y} Q105 ${y + sag} ${right} ${y} A${R} ${R} 0 0 1 ${left} ${y}Z`;
+};
+const bottomY = (x: number) => +(118 + Math.sqrt(R * R - (x - 105) ** 2)).toFixed(2);
+
 function Outfit({ kind }: { kind: PipLook['outfit'] }) {
-  if (kind === 'scarf')
+  if (kind === 'scarf') {
+    const [l1, r1] = edge(134);
+    const [l2, r2] = edge(149);
     return (
-      <g>
-        <rect x="40" y="146" width="130" height="15" fill="#EF4444" />
-        {[62, 86, 110, 134].map((x) => (
-          <rect key={x} x={x} y="146" width="7" height="15" fill="#FFFFFF" opacity=".7" />
-        ))}
-        <path d="M40 146 H170 M40 161 H170" stroke={INK} strokeWidth="2.5" />
+      <g strokeLinejoin="round">
+        <path
+          d={`M${l1} 134 Q105 151 ${r1} 134 A${R} ${R} 0 0 1 ${r2} 149 Q105 167 ${l2} 149 A${R} ${R} 0 0 1 ${l1} 134Z`}
+          fill="#EF4444"
+          stroke={INK}
+          strokeWidth="2.5"
+        />
+        <path
+          d="M64 143 Q105 160 146 143"
+          fill="none"
+          stroke="#FFFFFF"
+          strokeWidth="2.5"
+          strokeDasharray="7 9"
+          strokeLinecap="round"
+          opacity=".75"
+        />
       </g>
     );
+  }
   if (kind === 'aloha')
     return (
-      <g>
-        <rect x="40" y="148" width="130" height="40" fill="#F59E0B" />
+      <g strokeLinejoin="round">
+        <path d={garment(140, 18)} fill="#F59E0B" stroke={INK} strokeWidth="2.5" />
         {[
-          [66, 164],
-          [98, 176],
-          [132, 162],
-          [152, 178],
+          [72, 153],
+          [86, 165],
+          [124, 165],
+          [138, 153],
+          [105, 172],
         ].map(([x, y]) => (
-          <g key={x}>
-            <circle cx={x} cy={y} r="5" fill="#FFFFFF" />
-            <circle cx={x} cy={y} r="2" fill="#EC4899" />
+          <g key={`${x}-${y}`}>
+            <circle cx={x} cy={y} r="4.5" fill="#FFFFFF" />
+            <circle cx={x} cy={y} r="1.8" fill="#EC4899" />
           </g>
         ))}
-        <path d="M40 148 H170" stroke={INK} strokeWidth="2.5" />
         <path
-          d="M89 148 L105 166 L121 148Z"
+          d="M89 148 L105 164 L121 148 L113 146 L105 156 L97 146Z"
           fill="#FEF3C7"
           stroke={INK}
-          strokeWidth="2.5"
-          strokeLinejoin="round"
+          strokeWidth="2.2"
         />
       </g>
     );
-  if (kind === 'vest')
+  if (kind === 'vest') {
+    const [left, right] = edge(139);
     return (
-      <g>
-        <path d="M40 140 H91 V192 H40Z" fill="#B08654" />
-        <path d="M119 140 H170 V192 H119Z" fill="#B08654" />
+      <g strokeLinejoin="round">
+        {/* the shirt under the vest */}
+        <path d={garment(140, 16)} fill="#F8FAFC" stroke={INK} strokeWidth="2.2" />
+        <path d="M93 151 L105 160 L100 166Z M117 151 L105 160 L110 166Z" fill="#E2E8F0" />
         <path
-          d="M91 140 V192 M119 140 V192 M40 140 H91 M119 140 H170"
+          d={`M${left} 139 Q72 149 92 151 L101 ${bottomY(101)} A${R} ${R} 0 0 1 ${left} 139Z`}
+          fill="#B08654"
+          stroke={INK}
+          strokeWidth="2.5"
+        />
+        <path
+          d={`M${right} 139 Q138 149 118 151 L109 ${bottomY(109)} A${R} ${R} 0 0 0 ${right} 139Z`}
+          fill="#B08654"
           stroke={INK}
           strokeWidth="2.5"
         />
         <rect
-          x="62"
-          y="158"
-          width="20"
-          height="15"
-          rx="3"
+          x="64"
+          y="153"
+          width="14"
+          height="9"
+          rx="2.5"
           fill="#8A6A42"
           stroke={INK}
-          strokeWidth="2"
+          strokeWidth="1.8"
         />
         <rect
-          x="128"
-          y="158"
-          width="20"
-          height="15"
-          rx="3"
+          x="132"
+          y="153"
+          width="14"
+          height="9"
+          rx="2.5"
           fill="#8A6A42"
           stroke={INK}
-          strokeWidth="2"
+          strokeWidth="1.8"
         />
+        <circle cx="96" cy="161" r="1.8" fill="#3F2A14" />
+        <circle cx="98.5" cy="169" r="1.8" fill="#3F2A14" />
       </g>
     );
+  }
   return null;
 }
 

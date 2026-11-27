@@ -68,7 +68,7 @@
 .wordmark {
   font-size: 21px;
   font-weight: 800;
-  letter-spacing: -0.06em;
+  letter-spacing: -0.028em;
 }
 
 .spacer {
@@ -547,6 +547,39 @@
   border-color: var(--gt-semantic-color-deep);
   background: var(--gt-semantic-color-deep);
   color: #f8fafc;
+}
+
+.planPill {
+  display: none;
+  flex: none;
+  align-items: center;
+  min-height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--gt-semantic-color-primary-soft);
+  border-radius: 999px;
+  background: var(--gt-semantic-color-primary-tint);
+  color: var(--gt-semantic-color-text);
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.planPill[data-tone='soon'] {
+  border-color: var(--gt-semantic-color-warning);
+  background: var(--gt-semantic-color-warning-tint);
+  color: var(--gt-semantic-color-warning-ink);
+}
+
+/* From 1100 px the running free week is the pill in the bar, not a whole line. */
+@media (min-width: 1100px) {
+  .planPill {
+    display: inline-flex;
+  }
+
+  .planBanner[data-pill-wide] {
+    display: none;
+  }
 }
 
 .planBannerLink {

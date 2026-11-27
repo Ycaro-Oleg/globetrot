@@ -49,6 +49,13 @@ export function createUpdatePreferences(deps: Pick<Ports, 'unitOfWork' | 'clock'
         theme: input.theme,
         motion: input.motion,
         homeCity: input.homeCity,
+        // A home city changed without a point (typed in settings) must not keep the old city's point.
+        homePoint:
+          input.homePoint !== undefined
+            ? input.homePoint
+            : input.homeCity !== undefined
+              ? null
+              : undefined,
         pipOptIn: input.pipOptIn,
         pipLook: input.pipLook,
         pipName: input.pipName,

@@ -4,10 +4,6 @@ import {
   continentOf,
   CONTINENTS,
   DEFAULT_PIP_LOOK,
-  PIP_BAG_COLORS,
-  PIP_BAGS,
-  PIP_HATS,
-  PIP_OUTFITS,
   type Continent,
   type PipLook,
 } from '@globetrot/domain';
@@ -20,22 +16,12 @@ import { PipAvatar } from '../_components/pip-avatar';
 import { savePip } from './actions';
 import styles from './profile.module.css';
 
-type Category = 'outfit' | 'hat' | 'bag';
 const SHOWN = 18;
-const SWATCH: Record<PipLook['bagColor'], string> = {
-  amber: '#F59E0B',
-  cyan: '#06B6D4',
-  pink: '#EC4899',
-};
-
-const same = (a: PipLook, b: PipLook) =>
-  a.hat === b.hat && a.outfit === b.outfit && a.bag === b.bag && a.bagColor === b.bagColor;
-const pick = <T,>(list: readonly T[]) => list[Math.floor(Math.random() * list.length)]!;
 
 /**
- * The person's own profile (design handoff v2, "Profile"): their Pip on the halftone world, a few numbers, the
- * "My Pip" editor (outfit, hat, bag and its colour, a name; shuffle, undo, save) and their visas grouped by year
- * with a continent filter. Following, sharing and visa privacy arrive with the community.
+ * The person's own profile (design handoff v2, "Profile"): their Pip on the halftone world, a few numbers, "My Pip"
+ * (its name; the wardrobe is switched off for now, Pip is the globe) and their visas grouped by year with a
+ * continent filter. Following, sharing and visa privacy arrive with the community.
  */
 export function ProfileView({
   name,
@@ -58,48 +44,12 @@ export function ProfileView({
     name: savedName ?? '',
   });
   const [draft, setDraft] = useState(saved);
-  const [category, setCategory] = useState<Category>('outfit');
   const [status, setStatus] = useState<'idle' | 'saved' | 'error'>('idle');
   const [pending, startTransition] = useTransition();
-  const dirty = !same(draft.look, saved.look) || draft.name.trim() !== saved.name.trim();
-  const setLook = (change: Partial<PipLook>) => {
-    setStatus('idle');
-    setDraft((current) => ({ ...current, look: { ...current.look, ...change } }));
-  };
+  const dirty = draft.name.trim() !== saved.name.trim();
   const continents = new Set(
     (visas ?? []).map((visa) => continentOf(visa.countryCode)).filter(Boolean),
   );
-
-  const parts = [
-    draft.look.outfit !== 'none' ? t(`outfits.${draft.look.outfit}`) : null,
-    draft.look.hat !== 'none' ? t(`hats.${draft.look.hat}`) : null,
-    `${t(`bags.${draft.look.bag}`)} (${t(`colors.${draft.look.bagColor}`).toLowerCase()})`,
-  ].filter(Boolean);
-
-  const options =
-    category === 'outfit'
-      ? PIP_OUTFITS.filter((value) => value !== 'none').map((value) => ({
-          key: value,
-          label: t(`outfits.${value}`),
-          look: { ...draft.look, outfit: value },
-          pressed: draft.look.outfit === value,
-          choose: () => setLook({ outfit: value }),
-        }))
-      : category === 'hat'
-        ? PIP_HATS.filter((value) => value !== 'none').map((value) => ({
-            key: value,
-            label: t(`hats.${value}`),
-            look: { ...draft.look, hat: value },
-            pressed: draft.look.hat === value,
-            choose: () => setLook({ hat: value }),
-          }))
-        : PIP_BAGS.map((value) => ({
-            key: value,
-            label: t(`bags.${value}`),
-            look: { ...draft.look, bag: value },
-            pressed: draft.look.bag === value,
-            choose: () => setLook({ bag: value }),
-          }));
 
   return (
     <section className={styles.page}>
@@ -107,16 +57,13 @@ export function ProfileView({
         <div className={styles.coverArt} aria-hidden="true" />
         <div className={styles.identity}>
           <div className={styles.avatar}>
-            <PipAvatar size={124} look={saved.look} />
+            <PipAvatar size={124} />
           </div>
           <div className={styles.who}>
             <h1>{name}</h1>
             {homeCity ? <span>{t('homeFrom', { city: homeCity })}</span> : null}
           </div>
           <div className={styles.coverActions}>
-            <a href="#my-pip" className={styles.primary}>
-              {t('editPip')}
-            </a>
             <Link href="/settings" className={styles.ghost}>
               {t('settings')}
             </Link>
@@ -142,15 +89,12 @@ export function ProfileView({
         <div className={styles.cardHead}>
           <div>
             <h2 id="my-pip-title">{t('myPip')}</h2>
-            <p>{t('myPipSub')}</p>
+            <p>{t('myPipGlobe')}</p>
           </div>
           {dirty ? <span className={styles.unsaved}>● {t('unsaved')}</span> : null}
         </div>
-        <div className={styles.editor}>
-          <div className={styles.preview}>
-            <div className={styles.stage}>
-              <PipAvatar size={220} look={draft.look} />
-            </div>
+        <div className={styles.nameOnly}>
+          <div className={styles.nameForm}>
             <label className={styles.field}>
               <span>{t('pipName')}</span>
               <input
@@ -166,99 +110,7 @@ export function ProfileView({
               />
               <small>{t('pipNameHelp')}</small>
             </label>
-            <p className={styles.lookText}>
-              {draft.look.outfit === 'none' && draft.look.hat === 'none'
-                ? t('lookBare')
-                : t('lookSummary', { parts: parts.join(' · ') })}
-            </p>
-          </div>
-
-          <div className={styles.controls}>
-            <div className={styles.tabs} role="tablist" aria-label={t('parts')}>
-              {(['outfit', 'hat', 'bag'] as const).map((key) => (
-                <button
-                  key={key}
-                  type="button"
-                  role="tab"
-                  id={`pip-tab-${key}`}
-                  aria-selected={category === key}
-                  aria-controls="pip-panel"
-                  onClick={() => setCategory(key)}
-                >
-                  {key === 'outfit' ? t('tabOutfit') : key === 'hat' ? t('tabHat') : t('tabBag')}
-                </button>
-              ))}
-            </div>
-            <div id="pip-panel" role="tabpanel" aria-labelledby={`pip-tab-${category}`}>
-              <p className={styles.typeTitle}>
-                {category === 'outfit'
-                  ? t('pickOutfit')
-                  : category === 'hat'
-                    ? t('pickHat')
-                    : t('pickBag')}
-              </p>
-              <div className={styles.options}>
-                {options.map((option) => (
-                  <button
-                    key={option.key}
-                    type="button"
-                    aria-pressed={option.pressed}
-                    onClick={option.choose}
-                  >
-                    <span className={styles.thumb}>
-                      <PipAvatar size={84} look={option.look} still />
-                    </span>
-                    <span>{option.label}</span>
-                  </button>
-                ))}
-              </div>
-              {category !== 'bag' ? (
-                <button
-                  type="button"
-                  className={styles.none}
-                  aria-pressed={
-                    category === 'outfit' ? draft.look.outfit === 'none' : draft.look.hat === 'none'
-                  }
-                  onClick={() =>
-                    setLook(category === 'outfit' ? { outfit: 'none' } : { hat: 'none' })
-                  }
-                >
-                  {category === 'outfit' ? t('noOutfit') : t('noHat')}
-                </button>
-              ) : (
-                <div className={styles.colors}>
-                  <p className={styles.typeTitle}>{t('bagColor')}</p>
-                  <div>
-                    {PIP_BAG_COLORS.map((color) => (
-                      <button
-                        key={color}
-                        type="button"
-                        aria-pressed={draft.look.bagColor === color}
-                        onClick={() => setLook({ bagColor: color })}
-                      >
-                        <span style={{ background: SWATCH[color] }} aria-hidden="true" />
-                        {t(`colors.${color}`)}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
             <div className={styles.editorActions}>
-              <button
-                type="button"
-                className={styles.ghost}
-                onClick={() =>
-                  setLook({
-                    hat: pick(PIP_HATS),
-                    outfit: pick(PIP_OUTFITS),
-                    bag: pick(PIP_BAGS),
-                    bagColor: pick(PIP_BAG_COLORS),
-                  })
-                }
-              >
-                ⟳ {t('shuffle')}
-              </button>
               {dirty ? (
                 <button type="button" className={styles.ghost} onClick={() => setDraft(saved)}>
                   {t('revert')}
@@ -270,7 +122,8 @@ export function ProfileView({
                 disabled={!dirty || pending}
                 onClick={() =>
                   startTransition(async () => {
-                    const result = await savePip(draft.look, draft.name);
+                    // The stored look is kept as it is, for when the wardrobe comes back.
+                    const result = await savePip(saved.look, draft.name);
                     if (result.ok) {
                       setSaved(draft);
                       setStatus('saved');

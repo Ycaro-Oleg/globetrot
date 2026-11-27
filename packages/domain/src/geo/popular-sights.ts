@@ -12,6 +12,7 @@ export const SIGHT_KINDS = [
   'neighbourhood',
   'market',
   'beach',
+  'daytrip',
 ] as const;
 export type SightKind = (typeof SIGHT_KINDS)[number];
 
@@ -24,6 +25,8 @@ export const SIGHT_MINUTES: Readonly<Record<SightKind, number>> = {
   neighbourhood: 120,
   market: 75,
   beach: 180,
+  /** A day trip out of town or a theme park: most of a day. */
+  daytrip: 480,
 };
 
 export interface PopularSight {
@@ -65,7 +68,7 @@ const BY_CITY: Readonly<Record<string, readonly Row[]>> = {
     ['Alfama', 'Alfama', 'neighbourhood'],
     ['São Jorge Castle', 'Castelo de São Jorge', 'viewpoint'],
     ['Time Out Market', 'Time Out Market', 'market'],
-    ['Day trip to Sintra', 'Bate-volta a Sintra', 'landmark'],
+    ['Day trip to Sintra', 'Bate-volta a Sintra', 'daytrip'],
   ],
   'gt:new-york': [
     ['Central Park', 'Central Park', 'park'],
@@ -100,10 +103,10 @@ const BY_CITY: Readonly<Record<string, readonly Row[]>> = {
     ['Ubud Art Market', 'Mercado de Arte de Ubud', 'market'],
   ],
   'gt:orlando': [
-    ['Magic Kingdom', 'Magic Kingdom', 'landmark'],
-    ['EPCOT', 'EPCOT', 'landmark'],
-    ['Universal Studios', 'Universal Studios', 'landmark'],
-    ['Kennedy Space Center', 'Kennedy Space Center', 'museum'],
+    ['Magic Kingdom', 'Magic Kingdom', 'daytrip'],
+    ['EPCOT', 'EPCOT', 'daytrip'],
+    ['Universal Studios', 'Universal Studios', 'daytrip'],
+    ['Kennedy Space Center', 'Kennedy Space Center', 'daytrip'],
     ['Disney Springs', 'Disney Springs', 'neighbourhood'],
     ['Lake Eola Park', 'Parque Lake Eola', 'park'],
   ],
@@ -121,15 +124,15 @@ const BY_CITY: Readonly<Record<string, readonly Row[]>> = {
     ['Barrio Lastarria', 'Bairro Lastarria', 'neighbourhood'],
     ['Mercado Central', 'Mercado Central', 'market'],
     ['Sky Costanera', 'Sky Costanera', 'viewpoint'],
-    ['Day trip to a Maipo Valley winery', 'Bate-volta a uma vinícola no Vale do Maipo', 'landmark'],
+    ['Day trip to a Maipo Valley winery', 'Bate-volta a uma vinícola no Vale do Maipo', 'daytrip'],
   ],
   'gt:cancun': [
     ['Playa Delfines', 'Playa Delfines', 'beach'],
-    ['Isla Mujeres', 'Isla Mujeres', 'beach'],
-    ['Chichén Itzá', 'Chichén Itzá', 'landmark'],
+    ['Isla Mujeres', 'Isla Mujeres', 'daytrip'],
+    ['Chichén Itzá', 'Chichén Itzá', 'daytrip'],
     ['A cenote swim', 'Um mergulho num cenote', 'park'],
     ['Underwater Museum of Art (MUSA)', 'Museu Subaquático de Arte (MUSA)', 'museum'],
-    ['Tulum ruins', 'Ruínas de Tulum', 'landmark'],
+    ['Tulum ruins', 'Ruínas de Tulum', 'daytrip'],
   ],
 };
 

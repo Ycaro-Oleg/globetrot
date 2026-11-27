@@ -82,6 +82,8 @@ export const postSchema = z.object({
   comments: z.number().int(),
   /** Someone the viewer follows who liked it. */
   likedBy: personSchema.nullable(),
+  /** The viewer's own trip copied from this route post (not archived), or null. */
+  copiedTripId: z.uuid().nullable(),
 });
 export type PostView = z.infer<typeof postSchema>;
 

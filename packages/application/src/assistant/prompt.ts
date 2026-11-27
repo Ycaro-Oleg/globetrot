@@ -15,6 +15,15 @@ export interface PipContext {
   readonly checklist: Readonly<Record<string, readonly string[]>>;
   readonly costs: { readonly total: string; readonly byCategory: Readonly<Record<string, string>> };
   readonly savings: { readonly saved: string; readonly monthly: string };
+  /** "Fill this pin": real places near one stop, from the person's map. Spots may only be picked among these. */
+  readonly candidates?: {
+    readonly stopId: string;
+    readonly places: readonly {
+      readonly id: string;
+      readonly name: string;
+      readonly kind: string;
+    }[];
+  };
 }
 
 const LANGUAGES: Record<string, string> = { en: 'English', 'pt-BR': 'Brazilian Portuguese' };
@@ -39,12 +48,14 @@ export function systemPrompt(locale: string): string {
     `- {"kind":"addChecklistItem","group":one of ${CHECKLIST_GROUPS.join('|')},"label":string,"reason":string}`,
     `- {"kind":"addExpense","category":one of ${EXPENSE_CATEGORIES.join('|')},"description":string,"amount":decimal string in the trip currency,"reason":string}`,
     '- {"kind":"setMonthly","amount":decimal string in the trip currency,"reason":string}',
+    '- {"kind":"addSpot","candidate":candidate id ("c1", "c2", ...),"reason":string} (only when trip.candidates is given)',
     'Rules:',
     '- Use the stop ids exactly as given ("s1", "s2", ...). Never invent ids.',
     '- Coordinates of a new stop are the approximate centre of that city.',
     '- Amounts are rough typical-range estimates for planning, in the trip currency, never live prices. Say "estimate" in the reason.',
     '- Never claim bookings, availability, opening hours, prices you cannot know, or visa and entry rules. For entry rules, tell the traveller to check the official government site.',
     '- Keep places real and well known. Do not repeat what the trip already has.',
+    '- When trip.candidates is given, the traveller asked you to fill that stop: answer only addSpot changes, picking at most 8 of the candidates by their id, with a mix of where to sleep, eat and what to see when the candidates allow it. Never invent a place or an id.',
     '- If the request is not about planning this trip, return no changes and say so kindly in the summary.',
     `- Write "summary" (one sentence) and every "reason" (one short sentence) in ${language}.`,
   ].join('\n');

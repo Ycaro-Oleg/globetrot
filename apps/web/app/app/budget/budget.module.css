@@ -121,7 +121,7 @@
   margin: 0;
   font-size: var(--gt-primitive-type-answer);
   font-weight: 800;
-  letter-spacing: -0.05em;
+  letter-spacing: -0.022em;
   line-height: 1.02;
   text-wrap: pretty;
 }
@@ -166,7 +166,31 @@
   height: 100%;
 }
 
+/* The jar a month fills, up to the goal: a light dashed outline behind the bar. */
+.barGoal {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  border: 1.5px dashed #cbd5e1;
+  border-bottom: 0;
+  border-radius: 10px 10px 0 0;
+  background: rgb(203 213 225 / 0.18);
+  pointer-events: none;
+}
+
+.gapLabel {
+  position: absolute;
+  inset-inline: 0;
+  z-index: 1;
+  color: var(--gt-semantic-color-text-secondary);
+  font-size: 11px;
+  font-weight: 800;
+  text-align: center;
+  pointer-events: none;
+}
+
 .bar {
+  position: relative;
   width: 100%;
   border-radius: 10px 10px 4px 4px;
   background: repeating-linear-gradient(135deg, #94a3b8 0 5px, #cbd5e1 5px 10px);
@@ -347,7 +371,7 @@
   margin: 0;
   font-size: 40px;
   font-weight: 800;
-  letter-spacing: -0.05em;
+  letter-spacing: -0.022em;
   line-height: 1;
   font-variant-numeric: tabular-nums;
 }
@@ -478,7 +502,7 @@
   margin: 0;
   font-size: 22px;
   font-weight: 800;
-  letter-spacing: -0.04em;
+  letter-spacing: -0.018em;
 }
 
 .listHead span {
@@ -524,6 +548,13 @@
 .rowMain span {
   color: var(--gt-semantic-color-text-secondary);
   font-size: 12px;
+}
+
+/* The rough guess explains itself: real costs come out of it. */
+.rowMain .guessNote {
+  color: var(--gt-semantic-color-text);
+  font-size: 12px;
+  line-height: 1.4;
 }
 
 .chip {
@@ -605,7 +636,7 @@
   margin: 0;
   font-size: 26px;
   font-weight: 800;
-  letter-spacing: -0.05em;
+  letter-spacing: -0.022em;
 }
 
 .close {

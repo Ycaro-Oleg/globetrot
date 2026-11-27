@@ -128,7 +128,7 @@
   margin: 0;
   font-size: 28px;
   font-weight: 800;
-  letter-spacing: -0.04em;
+  letter-spacing: -0.018em;
   font-variant-numeric: tabular-nums;
 }
 
@@ -156,7 +156,7 @@
   margin: 0;
   font-size: 24px;
   font-weight: 800;
-  letter-spacing: -0.04em;
+  letter-spacing: -0.018em;
 }
 
 .cardHead p {
@@ -560,4 +560,29 @@
   overflow: hidden;
   clip-path: inset(50%);
   white-space: nowrap;
+}
+
+/* "My Pip" while the wardrobe is off: Pip and its name, side by side on a wide screen. */
+.nameOnly {
+  display: grid;
+  gap: 20px;
+  align-items: center;
+}
+
+.nameForm {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+@media (min-width: 720px) {
+  /* Pip is already on the cover: here only its name, at a readable width. */
+  .nameOnly {
+    grid-template-columns: minmax(0, 28rem);
+  }
+}
+
+/* The name form's actions sit under the field, at its start. */
+.nameForm .editorActions .cta {
+  margin-inline-start: 0;
 }

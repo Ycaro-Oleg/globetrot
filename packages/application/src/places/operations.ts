@@ -40,7 +40,7 @@ function allow(deps: Pick<Ports, 'rateLimiter'>, userId: string) {
 }
 
 /** Place search for the board. The provider key never leaves the server; queries are not logged or audited. */
-export function createSearchPlaces(deps: Pick<Ports, 'geocoding' | 'rateLimiter'>) {
+export function createSearchPlaces(deps: Pick<Ports, 'geocoding' | 'cities' | 'rateLimiter'>) {
   return defineOperation({
     name: 'searchPlaces',
     kind: 'query',
@@ -53,8 +53,10 @@ export function createSearchPlaces(deps: Pick<Ports, 'geocoding' | 'rateLimiter'
         limit: 8,
       });
       if (places !== null) return { places };
-      // The provider is not configured or did not answer: popular destinations still work, so a first trip and
-      // most searches never dead-end. Smaller places need the provider.
+      // The provider is not configured or did not answer: every city of 15 000 people or more still works (the
+      // built-in index), then the popular destinations. Streets and restaurants need the provider.
+      const cities = deps.cities.search(input.query, { language: input.language, limit: 8 });
+      if (cities.length) return { places: cities };
       const popular = searchPopularPlaces(input.query, 8);
       if (popular.length === 0) {
         throw new UnavailableError('Place search is not available right now');
@@ -70,6 +72,23 @@ export function createSearchPlaces(deps: Pick<Ports, 'geocoding' | 'rateLimiter'
           attribution: 'Globetrot',
         })),
       };
+    },
+  });
+}
+
+/**
+ * Cities by name, for picking a home city or a destination: the built-in index, never the provider, so it is
+ * instant and free. A name in another language works for big cities ("Londres" finds London).
+ */
+export function createSearchCities(deps: Pick<Ports, 'cities' | 'rateLimiter'>) {
+  return defineOperation({
+    name: 'searchCities',
+    kind: 'query',
+    input: searchPlacesInput,
+    output: z.object({ places: z.array(placeSchema) }),
+    async handler(actor, input) {
+      allow(deps, actor.userId);
+      return { places: deps.cities.search(input.query, { language: input.language, limit: 8 }) };
     },
   });
 }

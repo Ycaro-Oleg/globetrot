@@ -44,7 +44,7 @@ describe('Globetrot landing page', () => {
     expect(html).toContain(`aria-label="${catalogs[locale].auth.language}"`);
     expect(html).toContain('href="/signup"');
     expect(html).toContain('href="/login"');
-    for (const key of ['step1Title', 'step2Title', 'step3Title', 'pipTitle', 'faq1Q'] as const) {
+    for (const key of ['step1Title', 'step2Title', 'step3Title', 'pipTitle', 'faq5Q'] as const) {
       expect(visibleText(html)).toContain(copy[key]);
     }
     expect(visibleText(html)).toContain(copy.trip3Body);
@@ -68,32 +68,30 @@ describe('Globetrot landing page', () => {
   it('has one coral call to action in the hero, the Pip demo and the FAQ as native disclosures', () => {
     const html = render('en');
     expect(visibleText(html)).toContain(catalogs.en.landing.approve);
-    expect(html.match(/<details/g)).toHaveLength(8);
+    expect(html.match(/<details/g)).toHaveLength(4);
     expect(html).toContain('/world-halftone-blue.svg');
   });
 
   it.each(SUPPORTED_LOCALES)(
-    'answers "Can I go?" with the savings rule before anyone types, and leads to sign-up (%s)',
+    'asks one question at a time, starting with where to go (%s)',
     (locale) => {
       const html = render(locale);
-      const copy = catalogs[locale].landing;
+      const copy = catalogs[locale].landing.suggest;
       const text = visibleText(html);
-      expect(text).toContain(copy.calc.title);
-      // US$3,000 trip, US$500 saved, US$300 a month: 9 months to go.
-      expect(text).toContain(copy.calc.yes);
-      expect(text).toMatch(/9/);
-      expect(text).toContain(copy.calc.note);
-      expect(html).toContain('href="/signup"');
-      expect(html).toMatch(/type="range"/);
+      expect(text).toContain(copy.title);
+      expect(text).toContain(copy.step.replace('{n}', '1').replace('{total}', '4'));
+      expect(text).toContain(copy.next);
+      expect(text).not.toContain(copy.stepMoney);
+      expect(html).toMatch(/aria-pressed="true"[^>]*><strong>(Japan|Japão)<\/strong>/);
     },
   );
 
   it.each(SUPPORTED_LOCALES)(
-    'closes with a call to action, honest facts and the questions that hold people back (%s)',
+    'closes with a call to action and the questions that hold people back (%s)',
     (locale) => {
       const text = visibleText(render(locale));
       const copy = catalogs[locale].landing;
-      for (const key of ['closeTitle', 'fact1Title', 'fact5Title', 'faq5Q', 'faq6Q'] as const) {
+      for (const key of ['closeTitle', 'faq5Q', 'faq6Q', 'faq7Q', 'faq8Q'] as const) {
         expect(text).toContain(copy[key]);
       }
       expect(text).not.toContain('Most popular');
@@ -121,15 +119,17 @@ describe('Globetrot landing page', () => {
     },
   );
 
-  it.each([
-    ['en', 'board-en.webp'],
-    ['pt-BR', 'board-pt-BR.webp'],
-  ] as const)("shows a real screen of the app in the visitor's language (%s)", (locale, file) => {
-    const html = render(locale);
-    expect(html).toContain(`/landing/${file}`);
-    expect(html).toContain(`/landing/${file.replace('board-', 'board-phone-')}`);
-    expect(html).toContain(`alt="${catalogs[locale].landing.seeAlt}"`);
-  });
+  it.each(SUPPORTED_LOCALES)(
+    'keeps a box for the live map, loaded when it comes into view, with the photo credits (%s)',
+    (locale) => {
+      const html = render(locale);
+      const live = catalogs[locale].landing.liveDemo;
+      expect(html).toContain(`aria-label="${live.map}"`);
+      expect(visibleText(html)).toContain(live.loading);
+      expect(visibleText(html)).toContain(live.credits);
+      expect(html).toContain('https://commons.wikimedia.org/wiki/File:Sensoji_2023.jpg');
+    },
+  );
 
   it('never shows an amount in reais: examples are in USD, the default currency', () => {
     for (const locale of SUPPORTED_LOCALES) {

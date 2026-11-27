@@ -75,6 +75,7 @@ export function createCreateTripFromExample(deps: Pick<Ports, 'unitOfWork' | 'cl
             legMode: stop.legMode,
             note: null,
             visited: false,
+            spotRoute: false,
             spots: [],
             todos: [],
             photos: [],

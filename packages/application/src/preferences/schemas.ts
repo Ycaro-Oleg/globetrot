@@ -72,6 +72,8 @@ export const preferencesSchema = z.object({
   theme: themeSchema,
   motion: motionSchema,
   homeCity: z.string().nullable(),
+  /** Where the home city is, when it was picked from the city list. */
+  homePoint: z.object({ latitude: z.number(), longitude: z.number() }).nullable(),
   pipOptIn: z.boolean(),
   pipLook: pipLookSchema,
   pipName: z.string().nullable(),
@@ -95,6 +97,15 @@ export const updatePreferencesFields = z.object({
     description: 'The city the person usually leaves from; null clears it.',
     example: 'São Paulo',
   }),
+  homePoint: z
+    .object({ latitude: z.number().min(-90).max(90), longitude: z.number().min(-180).max(180) })
+    .nullable()
+    .optional()
+    .meta({
+      description:
+        'Where the home city is (from the city list), so the map shows where trips start. Changing `homeCity` ' +
+        'without it clears it.',
+    }),
   pipOptIn: z
     .boolean()
     .optional()
@@ -127,6 +138,7 @@ export const DEFAULT_PREFERENCES: PreferencesView = {
   theme: DEFAULT_THEME_CHOICE,
   motion: DEFAULT_MOTION_CHOICE,
   homeCity: null,
+  homePoint: null,
   pipOptIn: false,
   pipLook: { ...DEFAULT_PIP_LOOK },
   pipName: null,
@@ -142,6 +154,7 @@ export const toPreferencesView = (record: PreferencesRecord): PreferencesView =>
   theme: record.theme,
   motion: record.motion,
   homeCity: record.homeCity,
+  homePoint: record.homePoint,
   pipOptIn: record.pipOptIn,
   pipLook: toPipLook(record.pipLook),
   pipName: record.pipName,

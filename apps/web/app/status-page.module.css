@@ -16,7 +16,7 @@
   margin: 0;
   font-size: clamp(30px, 5vw, 44px);
   font-weight: 800;
-  letter-spacing: -0.04em;
+  letter-spacing: -0.018em;
 }
 
 .page p {

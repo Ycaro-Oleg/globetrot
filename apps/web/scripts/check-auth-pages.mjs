@@ -869,13 +869,13 @@ try {
     entries.push(['shell-days-desktop', true, ...at('/app/days', VIEWPORTS.desktop)]);
     entries.push(['profile-desktop', true, ...at('/app/profile', VIEWPORTS.desktop)]);
     entries.push(['profile-phone', true, ...at('/app/profile', VIEWPORTS.phone)]);
+    // My Pip with a changed name: the save button and the "unsaved" mark (the wardrobe is off for now).
     entries.push([
-      'profile-pip-bag-tab',
+      'profile-pip-name-edited',
       true,
       async (page) => {
         await go(page, `${base}/app/profile`);
-        await page.locator('#pip-tab-bag').click();
-        await page.locator('#pip-tab-bag[aria-selected="true"]').waitFor();
+        await page.locator('#pip-name').fill('Pipoca');
       },
       VIEWPORTS.desktop,
     ]);
@@ -936,6 +936,39 @@ try {
         await go(page, `${base}/app/days`);
         await page.locator('main button', { hasText: '+' }).first().click();
         await page.locator('#place-name').waitFor();
+      },
+      VIEWPORTS.desktop,
+    ]);
+    // The pin's card on the map, opened from the route list (no tiles needed), then expanded.
+    const openPinCard = async (page, origin = base) => {
+      await go(page, `${origin}/app/board`);
+      await page.locator('ol li').first().locator('button').first().click();
+      await page
+        .locator('[role=group] button', { hasText: /Spots|Pontos/ })
+        .first()
+        .click();
+      await page.locator('[data-pin-card]').waitFor();
+    };
+    entries.push(['board-pin-card-desktop', true, openPinCard, VIEWPORTS.desktop]);
+    // With Pip on, the Spots tab also offers "Pip, suggest places in …".
+    entries.push([
+      'board-pin-card-pip-desktop',
+      true,
+      async (page) => {
+        await openPinCard(page, pipBase);
+        await page
+          .getByRole('button', { name: /^(Pip, suggest places in|Pip, sugira lugares em)/ })
+          .waitFor();
+      },
+      VIEWPORTS.desktop,
+    ]);
+    entries.push([
+      'board-pin-card-expanded-desktop',
+      true,
+      async (page) => {
+        await openPinCard(page);
+        await page.getByRole('button', { name: /^(Expand the card|Expandir o cartão)$/ }).click();
+        await page.locator('[data-pin-card][data-expanded]').waitFor();
       },
       VIEWPORTS.desktop,
     ]);

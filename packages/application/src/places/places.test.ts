@@ -45,13 +45,37 @@ describe('place search', () => {
     const fake = createFakePorts({ users });
     const app = createApplication(fake.ports);
     fake.places.offline = true;
-    const { places } = await app.searchPlaces.execute(ana, { query: 'lisb', language: 'pt-BR' });
+    // Kyoto is not in the (test) city index, so the popular list answers, in the person's language.
+    const { places } = await app.searchPlaces.execute(ana, { query: 'quio', language: 'pt-BR' });
     expect(places[0]).toMatchObject({
-      key: 'gt:lisbon',
-      name: 'Lisboa',
-      countryCode: 'PT',
+      key: 'gt:kyoto',
+      name: 'Quioto',
+      countryCode: 'JP',
       attribution: 'Globetrot',
     });
+  });
+
+  it('finds cities in the built-in index, bigger first, and a name typed in another language', async () => {
+    const fake = createFakePorts({ users });
+    const app = createApplication(fake.ports);
+    const fortaleza = await app.searchCities.execute(ana, { query: 'Fortal', language: 'pt-BR' });
+    expect(fortaleza.places[0]).toMatchObject({
+      key: 'gn:6320062',
+      name: 'Fortaleza',
+      region: 'Ceará',
+      countryCode: 'BR',
+      attribution: 'GeoNames',
+    });
+    const london = await app.searchCities.execute(ana, { query: 'Londres', language: 'pt-BR' });
+    expect(london.places[0]).toMatchObject({ name: 'Londres', countryCode: 'GB' });
+  });
+
+  it('searches the city index when the provider is down, before the popular list', async () => {
+    const fake = createFakePorts({ users });
+    const app = createApplication(fake.ports);
+    fake.places.offline = true;
+    const { places } = await app.searchPlaces.execute(ana, { query: 'Fortaleza' });
+    expect(places[0]).toMatchObject({ key: 'gn:6320062', attribution: 'GeoNames' });
   });
 
   it('limits how often one person can look places up', async () => {

@@ -50,7 +50,8 @@ export function milestones(
     saved: savedEnoughForStamp(trip.savings.saved, tripTotals(trip).total),
     docs: documents.length > 0 && documents.every((c) => c.done),
     stays: stopsNeedingBed.length > 0 && stopsNeedingBed.every((s) => hasStay(s.id)),
-    itin: days.length > 0 && emptyDays(trip).length === 0,
+    // Every night's day has a place; the departure day is optional, and a route of day trips only has none to plan.
+    itin: days.some((day) => !day.departure) && emptyDays(trip).length === 0,
     check: trip.checklist.length > 0 && trip.checklist.every((c) => c.done),
   };
   const ready = Object.values(state).every(Boolean) && isZero(plan.left);

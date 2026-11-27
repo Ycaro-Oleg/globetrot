@@ -1,11 +1,13 @@
 import { STOP_PHOTOS_MAX } from '@globetrot/domain';
 import { photoFields, photoSchema } from '../media/schemas';
 import {
+  DEFAULT_SPOT_KIND,
   DESTINATION_NAME_MAX_LENGTH,
   DESTINATION_NOTE_MAX_LENGTH,
   LEG_MODES,
   MAX_DESTINATIONS,
   MAX_NIGHTS_PER_DESTINATION,
+  SPOT_KINDS,
   STOP_ITEM_TEXT_MAX_LENGTH,
   STOP_SPOTS_MAX,
   STOP_TODOS_MAX,
@@ -17,6 +19,10 @@ const itemText = z.string().trim().min(1).max(STOP_ITEM_TEXT_MAX_LENGTH);
 
 export const stopSpotSchema = z.object({
   name: itemText.meta({ example: 'Fushimi Inari' }),
+  kind: z.enum(SPOT_KINDS).default(DEFAULT_SPOT_KIND).meta({
+    description:
+      'What the spot is, for its mini-pin: stay (where you sleep), food, sight, shop, transport (a station or airport) or other. Defaults to sight.',
+  }),
   latitude: z.number().min(-90).max(90).nullable().default(null),
   longitude: z.number().min(-180).max(180).nullable().default(null),
   done: z.boolean().default(false),
@@ -74,6 +80,10 @@ export const destinationFields = z.object({
     description:
       'The person marked it visited (their word, not a verification). The first visited stop in a country stamps a commemorative visa.',
   }),
+  spotRoute: z.boolean().default(false).meta({
+    description:
+      "Draw the route between this stop's spots that have a place: A, B, C… in the order of `spots`, straight lines.",
+  }),
   spots: z
     .array(stopSpotSchema)
     .max(STOP_SPOTS_MAX)
@@ -113,9 +123,11 @@ export const destinationSchema = z.object({
   note: z.string().nullable(),
   legMode: z.enum(LEG_MODES).nullable(),
   visited: z.boolean(),
+  spotRoute: z.boolean(),
   spots: z.array(
     z.object({
       name: z.string(),
+      kind: z.enum(SPOT_KINDS),
       latitude: z.number().nullable(),
       longitude: z.number().nullable(),
       done: z.boolean(),
@@ -165,7 +177,8 @@ export const toDestinationView = (record: DestinationRecord): DestinationView =>
   note: record.note,
   legMode: (record.legMode as DestinationView['legMode']) ?? null,
   visited: record.visited,
-  spots: record.spots.map((spot) => ({ ...spot })),
+  spotRoute: record.spotRoute,
+  spots: record.spots.map((spot) => ({ ...spot, kind: spot.kind ?? DEFAULT_SPOT_KIND })),
   todos: record.todos.map((todo) => ({ ...todo })),
   photos: record.photos.map((photo) => ({ ...photo })),
 });

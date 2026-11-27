@@ -1,0 +1,3 @@
+ALTER TABLE "user_preference" ADD COLUMN "home_latitude" double precision;--> statement-breakpoint
+ALTER TABLE "user_preference" ADD COLUMN "home_longitude" double precision;--> statement-breakpoint
+ALTER TABLE "user_preference" ADD CONSTRAINT "user_preference_home_point_valid" CHECK (("user_preference"."home_latitude" is null and "user_preference"."home_longitude" is null) or ("user_preference"."home_latitude" between -90 and 90 and "user_preference"."home_longitude" between -180 and 180));

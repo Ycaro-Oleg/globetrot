@@ -79,7 +79,8 @@ describe('day plan', () => {
     const plan = await add('B');
     const [a, b] = plan.places.map((p) => p.id) as [string, string];
     await expect(
-      app.moveDayPlace.execute(as(ana), { tripId: trip.id, placeId: a, day: 4 }),
+      // Three nights make four days (the last is the departure day): there is no day 5.
+      app.moveDayPlace.execute(as(ana), { tripId: trip.id, placeId: a, day: 5 }),
     ).rejects.toBeInstanceOf(ValidationError);
     await app.moveDayPlace.execute(as(ana), { tripId: trip.id, placeId: b, day: 2 });
     await expect(
@@ -91,8 +92,8 @@ describe('day plan', () => {
     const { app, trip, add, kyoto } = await setup();
     const plan = await add('Fushimi Inari', kyoto.id);
     const id = plan.places[0]!.id;
-    await app.moveDayPlace.execute(as(ana), { tripId: trip.id, placeId: id, day: 3 });
-    // Kyoto is dropped from the route: day 3 no longer exists and the stop is gone.
+    await app.moveDayPlace.execute(as(ana), { tripId: trip.id, placeId: id, day: 4 });
+    // Kyoto is dropped from the route: two nights make three days, so day 4 is gone, and so is the stop.
     await app.replaceDestinations.execute(as(ana), {
       tripId: trip.id,
       destinations: [stop('Tokyo', 2)],

@@ -45,6 +45,11 @@
   color: var(--surface);
 }
 
+/* Where a section link lands: a little air above the section's top. */
+.site [id] {
+  scroll-margin-top: 16px;
+}
+
 .nav {
   position: relative;
   z-index: 3;
@@ -65,7 +70,7 @@
   color: inherit;
   font-size: 24px;
   font-weight: 800;
-  letter-spacing: -0.06em;
+  letter-spacing: -0.028em;
   text-decoration: none;
 }
 
@@ -172,7 +177,7 @@
   margin: 0;
   font-size: var(--gt-primitive-type-hero);
   font-weight: 800;
-  letter-spacing: -0.065em;
+  letter-spacing: -0.03em;
   line-height: 0.93;
   text-wrap: balance;
 }
@@ -208,6 +213,21 @@
   box-shadow: 0 10px 24px -10px var(--coral);
 }
 
+.cta {
+  transition:
+    transform 180ms cubic-bezier(0.2, 0.8, 0.2, 1.4),
+    box-shadow 180ms ease;
+}
+
+.cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 32px -12px var(--coral);
+}
+
+.cta:active {
+  transform: scale(0.97);
+}
+
 .heroGhost {
   display: inline-flex;
   align-items: center;
@@ -221,11 +241,6 @@
   text-decoration: none;
 }
 
-.heroNote {
-  color: #94a3b8;
-  font-size: 13px;
-}
-
 .world {
   position: relative;
   z-index: 1;
@@ -233,11 +248,85 @@
   margin: 8px auto -40px;
 }
 
+.heroRoutes {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  mask-image: linear-gradient(180deg, transparent 0%, #000 14%);
+}
+
+.heroRoute {
+  fill: none;
+  stroke: #fb923c;
+  stroke-width: 3;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 6px rgb(251 146 60 / 0.7));
+}
+
+.heroPlane {
+  fill: #ffffff;
+  filter: drop-shadow(0 0 6px rgb(255 255 255 / 0.9));
+}
+
+.heroRouteEnd {
+  fill: none;
+  stroke: #fb923c;
+  stroke-width: 3;
+  opacity: 0;
+}
+
+.heroCityGlow {
+  fill: rgb(147 197 253 / 0.25);
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: city-glow 2.6s ease-in-out infinite;
+}
+
+.heroCity:nth-of-type(2n) .heroCityGlow {
+  animation-delay: -1.3s;
+}
+
+.heroCityDot {
+  fill: #e0f2fe;
+}
+
+.heroCityName {
+  fill: #e2e8f0;
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  paint-order: stroke;
+  stroke: #0f172a;
+  stroke-width: 4px;
+  stroke-linejoin: round;
+}
+
+@keyframes city-glow {
+  0%,
+  100% {
+    transform: scale(0.8);
+    opacity: 0.6;
+  }
+
+  50% {
+    transform: scale(1.3);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .heroCityGlow {
+    animation: none;
+  }
+}
+
 .world img {
   display: block;
   width: 100%;
   height: auto;
-  mask-image: linear-gradient(180deg, transparent 0%, #000 35%);
+  mask-image: linear-gradient(180deg, transparent 0%, #000 18%);
 }
 
 /* --- Primary action in the bar --- */
@@ -273,7 +362,36 @@
   margin: 0;
   font-size: clamp(22px, 2.4vw, 28px);
   font-weight: 800;
-  letter-spacing: -0.04em;
+  letter-spacing: -0.018em;
+}
+
+.calcHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+}
+
+.calcCurrency {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ink-2);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.calcCurrency select {
+  min-height: 44px;
+  max-width: 100%;
+  padding: 0 12px;
+  border: 1px solid var(--input-border);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
+  font-weight: 700;
 }
 
 .calcGrid {
@@ -283,7 +401,17 @@
 
 .calcFields {
   display: grid;
-  gap: 14px;
+  align-content: start;
+  gap: 18px;
+}
+
+/* Beside a long plan the choices stay in view while the plan scrolls by. */
+@media (min-width: 720px) {
+  .calcFields {
+    position: sticky;
+    top: 16px;
+    align-self: start;
+  }
 }
 
 .calcField {
@@ -300,113 +428,127 @@
   font-weight: 800;
 }
 
-.calcInput {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 52px;
-  padding-inline-start: 16px;
-  border: 1px solid var(--input-border);
-  border-radius: 14px;
-  background: #fff;
-  color: var(--ink-2);
-}
-
-.calcInput input {
-  flex: 1;
-  min-width: 0;
-  min-height: 50px;
-  border: 0;
-  border-radius: 12px;
-  background: transparent;
-  color: var(--ink);
-  font: inherit;
-  font-size: 18px;
-  font-weight: 800;
-}
-
-.calcField input[type='range'] {
+/* The sliders: a filled track and a big thumb. */
+.calcRange {
+  --thumb: 30px;
   width: 100%;
   height: 44px;
   margin: 0;
-  accent-color: var(--blue);
+  background: transparent;
+  cursor: grab;
+  appearance: none;
 }
 
-.calcAnswer {
+.calcRange:active {
+  cursor: grabbing;
+}
+
+.calcRange::-webkit-slider-runnable-track {
+  height: 12px;
+  border-radius: 99px;
+  background: linear-gradient(
+    90deg,
+    var(--blue) 0%,
+    #f97316 calc(var(--fill) * 100%),
+    #dbe3ee calc(var(--fill) * 100%)
+  );
+}
+
+.calcRange::-moz-range-track {
+  height: 12px;
+  border-radius: 99px;
+  background: #dbe3ee;
+}
+
+.calcRange::-moz-range-progress {
+  height: 12px;
+  border-radius: 99px;
+  background: linear-gradient(90deg, var(--blue), #f97316);
+}
+
+.calcRange::-webkit-slider-thumb {
+  width: var(--thumb);
+  height: var(--thumb);
+  margin-top: calc((12px - var(--thumb)) / 2);
+  border: 4px solid #fff;
+  border-radius: 50%;
+  background: #f97316;
+  box-shadow:
+    0 0 0 2px var(--blue),
+    0 6px 16px -4px rgb(15 23 42 / 0.45);
+  transition: transform 160ms ease;
+  appearance: none;
+}
+
+.calcRange::-moz-range-thumb {
+  width: var(--thumb);
+  height: var(--thumb);
+  box-sizing: border-box;
+  border: 4px solid #fff;
+  border-radius: 50%;
+  background: #f97316;
+  box-shadow:
+    0 0 0 2px var(--blue),
+    0 6px 16px -4px rgb(15 23 42 / 0.45);
+}
+
+.calcRange:active::-webkit-slider-thumb {
+  transform: scale(1.15);
+}
+
+.calcRange:focus-visible {
+  outline: 3px solid var(--blue);
+  outline-offset: 4px;
+  border-radius: 99px;
+}
+
+.calcChips {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 14px;
-  padding: 20px;
-  border-radius: 20px;
-  background: var(--band);
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
 }
 
-.calcSentence {
-  margin: 0;
-  font-size: clamp(24px, 3vw, 32px);
-  font-weight: 800;
-  letter-spacing: -0.045em;
-  line-height: 1.12;
-  text-wrap: pretty;
-}
-
-.calcLead {
-  color: #b91c1c;
-}
-
-.calcAnswer[data-ok] .calcLead {
-  color: #047857;
-}
-
-.calcNote {
-  margin: 0;
-  color: var(--ink-2);
+.calcChips button {
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--input-border);
+  border-radius: 99px;
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
   font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    transform 140ms ease,
+    background-color 140ms ease,
+    border-color 140ms ease;
 }
 
-.calcInput:focus-within {
+.calcChips button:hover {
+  border-color: var(--blue);
+  transform: translateY(-1px);
+}
+
+.calcChips button:active {
+  transform: scale(0.96);
+}
+
+.calcChips button[aria-pressed='true'] {
+  border-color: var(--deep);
+  background: var(--deep);
+  color: #fff;
+}
+
+.calcChips button:focus-visible {
   outline: 3px solid var(--blue);
   outline-offset: 2px;
-}
-
-.calcInput input:focus-visible {
-  outline: none;
 }
 
 .calc a:focus-visible,
 .calc input:focus-visible {
   outline-color: var(--blue);
-}
-
-/* --- What you get: plain facts, no icons --- */
-.facts {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
-  gap: 18px 28px;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 36px max(16px, env(safe-area-inset-right, 0px)) 8px
-    max(16px, env(safe-area-inset-left, 0px));
-  list-style: none;
-}
-
-.facts li {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.facts strong {
-  font-size: 17px;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-}
-
-.facts span {
-  color: var(--ink-2);
-  font-size: 15px;
-  line-height: 1.45;
 }
 
 /* --- Closing call to action --- */
@@ -427,7 +569,7 @@
   margin: 0;
   font-size: clamp(36px, 5.4vw, 64px);
   font-weight: 800;
-  letter-spacing: -0.055em;
+  letter-spacing: -0.025em;
   line-height: 1;
   text-wrap: balance;
 }
@@ -456,23 +598,6 @@
 
   .heroCopy h1 {
     font-size: clamp(36px, 10.4vw, 46px);
-  }
-}
-
-.calcSentence[data-changed] {
-  animation: answer 260ms cubic-bezier(0.2, 0.7, 0.2, 1);
-}
-
-@keyframes answer {
-  from {
-    opacity: 0.4;
-    transform: translateY(4px);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .calcSentence[data-changed] {
-    animation: none;
   }
 }
 
@@ -517,31 +642,6 @@
   line-height: 1.5;
 }
 
-/* The app screenshot, framed like a window. */
-.shot {
-  margin: 0;
-  overflow: hidden;
-  border: 1px solid var(--hairline);
-  border-radius: 20px;
-  background: #0f172a;
-  box-shadow: 0 24px 60px -24px rgb(15 23 42 / 0.45);
-}
-
-.shot img {
-  display: block;
-  width: 100%;
-  height: auto;
-}
-
-/* On a phone the phone screen shows, at a size that stays readable. */
-@media (max-width: 640px) {
-  .shot {
-    width: min(100%, 340px);
-    margin-inline: auto;
-    border-radius: 28px;
-  }
-}
-
 .section {
   display: flex;
   flex-direction: column;
@@ -570,7 +670,7 @@
   margin: 0;
   font-size: clamp(32px, 4.4vw, 52px);
   font-weight: 800;
-  letter-spacing: -0.06em;
+  letter-spacing: -0.028em;
   line-height: 0.98;
   text-wrap: balance;
 }
@@ -608,6 +708,8 @@
 }
 
 .step {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   gap: 14px;
@@ -647,7 +749,7 @@
   margin: 0;
   font-size: 26px;
   font-weight: 800;
-  letter-spacing: -0.05em;
+  letter-spacing: -0.022em;
   line-height: 1;
 }
 
@@ -715,6 +817,7 @@
 }
 
 .pipStage {
+  position: relative;
   align-self: flex-start;
   padding: 16px 20px 4px;
   border-radius: 28px;
@@ -749,6 +852,7 @@
 }
 
 .change {
+  position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: 10px;
@@ -800,15 +904,152 @@
 }
 
 .approve {
+  position: relative;
+  overflow: hidden;
   border: 0;
   background: var(--blue);
   color: #fff;
+  box-shadow: 0 6px 16px -8px var(--blue);
+  transition:
+    transform 160ms cubic-bezier(0.2, 0.8, 0.2, 1.4),
+    box-shadow 160ms ease;
+}
+
+/* A light sweeps across Approve on hover. */
+.approve::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    110deg,
+    transparent 30%,
+    rgb(255 255 255 / 0.45) 50%,
+    transparent 70%
+  );
+  transform: translateX(-120%);
+  transition: transform 500ms ease;
+}
+
+.approve:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 22px -8px var(--blue);
+}
+
+.approve:hover::after {
+  transform: translateX(120%);
+}
+
+.approve:active,
+.dismiss:active,
+.replay:active {
+  transform: scale(0.94);
 }
 
 .dismiss {
   border: 1px solid var(--input-border);
   background: transparent;
   color: var(--ink);
+  transition:
+    transform 160ms ease,
+    background-color 160ms ease;
+}
+
+.dismiss:hover {
+  background: var(--band);
+  transform: translateY(-1px);
+}
+
+.decided {
+  animation: pop 420ms cubic-bezier(0.2, 0.8, 0.2, 1.5);
+}
+
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+}
+
+.confetti {
+  position: absolute;
+  z-index: 3;
+  width: 7px;
+  height: 11px;
+  border-radius: 2px;
+  pointer-events: none;
+}
+
+.replay {
+  align-self: flex-start;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--input-border);
+  border-radius: 99px;
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 160ms ease;
+}
+
+/* The landing's Pip is a button: poke it. */
+.pipBody {
+  display: block;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+}
+
+.pipBody:focus-visible,
+.replay:focus-visible,
+.approve:focus-visible,
+.dismiss:focus-visible {
+  outline: 3px solid var(--blue);
+  outline-offset: 3px;
+}
+
+.pipBubble {
+  position: absolute;
+  top: 4px;
+  right: -8px;
+  max-width: 180px;
+  margin: 0;
+  padding: 8px 12px;
+  border-radius: 16px 16px 16px 4px;
+  background: var(--deep);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  opacity: 0;
+  transform: translateY(6px) scale(0.9);
+  transform-origin: bottom left;
+  transition:
+    opacity 180ms ease,
+    transform 220ms cubic-bezier(0.2, 0.8, 0.2, 1.4);
+  pointer-events: none;
+}
+
+.pipBubble[data-on] {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .approve,
+  .approve::after,
+  .dismiss,
+  .replay,
+  .pipBubble {
+    transition: none;
+  }
+
+  .decided {
+    animation: none;
+  }
 }
 
 .decided {
@@ -867,7 +1108,7 @@
 .example strong {
   font-size: 24px;
   font-weight: 800;
-  letter-spacing: -0.05em;
+  letter-spacing: -0.022em;
   line-height: 1.05;
 }
 
@@ -957,7 +1198,7 @@
   margin: 0;
   font-size: 22px;
   font-weight: 800;
-  letter-spacing: -0.04em;
+  letter-spacing: -0.018em;
 }
 
 .popular {
@@ -979,7 +1220,7 @@
 .planPrice strong {
   font-size: 40px;
   font-weight: 800;
-  letter-spacing: -0.06em;
+  letter-spacing: -0.028em;
   line-height: 1;
 }
 
@@ -1157,11 +1398,6 @@
     align-items: stretch;
   }
 
-  .calcAnswer {
-    justify-content: center;
-    padding: 28px;
-  }
-
   .hero {
     padding-top: 22px;
     padding-bottom: 56px;
@@ -1175,10 +1411,14 @@
     font-size: 18px;
   }
 
+  /*
+   * The calculator overlaps the lower part of the map. The overlap follows the map's own width (never wider than
+   * 1240px): a plain percentage follows the page width, and on wide screens it pulled the card over the headline.
+   */
   .world {
     display: block;
     margin-top: -24px;
-    margin-bottom: -38%;
+    margin-bottom: calc(min(1240px, 100%) * -0.24);
   }
 
   .heroCopy h1 {
@@ -1207,8 +1447,22 @@
 }
 
 @media (min-width: 1000px) {
+  /* The section links sit in the exact centre of the page, whatever the widths on either side. */
+  .nav {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+  }
+
+  .brand {
+    justify-self: start;
+  }
+
   .navLinks {
     display: flex;
+  }
+
+  .navActions {
+    justify-self: end;
   }
 
   .pipGrid {
@@ -1228,4 +1482,641 @@
   .footer {
     padding-bottom: calc(84px + env(safe-area-inset-bottom, 0px));
   }
+}
+
+/* --- The live map: the real board with a finished trip, loaded when it comes into view --- */
+.liveMap {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.liveMapBox {
+  position: relative;
+  height: min(720px, 82vh);
+  min-height: 560px;
+  overflow: hidden;
+  border-radius: 28px;
+  background: var(--deep);
+  box-shadow: 0 40px 80px -40px rgba(15, 23, 42, 0.55);
+}
+
+.liveMapLoading {
+  display: grid;
+  height: 100%;
+  margin: 0;
+  place-items: center;
+  color: #cbd5e1;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.liveMapCredits {
+  margin: 0;
+  color: var(--ink-2);
+  font-size: 12px;
+}
+
+.liveMapCredits a {
+  color: inherit;
+}
+
+/* --- Scroll story (landing-scroll.tsx): the step path, focus words, the destination band --- */
+
+/* The airmail line across the three steps (wide screens; on phones the steps still rise one by one). */
+.stepsWrap {
+  position: relative;
+}
+
+.stepPath {
+  display: none;
+}
+
+.stepRouteTrack,
+.stepRoute,
+.stepRouteDraw {
+  fill: none;
+  stroke-linecap: round;
+}
+
+.stepRouteTrack {
+  stroke: var(--hairline);
+  stroke-width: 2;
+  stroke-dasharray: 2 10;
+}
+
+.stepRoute {
+  stroke: var(--blue);
+  stroke-width: 3.5;
+  stroke-dasharray: 10 9;
+}
+
+.stepRouteDraw {
+  stroke: #fff;
+  stroke-width: 12;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+}
+
+.stepPin path {
+  fill: #f97316;
+  stroke: #fff;
+  stroke-width: 3;
+}
+
+.stepPin text {
+  fill: #fff;
+  font-size: 15px;
+  font-weight: 800;
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
+
+.stepPlane path {
+  fill: var(--deep);
+  stroke: #fff;
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+}
+
+.marquee {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 40px 0;
+  overflow: hidden;
+  background: var(--deep);
+  color: var(--surface);
+}
+
+.marqueeRow {
+  display: flex;
+  font-family: var(--gt-primitive-font-display);
+  width: max-content;
+  gap: 0;
+  font-size: clamp(36px, 7vw, 88px);
+  font-weight: 800;
+  letter-spacing: -0.022em;
+  line-height: 1.08;
+  white-space: nowrap;
+  will-change: transform;
+}
+
+.marqueeRow span {
+  display: inline-flex;
+  align-items: center;
+}
+
+.marqueeRow span[data-outline] {
+  color: transparent;
+  -webkit-text-stroke: 1.5px var(--blue-light);
+}
+
+.marqueeRow i {
+  padding: 0 0.35em;
+  color: #f97316;
+  font-size: 0.4em;
+  font-style: normal;
+  -webkit-text-stroke: 0;
+}
+
+@media (min-width: 720px) {
+  /* The flight's drawing is 1200×150: the same share of the width keeps it in proportion at any size. */
+  .stepsWrap {
+    padding-top: 12.5%;
+  }
+
+  .stepPath {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 8;
+    overflow: visible;
+  }
+}
+
+/* --- The suggested plan: stops, experiences, the estimate and the savings answer --- */
+.planResult {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px;
+  border-radius: 20px;
+  background: var(--band);
+}
+
+.planTitle {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: -0.015em;
+}
+
+.planStops,
+.planExperiences {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.planStops {
+  gap: 14px;
+}
+
+.planStopHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.12);
+}
+
+.planStopHead strong {
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.planStopHead span {
+  color: var(--ink-2);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.planExperiences {
+  gap: 10px;
+  padding-top: 8px;
+}
+
+.planExperiences li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 2px 12px;
+}
+
+.planExperienceName {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.planOffbeat {
+  padding: 2px 8px;
+  border-radius: 99px;
+  background: var(--deep);
+  color: #fff;
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 700;
+}
+
+.planExperiences small {
+  grid-column: 1;
+  color: var(--ink-2);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.planCost {
+  grid-column: 2;
+  grid-row: 1;
+  color: var(--ink-2);
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.planLeg {
+  margin: 8px 0 0;
+  color: var(--ink-2);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.planEstimate {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(15, 23, 42, 0.12);
+}
+
+.planEstimate strong {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.015em;
+}
+
+.planEstimate small {
+  color: var(--ink-2);
+  font-size: 12px;
+}
+
+.planAnswer {
+  margin: 6px 0 0;
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+/* --- The plan, one question at a time: steps, Pip planning, the result --- */
+.calc[data-phase] {
+  min-height: 440px;
+  overflow-x: clip;
+}
+
+.calcTitle:focus {
+  outline: none;
+}
+
+.stepCount {
+  color: var(--ink-2);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.stepBar {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+.stepBar span {
+  height: 6px;
+  border-radius: 99px;
+  background: #dbe3ee;
+  transition: background 240ms ease;
+}
+
+.stepBar span[data-on] {
+  background: var(--blue);
+}
+
+.stepBody {
+  flex: 1;
+  animation: step-in 320ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+@keyframes step-in {
+  from {
+    transform: translateX(18px);
+  }
+}
+
+.destinations {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.destinations button {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 112px;
+  padding: 18px;
+  border: 2px solid #dbe3ee;
+  border-radius: 18px;
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 160ms ease,
+    transform 160ms ease;
+}
+
+.destinations button:hover {
+  transform: translateY(-2px);
+}
+
+.destinations button[aria-pressed='true'] {
+  border-color: var(--deep);
+  box-shadow: inset 0 0 0 1px var(--deep);
+}
+
+.destinations strong {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.015em;
+}
+
+.destinations small {
+  color: var(--ink-2);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.stepActions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.stepBack {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 99px;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.planning {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  min-height: 400px;
+  text-align: center;
+}
+
+.planningLine {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  animation: step-in 320ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.planningBar {
+  position: relative;
+  width: min(320px, 80%);
+  height: 6px;
+  overflow: hidden;
+  border-radius: 99px;
+  background: #dbe3ee;
+}
+
+.planningBar::after {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--blue);
+  transform: scaleX(var(--progress));
+  transform-origin: left;
+  transition: transform 900ms ease;
+  content: '';
+}
+
+.resultGrid {
+  display: grid;
+  gap: 18px;
+}
+
+.resultAnswer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.resultEstimate {
+  font-size: clamp(22px, 2.6vw, 30px);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.resultRoute {
+  margin: 0;
+  color: var(--ink-2);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+@media (max-width: 719px) {
+  .destinations button {
+    min-height: 0;
+  }
+}
+
+.resultNote {
+  color: var(--ink-2);
+  font-size: 12px;
+}
+
+@media (min-width: 860px) {
+  .resultGrid {
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    align-items: start;
+  }
+
+  .resultAnswer {
+    position: sticky;
+    top: 16px;
+  }
+
+  .planResult {
+    max-height: 520px;
+    overflow-y: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stepBody,
+  .planningLine {
+    animation: none;
+  }
+
+  .planningBar::after,
+  .destinations button {
+    transition: none;
+  }
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* --- Every control answers the pointer --- */
+.brand,
+.login,
+.navCta,
+.heroGhost,
+.planCta,
+.stepBack,
+.lang button,
+.question summary,
+.footerLinks a,
+.footerLinks button {
+  transition:
+    background-color 140ms ease,
+    border-color 140ms ease,
+    color 140ms ease,
+    transform 140ms ease;
+}
+
+.brand:hover {
+  opacity: 0.85;
+}
+
+.login:hover,
+.heroGhost:hover {
+  border-color: currentColor;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.navCta:hover,
+.planCta:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+}
+
+.lang button:hover:not([aria-pressed='true']) {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.stepBack:hover {
+  border-color: var(--ink);
+  background: #eef2f7;
+}
+
+.question summary:hover {
+  color: var(--blue);
+}
+
+.footerLinks a:hover,
+.footerLinks button:hover {
+  text-decoration: underline;
+}
+
+.destinations button:hover:not([aria-pressed='true']) {
+  border-color: #94a3b8;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .navCta:hover,
+  .planCta:hover,
+  .destinations button:hover {
+    transform: none;
+  }
+}
+
+.example {
+  transition:
+    border-color 160ms ease,
+    transform 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.example:hover {
+  border-color: var(--blue);
+  box-shadow: 0 18px 40px -24px rgba(15, 23, 42, 0.45);
+  transform: translateY(-3px);
+}
+
+.replay:hover {
+  background: rgba(15, 23, 42, 0.06);
+}
+
+.billing button:hover:not([aria-pressed='true']) {
+  background: rgba(15, 23, 42, 0.06);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .example:hover {
+    transform: none;
+  }
+}
+
+.resultActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.liveMapYours {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+  margin: 0;
+  padding: 12px 16px;
+  border-radius: 16px;
+  background: var(--band);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.liveMapYours button {
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 99px;
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.liveMapYours button:hover {
+  border-color: var(--ink);
 }

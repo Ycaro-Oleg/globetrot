@@ -39,14 +39,14 @@ const text = (html: string) =>
 describe.each(SUPPORTED_LOCALES)('profile (%s)', (locale) => {
   const copy = catalogs[locale].profilePage;
 
-  it('shows the person, their numbers and the saved Pip in the editor', () => {
+  it('shows the person, their numbers and Pip with its name (the wardrobe is off for now)', () => {
     const html = render(locale);
     const plain = text(html);
     expect(plain).toContain('Ana');
     expect(plain).toContain(copy.myPip);
     expect(html).toContain('value="Pipoca"');
-    expect(html).toContain('id="pip-tab-outfit"');
-    expect(html).toContain('id="pip-tab-bag"');
+    expect(plain).toContain(copy.myPipGlobe);
+    expect(html).not.toContain('id="pip-tab-outfit"');
     // Nothing changed yet, so saving is off.
     expect(html).toContain('disabled=""');
   });

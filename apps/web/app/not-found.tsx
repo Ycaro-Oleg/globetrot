@@ -8,7 +8,7 @@ export default async function NotFound() {
   const t = await getTranslations('statusPages');
   return (
     <main className={styles.page}>
-      <PipAvatar size={120} pose="unsure" />
+      <PipAvatar size={120} pose="unsure" bare />
       <p className={styles.code}>404</p>
       <h1>{t('notFoundTitle')}</h1>
       <p>{t('notFoundBody')}</p>

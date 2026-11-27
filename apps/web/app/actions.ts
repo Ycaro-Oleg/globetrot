@@ -10,12 +10,25 @@ import { MOTION_COOKIE, THEME_COOKIE } from '../lib/appearance';
 import { createServerApiClient, sessionCookieHeader } from '../lib/stored-preferences';
 import { NOT_SET } from './settings/options';
 
-/** Store only supported locale choices; this temporary scaffold does not alter other preferences. */
+/**
+ * The language switch on the public pages (landing, sign-in, sign-up, the language offer). Stores only a supported
+ * language and touches no other preference. Someone signed in has a stored language that wins over the cookie,
+ * so for them the choice is saved to their account too, or the switch would seem to do nothing. That save is
+ * best effort: if the API is down or the session expired, the cookie still changes.
+ */
 export async function setScaffoldLocale(formData: FormData): Promise<void> {
   const value = formData.get('locale');
   if (typeof value !== 'string' || !isSupportedLocale(value)) return;
   const store = await cookies();
   store.set(LOCALE_COOKIE, value, localeCookieOptions());
+  const cookieHeader = sessionCookieHeader(store.getAll());
+  if (!cookieHeader) return;
+  try {
+    const client = createServerApiClient({ cookieHeader, apiUrl: apiInternalUrl() });
+    await client.PATCH('/v1/me/preferences', { body: { locale: value } });
+  } catch {
+    // The cookie is set; the stored language catches up the next time the person saves it.
+  }
 }
 
 const text = (formData: FormData, name: string) => {

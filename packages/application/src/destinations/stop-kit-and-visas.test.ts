@@ -24,6 +24,62 @@ function setup() {
 }
 
 describe('stop spots, todos and visited', () => {
+  it('gives every spot a kind for its mini-pin: the one sent, else a sight', async () => {
+    const { app } = setup();
+    const trip = await app.createTrip.execute(ana, { title: 'Japan', startDate: null });
+    const { destinations } = await app.replaceDestinations.execute(ana, {
+      tripId: trip.id,
+      destinations: [
+        stop('Hakone', 'JP', {
+          spots: [
+            { name: 'Ryokan Hakone', kind: 'stay', latitude: 35.23, longitude: 139.1 },
+            { name: 'Lake Ashi' },
+          ],
+        }),
+      ],
+    });
+    expect(destinations[0]!.spots.map((spot) => spot.kind)).toEqual(['stay', 'sight']);
+    await expect(
+      app.replaceDestinations.execute(ana, {
+        tripId: trip.id,
+        destinations: [stop('Hakone', 'JP', { spots: [{ name: 'X', kind: 'castle' }] })],
+      }),
+    ).rejects.toBeInstanceOf(ValidationError);
+  });
+
+  it('keeps whether the route between a stop’s spots is drawn (off by default)', async () => {
+    const { app } = setup();
+    const trip = await app.createTrip.execute(ana, { title: 'Japan', startDate: null });
+    const { destinations } = await app.replaceDestinations.execute(ana, {
+      tripId: trip.id,
+      destinations: [stop('Kyoto', 'JP', { spotRoute: true }), stop('Osaka', 'JP')],
+    });
+    expect(destinations.map((d) => d.spotRoute)).toEqual([true, false]);
+    const listed = await app.listDestinations.execute(ana, { tripId: trip.id });
+    expect(listed.destinations.map((d) => d.spotRoute)).toEqual([true, false]);
+  });
+
+  it('reads a spot saved before kinds existed as a sight', async () => {
+    const { fake, app } = setup();
+    const trip = await app.createTrip.execute(ana, { title: 'Japan', startDate: null });
+    await app.replaceDestinations.execute(ana, {
+      tripId: trip.id,
+      destinations: [stop('Kyoto', 'JP', { spots: [{ name: 'Gion', kind: 'food' }] })],
+    });
+    // An older row: the stored spot has no kind at all.
+    for (const [tripId, records] of fake.state.destinations) {
+      fake.state.destinations.set(
+        tripId,
+        records.map((record) => ({
+          ...record,
+          spots: [{ name: 'Gion', latitude: null, longitude: null, done: false }],
+        })),
+      );
+    }
+    const listed = await app.listDestinations.execute(ana, { tripId: trip.id });
+    expect(listed.destinations[0]!.spots[0]!.kind).toBe('sight');
+  });
+
   it('stores spots and todos with their defaults, and keeps them out of the audit trail', async () => {
     const { fake, app } = setup();
     const trip = await app.createTrip.execute(ana, { title: 'Japan', startDate: null });

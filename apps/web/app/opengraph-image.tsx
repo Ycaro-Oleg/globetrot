@@ -26,8 +26,8 @@ export default async function OpengraphImage() {
   // The brand face (OFL), as WOFF: the image renderer cannot read the WOFF2 files the pages use.
   const font = (file: string) => readFile(join(process.cwd(), 'assets/og', file));
   const [extraBold, semiBold] = await Promise.all([
-    font('plus-jakarta-sans-latin-800-normal.woff'),
-    font('plus-jakarta-sans-latin-600-normal.woff'),
+    font('bricolage-grotesque-latin-800-normal.woff'),
+    font('bricolage-grotesque-latin-600-normal.woff'),
   ]);
   const locale = await getLocale();
   const t = await getTranslations('landing');
@@ -46,7 +46,7 @@ export default async function OpengraphImage() {
         padding: 64,
         gap: 40,
         color: '#f8fafc',
-        fontFamily: 'Plus Jakarta Sans',
+        fontFamily: 'Bricolage Grotesque',
         background: 'radial-gradient(circle at 30% 0%, #1e3a8a 0%, #0f172a 62%)',
       }}
     >
@@ -201,8 +201,8 @@ export default async function OpengraphImage() {
     {
       ...size,
       fonts: [
-        { name: 'Plus Jakarta Sans', data: extraBold, weight: 800, style: 'normal' },
-        { name: 'Plus Jakarta Sans', data: semiBold, weight: 600, style: 'normal' },
+        { name: 'Bricolage Grotesque', data: extraBold, weight: 800, style: 'normal' },
+        { name: 'Bricolage Grotesque', data: semiBold, weight: 600, style: 'normal' },
       ],
     },
   );

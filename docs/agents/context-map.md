@@ -30,7 +30,7 @@ All paths below are relative to `docs/` unless they start with `apps/`, `package
 | **API / application layer** | ADR-0006, ADR-0011, `architecture/api-contracts.md`, `architecture/domain-model.md` (conventions) | `packages/application/src`, `apps/api/src/{app,wire,problem}.ts`, `packages/api-client` |
 | **Database / migrations** | `architecture/data-model.md`, ADR-0002, ADR-0006, ADR-0011 | `packages/db/migrations`, `engineering/local-development.md` (Database) |
 | **Design system / UI component** | `design/design-system.md`, `design/design-audit.md` | Handoff tokens and components, `atlas/globetrot.css`, `packages/ui/src` |
-| **Landing page** | `design/design-audit.md`, `integrations/stripe.md` (mock pricing), `architecture/i18n.md` | `Globetrot - Landing.html` in the handoff |
+| **Landing page** | `design/design-audit.md`, `integrations/stripe.md` (mock pricing), `architecture/i18n.md`, ADR-0020 and `product/research/suggested-plans.md` (the suggested plan) | `Globetrot - Landing.html` in the handoff |
 | **Pip / AI** | ADR-0007, `product/business-rules.md` (AI), `design/pip-character.md` | Handoff "Pip" section, `atlas/app-core.js` (change lists), `atlas/pip.js` |
 | **Passport / stamps / ranks** | `product/business-rules.md` (Readiness, Passport, Progression) | — |
 | **Stripe / billing** | `integrations/stripe.md`, `product/business-rules.md#plans-trial-and-pip-credits`, ADR-0019 | `packages/domain/src/billing.ts`, `packages/application/src/billing/`, `packages/db/src/billing-repository.ts`, `apps/api/src/routes/billing.ts`, `apps/web/app/app/plan/`, `apps/web/lib/plan-config.ts` |

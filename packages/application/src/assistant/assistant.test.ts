@@ -225,3 +225,96 @@ describe('applying, discarding and undoing', () => {
     expect(list.proposals.map((p) => p.request)).toEqual(['second', 'first']);
   });
 });
+
+describe('Pip filling a pin', () => {
+  // Kyoto sits at 35, 135 in this trip; the places the map offers are near it, but one is 300 km away.
+  const places = [
+    { name: 'Ryokan Gion', kind: 'hotel', latitude: 35.004, longitude: 135.005 },
+    { name: 'Nishiki Market', kind: 'marketplace', latitude: 35.005, longitude: 135.006 },
+    { name: 'Fushimi Inari', kind: 'shrine', latitude: 34.967, longitude: 135.003 },
+    { name: 'Far away tower', kind: 'attraction', latitude: 37.7, longitude: 135.0 },
+  ];
+  const askToFill = async (env: Awaited<ReturnType<typeof setup>>) => {
+    const route = await env.app.listDestinations.execute(as(ana), { tripId: env.trip.id });
+    const kyoto = route.destinations[1]!;
+    const proposal = await env.app.askPip.execute(as(ana), {
+      tripId: env.trip.id,
+      request: 'Fill Kyoto',
+      spotCandidates: { placeKey: kyoto.placeKey, places },
+    });
+    return { proposal, kyoto };
+  };
+
+  it('offers only real places near the stop, by candidate, and nothing but spots', async () => {
+    const env = await setup();
+    env.answer({
+      summary: 'A night in Gion, a market and the gates.',
+      changes: [
+        { kind: 'addSpot', candidate: 'c1', reason: 'Sleep near the old town' },
+        { kind: 'addSpot', candidate: 'c3', reason: 'Go early' },
+        { kind: 'addSpot', candidate: 'c3', reason: 'Twice' },
+        { kind: 'addSpot', candidate: 'c9', reason: 'Not offered' },
+        { kind: 'addSpot', name: 'Invented Café', latitude: 35, longitude: 135 },
+        { kind: 'setNights', stopId: 's1', nights: 9 },
+      ],
+    });
+    const { proposal, kyoto } = await askToFill(env);
+    expect(proposal.changes).toEqual([
+      {
+        kind: 'addSpot',
+        stopId: kyoto.id,
+        name: 'Ryokan Gion',
+        spotKind: 'stay',
+        latitude: 35.004,
+        longitude: 135.005,
+        reason: 'Sleep near the old town',
+      },
+      {
+        kind: 'addSpot',
+        stopId: kyoto.id,
+        name: 'Fushimi Inari',
+        spotKind: 'sight',
+        latitude: 34.967,
+        longitude: 135.003,
+        reason: 'Go early',
+      },
+    ]);
+    // The model saw the near places by id, and never the far one.
+    const sent = env.ai.requests[0]!.user;
+    expect(sent).toContain('"id":"c1"');
+    expect(sent).toContain('Nishiki Market');
+    expect(sent).not.toContain('Far away tower');
+    expect(env.ai.requests[0]!.system).toContain('Never invent a place or an id');
+  });
+
+  it('adds the chosen spots with their kind and place, and Undo takes them back', async () => {
+    const env = await setup();
+    env.answer({
+      summary: 'x',
+      changes: [
+        { kind: 'addSpot', candidate: 'c1' },
+        { kind: 'addSpot', candidate: 'c2' },
+      ],
+    });
+    const { proposal, kyoto } = await askToFill(env);
+    await env.app.applyProposal.execute(as(ana), { proposalId: proposal.id, include: [0] });
+    const after = await env.app.listDestinations.execute(as(ana), { tripId: env.trip.id });
+    expect(after.destinations.find((d) => d.id === kyoto.id)!.spots).toEqual([
+      { name: 'Ryokan Gion', kind: 'stay', latitude: 35.004, longitude: 135.005, done: false },
+    ]);
+    await env.app.undoProposal.execute(as(ana), { proposalId: proposal.id });
+    const undone = await env.app.listDestinations.execute(as(ana), { tripId: env.trip.id });
+    expect(undone.destinations.find((d) => d.id === kyoto.id)!.spots).toEqual([]);
+  });
+
+  it('answers "not found" for a stop that is not on this trip', async () => {
+    const env = await setup();
+    await expect(
+      env.app.askPip.execute(as(ana), {
+        tripId: env.trip.id,
+        request: 'Fill it',
+        spotCandidates: { placeKey: 't:Osaka', places },
+      }),
+    ).rejects.toBeInstanceOf(NotFoundError);
+  });
+});
