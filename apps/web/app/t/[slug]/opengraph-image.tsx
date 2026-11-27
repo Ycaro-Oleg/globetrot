@@ -2,6 +2,7 @@ import { ImageResponse } from 'next/og';
 import { getLocale, getTranslations } from 'next-intl/server';
 import { arcPath, routeSketch } from '../../../lib/route-sketch';
 import { fetchSharedTrip, formatMonth } from '../../../lib/shared-trip';
+import { BrandLockup } from '../../brand-mark';
 import { SITE_NAME } from '../../site';
 
 export const size = { width: 1200, height: 630 };
@@ -40,8 +41,8 @@ export default async function SharedTripImage({ params }: { params: Promise<{ sl
         width: '100%',
         height: '100%',
         display: 'flex',
-        background: '#0f172a',
-        color: '#f8fafc',
+        background: '#ffffff',
+        color: '#1c1c1e',
         padding: 56,
         gap: 40,
       }}
@@ -54,9 +55,7 @@ export default async function SharedTripImage({ params }: { params: Promise<{ sl
           flex: 1,
         }}
       >
-        <div style={{ display: 'flex', fontSize: 34, fontWeight: 800, color: '#fb923c' }}>
-          {SITE_NAME.toLowerCase()}
-        </div>
+        <BrandLockup fontSize={34} color="#1c1c1e" />
         <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
           <div
             style={{
@@ -69,8 +68,8 @@ export default async function SharedTripImage({ params }: { params: Promise<{ sl
           >
             {trip?.title ?? SITE_NAME}
           </div>
-          <div style={{ display: 'flex', fontSize: 30, color: '#cbd5e1' }}>{route}</div>
-          <div style={{ display: 'flex', fontSize: 30, color: '#cbd5e1' }}>{line}</div>
+          <div style={{ display: 'flex', fontSize: 30, color: '#4f545a' }}>{route}</div>
+          <div style={{ display: 'flex', fontSize: 30, color: '#4f545a' }}>{line}</div>
         </div>
         {ready ? (
           <div
@@ -79,8 +78,8 @@ export default async function SharedTripImage({ params }: { params: Promise<{ sl
               alignSelf: 'flex-start',
               padding: '14px 26px',
               borderRadius: 999,
-              background: '#fb923c',
-              color: '#0f172a',
+              background: '#d63f24',
+              color: '#ffffff',
               fontSize: 32,
               fontWeight: 800,
             }}
@@ -97,7 +96,7 @@ export default async function SharedTripImage({ params }: { params: Promise<{ sl
           width: 460,
           height: 518,
           borderRadius: 32,
-          background: '#1e3a8a',
+          background: '#f3f4f5',
           alignItems: 'center',
           justifyContent: 'center',
         }}
@@ -109,7 +108,7 @@ export default async function SharedTripImage({ params }: { params: Promise<{ sl
               cx={(n % 22) * 21 + 10}
               cy={Math.floor(n / 22) * 21 + 10}
               r="2"
-              fill="#3b5bdb"
+              fill="#c7cbd1"
             />
           ))}
           {points.slice(1).map((point, index) => (
@@ -117,7 +116,7 @@ export default async function SharedTripImage({ params }: { params: Promise<{ sl
               key={`a${index}`}
               d={arcPath(points[index]!, point)}
               fill="none"
-              stroke="#f87171"
+              stroke="#d63f24"
               strokeWidth="6"
               strokeDasharray="16 12"
             />
@@ -128,8 +127,8 @@ export default async function SharedTripImage({ params }: { params: Promise<{ sl
               cx={point.x}
               cy={point.y}
               r="16"
-              fill="#fbbf24"
-              stroke="#0f172a"
+              fill="#f59e0b"
+              stroke="#111111"
               strokeWidth="5"
             />
           ))}

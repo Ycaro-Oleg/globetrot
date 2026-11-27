@@ -6,5 +6,5 @@ export const contentType = 'image/png';
 
 /** The browser tab's icon. */
 export default function Icon() {
-  return new ImageResponse(<BrandMark size={64} />, size);
+  return new ImageResponse(<BrandMark size={64} tile={false} />, size);
 }

@@ -24,6 +24,7 @@ import { PipDemo, Pricing } from './landing-interactive';
 import { StickyCta } from './landing-sticky-cta';
 import { ConsentLink } from './analytics';
 import { TrackedLink } from './tracked-link';
+import { Logomark } from './logomark';
 import { SITE_NAME } from './site';
 import styles from './landing.module.css';
 
@@ -96,7 +97,7 @@ const MARQUEE = [
 ];
 
 /**
- * The public landing page (design handoff v2, "Landing"): a dark hero over the halftone world, how it works in
+ * The public landing page (white palette, ADR-0035): a light hero over the blue halftone world, how it works in
  * three steps, Pip with a live approve / dismiss demo, copyable example trips, placeholder pricing and a FAQ.
  * Every amount is in USD, the default currency, and labelled as an example or a placeholder.
  */
@@ -185,8 +186,8 @@ export default function HomePage() {
       <section className={styles.hero} id="top" aria-labelledby="hero-title">
         <header className={styles.nav}>
           <Link href="/" className={styles.brand}>
-            <span className={styles.brandRing} aria-hidden="true" />
-            <span>{SITE_NAME.toLowerCase()}</span>
+            <Logomark className={styles.brandRing} onDark />
+            <span>{SITE_NAME}</span>
           </Link>
           <nav className={styles.navLinks} aria-label={t('navSections')}>
             <a href="#how">{t('navHow')}</a>
@@ -229,7 +230,7 @@ export default function HomePage() {
         <div className={styles.world} aria-hidden="true">
           {/* eslint-disable-next-line @next/next/no-img-element -- a decorative SVG, already the right size */}
           <img
-            src="/world-halftone-blue.svg"
+            src="/world-halftone-sea.svg"
             alt=""
             width={1322}
             height={654}
@@ -409,8 +410,8 @@ export default function HomePage() {
       <footer className={styles.footer}>
         <div className={styles.footerInner}>
           <span className={styles.brand}>
-            <span className={styles.brandRing} aria-hidden="true" />
-            <span>{SITE_NAME.toLowerCase()}</span>
+            <Logomark className={styles.brandRing} onDark />
+            <span>{SITE_NAME}</span>
           </span>
           <span>{t('footTagline')}</span>
           <span>{t('mapAttribution')}</span>

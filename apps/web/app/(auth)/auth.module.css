@@ -1,10 +1,11 @@
-/* The account screens (design handoff v2): the dark halftone world of the landing beside a light slate panel. */
+/* The account screens: the landing's grey halftone world on a light band beside a white panel (white palette). */
 .shell {
-  --auth-sea: #0f172a;
-  --auth-ink: #1e293b;
-  --auth-paper: #f8f9fa;
-  --auth-blue: #2563eb;
-  --auth-coral: #f97316;
+  --auth-sea: #f3f4f5;
+  --auth-ink: #1c1c1e;
+  --auth-paper: #ffffff;
+  /* The palette's near-black: links and focus. */
+  --auth-blue: #1c1c1e;
+  --auth-coral: #d63f24;
   --auth-red: #b91c1c; /* the strong expense red: 6:1 on the light panel */
   display: grid;
   min-height: 100dvh;
@@ -18,7 +19,7 @@
   --gt-semantic-color-text-secondary: var(--gt-semantic-color-always-light-text-secondary);
   --gt-semantic-color-text-tertiary: var(--gt-semantic-color-always-light-text-tertiary);
   --gt-semantic-color-danger: #b91c1c;
-  --gt-semantic-color-focus: #2563eb;
+  --gt-semantic-color-focus: #1c1c1e;
   --gt-semantic-color-surface-card: var(--gt-semantic-color-always-light-surface);
 }
 
@@ -27,7 +28,7 @@
   min-width: 0;
   min-height: 44rem;
   overflow: hidden;
-  background: radial-gradient(ellipse 80% 60% at 40% 0%, #1e3a8a 0%, var(--auth-sea) 70%);
+  background: radial-gradient(ellipse 80% 60% at 40% 0%, #ffffff 0%, var(--auth-sea) 70%);
 }
 
 .map {
@@ -37,7 +38,7 @@
   height: 100%;
   object-fit: cover;
   object-position: center;
-  background: url('/world-halftone-blue.svg') center 40% / 120% auto no-repeat;
+  background: url('/world-halftone-ink.svg') center 40% / 120% auto no-repeat;
   opacity: 0.9;
 }
 
@@ -48,10 +49,10 @@
   box-sizing: border-box;
   width: min(32.5rem, calc(100% - 3rem));
   padding: clamp(1.5rem, 3vw, 2.2rem);
-  border: 1px solid rgb(248 249 250 / 0.14);
+  border: 1px solid #e4e6e9;
   border-radius: 1.65rem;
-  background: rgb(15 23 42 / 0.82);
-  color: #f8f9fa;
+  background: rgb(255 255 255 / 0.9);
+  color: var(--auth-ink);
   backdrop-filter: blur(8px);
   box-shadow: none;
 }
@@ -66,14 +67,14 @@
 }
 
 .headline em {
-  color: #60a5fa;
+  color: var(--auth-coral);
   font-style: normal;
 }
 
 .headline p {
   max-width: 22rem;
   margin: 1.25rem 0 0;
-  color: #cbd5e1;
+  color: #4f545a;
   font-size: 0.98rem;
   line-height: 1.45;
 }
@@ -111,19 +112,9 @@
 }
 
 .brandMark {
-  display: inline-grid;
-  width: 0.82em;
-  height: 0.82em;
-  place-items: center;
-  border-radius: 50%;
-  background: var(--auth-coral);
-  box-shadow:
-    inset 0 0 0 5px var(--auth-paper),
-    0 0 0 2px var(--auth-coral);
-}
-
-.brandMark::after {
-  content: none;
+  flex: none;
+  width: 1.25em;
+  height: 1.25em;
 }
 
 .view {
@@ -145,7 +136,7 @@
 
 .lead {
   margin: -0.55rem 0 0;
-  color: #475569;
+  color: #4f545a;
   font-size: 1rem;
   line-height: 1.5;
 }
@@ -173,14 +164,14 @@
   box-sizing: border-box;
   min-height: 3.25rem;
   border-width: 1px;
-  border-color: #cbd2da;
+  border-color: #cdd1d6;
   border-radius: 14px;
   background: #fff;
   font-size: 1rem;
 }
 
 .form :global(.gt-field__control)::placeholder {
-  color: #5f6c80;
+  color: #62676d;
   font-style: italic;
 }
 
@@ -190,7 +181,7 @@
   border: 0;
   border-radius: 99px;
   background: var(--auth-coral);
-  color: #0f172a;
+  color: #ffffff;
   box-shadow: 0 10px 24px -10px var(--auth-coral);
   font-size: 1rem;
 }
@@ -218,7 +209,7 @@
 .passwordForgot:hover,
 .links a:hover,
 .language button:hover {
-  color: #1d4ed8;
+  color: #000000;
 }
 
 .divider {
@@ -226,7 +217,7 @@
   align-items: center;
   gap: 0.75rem;
   margin: -0.05rem 0;
-  color: #5f6c80;
+  color: #62676d;
   font-family: var(--gt-primitive-font-mono);
   font-size: 0.68rem;
   font-weight: 700;
@@ -238,7 +229,7 @@
 .divider::before,
 .divider::after {
   flex: 1;
-  border-top: 1px solid #dde2e8;
+  border-top: 1px solid #e4e6e9;
   content: '';
 }
 
@@ -253,7 +244,7 @@
   justify-content: center;
   gap: 0.4rem;
   margin: 0.1rem 0 0;
-  color: #475569;
+  color: #4f545a;
   font-size: 0.9rem;
   text-align: center;
 }
@@ -270,9 +261,9 @@
   gap: 0.4rem;
   margin-top: 2.2rem;
   padding: 0.25rem;
-  border: 1px solid #dde2e8;
+  border: 1px solid #e4e6e9;
   border-radius: 99px;
-  background: #eef1f4;
+  background: #f3f4f5;
 }
 
 .language button {
@@ -281,7 +272,7 @@
   border: 0;
   border-radius: 99px;
   background: transparent;
-  color: #475569;
+  color: #4f545a;
   font: 600 0.8rem/1.2 var(--gt-primitive-font-body);
   cursor: pointer;
 }
@@ -294,7 +285,7 @@
 .strength {
   display: grid;
   gap: 0.35rem;
-  color: #475569;
+  color: #4f545a;
   font-size: 0.82rem;
 }
 
@@ -308,7 +299,7 @@
   height: 0.4rem;
   border: 0;
   border-radius: 99px;
-  background: #e2e8f0;
+  background: #e5e5e7;
 }
 
 .segment[data-on='1'] {
@@ -440,7 +431,7 @@
 
 .legal {
   margin: 0;
-  color: #475569;
+  color: #4f545a;
   font-size: 0.8125rem;
   line-height: 1.45;
   text-align: center;

@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { formatMonth, type SharedTrip } from '../../../lib/shared-trip';
 import { arcPath, routeSketch, visibleLabels } from '../../../lib/route-sketch';
+import { Logomark } from '../../logomark';
 import { SITE_NAME } from '../../site';
 import { TrackedLink } from '../../tracked-link';
 import styles from './shared-trip.module.css';
@@ -32,8 +33,8 @@ export function SharedTripView({ trip, locale }: { trip: SharedTrip; locale: str
     <main className={styles.page}>
       <header className={styles.top}>
         <Link href="/" className={styles.logo}>
-          <span className={styles.logoRing} aria-hidden="true" />
-          {SITE_NAME.toLowerCase()}
+          <Logomark className={styles.logoRing} />
+          {SITE_NAME}
         </Link>
       </header>
 

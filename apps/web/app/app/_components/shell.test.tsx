@@ -72,37 +72,45 @@ describe.each(SUPPORTED_LOCALES)('app shell (%s)', (locale) => {
     expect(shell(locale, false)).toContain('<h1>Page</h1>');
   });
 
-  it('has the trip tools, the account places and the bottom bar, each labelled', () => {
-    const html = shell(locale, false, '/app/budget');
+  it('has the trip tools on the full map, each labelled', () => {
+    const html = shell(locale, false, '/app/board');
     const found = navs(html);
-    // Inline trip tabs, the account places, the phone's trip row, the bottom bar.
-    expect(found).toHaveLength(4);
+    // Inline trip tabs, the account places, the phone's trip row (the bottom bar steps aside on the map).
+    expect(found).toHaveLength(3);
     expect(html.match(new RegExp(`<nav[^>]*aria-label="${copy.nav.tripLabel}"`, 'g'))).toHaveLength(
       2,
     );
-    expect(
-      html.match(new RegExp(`<nav[^>]*aria-label="${copy.nav.globalLabel}"`, 'g')),
-    ).toHaveLength(2);
-    const tools = [copy.nav.board, copy.nav.days, copy.nav.budget, copy.nav.lists];
+    const tools = [copy.nav.overview, copy.nav.board, copy.nav.budget, copy.nav.lists];
     expect(linkLabels(found[0] ?? '')).toEqual(tools);
     expect(linkLabels(found[1] ?? '')).toEqual([copy.nav.discover]);
     expect(linkLabels(found[2] ?? '')).toEqual(tools);
-    expect(linkLabels(found[3] ?? '')).toEqual([
-      copy.nav.trip,
-      copy.nav.discover,
-      copy.nav.profile,
-    ]);
   });
 
-  it('marks the current trip tool, and "Trip" in the bottom bar', () => {
-    const [inline, places, row, bottom] = navs(shell(locale, false, '/app/budget'));
+  it('marks the current trip tool', () => {
+    const [inline, places, row] = navs(shell(locale, false, '/app/board'));
     for (const markup of [inline, row]) {
       expect(markup?.match(/aria-current="page"/g)).toHaveLength(1);
-      expect(markup).toMatch(new RegExp(`aria-current="page"[^>]*>${copy.nav.budget}`));
+      expect(markup).toMatch(new RegExp(`aria-current="page"[^>]*>${copy.nav.board}`));
     }
     expect(places).not.toContain('aria-current');
-    expect(bottom).toMatch(new RegExp(`aria-current="page"[\\s\\S]*?${copy.nav.trip}`));
   });
+
+  it.each(['/app/trip', '/app/budget', '/app/lists'])(
+    'leaves the trip navigation to the workspace on %s and marks "Trip" in the bottom bar',
+    (path) => {
+      const html = shell(locale, false, path);
+      expect(html).not.toMatch(new RegExp(`<nav[^>]*aria-label="${copy.nav.tripLabel}"`));
+      const found = navs(html);
+      // The account places and the bottom bar.
+      expect(found).toHaveLength(2);
+      expect(linkLabels(found[1] ?? '')).toEqual([
+        copy.nav.trip,
+        copy.nav.discover,
+        copy.nav.profile,
+      ]);
+      expect(found[1]).toMatch(new RegExp(`aria-current="page"[\\s\\S]*?${copy.nav.trip}`));
+    },
+  );
 
   it('drops the trip row off trip pages and marks the account place instead', () => {
     const found = navs(shell(locale, false, '/app/discover'));

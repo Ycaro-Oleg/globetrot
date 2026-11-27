@@ -171,10 +171,10 @@
   position: absolute;
   inset-inline: 0;
   bottom: 0;
-  border: 1.5px dashed #cbd5e1;
+  border: 1.5px dashed #c7c7cc;
   border-bottom: 0;
   border-radius: 10px 10px 0 0;
-  background: rgb(203 213 225 / 0.18);
+  background: rgb(199 199 204 / 0.18);
   pointer-events: none;
 }
 
@@ -193,7 +193,7 @@
   position: relative;
   width: 100%;
   border-radius: 10px 10px 4px 4px;
-  background: repeating-linear-gradient(135deg, #94a3b8 0 5px, #cbd5e1 5px 10px);
+  background: repeating-linear-gradient(135deg, #a1a1a6 0 5px, #c7c7cc 5px 10px);
   transition: height 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
@@ -397,7 +397,7 @@
 }
 
 .stack [data-status='estimate'] {
-  background: repeating-linear-gradient(135deg, #60a5fa 0 4px, #dbeafe 4px 8px);
+  background: repeating-linear-gradient(135deg, #6b7076 0 4px, #e9eaec 4px 8px);
 }
 
 .stack [data-status='unknown'] {
@@ -450,7 +450,7 @@
 }
 
 .dot[data-status='estimate'] {
-  border: 1px solid #60a5fa;
+  border: 1px solid #6b7076;
   background: var(--gt-semantic-color-primary-tint);
   color: var(--gt-semantic-color-primary-hover);
 }
@@ -609,7 +609,7 @@
   position: fixed;
   inset: 0;
   z-index: 40;
-  background: rgb(15 23 42 / 0.45);
+  background: rgb(17 17 17 / 0.45);
 }
 
 .drawer {
@@ -971,4 +971,9 @@
 
 .milesMore[open] summary {
   margin-bottom: 8px;
+}
+
+/* Beside the trip workspace's map the page is a column of about 600px: the answer and the totals stack. */
+:global([data-workspace-map]) .top {
+  grid-template-columns: minmax(0, 1fr);
 }

@@ -6,7 +6,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 vi.mock('./actions', () => ({ addExpense: vi.fn(), removeExpense: vi.fn(), saveSavings: vi.fn() }));
 vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh: vi.fn() }) }));
 
-import type { BudgetData, ExpenseData } from '../../../lib/trips';
+import type { BudgetData, ExpenseData } from '../../../../lib/trips';
 import { BudgetView } from './budget-view';
 
 const money = (amount: string, currency = 'USD') => ({ amount, currency });

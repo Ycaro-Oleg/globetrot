@@ -326,13 +326,36 @@ async function journey(browser, { width, height, locale }) {
     );
     await page.keyboard.press('Escape');
     const daysCopy = CATALOGS[locale].daysPage;
-    await go('/app/days');
-    await axe('days');
+    // The days live in the trip's document now (the trip workspace), with a sidebar link into each one.
+    const workspaceCopy = CATALOGS[locale].workspace;
+    await go('/app/trip');
+    await axe('trip workspace');
+    if (width >= 720) {
+      const sidebar = page.getByRole('navigation', { name: workspaceCopy.sidebarLabel });
+      await sidebar.locator('a[href="/app/trip#day-2"]').click();
+      await page.waitForURL((url) => url.hash === '#day-2');
+      expect(
+        (await sidebar
+          .getByRole('link', { name: workspaceCopy.expandMap, exact: true })
+          .count()) === 1,
+        'the trip sidebar has no way to the full map',
+      );
+    } else {
+      // A phone has the sections as a jump bar and the map one tap away.
+      expect(
+        (await page.getByRole('navigation', { name: workspaceCopy.jumpLabel }).count()) === 1,
+        'the phone has no jump bar in the trip workspace',
+      );
+      expect(
+        (await page.getByRole('link', { name: workspaceCopy.openMap, exact: true }).count()) === 1,
+        'the phone has no button to open the map',
+      );
+    }
     expect(
       (await page
         .getByRole('heading', { name: daysCopy.dayLabel.replace('{index}', '5'), exact: true })
         .count()) === 1,
-      'the five nights at the first stop are not five days on the Days page',
+      'the five nights at the first stop are not five days in the itinerary',
     );
     // A place: saved to "No day", moved to day 2 with the keyboard path, still there after a reload.
     // An empty plan begins in one panel: its button says "add another place" next to the ideas (or "add the

@@ -116,7 +116,8 @@
   gap: 8px;
 }
 
-.columnTitle h2 {
+.columnTitle h2,
+.columnTitle h3 {
   margin: 0;
   font-size: 16px;
   font-weight: 800;
@@ -230,7 +231,8 @@
   gap: 8px;
 }
 
-.cardHead h3 {
+.cardHead h3,
+.cardHead h4 {
   margin: 0;
   font-size: 14px;
   font-weight: 700;
@@ -338,7 +340,7 @@
   position: fixed;
   inset: 0;
   z-index: 40;
-  background: rgb(15 23 42 / 0.45);
+  background: rgb(17 17 17 / 0.45);
 }
 
 .dialog {
@@ -491,22 +493,27 @@
   outline-offset: 2px;
 }
 
+/* In the trip workspace the days are one column of the trip's document ("No day" first, then each day). */
+.page[data-layout='stacked'] .title {
+  font-size: 24px;
+}
+
 @media (min-width: 720px) {
   /* "No day" on the left, staying in view while the days below it scroll; the days wrap in a grid. */
-  .board {
+  .page:not([data-layout='stacked']) .board {
     display: grid;
     grid-template-columns: minmax(220px, 260px) minmax(0, 1fr);
     align-items: start;
   }
 
-  .column[data-tray] {
+  .page:not([data-layout='stacked']) .column[data-tray] {
     position: sticky;
     top: 88px;
     max-height: calc(100vh - 112px);
     overflow-y: auto;
   }
 
-  .days {
+  .page:not([data-layout='stacked']) .days {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
     gap: 12px;
@@ -532,7 +539,8 @@
   text-align: center;
 }
 
-.emptyCard h2 {
+.emptyCard h2,
+.emptyCard h3 {
   margin: 0;
   font-size: 22px;
   font-weight: 800;
@@ -581,7 +589,8 @@
   background: var(--gt-semantic-color-primary-tint);
 }
 
-.start h2 {
+.start h2,
+.start h3 {
   margin: 0;
   font-size: 1.25rem;
   line-height: 1.2;

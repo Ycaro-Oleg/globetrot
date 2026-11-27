@@ -74,7 +74,7 @@ try {
       const background = await tokenCard.evaluate(
         (element) => globalThis.getComputedStyle(element).backgroundColor,
       );
-      const expectedBackground = theme === 'day' ? 'rgb(248, 249, 250)' : 'rgb(22, 32, 51)';
+      const expectedBackground = theme === 'day' ? 'rgb(255, 255, 255)' : 'rgb(28, 28, 30)';
       if (background !== expectedBackground)
         failures.push(theme + '/' + locale + ': Tailwind token utility did not resolve');
       const params = new URLSearchParams({

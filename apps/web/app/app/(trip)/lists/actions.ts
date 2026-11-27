@@ -2,8 +2,8 @@
 
 import { CHECKLIST_GROUPS, type ChecklistGroup } from '@globetrot/domain';
 import { getTranslations } from 'next-intl/server';
-import { actionApiClient } from '../../../lib/action-client';
-import type { ChecklistData } from '../../../lib/trips';
+import { actionApiClient } from '../../../../lib/action-client';
+import type { ChecklistData } from '../../../../lib/trips';
 
 const apiClient = actionApiClient;
 

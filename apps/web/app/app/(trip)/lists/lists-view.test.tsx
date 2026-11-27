@@ -10,7 +10,7 @@ vi.mock('./actions', () => ({
   setItemDone: vi.fn(),
 }));
 
-import type { ChecklistData } from '../../../lib/trips';
+import type { ChecklistData } from '../../../../lib/trips';
 import { ListsView, newlyEarned } from './lists-view';
 
 const NONE = {

@@ -10,14 +10,16 @@
   position: relative;
   overflow: hidden;
   border-radius: var(--gt-component-card-radius);
-  background: radial-gradient(ellipse 80% 70% at 40% 0%, #1e3a8a 0%, #0f172a 70%);
-  color: #f8f9fa;
+  /* A light cover in both themes (white palette): ink text on the grey halftone world. */
+  border: var(--gt-primitive-border-1) solid #e4e6e9;
+  background: radial-gradient(ellipse 80% 70% at 40% 0%, #ffffff 0%, #f3f4f5 70%);
+  color: #1c1c1e;
 }
 
 .coverArt {
   position: absolute;
   inset: 0;
-  background: url('/world-halftone-blue.svg') center 30% / 110% auto no-repeat;
+  background: url('/world-halftone-ink.svg') center 30% / 110% auto no-repeat;
   opacity: 0.55;
 }
 
@@ -34,8 +36,8 @@
   padding: 8px 10px 0;
   border-radius: 28px;
   background:
-    radial-gradient(circle, #bfdbfe 1.4px, transparent 1.9px) 0 0 / 14px 14px,
-    #dbeafe;
+    radial-gradient(circle, #e4e6e9 1.4px, transparent 1.9px) 0 0 / 14px 14px,
+    #f3f4f5;
 }
 
 .who h1 {
@@ -47,7 +49,7 @@
 }
 
 .who span {
-  color: #cbd5e1;
+  color: #4f545a;
   font-size: 14px;
 }
 
@@ -80,7 +82,7 @@
 }
 
 .cover .primary {
-  background: #2563eb;
+  background: #1c1c1e;
   color: #fff;
 }
 
@@ -91,8 +93,8 @@
 }
 
 .cover .ghost {
-  border-color: rgb(248 249 250 / 0.3);
-  color: #f8f9fa;
+  border-color: #cdd1d6;
+  color: #1c1c1e;
 }
 
 .cta {
@@ -120,7 +122,7 @@
 }
 
 .stats dt {
-  color: #cbd5e1;
+  color: #4f545a;
   font-size: 12px;
 }
 
@@ -190,8 +192,8 @@
   padding: 16px 20px 4px;
   border-radius: 28px;
   background:
-    radial-gradient(circle, #bfdbfe 1.4px, transparent 1.9px) 0 0 / 14px 14px,
-    #dbeafe;
+    radial-gradient(circle, #e4e6e9 1.4px, transparent 1.9px) 0 0 / 14px 14px,
+    #f3f4f5;
 }
 
 .field {
@@ -359,7 +361,7 @@
 .colors button span {
   width: 18px;
   height: 18px;
-  border: 2px solid #1e293b;
+  border: 2px solid #1c1c1e;
   border-radius: 50%;
 }
 
@@ -528,7 +530,7 @@
 
 .cover .primary:focus-visible,
 .cover .ghost:focus-visible {
-  outline-color: #93c5fd;
+  outline-color: #1c1c1e;
 }
 
 @media (min-width: 720px) {

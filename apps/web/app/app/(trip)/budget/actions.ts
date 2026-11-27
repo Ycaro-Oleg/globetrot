@@ -2,7 +2,7 @@
 
 import { EXPENSE_CATEGORIES, EXPENSE_STATUSES, type MilesProgram } from '@globetrot/domain';
 import { revalidatePath } from 'next/cache';
-import { actionApiClient } from '../../../lib/action-client';
+import { actionApiClient } from '../../../../lib/action-client';
 
 const apiClient = actionApiClient;
 

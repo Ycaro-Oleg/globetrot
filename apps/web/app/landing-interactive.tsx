@@ -114,7 +114,7 @@ async function celebrate(row: HTMLElement, button: HTMLElement | null) {
   const box = row.getBoundingClientRect();
   const x = origin ? origin.left - box.left + origin.width / 2 : box.width - 60;
   const y = origin ? origin.top - box.top + origin.height / 2 : box.height / 2;
-  const colors = ['#f97316', '#2563eb', '#10b981', '#f59e0b', '#ec4899'];
+  const colors = ['#d63f24', '#2563eb', '#10b981', '#f59e0b', '#ec4899'];
   for (let i = 0; i < 14; i++) {
     const bit = document.createElement('span');
     bit.className = styles.confetti!;

@@ -5,11 +5,11 @@ import { Banner } from '@globetrot/ui';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
-import type { ChecklistData, VisaData } from '../../../lib/trips';
-import { ShareTripButton } from '../_components/share-trip-button';
-import { PipAvatar } from '../_components/pip-avatar';
+import type { ChecklistData, VisaData } from '../../../../lib/trips';
+import { ShareTripButton } from '../../_components/share-trip-button';
+import { PipAvatar } from '../../_components/pip-avatar';
 import { addItem, addSuggestions, removeItem, setItemDone } from './actions';
-import { AskPipLink } from '../_components/ask-pip-link';
+import { AskPipLink } from '../../_components/ask-pip-link';
 import styles from './lists.module.css';
 
 type Milestone = (typeof MILESTONES)[number];
@@ -24,7 +24,7 @@ const STAMP_INK: Record<Milestone, string> = {
   docs: '#B45309',
   stays: '#7C3AED',
   itin: '#DB2777',
-  check: '#1E293B',
+  check: '#1C1C1E',
   ready: '#1D4ED8',
 };
 

@@ -39,15 +39,15 @@
       },
       "sea": {
         "$type": "color",
-        "$value": "{primitive.color.primary}"
+        "$value": "{primitive.color.ocean}"
       },
       "sea-deep": {
         "$type": "color",
-        "$value": "{primitive.color.primary-hover}"
+        "$value": "{primitive.color.ocean-deep}"
       },
       "land": {
         "$type": "color",
-        "$value": "{primitive.color.primary-tint}"
+        "$value": "{primitive.color.ocean-tint}"
       },
       "land-highlight": {
         "$type": "color",
@@ -59,7 +59,7 @@
       },
       "marigold": {
         "$type": "color",
-        "$value": "{primitive.color.coral}"
+        "$value": "{primitive.color.coral-bright}"
       },
       "mint": {
         "$type": "color",
@@ -119,15 +119,15 @@
       },
       "airmail": {
         "$type": "color",
-        "$value": "{primitive.color.primary}"
+        "$value": "{primitive.color.ocean}"
       },
       "airmail-deep": {
         "$type": "color",
-        "$value": "{primitive.color.primary-hover}"
+        "$value": "{primitive.color.ocean-deep}"
       },
       "sky": {
         "$type": "color",
-        "$value": "{primitive.color.primary-soft}"
+        "$value": "{primitive.color.ocean-soft}"
       },
       "ripple": {
         "$type": "color",
@@ -179,7 +179,7 @@
       },
       "on-cta": {
         "$type": "color",
-        "$value": "{primitive.color.deep}"
+        "$value": "{primitive.color.white}"
       },
       "savings": {
         "$type": "color",

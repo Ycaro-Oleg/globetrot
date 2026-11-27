@@ -69,7 +69,7 @@ describe('Globetrot landing page', () => {
     const html = render('en');
     expect(visibleText(html)).toContain(catalogs.en.landing.approve);
     expect(html.match(/<details/g)).toHaveLength(4);
-    expect(html).toContain('/world-halftone-blue.svg');
+    expect(html).toContain('/world-halftone-sea.svg');
   });
 
   it.each(SUPPORTED_LOCALES)(

@@ -4,6 +4,7 @@ import {
   GLOBAL_LINKS,
   isCurrent,
   isTripPage,
+  isWorkspacePage,
   MENU_HREFS,
   TRIP_TABS,
   tripCode,
@@ -17,8 +18,18 @@ function find(items: readonly NavItem[], key: string): NavItem {
 }
 
 describe('navigation model', () => {
-  it('has the four trip tools in planning order', () => {
-    expect(TRIP_TABS.map((entry) => entry.key)).toEqual(['board', 'days', 'budget', 'lists']);
+  it('has the trip tools: its document first, then the full map, the budget and the lists', () => {
+    expect(TRIP_TABS.map((entry) => entry.key)).toEqual(['overview', 'board', 'budget', 'lists']);
+    expect(TRIP_TABS[0]?.href).toBe('/app/trip');
+  });
+
+  it('keeps the full map out of the workspace and the document, budget and lists in it', () => {
+    for (const path of ['/app/trip', '/app/budget', '/app/lists', '/app/budget/anything']) {
+      expect(isWorkspacePage(path)).toBe(true);
+    }
+    for (const path of ['/app/board', '/app/trips', '/app/tripping', '/app/discover']) {
+      expect(isWorkspacePage(path)).toBe(false);
+    }
   });
 
   it('puts every destination somewhere on the phone', () => {
@@ -41,12 +52,12 @@ describe('navigation model', () => {
     expect(isCurrent(board, '/app/board')).toBe(true);
     expect(isCurrent(board, '/app/board/anything')).toBe(true);
     expect(isCurrent(board, '/app/boardroom')).toBe(false);
-    expect(isCurrent(board, '/app/days')).toBe(false);
+    expect(isCurrent(board, '/app/trip')).toBe(false);
   });
 
   it('marks "Trip" on every trip tool and nowhere else', () => {
     const trip = find(BOTTOM_ITEMS, 'trip');
-    for (const path of ['/app/board', '/app/days', '/app/budget', '/app/lists']) {
+    for (const path of ['/app/trip', '/app/board', '/app/budget', '/app/lists']) {
       expect(isCurrent(trip, path)).toBe(true);
       expect(isTripPage(path)).toBe(true);
     }

@@ -1,15 +1,15 @@
 import { cookies } from 'next/headers';
-import { isPipEnabled } from '../../../lib/flags';
+import { isPipEnabled } from '../../../../lib/flags';
 import { getTranslations } from 'next-intl/server';
-import { apiInternalUrl } from '../../../lib/api-proxy';
-import { sessionCookieHeader } from '../../../lib/stored-preferences';
+import { apiInternalUrl } from '../../../../lib/api-proxy';
+import { sessionCookieHeader } from '../../../../lib/stored-preferences';
 import {
   fetchChecklist,
   fetchDestinations,
   fetchTrips,
   fetchVisas,
   SELECTED_TRIP_COOKIE,
-} from '../../../lib/trips';
+} from '../../../../lib/trips';
 import { ListsView } from './lists-view';
 
 export async function generateMetadata() {

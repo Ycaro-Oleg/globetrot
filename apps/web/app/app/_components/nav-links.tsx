@@ -3,16 +3,25 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { BOTTOM_ITEMS, GLOBAL_LINKS, isCurrent, isTripPage, TRIP_TABS } from './nav-model';
+import {
+  BOTTOM_ITEMS,
+  GLOBAL_LINKS,
+  isCurrent,
+  isTripPage,
+  isWorkspacePage,
+  TRIP_TABS,
+} from './nav-model';
 import styles from './shell.module.css';
 
 /**
  * The current trip's tools as a segmented control: inline in the bar on a wide screen (`inline`), a second
- * sticky row of four equal pills on a phone (`row`, only on trip pages).
+ * sticky row of four equal pills on a phone (`row`, only on trip pages). Inside the trip workspace the sidebar
+ * (or its jump bar) is the trip's navigation, so neither shows there.
  */
 export function TripTabs({ variant }: { variant: 'inline' | 'row' }) {
   const t = useTranslations('shell.nav');
   const pathname = usePathname();
+  if (isWorkspacePage(pathname)) return null;
   if (variant === 'row' && !isTripPage(pathname)) return null;
   return (
     <nav

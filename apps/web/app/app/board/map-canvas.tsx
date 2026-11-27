@@ -91,6 +91,8 @@ type Props = {
   onPin: (longitude: number, latitude: number, name: string | null) => void;
   onZoom: (zoom: number) => void;
   onMove: () => void;
+  /** The map has loaded and made its first fit: a move asked for now is not undone by it. */
+  onReady?: () => void;
 };
 
 type PinMarker = {
@@ -745,6 +747,7 @@ export function MapCanvas(props: Props) {
             { duration: 0 },
           );
           if (latest.current.stops.length) controller.fitStops(false);
+          latest.current.onReady?.();
           frame = requestAnimationFrame(tick);
         };
 
@@ -1051,7 +1054,7 @@ export function MapCanvas(props: Props) {
         type: 'line',
         source: 'gt-home',
         paint: {
-          'line-color': '#0f172a',
+          'line-color': '#111111',
           'line-width': 2.5,
           'line-dasharray': [2, 2],
           'line-opacity': 0.6,

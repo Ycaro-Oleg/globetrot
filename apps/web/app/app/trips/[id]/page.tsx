@@ -33,7 +33,7 @@ const STEPS = [
   ['route', '/app/board'],
   ['budget', '/app/budget'],
   ['saved', '/app/budget'],
-  ['itin', '/app/days'],
+  ['itin', '/app/trip'],
   ['stays', '/app/budget'],
   ['docs', '/app/lists'],
   ['check', '/app/lists'],

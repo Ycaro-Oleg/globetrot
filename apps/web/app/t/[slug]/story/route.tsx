@@ -2,7 +2,7 @@ import { formatMoney, fromDecimal, subtract } from '@globetrot/domain';
 import { ImageResponse } from 'next/og';
 import { getTranslations } from 'next-intl/server';
 import { fetchSharedTrip, formatMonth } from '../../../../lib/shared-trip';
-import { SITE_NAME } from '../../../site';
+import { BrandLockup } from '../../../brand-mark';
 
 /**
  * The progress card for stories (1080×1920, ADR-0028), made from a trip's public link: the trip, how far the
@@ -43,20 +43,18 @@ export async function GET(_request: Request, { params }: { params: Promise<{ slu
         flexDirection: 'column',
         justifyContent: 'space-between',
         padding: 96,
-        background: 'linear-gradient(180deg, #1e3a8a 0%, #0f172a 70%)',
-        color: '#f8fafc',
+        background: 'linear-gradient(180deg, #ffffff 0%, #f3f4f5 70%)',
+        color: '#1c1c1e',
         fontFamily: 'sans-serif',
       }}
     >
-      <div style={{ display: 'flex', fontSize: 44, fontWeight: 800, color: '#f97316' }}>
-        {SITE_NAME.toLowerCase()}
-      </div>
+      <BrandLockup fontSize={44} color="#1c1c1e" />
       <div style={{ display: 'flex', flexDirection: 'column', gap: 40 }}>
         <div style={{ display: 'flex', fontSize: 104, fontWeight: 800, lineHeight: 1.02 }}>
           {trip.title}
         </div>
-        <div style={{ display: 'flex', fontSize: 40, color: '#cbd5e1' }}>{route}</div>
-        <div style={{ display: 'flex', fontSize: 72, fontWeight: 800, color: '#fdba74' }}>
+        <div style={{ display: 'flex', fontSize: 40, color: '#4f545a' }}>{route}</div>
+        <div style={{ display: 'flex', fontSize: 72, fontWeight: 800, color: '#d63f24' }}>
           {headline}
         </div>
         <div
@@ -65,7 +63,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ slu
             width: '100%',
             height: 36,
             borderRadius: 18,
-            background: 'rgba(255,255,255,0.18)',
+            background: 'rgba(17,17,17,0.1)',
           }}
         >
           <div
@@ -74,13 +72,13 @@ export async function GET(_request: Request, { params }: { params: Promise<{ slu
               width: `${Math.max(4, percent)}%`,
               height: 36,
               borderRadius: 18,
-              background: '#f97316',
+              background: '#d63f24',
             }}
           />
         </div>
         <div style={{ display: 'flex', fontSize: 44, fontWeight: 700 }}>{when}</div>
       </div>
-      <div style={{ display: 'flex', fontSize: 36, color: '#cbd5e1' }}>{t('story.footer')}</div>
+      <div style={{ display: 'flex', fontSize: 36, color: '#4f545a' }}>{t('story.footer')}</div>
     </div>,
     { width: 1080, height: 1920 },
   );

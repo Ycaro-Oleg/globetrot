@@ -1,10 +1,15 @@
 import { cookies } from 'next/headers';
-import { isPipEnabled } from '../../../lib/flags';
+import { isPipEnabled } from '../../../../lib/flags';
 import { getLocale, getTranslations } from 'next-intl/server';
-import { apiInternalUrl } from '../../../lib/api-proxy';
-import { createServerApiClient, sessionCookieHeader } from '../../../lib/stored-preferences';
-import { fetchBudget, fetchExpenses, fetchTrips, SELECTED_TRIP_COOKIE } from '../../../lib/trips';
-import { currencyOptions } from '../../settings/options';
+import { apiInternalUrl } from '../../../../lib/api-proxy';
+import { createServerApiClient, sessionCookieHeader } from '../../../../lib/stored-preferences';
+import {
+  fetchBudget,
+  fetchExpenses,
+  fetchTrips,
+  SELECTED_TRIP_COOKIE,
+} from '../../../../lib/trips';
+import { currencyOptions } from '../../../settings/options';
 import { BudgetView } from './budget-view';
 
 export async function generateMetadata() {
