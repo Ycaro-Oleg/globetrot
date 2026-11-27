@@ -20,7 +20,7 @@ const problemCode = (error: unknown) =>
  * API checks that a pass is for one of the person's own trips.
  */
 export async function startCheckout(
-  item: 'explorer' | 'voyager' | 'top-up' | 'trip-pass',
+  item: 'explorer' | 'voyager' | 'top-up' | 'top-up-small' | 'trip-pass',
   interval: 'month' | 'year',
   tripId?: string,
 ): Promise<CheckoutResult> {

@@ -128,7 +128,7 @@ export function createStartCheckout(
     name: 'startCheckout',
     kind: 'command',
     input: z.object({
-      item: z.enum(['explorer', 'voyager', 'top-up', 'trip-pass']),
+      item: z.enum(['explorer', 'voyager', 'top-up', 'top-up-small', 'trip-pass']),
       interval: z.enum(['month', 'year']).default('month'),
       tripId: z
         .uuid()

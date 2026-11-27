@@ -97,7 +97,9 @@ export function createAnthropicAi(
           body: JSON.stringify({
             model: config.model,
             max_tokens: input.maxTokens,
-            temperature: 0.4,
+            // Current Claude models refuse sampling settings (temperature) with a 400, so none is sent. Thinking is
+            // on by default and shares `max_tokens` with the answer: low effort keeps it short (ADR-0033).
+            output_config: { effort: 'low' },
             system: `${input.system}\n\nAnswer with one JSON object only, with no text before or after it.`,
             messages: [{ role: 'user', content: input.user }],
           }),

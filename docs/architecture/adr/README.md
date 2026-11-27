@@ -42,3 +42,5 @@ ADRs 0010 to 0012 were written after the work they describe (#53 to #61), which 
 | [0030](0030-miles-in-the-savings.md) | Miles in the savings answer: balances per Brazilian programme, researched value ranges, miles put towards a trip | Accepted |
 | [0031](0031-partner-links-and-metrics.md) | Partner links (labelled, no prices, only when configured) and the internal metrics dashboard for admins | Accepted |
 | [0032](0032-bookings-by-email.md) | Bookings forwarded to a private address become Pip proposals to review; the webhook is trusted by a shared secret | Accepted |
+| [0033](0033-pricing-adjustments-before-launch.md) | Pricing before launch: a R$49 trip pass with 50 Pip credits, a 50-credit pack, coupons on one-time payments, the backup model fixed | Accepted |
+| [0034](0034-hosting-on-railway.md) | Production on Railway: web, api and worker from `main`, PostGIS on a volume, a Railway Bucket; replaces the hosting part of 0002 | Accepted |

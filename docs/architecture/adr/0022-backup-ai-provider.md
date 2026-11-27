@@ -1,6 +1,6 @@
 # 0022. A backup AI provider for Pip (Claude Haiku)
 
-- Status: Accepted (the key is the owner's to set)
+- Status: Accepted, dormant. On 2026-11-27 the owner decided to run Pip on DeepSeek only, for cost: `ANTHROPIC_API_KEY` stays unset, so the backup never runs. The adapter stays in the code so it can be switched on later with the key alone
 - Date: 2026-11-26
 
 ## Context

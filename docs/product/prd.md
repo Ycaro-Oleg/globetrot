@@ -30,7 +30,7 @@ Validate the core question: *does planning on a map, combined with an honest "ca
 | Account passport + self-declared country stamps, basic profile | Initial public release | Identity | M | Trips | Low |
 | Stripe subscriptions + entitlements | Initial public release | Revenue | L | Approved pricing | Medium |
 | PWA offline trip pack | Initial public release | Travel stage | L | Map tiles | Medium |
-| Production deployment (Hetzner + Coolify) | Initial public release | Launch | M | MVP RC | Low |
+| Production deployment (Railway) | Initial public release | Launch | M | MVP RC | Low |
 | Social feed, posts, comments, reactions, moderation | Post-launch | Community | XL | Profiles | High |
 | 100 ranks + achievements | Post-launch | Retention | L | XP ledger, anti-abuse | Medium |
 | Native apps (Expo) | Post-launch | Mobile reach | XL | Shared packages | Medium |

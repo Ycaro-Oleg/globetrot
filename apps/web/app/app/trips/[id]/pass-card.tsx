@@ -4,7 +4,7 @@ import { formatMoney, money, type PriceCurrency } from '@globetrot/domain';
 import { useLocale, useTranslations } from 'next-intl';
 import { useEffect, useId, useState, useTransition } from 'react';
 import { track } from '../../../../lib/analytics';
-import { tripPassPrice } from '../../../../lib/plan-config';
+import { TRIP_PASS, tripPassPrice } from '../../../../lib/plan-config';
 import { startCheckout } from '../../plan/actions';
 import { redeemFreePass } from '../../_components/referral-actions';
 import styles from './trip-hub.module.css';
@@ -59,7 +59,7 @@ export function PassCard({
         <p>{t('active', { date: date(validUntil) })}</p>
       ) : (
         <>
-          <p className={styles.hint}>{t('body')}</p>
+          <p className={styles.hint}>{t('body', { credits: TRIP_PASS.credits })}</p>
           {justPaid ? <p role="status">{t('thanks')}</p> : null}
           {freePasses > 0 ? (
             <button

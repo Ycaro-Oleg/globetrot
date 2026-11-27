@@ -1713,6 +1713,7 @@
       "cta": "Comece grátis, depois Voyager"
     },
     "topUp": "Precisa de mais Pip? {credits, number} créditos extras por {price}, e eles nunca expiram.",
+    "topUpSmall": "Só mais alguns? {credits, number} créditos por {price}.",
     "credit": "1 crédito = 1 pedido ao Pip.",
     "after": "Depois da primeira semana, uma viagem continua grátis, para sempre. Arquive uma para começar outra, adicione um passe ou escolha um plano.",
     "free": {
@@ -1764,7 +1765,7 @@
     "freeTitle": "Você está no plano grátis",
     "freeBody": "Uma viagem ativa com todas as ferramentas, {credits} créditos do Pip por mês e mais uma pessoa para planejar junto. Viagens com passe não contam.",
     "passTitle": "Só uma viagem?",
-    "passBody": "O passe da viagem libera tudo do pago em uma viagem por {price}, uma vez só. Compre na página da viagem.",
+    "passBody": "O passe da viagem libera tudo do pago em uma viagem por {price}, uma vez só, com {credits, number} créditos do Pip que nunca expiram. Compre na página da viagem.",
     "passTrips": "Ir para minhas viagens",
     "passCounted": "{count, plural, one {# viagem com passe, fora da conta} other {# viagens com passe, fora da conta}}"
   },
@@ -1860,7 +1861,7 @@
   },
   "tripPass": {
     "title": "Passe da viagem",
-    "body": "Tudo do pago nesta viagem, uma vez só: não conta na sua viagem grátis, qualquer pessoa planeja junto e vale até 30 dias depois da volta.",
+    "body": "Tudo do pago nesta viagem, uma vez só: não conta na sua viagem grátis, qualquer pessoa planeja junto, vale até 30 dias depois da volta e traz {credits, number} créditos do Pip que nunca expiram.",
     "cta": "Comprar o passe por {price}",
     "active": "Esta viagem tem passe até {date}.",
     "thanks": "Obrigado! O passe é ativado em instantes; recarregue se ainda não aparecer.",

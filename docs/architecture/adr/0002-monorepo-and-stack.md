@@ -1,6 +1,6 @@
 # 0002. TypeScript monorepo and core stack
 
-- Status: Accepted
+- Status: Accepted. The hosting part (Hetzner + Coolify) is replaced by [ADR-0034](0034-hosting-on-railway.md)
 - Date: 2026-11-07
 
 ## Context

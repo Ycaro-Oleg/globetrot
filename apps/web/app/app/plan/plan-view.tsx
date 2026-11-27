@@ -10,7 +10,10 @@ import {
   monthlyOfAnnual,
   planCards,
   TOP_UP,
+  TOP_UP_SMALL,
+  TRIP_PASS,
   topUpPrice,
+  topUpSmallPrice,
   tripPassPrice,
 } from '../../../lib/plan-config';
 import { openPortal, startCheckout } from './actions';
@@ -170,6 +173,17 @@ export function PlanView({
             type="button"
             className={styles.secondary}
             disabled={pending}
+            onClick={() => go(() => startCheckout('top-up-small', 'month'))}
+          >
+            {p('topUpSmall', {
+              credits: TOP_UP_SMALL.credits,
+              price: price(topUpSmallPrice(currency)),
+            })}
+          </button>
+          <button
+            type="button"
+            className={styles.secondary}
+            disabled={pending}
             onClick={() => go(() => startCheckout('top-up', 'month'))}
           >
             {p('topUp', { credits: TOP_UP.credits, price: price(topUpPrice(currency)) })}
@@ -262,7 +276,12 @@ export function PlanView({
       {onPlan ? null : (
         <div className={styles.fact}>
           <h2>{t('passTitle')}</h2>
-          <p>{t('passBody', { price: price(tripPassPrice(currency)) })}</p>
+          <p>
+            {t('passBody', {
+              price: price(tripPassPrice(currency)),
+              credits: TRIP_PASS.credits,
+            })}
+          </p>
           <Link href="/app/trips" className={styles.secondary}>
             {t('passTrips')}
           </Link>

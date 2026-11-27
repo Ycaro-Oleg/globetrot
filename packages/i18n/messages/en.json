@@ -1713,6 +1713,7 @@
       "cta": "Start free, then Voyager"
     },
     "topUp": "Need more Pip? {credits, number} extra credits for {price}, and they never expire.",
+    "topUpSmall": "Just a few more? {credits, number} credits for {price}.",
     "credit": "1 credit = 1 Pip request.",
     "after": "After the first week you keep one trip free, for good. Archive one to start another, add a trip pass, or choose a plan.",
     "free": {
@@ -1764,7 +1765,7 @@
     "freeTitle": "You are on the free plan",
     "freeBody": "One active trip with every tool, {credits} Pip credits a month and one person to plan with. Trips with a pass do not count.",
     "passTitle": "Just one trip?",
-    "passBody": "A trip pass opens everything paid on one trip for {price}, once. Buy it from the trip’s page.",
+    "passBody": "A trip pass opens everything paid on one trip for {price}, once, with {credits, number} Pip credits that never expire. Buy it from the trip’s page.",
     "passTrips": "Go to my trips",
     "passCounted": "{count, plural, one {# trip with a pass, not counted} other {# trips with a pass, not counted}}"
   },
@@ -1860,7 +1861,7 @@
   },
   "tripPass": {
     "title": "Trip pass",
-    "body": "Everything paid on this trip, once: it does not count towards your free trip, anyone can plan it with you, and it lasts until 30 days after you come back.",
+    "body": "Everything paid on this trip, once: it does not count towards your free trip, anyone can plan it with you, it lasts until 30 days after you come back, and it adds {credits, number} Pip credits that never expire.",
     "cta": "Get the pass for {price}",
     "active": "This trip has a pass until {date}.",
     "thanks": "Thank you! The pass switches on in a moment; reload if it does not show yet.",
