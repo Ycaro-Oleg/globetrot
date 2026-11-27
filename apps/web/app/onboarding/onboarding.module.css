@@ -104,37 +104,6 @@
   line-height: 1.55;
 }
 
-.promises {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.promises li {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 16px;
-  border: 1px solid #dde2e8;
-  border-radius: 16px;
-  background: #fff;
-  font-weight: 700;
-}
-
-.promises span {
-  display: grid;
-  place-items: center;
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  background: #d1fae5;
-  color: #047857;
-  font-weight: 800;
-}
-
 .field {
   display: flex;
   flex-direction: column;
@@ -1076,4 +1045,9 @@
   .tripPulse {
     animation: none;
   }
+}
+
+.places {
+  display: grid;
+  gap: 18px;
 }

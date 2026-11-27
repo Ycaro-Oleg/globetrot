@@ -228,7 +228,7 @@ export default function HomePage() {
           />
           <HeroRoutes labels={heroLabels} />
         </div>
-        <LandingSuggest signupHref="/signup" />
+        <LandingSuggest signupHref="/signup?next=%2Fapp%2Fstart" />
       </section>
 
       <main>

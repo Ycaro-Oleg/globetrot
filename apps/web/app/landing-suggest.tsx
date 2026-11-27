@@ -165,6 +165,8 @@ export function LandingSuggest({ signupHref }: { signupHref: string }) {
     return (
       <SuggestResult
         plan={plan}
+        likes={likes}
+        comfort={comfort}
         code={code}
         monthly={monthlyValue}
         headingRef={heading}
@@ -336,6 +338,8 @@ export function LandingSuggest({ signupHref }: { signupHref: string }) {
  */
 export function SuggestResult({
   plan,
+  likes,
+  comfort,
   code,
   monthly,
   signupHref,
@@ -343,6 +347,8 @@ export function SuggestResult({
   headingRef,
 }: {
   plan: SuggestedPlan;
+  likes: readonly SuggestLike[];
+  comfort: SuggestComfort;
   code: string;
   monthly: number;
   signupHref: string;
@@ -389,7 +395,7 @@ export function SuggestResult({
       saved: '0',
       monthly: String(Math.round(monthly)),
       currency: code,
-      suggestion: { destination: plan.destination, days: plan.days },
+      suggestion: { destination: plan.destination, likes, days: plan.days, comfort },
     });
   };
 

@@ -136,6 +136,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/trips/from-suggestion": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Turn a suggested plan into a trip
+         * @description Creates a private trip from a suggested plan (ADR-0020): its stops, nights and legs, its experiences as places, its typical cost as the trip’s estimate (at the recorded reference rate when the trip is not in USD) and the monthly amount. `Idempotency-Key` works as for `createTrip`.
+         */
+        post: operations["createTripFromSuggestion"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/trips/{id}": {
         parameters: {
             query?: never;
@@ -1923,6 +1943,197 @@ export interface operations {
             };
             /** @description The plan’s active trips are used (`TRIP_LIMIT_REACHED`) or the trial is over (`PLAN_REQUIRED`). */
             402: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description The Idempotency-Key was already used with a different request. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description The body or the header is not valid. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    createTripFromSuggestion: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Client-chosen key that makes a retry safe. */
+                "idempotency-key"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /**
+                     * @description Which suggested destination.
+                     * @enum {string}
+                     */
+                    destination: "japan" | "portugal" | "rio-de-la-plata";
+                    /** @description What the person enjoys; empty means everything. */
+                    likes: ("adrenaline" | "food" | "culture" | "nature" | "nightlife")[];
+                    days: number;
+                    /** @enum {string} */
+                    comfort: "budget" | "comfort";
+                    /** @description The trip’s currency, as picked with the plan (USD by default). */
+                    currency: string;
+                    /** @description What the person plans to set aside each month, in the trip’s currency. */
+                    monthly?: string;
+                    /**
+                     * @description The trip’s title in the person’s language. Defaults to the destination’s name.
+                     * @example Japan 2027
+                     */
+                    title?: string;
+                    /** @description The description of the estimated cost, in the person’s language. */
+                    estimateLabel?: string;
+                    /**
+                     * @description The language for the stops’ and places’ names (`pt-BR` uses Portuguese names).
+                     * @enum {string}
+                     */
+                    locale?: "en" | "pt-BR";
+                };
+            };
+        };
+        responses: {
+            /** @description The new trip. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * Format: uuid
+                         * @description Trip id (UUID).
+                         */
+                        id: string;
+                        title: string;
+                        /**
+                         * Format: date
+                         * @description Calendar date, no time zone.
+                         * @example 2027-04-03
+                         */
+                        startDate: string | null;
+                        currency: string;
+                        /** @enum {string} */
+                        status: "active" | "traveling" | "completed" | "archived";
+                        /** @enum {string} */
+                        visibility: "private";
+                        /** Format: date-time */
+                        createdAt: string;
+                        /** Format: date-time */
+                        updatedAt: string;
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description The plan’s active trips are used (`TRIP_LIMIT_REACHED`) or the trial is over (`PLAN_REQUIRED`). */
+            402: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description No such suggested destination. */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
