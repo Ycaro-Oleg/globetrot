@@ -68,6 +68,7 @@ const TRIPS = [
     visibility: 'private',
     createdAt: NOW,
     updatedAt: NOW,
+    role: 'owner',
   },
   {
     id: '01a1c28d-afc9-7767-af40-c937c80dd9dd',
@@ -78,9 +79,27 @@ const TRIPS = [
     visibility: 'private',
     createdAt: NOW,
     updatedAt: NOW,
+    role: 'owner',
   },
 ];
 const TRIP_ID = TRIPS[0].id;
+/** Who plans the first trip (ADR-0024): the signed-in owner, an editor and an open link. */
+const MEMBERS = {
+  members: [
+    { userId: 'u-qa', name: 'QA Tester', role: 'owner', you: true },
+    { userId: 'u-bruno', name: 'Bruno Costa', role: 'editor', you: false },
+  ],
+  invites: [{ id: '0193c0a8-7b1e-7c4a-9e2f-3d5a6b7c9a55', role: 'viewer', expiresAt: NOW }],
+  guestLimit: null,
+};
+const INVITE_TOKEN = 'abcdefghijklmnopqrstuv';
+const INVITE_PREVIEW = {
+  tripTitle: 'Patagonia',
+  ownerName: 'Ana Ribeiro',
+  role: 'editor',
+  joined: false,
+  tripId: '01a1c28d-afc9-7767-af40-c937c80dd9ff',
+};
 
 const usd = (amount) => ({ amount, currency: 'USD' });
 const CATEGORY_KEYS = [
@@ -451,6 +470,16 @@ const stub = createServer(async (request, response) => {
     if (!signedIn) return reply(response, 401, { code: 'UNAUTHENTICATED' });
     return reply(response, 200, VISAS);
   }
+  if (/^\/v1\/trips\/[^/]+\/members$/.test(url.pathname) && request.method === 'GET') {
+    if (!signedIn) return reply(response, 401, { code: 'UNAUTHENTICATED' });
+    return reply(response, 200, MEMBERS);
+  }
+  if (/^\/v1\/invites\/[^/]+$/.test(url.pathname) && request.method === 'GET') {
+    if (!signedIn) return reply(response, 401, { code: 'UNAUTHENTICATED' });
+    return url.pathname.endsWith(INVITE_TOKEN)
+      ? reply(response, 200, INVITE_PREVIEW)
+      : reply(response, 404, { code: 'NOT_FOUND' });
+  }
   if (/^\/v1\/trips\/[^/]+\/destinations$/.test(url.pathname) && request.method === 'GET') {
     if (!signedIn) return reply(response, 401, { code: 'UNAUTHENTICATED' });
     return reply(response, 200, DESTINATIONS);
@@ -801,6 +830,20 @@ try {
         VIEWPORTS[layout],
       ]);
     }
+    for (const layout of ['desktop', 'phone']) {
+      entries.push([
+        `invite-${layout}`,
+        true,
+        async (page) => go(page, `${base}/app/invite/${INVITE_TOKEN}`),
+        VIEWPORTS[layout],
+      ]);
+    }
+    entries.push([
+      'invite-gone-phone',
+      true,
+      async (page) => go(page, `${base}/app/invite/zyxwvutsrqponmlkjihgfe`),
+      VIEWPORTS.phone,
+    ]);
     entries.push([
       'trips-archived-desktop',
       true,

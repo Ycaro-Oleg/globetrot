@@ -170,6 +170,18 @@ Decision record: [ADR-0013](../architecture/adr/0013-community.md).
 - **Language:** the social card and link preview speak the owner's language, like the title they wrote. A link shared from a non-default language names it (`?lang=pt-BR`), so friends open the page in that language; the page otherwise follows the visitor's own choice.
 - An archived trip's link answers "not found" too. The page invites visitors to plan their own trip (the free week).
 
+## Planning together
+
+Decided in [ADR-0024](../architecture/adr/0024-trip-members.md).
+
+- A trip has one **owner** and any number of **members**: an **editor** changes the plan (route, days, money, checklist, Pip proposals, title and dates); a **viewer** only reads it.
+- Only the owner archives, restores, deletes, shares the public link, buys a trip pass, invites, stops links and removes people. A member can leave.
+- **Invites are links the owner copies and sends**; Globetrot sends no email to other people. A link works for 7 days, for as many people as the plan allows, and can be stopped. Opening it asks to sign in or sign up first.
+- **How many people can join:** 1 on the free plan; anyone during the free week, on a paid plan, or on a trip with a pass.
+- Someone who is not on a trip gets "not found" for it, exactly like a trip that does not exist.
+- Trips shared with a person appear in their list and switcher as "Shared" and do not count towards their own active-trip limit.
+- Screens of a shared trip refresh every 30 seconds while open, and every trip refreshes when the person comes back to the tab. There is no live sync yet: the last save of the route wins.
+
 ## Plans, trial and Pip credits
 
 Decided in [ADR-0019](../architecture/adr/0019-plans-trial-and-pip-credits.md), changed by [ADR-0023](../architecture/adr/0023-free-plan-trip-pass-and-prices-in-reais.md). Prices come from `PLAN_PRICES`, `TRIP_PASS` and `TOP_UP_PRICES` in the domain, never from components.

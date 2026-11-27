@@ -1820,5 +1820,50 @@
     "thanks": "Obrigado! O passe é ativado em instantes; recarregue se ainda não aparecer.",
     "soon": "Os pagamentos estão sendo ativados. Nada é cobrado ainda.",
     "failed": "Não deu certo. Tente de novo em instantes."
+  },
+  "tripMembers": {
+    "title": "Pessoas nesta viagem",
+    "you": "{name} (você)",
+    "role": {
+      "owner": "Organiza",
+      "editor": "Pode editar",
+      "viewer": "Pode ver"
+    },
+    "hint": "Mande um link para planejar junto. Quem abrir entra com o papel que você escolher.",
+    "hintLimit": "Mande um link para planejar junto. Seu plano deixa entrar {count, plural, one {# pessoa} other {# pessoas}}; um passe da viagem ou um plano libera para quem quiser.",
+    "roleLabel": "A pessoa pode",
+    "roleChoice": {
+      "editor": "Editar o plano",
+      "viewer": "Só ver"
+    },
+    "invite": "Criar link de convite",
+    "linkLabel": "Link de convite",
+    "linkReady": "Link pronto. Copie e mande para quem vai viajar com você; ele vale por 7 dias.",
+    "copy": "Copiar",
+    "copied": "Link copiado.",
+    "copyFailed": "Não deu para copiar: selecione o link e copie.",
+    "openLinks": "Links de convite abertos",
+    "openLink": "Link aberto · {role}",
+    "revoke": "Desativar link",
+    "revoked": "O link não funciona mais.",
+    "remove": "Remover",
+    "removed": "{name} não está mais nesta viagem.",
+    "leave": "Sair desta viagem",
+    "limit": "Seu plano não deixa entrar mais ninguém. Adicione um passe da viagem ou escolha um plano para convidar mais.",
+    "failed": "Não deu certo. Tente de novo em instantes.",
+    "shared": "Compartilhada"
+  },
+  "invitePage": {
+    "title": "Planejar uma viagem junto",
+    "body": "{owner} convidou você para planejar “{trip}”.",
+    "roleEditor": "Você vai poder mudar o plano: paradas, dias, dinheiro e checklist.",
+    "roleViewer": "Você vai poder ver o plano.",
+    "accept": "Entrar na viagem",
+    "joined": "Você já planeja esta viagem.",
+    "open": "Abrir a viagem",
+    "notFound": "Este link de convite não funciona mais. Peça um novo.",
+    "limit": "Esta viagem já tem todas as pessoas que o plano permite. Peça a quem organiza para adicionar um passe da viagem.",
+    "error": "Não deu certo. Tente de novo em instantes.",
+    "back": "Ir para minhas viagens"
   }
 }

@@ -234,6 +234,8 @@ Migration `0018_billing`. Rules: [business rules](../product/business-rules.md#p
 | `account_notice` | One-time account emails already sent (migration `0019_account_notice`) | `user_id` (cascade) and `kind` (`trial-ending`, `trial-ended`) as the primary key, `sent_at`. Claimed before sending, removed if sending failed |
 | `credit_ledger` | Bought Pip credits in, credits spent from them out | `user_id` (cascade), `delta` (non-zero), `reason` (`top-up`, `pip`, `grant`), `ref` (unique, so a payment is applied once). The balance is the sum |
 | `trip_pass` | A trip pass bought for one trip (migration `0025_trip_pass`, [ADR-0023](adr/0023-free-plan-trip-pass-and-prices-in-reais.md)) | `trip_id` and `user_id` (both cascade), `purchased_at`, `valid_until`, `provider_ref` (unique: the payment, so a webhook delivered twice grants once). A pass holds while `valid_until` is in the future |
+| `trip_member` | People who plan someone else's trip (migration `0026_trip_members`, [ADR-0024](adr/0024-trip-members.md)) | `trip_id` and `user_id` (both cascade) as the primary key, `role` (`editor`, `viewer`), `joined_at`. The owner is never a row: they stay in `trip.owner_id` |
+| `trip_invite` | Invite links to join a trip | `id`, `trip_id` (cascade), `token_hash` (unique SHA-256 of the link's token; the token is never stored), `role`, `created_by` (cascade), `created_at`, `expires_at` (7 days), `revoked_at` |
 
 ## Extensions
 
