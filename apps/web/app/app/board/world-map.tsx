@@ -56,6 +56,9 @@ const NO_PENCILLED_SPOTS: { name: string; kind: SpotKind; latitude: number; long
 const STYLE_KEY = 'globetrot.mapStyle';
 /** Set once the person has opened a pin's card: the first-visit hint over the first pin stops showing. */
 const PIN_HINT_KEY = 'globetrot.board.pinHint';
+const DRAWER_KEY = 'globetrot.board.drawer';
+/** What the closed drawer still takes on the right: its tab. */
+const DRAWER_CLOSED_INSET = 72;
 const PHONE_MAX = 720;
 const PANEL_INSET = 412;
 type Sheet = 'peek' | 'half' | 'full';
@@ -241,6 +244,28 @@ export function WorldMapBoard({
   const cardIndex = card ? stops.findIndex((stop) => stop.id === card.id) : -1;
   const cardStop = cardIndex >= 0 ? stops[cardIndex]! : null;
   const phone = view.phone;
+  // The route panel is a drawer on a computer: it folds away to give the map the whole width.
+  const [drawerOpen, setDrawerOpen] = useState(true);
+  const drawerClosed = !phone && !drawerOpen;
+  const panelInset = phone ? 0 : drawerOpen ? PANEL_INSET : DRAWER_CLOSED_INSET;
+  const toggleDrawer = useCallback((open: boolean) => {
+    setDrawerOpen(open);
+    try {
+      window.localStorage.setItem(DRAWER_KEY, open ? 'open' : 'closed');
+    } catch {
+      /* The choice just is not remembered. */
+    }
+  }, []);
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => {
+      try {
+        if (window.localStorage.getItem(DRAWER_KEY) === 'closed') setDrawerOpen(false);
+      } catch {
+        /* Opens as usual. */
+      }
+    });
+    return () => cancelAnimationFrame(frame);
+  }, []);
   const searchActive = query.trim().length >= 2;
 
   // The card sits next to its pin and follows the map; on a phone it opens full width at the top.
@@ -267,11 +292,11 @@ export function WorldMapBoard({
       y: height / 2,
     };
     let left = point.x + 36;
-    if (left + 340 > width - PANEL_INSET) left = point.x - 36 - 340;
+    if (left + 340 > width - panelInset) left = point.x - 36 - 340;
     left = Math.max(12, left);
     const top = Math.max(72, Math.min(height - maxHeight - 14, point.y - 150));
     setCardStyle({ left, top, width: 340, maxHeight });
-  }, [cardStop, cardMode, phone, view.w, view.stageH]);
+  }, [cardStop, cardMode, phone, view.w, view.stageH, panelInset]);
   useEffect(() => {
     const frame = requestAnimationFrame(placeCard);
     return () => cancelAnimationFrame(frame);
@@ -296,23 +321,23 @@ export function WorldMapBoard({
     if (!point) return setPinHint(null);
     // Kept clear of the route panel and the screen edges (the bubble is 300px wide, centred on the pin).
     const width = stage.current?.clientWidth ?? view.w;
-    const right = width - (phone ? 0 : PANEL_INSET) - 160;
+    const right = width - panelInset - 160;
     setPinHint({ x: Math.min(Math.max(160, point.x), Math.max(160, right)), y: point.y });
-  }, [pinHintSeen, firstStop, card, phone, view.w]);
+  }, [pinHintSeen, firstStop, card, phone, view.w, panelInset]);
   useEffect(() => {
     const frame = requestAnimationFrame(placePinHint);
     return () => cancelAnimationFrame(frame);
   }, [placePinHint]);
-  // A window resized with no stop open keeps the whole route in view, clear of the panel.
+  // A window resized (or the drawer folded) with no stop open keeps the whole route in view, clear of the panel.
   const sized = useRef<string | null>(null);
   useEffect(() => {
-    const size = `${view.w}x${view.h}`;
+    const size = `${view.w}x${view.h}x${panelInset}`;
     const previous = sized.current;
     sized.current = size;
     if (previous === null || previous === size || selected) return;
     const timer = window.setTimeout(() => controller.current?.fitStops(false), 200);
     return () => window.clearTimeout(timer);
-  }, [view.w, view.h, selected]);
+  }, [view.w, view.h, panelInset, selected]);
 
   // The remembered style is read after the first paint, so the server and the browser render the same page.
   useEffect(() => {
@@ -347,7 +372,7 @@ export function WorldMapBoard({
   const inset: Inset = phone
     ? { top: 76, right: 20, bottom: sheetHeight + 10, left: 20 }
     : // The layers and zoom dock sits in the lower left: keep pins (and home) above it.
-      { top: 80, right: PANEL_INSET, bottom: 90, left: 40 };
+      { top: 80, right: panelInset, bottom: 90, left: 40 };
 
   const flash = useCallback((text: string, undo = false) => setToast({ text, undo }), []);
   useEffect(() => {
@@ -448,6 +473,8 @@ export function WorldMapBoard({
       if (!id) return;
       const stop = stops.find((candidate) => candidate.id === id);
       if (!stop) return;
+      // Opening a stop shows it in the drawer, so a folded drawer comes back.
+      setDrawerOpen(true);
       if (phone && sheet === 'peek') setSheet('half');
       controller.current?.flyTo(stop.longitude, stop.latitude);
       // "Nearby" reads the points of interest drawn once the map has settled there.
@@ -804,7 +831,13 @@ export function WorldMapBoard({
       ref={stage}
       className={styles.stage}
       data-phone={phone || undefined}
-      style={{ height: view.stageH || undefined }}
+      data-drawer={drawerClosed ? 'closed' : undefined}
+      style={
+        {
+          height: view.stageH || undefined,
+          '--panel-inset': `${panelInset}px`,
+        } as CSSProperties
+      }
     >
       <MapCanvas
         stops={mapStops}
@@ -1165,8 +1198,27 @@ export function WorldMapBoard({
         />
       ) : null}
 
+      {!phone ? (
+        <button
+          type="button"
+          className={styles.drawerToggle}
+          aria-expanded={drawerOpen}
+          aria-controls="board-panel"
+          onClick={() => toggleDrawer(!drawerOpen)}
+        >
+          <span aria-hidden="true">{drawerOpen ? '›' : '‹'}</span>
+          {drawerOpen ? (
+            <span className="sr-only">{t('drawerClose')}</span>
+          ) : (
+            <span>{t('drawerOpen', { count: stops.length })}</span>
+          )}
+        </button>
+      ) : null}
+
       <section
+        id="board-panel"
         className={styles.panel}
+        inert={drawerClosed || undefined}
         aria-label={t('panel')}
         style={phone ? { height: sheetHeight } : undefined}
         data-sheet={phone ? sheet : undefined}

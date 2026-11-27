@@ -81,7 +81,7 @@
 }
 
 .mapError {
-  padding-inline-end: calc(412px + 2rem);
+  padding-inline-end: calc(var(--panel-inset, 412px) + 2rem);
 }
 
 .stage[data-phone] .mapError {
@@ -291,7 +291,7 @@
   flex-wrap: nowrap;
   align-items: center;
   gap: 4px;
-  max-width: calc(100% - 440px);
+  max-width: calc(100% - var(--panel-inset, 412px) - 28px);
   padding: 4px;
   border: 1px solid var(--line);
   border-radius: 99px;
@@ -694,7 +694,7 @@
 }
 
 .stage:not([data-phone]) .mapHost :global(.maplibregl-ctrl-bottom-right) {
-  right: 412px;
+  right: var(--panel-inset, 412px);
 }
 
 .zoom button {
@@ -1030,6 +1030,49 @@
   font-size: 11px;
 }
 
+/* --- The drawer: the route panel folds away on a computer, a tab brings it back --- */
+.stage[data-drawer='closed'] .toolbar {
+  max-width: calc(100% - 200px);
+}
+
+.drawerToggle {
+  position: absolute;
+  top: calc(50% - 22px);
+  right: calc(14px + 384px - 16px);
+  z-index: 6;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 32px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid rgba(241, 243, 245, 0.25);
+  border-radius: 99px;
+  background: var(--ink);
+  color: var(--on-ink);
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.6);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.drawerToggle > span[aria-hidden] {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.drawerToggle:hover {
+  background: var(--ink-2);
+}
+
+.stage[data-drawer='closed'] .drawerToggle {
+  top: 14px;
+  right: 14px;
+  height: 46px;
+  padding: 0 16px 0 12px;
+}
+
 /* --- Route panel (a right column on desktop, a bottom sheet on a phone) --- */
 .panel {
   position: absolute;
@@ -1045,6 +1088,24 @@
   border-radius: 26px;
   background: var(--ink);
   box-shadow: 0 20px 60px -20px rgba(0, 0, 0, 0.7);
+  transition:
+    transform 260ms cubic-bezier(0.2, 0.7, 0.3, 1),
+    visibility 0s linear 0s;
+}
+
+.stage[data-drawer='closed'] .panel {
+  visibility: hidden;
+  transform: translateX(calc(100% + 28px));
+  transition:
+    transform 260ms cubic-bezier(0.2, 0.7, 0.3, 1),
+    visibility 0s linear 260ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .panel,
+  .stage[data-drawer='closed'] .panel {
+    transition: none;
+  }
 }
 
 .stage[data-phone] .panel {

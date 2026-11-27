@@ -655,6 +655,8 @@
     "searchPlaceholder": "Buscar cidade, rua ou restaurante…",
     "mapLabel": "Mapa da viagem",
     "panel": "Painel da rota",
+    "drawerOpen": "{count, plural, =0 {Rota} one {Rota · # parada} other {Rota · # paradas}}",
+    "drawerClose": "Recolher o painel da rota",
     "crumbs": "Vista do mapa",
     "world": "Mundo",
     "tripFallback": "Sua viagem",

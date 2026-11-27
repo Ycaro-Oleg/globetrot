@@ -655,6 +655,8 @@
     "searchPlaceholder": "Search a city, street or restaurant…",
     "mapLabel": "Trip map",
     "panel": "Route panel",
+    "drawerOpen": "{count, plural, =0 {Route} one {Route · # stop} other {Route · # stops}}",
+    "drawerClose": "Hide the route panel",
     "crumbs": "Map view",
     "world": "World",
     "tripFallback": "Your trip",
