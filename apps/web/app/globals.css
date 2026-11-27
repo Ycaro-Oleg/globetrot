@@ -156,3 +156,26 @@ a:focus-visible {
   transition-duration: 0.01ms !important;
   scroll-behavior: auto !important;
 }
+
+/* Everything that can be clicked says so under the pointer (component rules, such as a map's grab, still win). */
+:where(
+  button,
+  [role='button'],
+  [role='tab'],
+  [role='radio'],
+  [role='switch'],
+  summary,
+  select,
+  label[for],
+  input[type='range'],
+  input[type='checkbox'],
+  input[type='radio'],
+  input[type='file'],
+  a[href]
+):not(:disabled, [aria-disabled='true']) {
+  cursor: pointer;
+}
+
+:where(button, select, input):disabled {
+  cursor: not-allowed;
+}

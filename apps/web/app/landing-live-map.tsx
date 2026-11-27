@@ -1,11 +1,18 @@
 'use client';
 
-import type { LegMode } from '@globetrot/domain';
+import {
+  distanceKm,
+  suggestPlan,
+  SUGGESTED_DESTINATIONS,
+  type LegMode,
+  type SuggestedPlan,
+} from '@globetrot/domain';
 import dynamic from 'next/dynamic';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 import type { RouteStop, StopSpot } from './app/board/board-route';
 import styles from './landing.module.css';
+import { onPlan, type LandingPlanChoice } from './landing-plan';
 
 const WorldMapBoard = dynamic(
   () => import('./app/board/world-map').then((module) => module.WorldMapBoard),
@@ -142,7 +149,11 @@ const ALT: Record<PhotoKey, string> = {
  */
 export function LandingLiveMap() {
   const t = useTranslations('landing.liveDemo');
+  const suggest = useTranslations('landing.suggest');
+  const why = useTranslations('suggest.why');
   const places = useTranslations('mapBoard.places');
+  const pt = useLocale().startsWith('pt');
+  const [choice, setChoice] = useState<LandingPlanChoice | null>(null);
   const box = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
 
@@ -165,7 +176,19 @@ export function LandingLiveMap() {
     return () => observer.disconnect();
   }, []);
 
-  const route: RouteStop[] = TRIP.map((stop) => ({
+  // The plan built above, once there is one: the map shows that trip instead of the example.
+  useEffect(() => onPlan(setChoice), []);
+
+  const photosOf = (key: string): RouteStop['photos'] =>
+    (TRIP.find((stop) => stop.key === key)?.photos ?? []).map((photo) => ({
+      mediaId: `demo-${photo}`,
+      alt: t(ALT[photo]),
+      src: `/demo/${PHOTOS[photo].file}.webp`,
+      credit: `${PHOTOS[photo].author} · ${PHOTOS[photo].licence}`,
+    }));
+
+  const plan = choice ? suggestPlan(choice) : null;
+  const example: RouteStop[] = TRIP.map((stop) => ({
     id: `demo:${stop.key}`,
     name: places(stop.key),
     countryCode: 'JP',
@@ -193,14 +216,69 @@ export function LandingLiveMap() {
     })),
   }));
 
+  const route = plan ? planRoute(plan) : example;
+  const destination = plan
+    ? SUGGESTED_DESTINATIONS.find((candidate) => candidate.id === plan.destination)
+    : null;
+  const title = destination
+    ? suggest('planTitle', {
+        destination: pt ? destination.namePt : destination.name,
+        days: plan!.days,
+      })
+    : t('title');
+
+  /** The plan as the app's board holds it: a stop per city, its experiences as places, the way on. */
+  function planRoute(built: SuggestedPlan): RouteStop[] {
+    return built.stops.map(({ stop, nights, experiences, next }) => ({
+      id: `plan:${stop.key}`,
+      name: pt ? stop.namePt : stop.name,
+      countryCode: stop.countryCode,
+      region: stop.region,
+      longitude: stop.longitude,
+      latitude: stop.latitude,
+      nights,
+      note: experiences
+        .map((experience) => `${pt ? experience.namePt : experience.name}: ${why(experience.id)}`)
+        .join('\n'),
+      legMode: next?.mode ?? null,
+      visited: false,
+      // The A→B→C route only when every place is in town (a day trip far away would stretch it).
+      spotRoute:
+        experiences.length > 1 &&
+        experiences.every((experience) => distanceKm(stop, experience) < 60),
+      spots: experiences.map((experience) => ({
+        name: pt ? experience.namePt : experience.name,
+        kind: experience.kind,
+        latitude: experience.latitude,
+        longitude: experience.longitude,
+        done: false,
+      })),
+      todos: [],
+      photos: photosOf(stop.key),
+    }));
+  }
+
   return (
     <div className={styles.liveMap}>
+      {plan ? (
+        <p className={styles.liveMapYours}>
+          <span>{t('yours')}</span>
+          <button type="button" onClick={() => setChoice(null)}>
+            {t('backToExample')}
+          </button>
+        </p>
+      ) : null}
       <div ref={box} className={styles.liveMapBox} role="region" aria-label={t('map')}>
         {visible ? (
           <WorldMapBoard
+            key={
+              plan
+                ? `${plan.destination}-${plan.days}-${choice!.likes.join('.')}-${choice!.comfort}`
+                : 'example'
+            }
             demo
             tripId={null}
-            tripTitle={t('title')}
+            tripTitle={title}
             startDate={null}
             initialRoute={route}
             initialVisas={[]}

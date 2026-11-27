@@ -73,18 +73,16 @@ describe('Globetrot landing page', () => {
   });
 
   it.each(SUPPORTED_LOCALES)(
-    'answers "Can I go?" with the savings rule before anyone types, and leads to sign-up (%s)',
+    'asks one question at a time, starting with where to go (%s)',
     (locale) => {
       const html = render(locale);
-      const copy = catalogs[locale].landing;
+      const copy = catalogs[locale].landing.suggest;
       const text = visibleText(html);
-      expect(text).toContain(copy.calc.title);
-      // US$3,000 trip, US$500 saved, US$300 a month: 9 months to go.
-      expect(text).toContain(copy.calc.yes);
-      expect(text).toMatch(/9/);
-      expect(text).toContain(copy.calc.note);
-      expect(html).toContain('href="/signup"');
-      expect(html).toMatch(/type="range"/);
+      expect(text).toContain(copy.title);
+      expect(text).toContain(copy.step.replace('{n}', '1').replace('{total}', '4'));
+      expect(text).toContain(copy.next);
+      expect(text).not.toContain(copy.stepMoney);
+      expect(html).toMatch(/aria-pressed="true"[^>]*><strong>(Japan|Japão)<\/strong>/);
     },
   );
 
@@ -97,20 +95,6 @@ describe('Globetrot landing page', () => {
         expect(text).toContain(copy[key]);
       }
       expect(text).not.toContain('Most popular');
-    },
-  );
-
-  it.each(SUPPORTED_LOCALES)(
-    'lets "Can I go?" run in the main currencies, starting from USD (%s)',
-    (locale) => {
-      const html = render(locale);
-      const copy = catalogs[locale].landing;
-      const select = /<select[^>]*>([\s\S]*?)<\/select>/.exec(html)?.[1] ?? '';
-      for (const code of ['USD', 'EUR', 'GBP', 'BRL', 'JPY']) {
-        expect(select).toContain(`value="${code}"`);
-      }
-      expect(select).toMatch(/<option value="USD" selected="">/);
-      expect(visibleText(html)).toContain(copy.calc.currency);
     },
   );
 
