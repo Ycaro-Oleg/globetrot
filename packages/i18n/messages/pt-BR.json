@@ -1012,7 +1012,10 @@
     "removed": "{description} removida",
     "undo": "Desfazer",
     "actionError": "Não deu certo. Tente de novo em instantes.",
-    "chartGap": "faltam {amount}"
+    "chartGap": "faltam {amount}",
+    "paidBy": "Quem pagou",
+    "paidByNobody": "Ninguém ainda",
+    "paidByName": "pago por {name}"
   },
   "passportPage": {
     "title": "Passaporte",
@@ -1865,5 +1868,28 @@
     "limit": "Esta viagem já tem todas as pessoas que o plano permite. Peça a quem organiza para adicionar um passe da viagem.",
     "error": "Não deu certo. Tente de novo em instantes.",
     "back": "Ir para minhas viagens"
+  },
+  "groupMoney": {
+    "title": "A parte de cada um",
+    "equal": "Dividido igualmente entre {count}",
+    "custom": "Dividido em partes combinadas",
+    "meReady": "Você já guardou a sua parte ({share}).",
+    "meBy": "Sua parte é {share}. No seu ritmo mensal, você tem tudo em {month}.",
+    "meNoMonthly": "Sua parte é {share}; faltam {left}. Coloque um valor mensal para ver quando.",
+    "mySaved": "Já guardei",
+    "myMonthly": "Guardo por mês",
+    "save": "Salvar minha poupança",
+    "saved": "Salvo.",
+    "error": "Não deu certo. Tente de novo em instantes.",
+    "you": "{name} (você)",
+    "progress": "{saved} de {share}",
+    "group": "Juntos: {saved} de {total} guardados.",
+    "settleTitle": "Acerto de contas",
+    "transfer": "{from} paga {amount} para {to}",
+    "youShort": "Você",
+    "youObject": "você",
+    "even": "Todo mundo já pagou a sua parte do que foi pago até agora.",
+    "nothingPaid": "Nada pago ainda. Marque os custos como pagos e diga quem pagou para ver quem deve para quem.",
+    "unassigned": "{amount} em custos pagos não têm ninguém indicado e ficam de fora."
   }
 }

@@ -1012,7 +1012,10 @@
     "removed": "{description} removed",
     "undo": "Undo",
     "actionError": "That did not work. Try again in a moment.",
-    "chartGap": "{amount} to go"
+    "chartGap": "{amount} to go",
+    "paidBy": "Who paid",
+    "paidByNobody": "Nobody yet",
+    "paidByName": "paid by {name}"
   },
   "passportPage": {
     "title": "Passport",
@@ -1865,5 +1868,28 @@
     "limit": "This trip has every person its plan allows. Ask the organiser to add a trip pass.",
     "error": "That did not work. Try again in a moment.",
     "back": "Go to my trips"
+  },
+  "groupMoney": {
+    "title": "Each person’s part",
+    "equal": "Split equally between {count}",
+    "custom": "Split in custom parts",
+    "meReady": "You have your part ({share}) set aside.",
+    "meBy": "Your part is {share}. At your monthly amount you have it by {month}.",
+    "meNoMonthly": "Your part is {share}; {left} to go. Add a monthly amount to see when.",
+    "mySaved": "I have set aside",
+    "myMonthly": "I set aside each month",
+    "save": "Save my savings",
+    "saved": "Saved.",
+    "error": "That did not work. Try again in a moment.",
+    "you": "{name} (you)",
+    "progress": "{saved} of {share}",
+    "group": "Together: {saved} of {total} set aside.",
+    "settleTitle": "Settling up",
+    "transfer": "{from} pays {amount} to {to}",
+    "youShort": "You",
+    "youObject": "you",
+    "even": "Everyone has paid their part of what was paid so far.",
+    "nothingPaid": "Nothing paid yet. Mark costs as paid and say who paid to see who owes whom.",
+    "unassigned": "{amount} of paid costs has nobody named on it and is left out."
   }
 }

@@ -102,4 +102,6 @@ export const OPEN_WHEN_READ_ONLY: ReadonlySet<string> = new Set([
   'leaveTrip',
   'removeMember',
   'revokeInvite',
+  // One's own savings on a trip shared with them.
+  'updateMyMoney',
 ]);

@@ -38,6 +38,10 @@ export const expenseFields = z.object({
     .nullable()
     .optional()
     .meta({ description: 'The day the rate was taken. Defaults to today.' }),
+  paidBy: z.string().min(1).max(64).nullable().optional().meta({
+    description:
+      'On a trip planned together, who paid it: the owner’s or a member’s user id (ADR-0025). Null clears it.',
+  }),
 });
 
 /** Adding a cost: the same fields, plus whether it is the trip's rough guess (the onboarding sends it). */
@@ -70,6 +74,8 @@ export const expenseSchema = z.object({
   fx: z.object({ rate: z.string(), source: z.string(), asOf: z.string() }).nullable(),
   /** The trip's rough guess: see `BudgetView.guess` for what it still counts for. */
   guess: z.boolean(),
+  /** Who paid it (a user id), or null. */
+  paidBy: z.string().nullable(),
   createdAt: z.iso.datetime(),
 });
 export type ExpenseView = z.infer<typeof expenseSchema>;

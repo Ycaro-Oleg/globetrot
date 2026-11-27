@@ -36,6 +36,7 @@ import type {
   InviteRecord,
   MemberRole,
   MemberWriter,
+  PersonMoneyRecord,
 } from '../ports';
 import {
   createFakeCommunity,
@@ -69,6 +70,8 @@ export interface FakeState {
   credits: { userId: string; delta: number; reason: string; ref: string | null }[];
   /** Trip members (never the owner) and invite links (ADR-0024). */
   members: { tripId: string; userId: string; role: MemberRole; joinedAt: Date }[];
+  /** Each person's part and savings on a shared trip (ADR-0025). */
+  money: PersonMoneyRecord[];
   invites: InviteRecord[];
   passes: {
     id: string;
@@ -130,6 +133,7 @@ export function createFakePorts(options: FakeOptions = {}) {
     shares: new Map(),
     credits: [],
     members: [],
+    money: [],
     invites: [],
     passes: [],
     audit: [],
@@ -271,7 +275,11 @@ export function createFakePorts(options: FakeOptions = {}) {
       return state.expenses.get(id) ?? null;
     },
     async insert(expense) {
-      const record: ExpenseRecord = { ...expense, updatedAt: expense.createdAt };
+      const record: ExpenseRecord = {
+        ...expense,
+        paidBy: expense.paidBy ?? null,
+        updatedAt: expense.createdAt,
+      };
       state.expenses.set(record.id, record);
       return record;
     },
@@ -585,6 +593,37 @@ export function createFakePorts(options: FakeOptions = {}) {
           name: users.find((user) => user.id === member.userId)?.name ?? '',
         }));
     },
+    async listMoney(tripId) {
+      return state.money.filter((entry) => entry.tripId === tripId);
+    },
+    async upsertMoney(tripId, userId, patch) {
+      const current = state.money.find((e) => e.tripId === tripId && e.userId === userId) ?? {
+        tripId,
+        userId,
+        shareBp: null,
+        savedMinor: 0n,
+        monthlyMinor: 0n,
+      };
+      state.money = [
+        ...state.money.filter((e) => !(e.tripId === tripId && e.userId === userId)),
+        { ...current, ...patch },
+      ];
+    },
+    async setShares(tripId, shares) {
+      for (const { userId, shareBp } of shares) {
+        const current = state.money.find((e) => e.tripId === tripId && e.userId === userId) ?? {
+          tripId,
+          userId,
+          shareBp: null,
+          savedMinor: 0n,
+          monthlyMinor: 0n,
+        };
+        state.money = [
+          ...state.money.filter((e) => !(e.tripId === tripId && e.userId === userId)),
+          { ...current, shareBp },
+        ];
+      }
+    },
     async findInviteByHash(tokenHash) {
       return state.invites.find((invite) => invite.tokenHash === tokenHash) ?? null;
     },
@@ -743,6 +782,7 @@ export function createFakePorts(options: FakeOptions = {}) {
           shares: new Map(state.shares),
           credits: [...state.credits],
           members: [...state.members],
+          money: [...state.money],
           invites: [...state.invites],
           passes: [...state.passes],
           audit: [...state.audit],

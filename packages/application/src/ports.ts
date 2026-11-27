@@ -270,11 +270,15 @@ export interface ExpenseRecord {
   readonly fxAsOf: string | null;
   /** The onboarding's rough guess for the whole trip: it counts minus every other cost (at most one per trip). */
   readonly guess: boolean;
+  /** Who paid it, on a trip planned together (ADR-0025); null when nobody said. */
+  readonly paidBy: string | null;
   readonly createdAt: Date;
   readonly updatedAt: Date;
 }
 
-export type NewExpense = Omit<ExpenseRecord, 'updatedAt'>;
+export type NewExpense = Omit<ExpenseRecord, 'updatedAt' | 'paidBy'> & {
+  readonly paidBy?: string | null;
+};
 /** A cost's role (guess or not) is set when it is created and never changed. */
 export type ExpensePatch = Partial<
   Omit<ExpenseRecord, 'id' | 'tripId' | 'guess' | 'createdAt' | 'updatedAt'>
@@ -812,9 +816,21 @@ export interface InviteRecord {
   readonly revokedAt: Date | null;
 }
 
+/** One person's money on a trip planned together (ADR-0025), in the trip's currency. */
+export interface PersonMoneyRecord {
+  readonly tripId: string;
+  readonly userId: string;
+  /** Their part in basis points; null for an equal split. */
+  readonly shareBp: number | null;
+  readonly savedMinor: bigint;
+  readonly monthlyMinor: bigint;
+}
+
 export interface MemberReader {
   /** The trip's members (never the owner), oldest first. */
   listByTrip(tripId: string): Promise<MemberRecord[]>;
+  /** Each person's part and savings on the trip (people without a row have the defaults). */
+  listMoney(tripId: string): Promise<PersonMoneyRecord[]>;
   findInviteByHash(tokenHash: string): Promise<InviteRecord | null>;
   /** Invites not revoked and not expired at `now`, newest first. */
   listOpenInvites(tripId: string, now: Date): Promise<InviteRecord[]>;
@@ -831,6 +847,19 @@ export interface MemberWriter extends MemberReader {
   /** Removes a member; false when they were not one. */
   remove(tripId: string, userId: string): Promise<boolean>;
   insertInvite(row: Omit<InviteRecord, 'revokedAt'>): Promise<void>;
+  /** Changes one person's savings, creating their row with the defaults if needed. */
+  upsertMoney(
+    tripId: string,
+    userId: string,
+    patch: { readonly savedMinor?: bigint; readonly monthlyMinor?: bigint },
+    now: Date,
+  ): Promise<void>;
+  /** Sets everyone's part at once; `null` parts mean an equal split. */
+  setShares(
+    tripId: string,
+    shares: readonly { readonly userId: string; readonly shareBp: number | null }[],
+    now: Date,
+  ): Promise<void>;
   revokeInvite(id: string, at: Date): Promise<void>;
 }
 

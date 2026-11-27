@@ -14,6 +14,8 @@ export interface ExpenseInput {
   readonly amount: string;
   readonly currency: string;
   readonly fxRate?: string | undefined;
+  /** On a trip planned together, who paid it (a user id). */
+  readonly paidBy?: string | null | undefined;
 }
 
 /**
@@ -35,10 +37,26 @@ export async function addExpense(input: ExpenseInput): Promise<{ ok: boolean }> 
       amount: input.amount.trim(),
       currency: input.currency,
       ...(fxRate ? { fxRate } : {}),
+      ...(input.paidBy ? { paidBy: input.paidBy } : {}),
     },
   });
   if (data) revalidatePath('/app/budget');
   return { ok: Boolean(data) };
+}
+
+/** The person's own savings for their part of a shared trip. `true` when it saved. */
+export async function saveMyMoney(
+  tripId: string,
+  body: { saved: string; monthly: string },
+): Promise<boolean> {
+  const client = await apiClient();
+  if (!client || !tripId) return false;
+  const { data } = await client.PUT('/v1/trips/{id}/money/me', {
+    params: { path: { id: tripId } },
+    body,
+  });
+  if (data) revalidatePath('/app/budget');
+  return Boolean(data?.saved);
 }
 
 export async function removeExpense(tripId: string, expenseId: string): Promise<{ ok: boolean }> {

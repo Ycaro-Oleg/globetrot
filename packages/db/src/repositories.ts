@@ -528,9 +528,13 @@ export interface ExpenseRow {
   readonly guess: boolean;
   readonly createdAt: Date;
   readonly updatedAt: Date;
+  /** Who paid it on a trip planned together; null when nobody said. */
+  readonly paidBy: string | null;
 }
 
-export type NewExpenseRow = Omit<ExpenseRow, 'updatedAt'>;
+export type NewExpenseRow = Omit<ExpenseRow, 'updatedAt' | 'paidBy'> & {
+  readonly paidBy?: string | null;
+};
 
 export type ExpensePatchRow = Partial<
   Omit<ExpenseRow, 'id' | 'tripId' | 'guess' | 'createdAt' | 'updatedAt'>

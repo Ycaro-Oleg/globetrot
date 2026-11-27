@@ -1,4 +1,5 @@
 import {
+  groupMoneySchema,
   inviteCreatedSchema,
   invitePreviewSchema,
   inviteRoleSchema,
@@ -157,6 +158,89 @@ const acceptInviteRoute = createRoute({
   },
 });
 
+const groupMoneyRoute = createRoute({
+  method: 'get',
+  path: '/v1/trips/{id}/money',
+  operationId: 'getGroupMoney',
+  tags: ['Budget'],
+  summary: 'Each person’s part, savings and the settling up',
+  description:
+    'Everyone’s part of the trip’s cost (equal, or custom basis points), what each set aside and when they will ' +
+    'have it, the group’s progress, and who pays whom for the costs already paid (ADR-0025).',
+  security,
+  request: { params: tripParams },
+  responses: {
+    200: {
+      description: 'The money.',
+      content: { 'application/json': { schema: groupMoneySchema } },
+    },
+    401: problemResponse('No valid session.'),
+    404: problemResponse('No such trip, or not one the caller plans.'),
+  },
+});
+
+const myMoneyRoute = createRoute({
+  method: 'put',
+  path: '/v1/trips/{id}/money/me',
+  operationId: 'updateMyMoney',
+  tags: ['Budget'],
+  summary: 'The caller’s own savings for their part',
+  security,
+  request: {
+    params: tripParams,
+    body: {
+      required: true,
+      content: {
+        'application/json': {
+          schema: z.object({ saved: z.string().optional(), monthly: z.string().optional() }),
+        },
+      },
+    },
+  },
+  responses: {
+    200: {
+      description: 'Saved.',
+      content: { 'application/json': { schema: z.object({ saved: z.boolean() }) } },
+    },
+    401: problemResponse('No valid session.'),
+    404: problemResponse('No such trip, or not one the caller plans.'),
+    422: problemResponse('An amount is not valid.'),
+  },
+});
+
+const sharesRoute = createRoute({
+  method: 'put',
+  path: '/v1/trips/{id}/shares',
+  operationId: 'setShares',
+  tags: ['Budget'],
+  summary: 'Who pays how much of the trip (owner only)',
+  description:
+    'Everyone’s part in basis points adding up to 10 000, or `shares: null` to split equally.',
+  security,
+  request: {
+    params: tripParams,
+    body: {
+      required: true,
+      content: {
+        'application/json': {
+          schema: z.object({
+            shares: z.array(z.object({ userId: z.string(), shareBp: z.number().int() })).nullable(),
+          }),
+        },
+      },
+    },
+  },
+  responses: {
+    200: {
+      description: 'Saved.',
+      content: { 'application/json': { schema: z.object({ saved: z.boolean() }) } },
+    },
+    401: problemResponse('No valid session.'),
+    404: problemResponse('No such trip, or not the caller’s.'),
+    422: problemResponse('The parts do not cover everyone or do not add up to the whole trip.'),
+  },
+});
+
 export function registerMemberRoutes(app: OpenAPIHono<Env>, application: Application) {
   app.openapi(membersRoute, async (c) =>
     c.json(
@@ -209,6 +293,30 @@ export function registerMemberRoutes(app: OpenAPIHono<Env>, application: Applica
     c.json(
       await application.acceptInvite.execute(c.get('actor'), {
         token: c.req.valid('param').token,
+      }),
+      200,
+    ),
+  );
+  app.openapi(groupMoneyRoute, async (c) =>
+    c.json(
+      await application.getGroupMoney.execute(c.get('actor'), { tripId: c.req.valid('param').id }),
+      200,
+    ),
+  );
+  app.openapi(myMoneyRoute, async (c) =>
+    c.json(
+      await application.updateMyMoney.execute(c.get('actor'), {
+        tripId: c.req.valid('param').id,
+        ...c.req.valid('json'),
+      }),
+      200,
+    ),
+  );
+  app.openapi(sharesRoute, async (c) =>
+    c.json(
+      await application.setShares.execute(c.get('actor'), {
+        tripId: c.req.valid('param').id,
+        shares: c.req.valid('json').shares,
       }),
       200,
     ),

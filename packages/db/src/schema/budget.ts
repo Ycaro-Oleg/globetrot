@@ -8,12 +8,15 @@ import {
   check,
   date,
   index,
+  integer,
   pgTable,
+  primaryKey,
   text,
   timestamp,
   uniqueIndex,
   uuid,
 } from 'drizzle-orm/pg-core';
+import { user } from './auth';
 import { trip } from './trip';
 
 const instant = (name: string) => timestamp(name, { withTimezone: true });
@@ -45,6 +48,8 @@ export const expense = pgTable(
      * other cost, never below zero. At most one per trip.
      */
     guess: boolean('guess').default(false).notNull(),
+    /** Who paid it, on a trip planned together (ADR-0025); null when nobody said. Kept null if they leave. */
+    paidBy: text('paid_by').references(() => user.id, { onDelete: 'set null' }),
     createdAt: instant('created_at').defaultNow().notNull(),
     updatedAt: instant('updated_at').defaultNow().notNull(),
   },
@@ -100,6 +105,42 @@ export const tripSavings = pgTable(
     check(
       'trip_savings_ceiling_not_negative',
       sql`${table.ceilingMinor} is null or ${table.ceilingMinor} >= 0`,
+    ),
+  ],
+);
+
+/**
+ * Each person's money on a trip planned together (ADR-0025): their part of the cost (basis points, null for an
+ * equal split), what they have set aside and what they put aside each month, in the trip's currency. The owner
+ * may have a row too.
+ */
+export const tripPersonMoney = pgTable(
+  'trip_person_money',
+  {
+    tripId: uuid('trip_id')
+      .notNull()
+      .references(() => trip.id, { onDelete: 'cascade' }),
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    shareBp: integer('share_bp'),
+    savedMinor: minor('saved_minor')
+      .notNull()
+      .default(sql`0`),
+    monthlyMinor: minor('monthly_minor')
+      .notNull()
+      .default(sql`0`),
+    updatedAt: instant('updated_at').defaultNow().notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.tripId, table.userId] }),
+    check(
+      'trip_person_money_share_range',
+      sql`${table.shareBp} is null or ${table.shareBp} between 0 and 10000`,
+    ),
+    check(
+      'trip_person_money_amounts',
+      sql`${table.savedMinor} >= 0 and ${table.monthlyMinor} >= 0`,
     ),
   ],
 );
