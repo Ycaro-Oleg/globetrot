@@ -46,6 +46,8 @@ export interface AppDependencies {
   /** Stripe's webhook: raw body and signature in, the HTTP status out (ADR-0019). Absent: the route is 404. */
   /** The public view of shared trips; absent, the route answers 404. */
   readonly sharedTrips?: { view(slug: string): Promise<SharedTripView | null> } | undefined;
+  /** Called with each unexpected error (a bug), after it is logged: error monitoring, when on. */
+  readonly onUnexpectedError?: ((error: Error) => void) | undefined;
   readonly paymentWebhook?:
     ((rawBody: string, signature: string | null) => Promise<number>) | undefined;
 }
@@ -96,6 +98,7 @@ export function createApp({
   readiness = async () => true,
   paymentWebhook,
   sharedTrips = { view: async () => null },
+  onUnexpectedError = () => {},
 }: AppDependencies) {
   const app = new OpenAPIHono<Env>({
     // Input that fails an operation's schema before the handler runs.
@@ -223,6 +226,7 @@ export function createApp({
     console.error(
       `unhandled ${error.name}${typeof code === 'string' ? ` (${code})` : ''} in a request`,
     );
+    onUnexpectedError(error);
     return problem(500, 'INTERNAL_ERROR');
   });
 

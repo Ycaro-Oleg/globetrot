@@ -1,4 +1,8 @@
-import { createMaintenance, createTrialReminders } from '@globetrot/application';
+import {
+  createErrorReporter,
+  createMaintenance,
+  createTrialReminders,
+} from '@globetrot/application';
 import {
   connectDatabase,
   createMaintenanceRepository,
@@ -13,6 +17,13 @@ import { startWorker } from './worker';
 const MAINTENANCE_LOCK = 4_718_221;
 
 const config = loadWorkerConfig();
+// Error monitoring (ADR-0021): only with a DSN, and without anything personal.
+const monitoring = createErrorReporter({
+  dsn: config.sentryDsn,
+  environment: process.env.NODE_ENV ?? 'development',
+  service: 'worker',
+});
+process.on('unhandledRejection', (reason) => monitoring.report(reason));
 const database = connectDatabase(config.databaseUrl, { max: 3 });
 const maintenance = createMaintenance({
   store: createMaintenanceRepository(database.db),
@@ -28,6 +39,7 @@ const reminders = createTrialReminders({
 });
 
 const worker = startWorker({
+  onError: (error) => monitoring.report(error),
   firstDelayMs: 60_000,
   intervalMs: config.intervalMinutes * 60_000,
   async runOnce() {

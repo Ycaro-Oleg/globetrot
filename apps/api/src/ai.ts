@@ -66,3 +66,87 @@ export function createDeepSeekAi(
     },
   };
 }
+
+export interface AnthropicConfig {
+  readonly apiKey: string;
+  readonly baseUrl: string;
+  readonly model: string;
+}
+
+/**
+ * Adapter: the application's `AiPort` over Anthropic's Messages API (ADR-0022). The Messages API has no JSON mode,
+ * so the system prompt ends with the instruction to answer one JSON object; the application parses and validates
+ * it as it does DeepSeek's. Same rules as above: any failure answers `null`, and only the kind of failure is logged.
+ */
+export function createAnthropicAi(
+  config: AnthropicConfig | null,
+  options: { readonly timeoutMs?: number; readonly fetch?: typeof fetch } = {},
+): AiPort {
+  const call = options.fetch ?? fetch;
+  return {
+    async completeJson(input) {
+      if (!config) return null;
+      try {
+        const response = await call(`${config.baseUrl.replace(/\/$/, '')}/v1/messages`, {
+          method: 'POST',
+          headers: {
+            'x-api-key': config.apiKey,
+            'anthropic-version': '2023-06-01',
+            'content-type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: config.model,
+            max_tokens: input.maxTokens,
+            temperature: 0.4,
+            system: `${input.system}\n\nAnswer with one JSON object only, with no text before or after it.`,
+            messages: [{ role: 'user', content: input.user }],
+          }),
+          signal: AbortSignal.timeout(options.timeoutMs ?? 30_000),
+        });
+        if (!response.ok) {
+          console.warn(`ai: provider answered ${response.status}`);
+          return null;
+        }
+        const body = (await response.json()) as {
+          model?: string;
+          content?: { type?: string; text?: string }[];
+          usage?: { input_tokens?: number; output_tokens?: number };
+        };
+        const text = body.content?.find((block) => block.type === 'text')?.text;
+        if (typeof text !== 'string') {
+          console.warn('ai: provider answered without content');
+          return null;
+        }
+        // A model can wrap the object in a code fence: keep what is between the outer braces.
+        const start = text.indexOf('{');
+        const end = text.lastIndexOf('}');
+        return {
+          content: start >= 0 && end > start ? text.slice(start, end + 1) : text,
+          provider: 'anthropic',
+          model: body.model ?? config.model,
+          inputTokens: body.usage?.input_tokens ?? 0,
+          outputTokens: body.usage?.output_tokens ?? 0,
+        };
+      } catch (error) {
+        console.warn(`ai: request failed (${error instanceof Error ? error.name : 'unknown'})`);
+        return null;
+      }
+    },
+  };
+}
+
+/**
+ * Tries each provider in order and answers with the first that answers: Pip keeps working when one provider is
+ * down or not configured. With none answering, the application says Pip is not available (503).
+ */
+export function fallbackAi(providers: readonly AiPort[]): AiPort {
+  return {
+    async completeJson(input) {
+      for (const provider of providers) {
+        const answer = await provider.completeJson(input);
+        if (answer) return answer;
+      }
+      return null;
+    },
+  };
+}

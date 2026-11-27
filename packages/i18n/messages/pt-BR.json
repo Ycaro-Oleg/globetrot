@@ -317,8 +317,8 @@
     "nav": {
       "board": "Mapa",
       "days": "Dias",
-      "budget": "Orçamento",
-      "lists": "Listas",
+      "budget": "Dinheiro",
+      "lists": "Checklist",
       "trips": "Viagens",
       "passport": "Passaporte",
       "settings": "Configurações",
@@ -328,7 +328,8 @@
       "profile": "Perfil",
       "profileMenu": "Perfil e Meu Pip",
       "community": "Comunidade",
-      "plan": "Plano e créditos"
+      "plan": "Plano e créditos",
+      "discover": "Descobrir"
     },
     "account": {
       "menu": "Menu da conta de {name}",
@@ -1409,6 +1410,22 @@
       "title": "Post",
       "back": "Voltar para a comunidade"
     }
+  },
+  "discoverPage": {
+    "title": "Descobrir",
+    "lead": "Planos prontos para começar: escolha os dias, do que você gosta e como viaja, e a viagem aparece no seu mapa com os lugares e o custo estimado.",
+    "plans": "Planos prontos",
+    "range": "≈ {low} a {high} por pessoa em {days} dias, sem a passagem aérea",
+    "days": "Dias",
+    "daysValue": "{count, plural, one {# dia} other {# dias}}",
+    "likes": "Do que você gosta",
+    "comfort": "Como você viaja",
+    "build": "Montar minha viagem para {name}",
+    "note": "As estimativas são faixas típicas pesquisadas para cada cidade; você muda tudo na viagem.",
+    "error": "Não deu para transformar o plano em viagem. Tente de novo.",
+    "community": "Comunidade",
+    "communityBody": "Roteiros, dicas e custos reais de outros viajantes.",
+    "communityLink": "Abrir a comunidade"
   },
   "photos": {
     "add": "Adicionar fotos",

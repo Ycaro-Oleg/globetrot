@@ -317,8 +317,8 @@
     "nav": {
       "board": "Map",
       "days": "Days",
-      "budget": "Budget",
-      "lists": "Lists",
+      "budget": "Money",
+      "lists": "Checklist",
       "trips": "Trips",
       "passport": "Passport",
       "settings": "Settings",
@@ -328,7 +328,8 @@
       "profile": "Profile",
       "profileMenu": "Profile & My Pip",
       "community": "Community",
-      "plan": "Plan & credits"
+      "plan": "Plan & credits",
+      "discover": "Discover"
     },
     "account": {
       "menu": "Account menu for {name}",
@@ -1409,6 +1410,22 @@
       "title": "Post",
       "back": "Back to the community"
     }
+  },
+  "discoverPage": {
+    "title": "Discover",
+    "lead": "Ready plans to start from: pick the days, what you enjoy and how you travel, and the trip is on your map with its places and estimated cost.",
+    "plans": "Ready plans",
+    "range": "≈ {low} to {high} per person for {days} days, without the flight",
+    "days": "Days",
+    "daysValue": "{count, plural, one {# day} other {# days}}",
+    "likes": "What you enjoy",
+    "comfort": "How you travel",
+    "build": "Build my {name} trip",
+    "note": "Estimates are typical ranges researched for each city; you can change everything on the trip.",
+    "error": "The plan could not become a trip. Try again.",
+    "community": "Community",
+    "communityBody": "Routes, tips and real costs from other travellers.",
+    "communityLink": "Open the community"
   },
   "photos": {
     "add": "Add photos",

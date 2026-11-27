@@ -139,6 +139,8 @@ Decision record: [ADR-0014](../architecture/adr/0014-photos-and-storage.md).
 
 Decision record: [ADR-0013](../architecture/adr/0013-community.md).
 
+- **Hidden until it has enough people:** the community screens and Discover's community section show only when `FEATURE_COMMUNITY` is `true` (off by default); otherwise `/app/community` is not found. Posts, follows and profiles are kept, so turning it on loses nothing.
+
 - **Posts** are a moment, a tip, a route, a visa or a goal. Moments and tips need words (up to 500 characters) or photos; the others may add words. A place can be tagged by name (the current trip's stops are suggested). See "Photos" above.
 - **Shared data is a snapshot, made from the author's own data when they post.** A route shows the stops and nights as they were, never a link to the private trip, and its planned total only if the author unticks "Hide budget amounts" (labelled an estimate). A goal shows the trip and the month the savings plan says it is ready, **never amounts**. A visa shows the country, the city and which country it was in the passport, and says it is commemorative.
 - **Who sees a post:** its author always; everyone else when it is public (or they follow the author for "Followers only"), it is not deleted, they did not mute the author or report it, and reports did not hide it. Anything else answers "not found".

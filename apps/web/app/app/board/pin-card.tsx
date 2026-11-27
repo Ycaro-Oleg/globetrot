@@ -13,7 +13,6 @@ import {
 import {
   ITEM_MAX,
   KIT_TABS,
-  SPOT_ICONS,
   SPOT_KINDS,
   spotKindOf,
   NOTE_MAX,
@@ -49,6 +48,7 @@ export type PipFill = {
   error: string | null;
 };
 import { PhotoPicker } from '../_components/photo-picker';
+import { SpotIcon } from './spot-icon';
 import styles from './world-map.module.css';
 
 const GLYPHS: Record<KitTab, string> = { photos: '▣', spots: '◎', notes: '✎', todos: '✓' };
@@ -354,7 +354,7 @@ export function PinCard({
                         </span>
                       ) : null}
                       <span className={styles.spotIcon} data-kind={spot.kind} aria-hidden="true">
-                        {SPOT_ICONS[spot.kind]}
+                        <SpotIcon kind={spot.kind} />
                       </span>
                       <div className={styles.spotMain}>
                         <label htmlFor={`spot-${i}`}>
@@ -449,7 +449,7 @@ export function PinCard({
                           spotInput.current?.focus();
                         }}
                       >
-                        <span aria-hidden="true">{SPOT_ICONS[kind]}</span> {t(key)}
+                        <SpotIcon kind={kind} /> {t(key)}
                       </button>
                     </li>
                   ))}
@@ -560,8 +560,7 @@ export function PinCard({
                             onChange={() => pip.onToggle(index)}
                           />
                           <label htmlFor={`pip-spot-${index}`}>
-                            <span aria-hidden="true">{SPOT_ICONS[change.spotKind]}</span>{' '}
-                            <strong>{change.name}</strong>
+                            <SpotIcon kind={change.spotKind} /> <strong>{change.name}</strong>
                             <small>
                               {t(`kinds.${change.spotKind}`)}
                               {change.reason ? ` · ${change.reason}` : ''}
@@ -596,7 +595,7 @@ export function PinCard({
                   aria-checked={spotKind === kind}
                   onClick={() => setSpotKind(kind)}
                 >
-                  <span aria-hidden="true">{SPOT_ICONS[kind]}</span> {t(`kinds.${kind}`)}
+                  <SpotIcon kind={kind} /> {t(`kinds.${kind}`)}
                 </button>
               ))}
             </div>
@@ -620,7 +619,7 @@ export function PinCard({
                   {suggestions.map((place) => (
                     <li key={`${place.name}-${place.longitude}`}>
                       <button type="button" onClick={() => addNearby(place)}>
-                        <span aria-hidden="true">{SPOT_ICONS[spotKindOf(place.kind)]}</span>
+                        <SpotIcon kind={spotKindOf(place.kind)} />
                         <span>{place.name}</span>
                         <small>{t(`kinds.${spotKindOf(place.kind)}`)}</small>
                         <span className="sr-only">{t('nearbyAddHint')}</span>

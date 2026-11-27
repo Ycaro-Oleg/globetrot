@@ -2,7 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
-import { PipAvatar } from './app/_components/pip-avatar';
+import { LazyPipAvatar as PipAvatar } from './app/_components/lazy-pip-avatar';
 import type { PipPose } from './app/_components/pip-pose';
 import styles from './landing.module.css';
 

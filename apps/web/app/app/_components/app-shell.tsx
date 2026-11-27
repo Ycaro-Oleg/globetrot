@@ -9,6 +9,7 @@ import { AccountMenu } from './account-menu';
 import { PlanBanner } from './plan-banner';
 import { PipLookProvider } from './pip-look';
 import { BottomBar, GlobalNav, TripTabs } from './nav-links';
+import { PipFab } from './pip-fab';
 import { TripSwitcher } from './trip-switcher';
 import styles from './shell.module.css';
 
@@ -57,7 +58,7 @@ export function AppShell({
             <TripTabs variant="inline" />
             <span className={styles.spacer} />
             <PlanBanner billing={billing} variant="pill" />
-            <GlobalNav pipEnabled={pipEnabled} />
+            <GlobalNav />
             <AccountMenu name={userName} />
           </header>
           <TripTabs variant="row" />
@@ -68,7 +69,8 @@ export function AppShell({
           {children}
         </main>
 
-        <BottomBar pipEnabled={pipEnabled} />
+        {pipEnabled ? <PipFab /> : null}
+        <BottomBar />
       </div>
     </PipLookProvider>
   );

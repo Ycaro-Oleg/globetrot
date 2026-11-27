@@ -37,7 +37,8 @@ import { createSmtpEmail } from '@globetrot/mailer';
 import { createCityIndex } from './cities';
 import { createGeoapifyGeocoder, createMemoryRateLimiter } from './places';
 import { createS3Storage } from '@globetrot/storage';
-import { createDeepSeekAi } from './ai';
+import { createAnthropicAi, createDeepSeekAi, fallbackAi } from './ai';
+import { reportError } from './monitoring';
 import { createStripePayments, createStripeWebhook } from './stripe';
 
 /** Adapter: the application's `UserReader` port over the `user` table. Selects only what the port names. */
@@ -129,7 +130,9 @@ export function createServices(
       billing,
       // Without Stripe settings, checkout answers 503 (ADR-0019).
       payments,
-      ai: overrides.ai ?? createDeepSeekAi(config.ai),
+      ai:
+        overrides.ai ??
+        fallbackAi([createDeepSeekAi(config.ai), createAnthropicAi(config.aiFallback)]),
       storage: overrides.storage ?? createS3Storage(config.storage),
       unitOfWork,
       clock,
@@ -145,6 +148,7 @@ export function createServices(
     },
     enabledProviders: config.auth.google ? ['google'] : [],
     paymentWebhook: config.stripe ? (raw, signature) => webhook.handle(raw, signature) : undefined,
+    onUnexpectedError: reportError,
   });
   return { auth, app };
 }

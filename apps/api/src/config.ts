@@ -46,6 +46,10 @@ const envSchema = z.object({
   DEEPSEEK_API_KEY: z.string().optional(),
   DEEPSEEK_BASE_URL: z.url().default('https://api.deepseek.com'),
   DEEPSEEK_MODEL: z.string().default('deepseek-chat'),
+  SENTRY_DSN: z.url().optional(),
+  ANTHROPIC_API_KEY: z.string().optional(),
+  ANTHROPIC_BASE_URL: z.url().default('https://api.anthropic.com'),
+  ANTHROPIC_MODEL: z.string().default('claude-haiku-5-5'),
   STRIPE_SECRET_KEY: z.string().optional(),
   STRIPE_WEBHOOK_SECRET: z.string().optional(),
   STRIPE_PRICE_EXPLORER_MONTHLY: z.string().optional(),
@@ -124,10 +128,18 @@ export interface ApiConfig {
   readonly email: EmailConfig;
   /** Pip's model (DeepSeek); `null` turns Pip off (asking answers 503). */
   readonly ai: { readonly apiKey: string; readonly baseUrl: string; readonly model: string } | null;
+  /** The second model (Anthropic, ADR-0022), asked when the first does not answer; `null` when no key is set. */
+  readonly aiFallback: {
+    readonly apiKey: string;
+    readonly baseUrl: string;
+    readonly model: string;
+  } | null;
   /** S3-compatible storage for uploaded images (SeaweedFS locally). */
   readonly storage: StorageConfig;
   /** Stripe (ADR-0019); `null` keeps payments off (checkout answers 503). */
   readonly stripe: StripeConfig | null;
+  /** Where unexpected errors are reported (Sentry, ADR-0021); `null` keeps them in the logs only. */
+  readonly sentryDsn: string | null;
   /** True when no secret was provided and the public development one is in use (never in production). */
   readonly usingInsecureSecret: boolean;
 }
@@ -281,8 +293,17 @@ export function loadApiConfig(
             baseUrl: values.DEEPSEEK_BASE_URL,
             model: values.DEEPSEEK_MODEL,
           },
+    aiFallback:
+      values.ANTHROPIC_API_KEY === undefined
+        ? null
+        : {
+            apiKey: values.ANTHROPIC_API_KEY,
+            baseUrl: values.ANTHROPIC_BASE_URL,
+            model: values.ANTHROPIC_MODEL,
+          },
     storage,
     stripe,
+    sentryDsn: values.SENTRY_DSN ?? null,
     usingInsecureSecret: secret === INSECURE_DEV_SECRET,
     auth: {
       secret,

@@ -35,16 +35,6 @@ export type StopSpot = {
 };
 export type StopTodo = { text: string; done: boolean };
 
-/** The mini-pin's mark for each kind of spot (decoration: the kind is also said in words). */
-export const SPOT_ICONS: Record<SpotKind, string> = {
-  stay: '🛏',
-  food: '🍽',
-  sight: '📍',
-  shop: '🛍',
-  transport: '🚉',
-  other: '✳',
-};
-
 /** A sensible kind for a point of interest from the map tiles (the domain's rule). */
 export { spotKindOf };
 /** A photo of the stop: an image the person uploaded and the words that describe it. */

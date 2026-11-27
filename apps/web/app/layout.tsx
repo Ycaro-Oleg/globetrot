@@ -1,5 +1,5 @@
 import type { SupportedLocale } from '@globetrot/i18n';
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { cookies, headers } from 'next/headers';
 import type { ReactNode } from 'react';
 import { NextIntlClientProvider } from 'next-intl';
@@ -16,6 +16,9 @@ import '@globetrot/ui/styles.css';
 import './globals.css';
 
 /** Absolute links (the social image) resolve against the request's own origin on every page. */
+/** The phone's browser bar takes the app's ink colour, as the installed app does. */
+export const viewport: Viewport = { themeColor: '#0f172a' };
+
 export async function generateMetadata(): Promise<Metadata> {
   return { metadataBase: await siteOrigin(), title: SITE_NAME };
 }

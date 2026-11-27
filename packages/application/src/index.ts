@@ -352,6 +352,7 @@ export {
   type ProposalView,
 } from './assistant/schemas';
 export { systemPrompt, userPrompt, type PipContext } from './assistant/prompt';
+export { createErrorReporter, type ErrorReporter } from './monitoring/report';
 export {
   ACCOUNT_EXPORT_VERSION,
   accountExportSchema,

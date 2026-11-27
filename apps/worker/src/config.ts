@@ -11,6 +11,8 @@ export interface WorkerConfig {
   readonly email: EmailConfig;
   /** The public web origin (`BETTER_AUTH_URL`), for links in emails. */
   readonly appUrl: string;
+  /** Where unexpected errors are reported (Sentry, ADR-0021); `null` keeps them in the logs only. */
+  readonly sentryDsn: string | null;
 }
 
 /** Reads the worker's settings. Messages name a setting, never its value. */
@@ -49,6 +51,7 @@ export function loadWorkerConfig(
     storage,
     intervalMinutes,
     appUrl: origin.origin,
+    sentryDsn: value('SENTRY_DSN') ?? null,
     email: {
       host: value('SMTP_HOST') ?? 'localhost',
       port,
