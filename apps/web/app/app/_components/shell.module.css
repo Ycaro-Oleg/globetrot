@@ -653,3 +653,14 @@
     transform: none;
   }
 }
+
+/* Without a connection: the screen is the last saved version (ADR-0027). */
+.offline {
+  margin: 0;
+  padding: 8px 16px;
+  background: var(--gt-semantic-color-warning-tint);
+  color: var(--gt-semantic-color-warning-ink);
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+}

@@ -377,6 +377,10 @@
       "expired": "Seu plano grátis mantém uma viagem ativa. Arquive as outras, adicione um passe ou escolha um plano para voltar a editar. Nada se perde.",
       "expiredCta": "Ver as opções",
       "label": "Seu plano"
+    },
+    "offline": {
+      "reading": "Você está offline: esta é a última versão salva neste aparelho.",
+      "noCopy": "Você está offline. Ler offline vem com um plano ou um passe da viagem."
     }
   },
   "tripWorkspace": {
@@ -1682,7 +1686,7 @@
       "tagline": "Para a viagem que você está juntando dinheiro.",
       "f1": "{trips} viagens ativas",
       "f2": "{credits} créditos do Pip por mês",
-      "f3": "Planeje com quantas pessoas quiser",
+      "f3": "Planeje com quantas pessoas quiser e leia a viagem offline",
       "cta": "Comece grátis, depois Explorer"
     },
     "voyager": {
@@ -1709,7 +1713,7 @@
       "name": "Passe da viagem",
       "tagline": "Um pagamento para uma viagem: tudo do pago liberado nela, sem assinatura.",
       "f1": "Não conta na viagem grátis",
-      "f2": "Qualquer pessoa planeja junto com você",
+      "f2": "Leia a viagem offline, qualquer pessoa planeja junto",
       "f3": "Vale até 30 dias depois da volta",
       "cta": "Comece grátis, adicione o passe depois",
       "once": "uma vez"

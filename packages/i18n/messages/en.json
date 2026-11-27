@@ -377,6 +377,10 @@
       "expired": "Your free plan keeps one active trip. Archive the others, add a trip pass or choose a plan to keep changing them. Nothing is lost.",
       "expiredCta": "See the options",
       "label": "Your plan"
+    },
+    "offline": {
+      "reading": "You are offline: this is the last version saved on this device.",
+      "noCopy": "You are offline. Offline reading comes with a plan or a trip pass."
     }
   },
   "tripWorkspace": {
@@ -1682,7 +1686,7 @@
       "tagline": "For the trip you are saving for.",
       "f1": "{trips} active trips",
       "f2": "{credits} Pip credits a month",
-      "f3": "Plan with as many people as you like",
+      "f3": "Plan with as many people as you like and read your trip offline",
       "cta": "Start free, then Explorer"
     },
     "voyager": {
@@ -1709,7 +1713,7 @@
       "name": "Trip pass",
       "tagline": "One payment for one trip: everything paid opens on it, with no subscription.",
       "f1": "Does not count towards the free trip",
-      "f2": "Anyone can plan it with you",
+      "f2": "Read the trip offline, anyone can plan it with you",
       "f3": "Lasts until 30 days after you come back",
       "cta": "Start free, add the pass later",
       "once": "once"
