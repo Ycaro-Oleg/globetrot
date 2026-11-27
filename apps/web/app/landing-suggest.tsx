@@ -220,9 +220,12 @@ export function LandingSuggest({ signupHref }: { signupHref: string }) {
                 onClick={() => setDestination(option.id)}
               >
                 <strong>{pt ? option.namePt : option.name}</strong>
-                <small>
-                  {option.stops.map((stop) => (pt ? stop.namePt : stop.name)).join(' · ')}
-                </small>
+                {/* A one-city trip would only repeat its name: its stops are listed for multi-city ones. */}
+                {option.stops.length > 1 ? (
+                  <small>
+                    {option.stops.map((stop) => (pt ? stop.namePt : stop.name)).join(' · ')}
+                  </small>
+                ) : null}
               </button>
             ))}
           </div>
