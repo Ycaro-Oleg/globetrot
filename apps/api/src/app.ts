@@ -1,11 +1,14 @@
-import { OpenAPIHono, createRoute } from '@hono/zod-openapi';
+import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi';
 import {
   ApplicationError,
   UnauthenticatedError,
   currentUserSchema,
   type Application,
+  type InboundEmail,
+  type InboundOutcome,
   type SharedTripView,
 } from '@globetrot/application';
+import { timingSafeEqual } from 'node:crypto';
 import { HTTPException } from 'hono/http-exception';
 import { problemResponse, type Env } from './http';
 import { problem, problemFromApplicationError } from './problem';
@@ -53,9 +56,39 @@ export interface AppDependencies {
   readonly onUnexpectedError?: ((error: Error) => void) | undefined;
   readonly paymentWebhook?:
     ((rawBody: string, signature: string | null) => Promise<number>) | undefined;
+  /** Forwarded booking emails (ADR-0032). Absent: the inbound route is 404 and no address is offered. */
+  readonly inboundEmail?:
+    | {
+        readonly secret: string;
+        readonly domain: string;
+        readonly local: string;
+        receive(email: InboundEmail): Promise<InboundOutcome>;
+      }
+    | undefined;
 }
 
 const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
+
+const inboundAddressRoute = createRoute({
+  method: 'post',
+  path: '/v1/me/inbound',
+  operationId: 'getInboundAddress',
+  tags: ['Account'],
+  summary: 'The caller’s address for forwarding bookings to Pip',
+  description:
+    'Makes the address the first time (ADR-0032). A forwarded booking becomes a Pip proposal for the latest ' +
+    'active trip, to review. `address: null` while forwarding is not switched on.',
+  security: [{ cookieAuth: [] }],
+  responses: {
+    200: {
+      description: 'The address, or null.',
+      content: {
+        'application/json': { schema: z.object({ address: z.string().nullable() }) },
+      },
+    },
+    401: problemResponse('No valid session.'),
+  },
+});
 
 /** OpenAPI document metadata. The version is the version of the `/v1` contract, not of the app. */
 export const OPENAPI_CONFIG = {
@@ -100,6 +133,7 @@ export function createApp({
   enabledProviders = [],
   readiness = async () => true,
   paymentWebhook,
+  inboundEmail,
   sharedTrips = { view: async () => null },
   onUnexpectedError = () => {},
 }: AppDependencies) {
@@ -189,6 +223,33 @@ export function createApp({
     return c.json({ received: status === 200 }, status as 200 | 400 | 404 | 500);
   });
 
+  // The email provider posts forwarded emails here with no session: it is trusted only through the shared
+  // secret in a header (compared in constant time); whose email it is comes from the address's token.
+  app.post('/v1/inbound/email', async (c) => {
+    if (!inboundEmail) return problem(404, 'NOT_FOUND');
+    const given = Buffer.from(c.req.header('x-inbound-secret') ?? '');
+    const expected = Buffer.from(inboundEmail.secret);
+    if (given.length !== expected.length || !timingSafeEqual(given, expected)) {
+      return problem(401, 'UNAUTHENTICATED');
+    }
+    const body = (await c.req.json().catch(() => ({}))) as Record<string, unknown>;
+    const to = Array.isArray(body.ToFull) ? (body.ToFull[0] as Record<string, unknown>) : {};
+    const hash =
+      typeof body.MailboxHash === 'string' && body.MailboxHash
+        ? body.MailboxHash
+        : typeof to.MailboxHash === 'string'
+          ? to.MailboxHash
+          : (/\+([a-z0-9]+)@/i.exec(String(body.To ?? ''))?.[1] ?? '');
+    const outcome = await inboundEmail.receive({
+      token: hash.toLowerCase(),
+      subject: typeof body.Subject === 'string' ? body.Subject.slice(0, 300) : '',
+      text: typeof body.TextBody === 'string' ? body.TextBody.slice(0, 20_000) : '',
+    });
+    // Counts only in the logs: never the address, the subject or the text.
+    console.info(`inbound email: ${outcome}`);
+    return c.json({ outcome }, 200);
+  });
+
   // The only place an `Actor` is created. It comes from the verified session cookie and from nothing else:
   // not a header, a query parameter or a body field. Do not read any of those here.
   app.use('/v1/*', async (c, next) => {
@@ -214,6 +275,11 @@ export function createApp({
   registerAccountRoutes(app, application);
   registerPipRoutes(app, application);
   registerBillingRoutes(app, application);
+  app.openapi(inboundAddressRoute, async (c) => {
+    if (!inboundEmail) return c.json({ address: null }, 200);
+    const { token } = await application.getInboundToken.execute(c.get('actor'), {});
+    return c.json({ address: `${inboundEmail.local}+${token}@${inboundEmail.domain}` }, 200);
+  });
   registerShareRoutes(app, application);
   registerMemberRoutes(app, application);
   registerHabitRoutes(app, application);

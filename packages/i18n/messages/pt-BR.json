@@ -1550,7 +1550,16 @@
       "lists": "Pergunte ao Pip o que levar"
     },
     "creditsLeft": "{count, plural, one {# crédito do Pip restante} other {# créditos do Pip restantes}}",
-    "seePlans": "Ver planos"
+    "seePlans": "Ver planos",
+    "forward": {
+      "title": "Encaminhe suas reservas",
+      "body": "Encaminhe a confirmação de um voo, hotel ou passeio para este endereço: o Pip lê e propõe adicionar à sua viagem mais recente, para você revisar aqui.",
+      "label": "Seu endereço de encaminhamento",
+      "copy": "Copiar",
+      "copied": "Endereço copiado.",
+      "copyFailed": "Não deu para copiar: selecione o endereço e copie.",
+      "note": "Só o começo do e-mail é lido. Os custos entram como estimativa para você marcar como pagos. Usa um crédito do Pip."
+    }
   },
   "tripHub": {
     "metaTitle": "Viagem",

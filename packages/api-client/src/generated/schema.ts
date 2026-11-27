@@ -1129,6 +1129,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/me/inbound": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * The caller’s address for forwarding bookings to Pip
+         * @description Makes the address the first time (ADR-0032). A forwarded booking becomes a Pip proposal for the latest active trip, to review. `address: null` while forwarding is not switched on.
+         */
+        post: operations["getInboundAddress"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/trips/{id}/share": {
         parameters: {
             query?: never;
@@ -11118,6 +11138,51 @@ export interface operations {
             };
             /** @description Not an admin. */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    getInboundAddress: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The address, or null. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        address: string | null;
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
                 headers: {
                     [name: string]: unknown;
                 };

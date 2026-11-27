@@ -49,6 +49,15 @@ const envSchema = z.object({
   DEEPSEEK_MODEL: z.string().default('deepseek-chat'),
   SENTRY_DSN: z.url().optional(),
   ADMIN_EMAILS: z.string().optional(),
+  INBOUND_EMAIL_SECRET: z.string().min(24).optional(),
+  INBOUND_EMAIL_DOMAIN: z
+    .string()
+    .regex(/^[a-z0-9.-]+\.[a-z]{2,}$/)
+    .optional(),
+  INBOUND_EMAIL_LOCAL: z
+    .string()
+    .regex(/^[a-z0-9.-]+$/)
+    .default('trips'),
   ANTHROPIC_API_KEY: z.string().optional(),
   ANTHROPIC_BASE_URL: z.url().default('https://api.anthropic.com'),
   ANTHROPIC_MODEL: z.string().default('claude-haiku-5-5'),
@@ -158,6 +167,12 @@ export interface ApiConfig {
   readonly sentryDsn: string | null;
   /** Lower-case addresses that may see the internal dashboard (ADR-0031); empty for nobody. */
   readonly adminEmails: readonly string[];
+  /** Booking emails forwarded to Pip (ADR-0032); `null` keeps the inbound route off. */
+  readonly inboundEmail: {
+    readonly secret: string;
+    readonly domain: string;
+    readonly local: string;
+  } | null;
   /** True when no secret was provided and the public development one is in use (never in production). */
   readonly usingInsecureSecret: boolean;
 }
@@ -338,6 +353,14 @@ export function loadApiConfig(
     storage,
     stripe,
     sentryDsn: values.SENTRY_DSN ?? null,
+    inboundEmail:
+      values.INBOUND_EMAIL_SECRET && values.INBOUND_EMAIL_DOMAIN
+        ? {
+            secret: values.INBOUND_EMAIL_SECRET,
+            domain: values.INBOUND_EMAIL_DOMAIN,
+            local: values.INBOUND_EMAIL_LOCAL,
+          }
+        : null,
     adminEmails: (values.ADMIN_EMAILS ?? '')
       .split(',')
       .map((email) => email.trim().toLowerCase())

@@ -64,6 +64,7 @@ export function buildOpenApiDocument() {
         findProposal: unreachable,
         listProposals: unreachable,
         countRequestsSince: unreachable,
+        findInboundUser: unreachable,
       },
       billing: {
         findAccount: unreachable,

@@ -191,6 +191,12 @@ Decided in [ADR-0028](../architecture/adr/0028-public-itineraries-and-story-card
 - Prices are in US dollars until the visitor picks another currency on the page; the conversion says its source.
 - The trip's page offers a progress image for stories from the trip's public link: amounts only when the link shows amounts, otherwise the percentage saved.
 
+## Bookings by email
+
+Decided in [ADR-0032](../architecture/adr/0032-bookings-by-email.md).
+
+- Each person has a private address on the Pip page. A booking confirmation forwarded there becomes a Pip proposal for their most recent active trip, reviewed and applied like any other. Only the start of the email is read; costs come in as estimates; it uses a Pip credit. Pip never books anything.
+
 ## Partner links
 
 Decided in [ADR-0031](../architecture/adr/0031-partner-links-and-metrics.md).
