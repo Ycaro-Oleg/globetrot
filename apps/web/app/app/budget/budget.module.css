@@ -842,3 +842,80 @@
     grid-row: 2 / span 2;
   }
 }
+
+/* Money on a trip planned together (ADR-0025). */
+.myPart {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 18px;
+  background: var(--gt-semantic-color-surface-page);
+}
+
+.myPartLead {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.myPartFields {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.myPartFields .field {
+  flex: 1 1 160px;
+}
+
+.people,
+.transfers {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.personLine {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px 12px;
+  font-size: 14px;
+}
+
+.personLine span {
+  color: var(--gt-semantic-color-text-secondary);
+}
+
+.personBar {
+  display: block;
+  height: 8px;
+  margin-top: 6px;
+  overflow: hidden;
+  border-radius: 99px;
+  background: var(--gt-semantic-color-hairline);
+}
+
+.personBar > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--gt-semantic-color-savings, var(--gt-semantic-color-primary));
+}
+
+.settleTitle {
+  margin: 8px 0 0;
+  font-size: 16px;
+}
+
+.transfers li {
+  padding: 10px 14px;
+  border: 1px solid var(--gt-semantic-color-hairline);
+  border-radius: 14px;
+  font-weight: 700;
+}

@@ -141,3 +141,54 @@ describe('trip members against a real database', () => {
     expect((await call(bruno.cookie, 'GET', `/v1/trips/${id}`)).status).toBe(404);
   });
 });
+
+describe('money between members against a real database', () => {
+  it('records who paid, splits the trip and settles the paid costs', async () => {
+    const { signUp, call } = await harness();
+    const ana = await signUp('Ana');
+    const bruno = await signUp('Bruno');
+    const carla = await signUp('Carla');
+    const id = (await call(ana.cookie, 'POST', '/v1/trips', { title: 'Lisboa', currency: 'EUR' }))
+      .json.id as string;
+    const link = (await call(ana.cookie, 'POST', `/v1/trips/${id}/invites`, {})).json.token;
+    await call(bruno.cookie, 'POST', `/v1/invites/${link}`);
+    const cost = (amount: string, paidBy: string | null) =>
+      call(bruno.cookie, 'POST', `/v1/trips/${id}/expenses`, {
+        description: 'Hotel',
+        category: 'stay',
+        status: 'paid',
+        amount,
+        currency: 'EUR',
+        paidBy,
+      });
+    expect((await cost('300', ana.id)).json.paidBy).toBe(ana.id);
+    await cost('100', bruno.id);
+    expect((await cost('10', carla.id)).status).toBe(422);
+    expect(
+      (await call(bruno.cookie, 'PUT', `/v1/trips/${id}/money/me`, { saved: '50', monthly: '25' }))
+        .status,
+    ).toBe(200);
+    const money = (await call(ana.cookie, 'GET', `/v1/trips/${id}/money`)).json as {
+      people: { name: string; share: { amount: string }; saved: { amount: string } }[];
+      settlement: { transfers: { fromName: string; toName: string; amount: { amount: string } }[] };
+    };
+    expect(money.people.map((p) => [p.name, p.share.amount, p.saved.amount])).toEqual([
+      ['Ana', '200.00', '0.00'],
+      ['Bruno', '200.00', '50.00'],
+    ]);
+    expect(money.settlement.transfers).toMatchObject([
+      { fromName: 'Bruno', toName: 'Ana', amount: { amount: '100.00' } },
+    ]);
+    expect(
+      (
+        await call(bruno.cookie, 'PUT', `/v1/trips/${id}/shares`, {
+          shares: [
+            { userId: ana.id, shareBp: 5000 },
+            { userId: bruno.id, shareBp: 5000 },
+          ],
+        })
+      ).status,
+    ).toBe(404);
+    expect((await call(carla.cookie, 'GET', `/v1/trips/${id}/money`)).status).toBe(404);
+  });
+});

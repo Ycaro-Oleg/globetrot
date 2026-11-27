@@ -1,6 +1,6 @@
 import { and, asc, desc, eq, gt, isNull } from 'drizzle-orm';
 import type { Database } from './client';
-import { tripInvite, tripMember, user } from './schema';
+import { tripInvite, tripMember, tripPersonMoney, user } from './schema';
 
 /** PostgreSQL adapter for trip members and invite links (packages/application/src/ports.ts, ADR-0024). */
 
@@ -23,6 +23,47 @@ export function createMemberRepository(executor: Executor) {
         .where(eq(tripMember.tripId, tripId))
         .orderBy(asc(tripMember.joinedAt));
       return rows.map((row) => ({ ...row, role: row.role as Role }));
+    },
+    async listMoney(tripId: string) {
+      return executor
+        .select({
+          tripId: tripPersonMoney.tripId,
+          userId: tripPersonMoney.userId,
+          shareBp: tripPersonMoney.shareBp,
+          savedMinor: tripPersonMoney.savedMinor,
+          monthlyMinor: tripPersonMoney.monthlyMinor,
+        })
+        .from(tripPersonMoney)
+        .where(eq(tripPersonMoney.tripId, tripId));
+    },
+    async upsertMoney(
+      tripId: string,
+      userId: string,
+      patch: { readonly savedMinor?: bigint; readonly monthlyMinor?: bigint },
+      now: Date,
+    ) {
+      await executor
+        .insert(tripPersonMoney)
+        .values({ tripId, userId, ...patch, updatedAt: now })
+        .onConflictDoUpdate({
+          target: [tripPersonMoney.tripId, tripPersonMoney.userId],
+          set: { ...patch, updatedAt: now },
+        });
+    },
+    async setShares(
+      tripId: string,
+      shares: readonly { readonly userId: string; readonly shareBp: number | null }[],
+      now: Date,
+    ) {
+      for (const { userId, shareBp } of shares) {
+        await executor
+          .insert(tripPersonMoney)
+          .values({ tripId, userId, shareBp, updatedAt: now })
+          .onConflictDoUpdate({
+            target: [tripPersonMoney.tripId, tripPersonMoney.userId],
+            set: { shareBp, updatedAt: now },
+          });
+      }
     },
     async findInviteByHash(tokenHash: string) {
       const [row] = await executor

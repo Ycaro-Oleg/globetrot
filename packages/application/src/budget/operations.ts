@@ -65,8 +65,20 @@ export function toExpenseView(record: ExpenseRecord, tripCurrency: string): Expe
         ? null
         : { rate: record.fxRate, source: record.fxSource, asOf: record.fxAsOf },
     guess: record.guess,
+    paidBy: record.paidBy,
     createdAt: record.createdAt.toISOString(),
   };
+}
+
+/** Who paid must be someone on the trip: its owner or a member (ADR-0025). */
+async function checkedPayer(
+  trips: Pick<Ports['trips'], 'roleOf'>,
+  trip: TripRecord,
+  paidBy: string | null | undefined,
+): Promise<string | null | undefined> {
+  if (paidBy === undefined || paidBy === null) return paidBy;
+  if (paidBy === trip.ownerId || (await trips.roleOf(trip.id, paidBy))) return paidBy;
+  invalid('paidBy', 'Choose someone on this trip');
 }
 
 /**
@@ -255,6 +267,7 @@ export function createCreateExpense(deps: Writes) {
       return deps.unitOfWork.run(async (tx) => {
         const trip = await loadTripFor(tx.trips, actor, input.tripId, 'edit');
         const priced = priceExpense(input, trip.currency, now);
+        const paidBy = await checkedPayer(tx.trips, trip, input.paidBy);
         const guess = input.guess === true;
         if (guess && (await tx.expenses.listByTrip(trip.id)).some((expense) => expense.guess)) {
           invalid('guess', 'This trip already has a rough guess');
@@ -267,6 +280,7 @@ export function createCreateExpense(deps: Writes) {
           description: input.description,
           currency: input.currency,
           guess,
+          paidBy: paidBy ?? null,
           createdAt: now,
           ...priced,
         });
@@ -309,6 +323,7 @@ export function createUpdateExpense(deps: Writes) {
         const trip = await loadTripFor(tx.trips, actor, input.tripId, 'edit');
         await loadOwnedExpense(tx, trip.id, input.expenseId);
         const priced = priceExpense(input, trip.currency, now);
+        const paidBy = await checkedPayer(tx.trips, trip, input.paidBy);
         const record = await tx.expenses.update(
           input.expenseId,
           {
@@ -316,6 +331,7 @@ export function createUpdateExpense(deps: Writes) {
             status: input.status,
             description: input.description,
             currency: input.currency,
+            ...(paidBy === undefined ? {} : { paidBy }),
             ...priced,
           },
           now,

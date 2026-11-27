@@ -79,6 +79,9 @@ Today:
 | `leaveTrip` | `POST /v1/trips/{id}/leave` | A member leaves; `404` for the owner |
 | `previewInvite` | `GET /v1/invites/{token}` | Signed in. The trip's title, the owner's name, the role and whether the caller already plans it. Revoked, expired, unknown links and archived trips are `404` |
 | `acceptInvite` | `POST /v1/invites/{token}` | Joins; accepting twice or as the owner changes nothing. Returns the trip with the caller's `role` |
+| `getGroupMoney` | `GET /v1/trips/{id}/money` | Each person's part (`share`, `shareBp`), `saved`, `monthly`, `left`, `readyMonth`; the group's `total`, `saved`, `left`; the settling (`transfers` with names, `paid`, `unassigned`). Anyone on the trip ([ADR-0025](adr/0025-money-between-members.md)) |
+| `updateMyMoney` | `PUT /v1/trips/{id}/money/me` | The caller's own `saved` and `monthly` for their part. Anyone on the trip, viewers too |
+| `setShares` | `PUT /v1/trips/{id}/shares` | Owner only. Everyone's `shareBp` adding up to 10 000, or `shares: null` to split equally |
 | `openBillingPortal` | `POST /v1/me/billing/portal` | The provider's page to change the card, switch or cancel. `404` before the first payment, `503` while payments are off |
 | `getTripShare` / `shareTrip` / `unshareTrip` | `GET`/`PUT`/`DELETE /v1/trips/{id}/share` | The trip's public link: `{ slug, showAmounts }`. `PUT` keeps the address when it is on and sets `showAmounts`; `DELETE` ends it for good and works when the account is read-only ([business rules](../product/business-rules.md#sharing-a-trip)) |
 | `getSharedTrip` | `GET /v1/shared/{slug}` | **No session.** Title, the owner's interface language (`locale`, for the social card), start month, nights, stops (name, country, nights, coordinates), the savings status, progress and ready month, and amounts only when shared. Unknown, malformed, stopped or archived all answer `404` |

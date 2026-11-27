@@ -34,3 +34,4 @@ ADRs 0010 to 0012 were written after the work they describe (#53 to #61), which 
 | [0022](0022-backup-ai-provider.md) | A backup AI provider for Pip: Claude Haiku, asked when DeepSeek does not answer | Accepted |
 | [0023](0023-free-plan-trip-pass-and-prices-in-reais.md) | A free plan for one trip, the trip pass and prices in reais; no read-only wall after the free week | Accepted |
 | [0024](0024-trip-members.md) | Trip members: editors and viewers by invite link (hash stored, 7 days), one access check, guest limit from the plan | Accepted |
+| [0025](0025-money-between-members.md) | Money between members: equal or custom parts, each person's savings, who paid, settling up the paid costs | Accepted |

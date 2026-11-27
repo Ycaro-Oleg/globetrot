@@ -14,6 +14,7 @@ import {
   createRemoveMember,
   createRevokeInvite,
 } from './members/operations';
+import { createGetGroupMoney, createSetShares, createUpdateMyMoney } from './members/money';
 import {
   createGetBilling,
   createOpenBillingPortal,
@@ -35,6 +36,7 @@ export const PACKAGE_NAME = '@globetrot/application' as const;
 export type { Actor } from './actor';
 export { assertOwner } from './authorization';
 export { billingSchema } from './billing/operations';
+export { groupMoneySchema } from './members/money';
 export {
   inviteCreatedSchema,
   invitePreviewSchema,
@@ -448,6 +450,9 @@ export function createApplication(ports: Ports) {
     acceptInvite: createAcceptInvite(ports),
     removeMember: createRemoveMember(ports),
     leaveTrip: createLeaveTrip(ports),
+    getGroupMoney: createGetGroupMoney(ports),
+    updateMyMoney: createUpdateMyMoney(ports),
+    setShares: createSetShares(ports),
     shareTrip: createShareTrip(ports),
     unshareTrip: createUnshareTrip(ports),
     suggestDayPlaces: createSuggestDayPlaces(ports),

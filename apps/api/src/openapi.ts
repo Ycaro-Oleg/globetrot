@@ -25,6 +25,7 @@ export function buildOpenApiDocument() {
         listByTrip: unreachable,
         findInviteByHash: unreachable,
         listOpenInvites: unreachable,
+        listMoney: unreachable,
       },
       destinations: { listByTrip: unreachable, tripIdsWithPhoto: unreachable },
       expenses: { listByTrip: unreachable, findById: unreachable },
