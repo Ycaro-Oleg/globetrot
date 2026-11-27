@@ -891,6 +891,8 @@ export interface BillingAccount {
   readonly topUpBalance: number;
   /** Trip passes bought, valid or not (ADR-0023). */
   readonly passes: readonly TripPassState[];
+  /** Free trip passes earned by referring friends and not used yet (ADR-0029). */
+  readonly passCredits: number;
 }
 
 export interface SubscriptionRecord extends SubscriptionState {
@@ -917,6 +919,21 @@ export interface BillingWriter extends BillingReader {
     readonly createdAt: Date;
   }): Promise<boolean>;
   saveSubscription(userId: string, record: SubscriptionRecord, updatedAt: Date): Promise<void>;
+  /** The account's referral code, making it with `candidate` the first time. */
+  ensureReferralCode(userId: string, candidate: string, at: Date): Promise<string>;
+  /** Whose code it is, or null. */
+  findReferrer(code: string): Promise<string | null>;
+  /** Records who referred the account; false when it already has a referrer. */
+  claimReferral(referredUserId: string, referrerUserId: string, at: Date): Promise<boolean>;
+  /** How many accounts came through the person's link. */
+  countReferrals(userId: string): Promise<number>;
+  /**
+   * When `referredUserId` was referred and not yet rewarded: marks it rewarded and gives the referrer a free pass
+   * credit. Answers the referrer, or null when there was nothing to reward.
+   */
+  rewardReferral(referredUserId: string, creditId: string, at: Date): Promise<string | null>;
+  /** Uses one of the person's free pass credits on a trip; answers its id, or null when none is left. */
+  useCredit(userId: string, tripId: string, at: Date): Promise<string | null>;
   /** Records a trip pass; false (and nothing added) when `providerRef` was already used. */
   grantTripPass(row: {
     readonly id: string;

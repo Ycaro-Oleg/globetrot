@@ -204,6 +204,13 @@
       "when": 1795782920856,
       "tag": "0028_weekly_checkin",
       "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "7",
+      "when": 1795785112899,
+      "tag": "0029_referrals",
+      "breakpoints": true
     }
   ]
 }

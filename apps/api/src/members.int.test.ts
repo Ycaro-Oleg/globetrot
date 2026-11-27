@@ -59,8 +59,10 @@ async function harness() {
     });
     return { status: response.status, json: (await response.json()) as Record<string, unknown> };
   };
-  return { signUp, call };
+  return { signUp, call, db: database.db };
 }
+
+const harnessWithDb = harness;
 
 const stop = {
   placeKey: 't:lisboa',
@@ -190,5 +192,37 @@ describe('money between members against a real database', () => {
       ).status,
     ).toBe(404);
     expect((await call(carla.cookie, 'GET', `/v1/trips/${id}/money`)).status).toBe(404);
+  });
+});
+
+describe('referrals against a real database', () => {
+  it('claims a code once, rewards the first payment with a free pass, and uses it on a trip', async () => {
+    const { createBillingRepository } = await import('@globetrot/db');
+    const { signUp, call, db } = await harnessWithDb();
+    const ana = await signUp('Ana');
+    const bruno = await signUp('Bruno');
+    const { code } = (await call(ana.cookie, 'POST', '/v1/me/referral')).json as { code: string };
+    expect(code).toMatch(/^[A-Z0-9]{8}$/);
+    expect((await call(bruno.cookie, 'POST', '/v1/me/referral/claim', { code })).json).toEqual({
+      claimed: true,
+    });
+    expect((await call(ana.cookie, 'POST', '/v1/me/referral/claim', { code })).json).toEqual({
+      claimed: false,
+    });
+    const billing = createBillingRepository(db);
+    expect(
+      await billing.rewardReferral(bruno.id, '01900000-0000-7000-8000-0000000000a1', new Date()),
+    ).toBe(ana.id);
+    expect(
+      await billing.rewardReferral(bruno.id, '01900000-0000-7000-8000-0000000000a2', new Date()),
+    ).toBeNull();
+    expect((await call(ana.cookie, 'GET', '/v1/me/billing')).json.passCredits).toBe(1);
+    const trip = (await call(ana.cookie, 'POST', '/v1/trips', { title: 'Roma' })).json;
+    expect((await call(bruno.cookie, 'POST', `/v1/trips/${trip.id}/pass/redeem`)).status).toBe(404);
+    expect((await call(ana.cookie, 'POST', `/v1/trips/${trip.id}/pass/redeem`)).status).toBe(200);
+    expect((await call(ana.cookie, 'GET', '/v1/me/billing')).json).toMatchObject({
+      passCredits: 0,
+      passes: [{ tripId: trip.id }],
+    });
   });
 });

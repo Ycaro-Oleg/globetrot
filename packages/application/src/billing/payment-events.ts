@@ -1,5 +1,5 @@
 import { addDays, TOP_UP, toLocalDate, tripPassValidUntil } from '@globetrot/domain';
-import type { Ports, SubscriptionRecord } from '../ports';
+import type { Ports, SubscriptionRecord, Transaction } from '../ports';
 
 /**
  * What the payment provider told us, already verified and translated by its adapter (ADR-0019). The adapter
@@ -30,7 +30,7 @@ export type PaymentEvent =
 export type PaymentOutcome = 'applied' | 'duplicate' | 'unknown-account';
 
 /** The day the trip ends (the start plus every night), or null while it has no start date. */
-async function tripEndsOn(
+export async function tripEndsOn(
   deps: Pick<Ports, 'destinations'>,
   trip: { readonly id: string; readonly startDate: string | null },
 ): Promise<Date | null> {
@@ -50,6 +50,21 @@ export function createPaymentEvents(
     'users' | 'billing' | 'trips' | 'destinations' | 'unitOfWork' | 'clock' | 'ids'
   >,
 ) {
+  /** A friend's first payment gives whoever referred them a free trip pass, once (ADR-0029). */
+  async function rewardReferrer(tx: Transaction, userId: string, now: Date) {
+    const referrer = await tx.billing.rewardReferral(userId, deps.ids.newId(), now);
+    if (!referrer) return;
+    await tx.audit.record({
+      id: deps.ids.newId(),
+      occurredAt: now,
+      actor: { kind: 'user', userId: referrer },
+      action: 'billing.referral-reward',
+      entityType: 'account',
+      entityId: referrer,
+      metadata: {},
+    });
+  }
+
   return {
     async apply(event: PaymentEvent): Promise<PaymentOutcome> {
       const now = deps.clock.now();
@@ -78,6 +93,7 @@ export function createPaymentEvents(
               status: event.record.status,
             },
           });
+          if (event.record.status === 'active') await rewardReferrer(tx, userId, now);
           return 'applied';
         }
         if (event.kind === 'trip-pass') {
@@ -103,6 +119,7 @@ export function createPaymentEvents(
             entityId: trip.id,
             metadata: { validUntil: validUntil.toISOString().slice(0, 10) },
           });
+          await rewardReferrer(tx, userId, now);
           return 'applied';
         }
         const added = await tx.billing.addCredits({

@@ -12,6 +12,7 @@ import { BottomBar, GlobalNav, TripTabs } from './nav-links';
 import { PipFab } from './pip-fab';
 import { offlineAllowed } from '../../../lib/offline';
 import { OfflineSupport } from './offline-support';
+import { ReferralClaim } from './referral-claim';
 import { TripRefresh } from './trip-refresh';
 import { TripSwitcher } from './trip-switcher';
 import styles from './shell.module.css';
@@ -76,6 +77,7 @@ export function AppShell({
 
         {/* A trip shared with the person refreshes on its own; the owner's when they come back to the tab. */}
         <TripRefresh shared={activeTrip !== undefined && activeTrip.role !== 'owner'} />
+        <ReferralClaim />
         {pipEnabled ? <PipFab /> : null}
         <BottomBar />
       </div>

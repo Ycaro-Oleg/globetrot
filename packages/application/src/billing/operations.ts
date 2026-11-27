@@ -21,6 +21,8 @@ export const billingSchema = z.object({
   overLimit: z.boolean(),
   /** The currency prices are shown in: BRL when the person chose reais, else USD (ADR-0023). */
   priceCurrency: z.enum(PRICE_CURRENCIES),
+  /** Free trip passes earned by referring friends and not used yet (ADR-0029). */
+  passCredits: z.number().int(),
   /** Trips with a pass that still holds, and until when. */
   passes: z.array(z.object({ tripId: z.string(), validUntil: z.string() })),
   trialEndsAt: z.string(),
@@ -70,6 +72,7 @@ export function createGetBilling(
         access: rights.access,
         overLimit: count.over,
         priceCurrency: priceCurrencyFor(preferences?.currency),
+        passCredits: account?.passCredits ?? 0,
         passes: (account?.passes ?? [])
           .filter((pass) => passed.has(pass.tripId) && pass.validUntil > now)
           .map((pass) => ({ tripId: pass.tripId, validUntil: pass.validUntil.toISOString() })),

@@ -81,6 +81,9 @@ export interface FakeState {
     createdAt: Date;
   }[];
   invites: InviteRecord[];
+  referralCodes: Map<string, string>;
+  referrals: { referred: string; referrer: string; rewarded: boolean }[];
+  passCredits: { id: string; userId: string; ref: string; usedTripId: string | null }[];
   passes: {
     id: string;
     tripId: string;
@@ -144,6 +147,9 @@ export function createFakePorts(options: FakeOptions = {}) {
     money: [],
     checkins: [],
     invites: [],
+    referralCodes: new Map(),
+    referrals: [],
+    passCredits: [],
     passes: [],
     audit: [],
     idempotency: new Map(),
@@ -557,6 +563,7 @@ export function createFakePorts(options: FakeOptions = {}) {
         passes: state.passes
           .filter((pass) => pass.userId === userId)
           .map(({ tripId, validUntil }) => ({ tripId, validUntil })),
+        passCredits: state.passCredits.filter((c) => c.userId === userId && !c.usedTripId).length,
       };
     },
     async findProviderCustomer(userId) {
@@ -580,6 +587,40 @@ export function createFakePorts(options: FakeOptions = {}) {
     },
     async saveSubscription(userId, record) {
       state.subscriptions.set(userId, record);
+    },
+    async ensureReferralCode(userId, candidate) {
+      if (!state.referralCodes.has(userId)) state.referralCodes.set(userId, candidate);
+      return state.referralCodes.get(userId)!;
+    },
+    async findReferrer(code) {
+      for (const [userId, value] of state.referralCodes) if (value === code) return userId;
+      return null;
+    },
+    async claimReferral(referred, referrer) {
+      if (state.referrals.some((r) => r.referred === referred)) return false;
+      state.referrals.push({ referred, referrer, rewarded: false });
+      return true;
+    },
+    async countReferrals(userId) {
+      return state.referrals.filter((r) => r.referrer === userId).length;
+    },
+    async rewardReferral(referred, creditId) {
+      const entry = state.referrals.find((r) => r.referred === referred && !r.rewarded);
+      if (!entry) return null;
+      entry.rewarded = true;
+      state.passCredits.push({
+        id: creditId,
+        userId: entry.referrer,
+        ref: `referral:${referred}`,
+        usedTripId: null,
+      });
+      return entry.referrer;
+    },
+    async useCredit(userId, tripId) {
+      const free = state.passCredits.find((c) => c.userId === userId && !c.usedTripId);
+      if (!free) return null;
+      free.usedTripId = tripId;
+      return free.id;
     },
     async grantTripPass(row) {
       if (state.passes.some((pass) => pass.providerRef === row.providerRef)) return false;
@@ -810,6 +851,9 @@ export function createFakePorts(options: FakeOptions = {}) {
           checkins: [...state.checkins],
           invites: [...state.invites],
           passes: [...state.passes],
+          referralCodes: new Map(state.referralCodes),
+          referrals: state.referrals.map((r) => ({ ...r })),
+          passCredits: state.passCredits.map((c) => ({ ...c })),
           audit: [...state.audit],
           idempotency: new Map(
             [...state.idempotency].map(([key, value]) => [key, { ...value }] as const),

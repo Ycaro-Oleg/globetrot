@@ -1851,7 +1851,9 @@
     "active": "Esta viagem tem passe até {date}.",
     "thanks": "Obrigado! O passe é ativado em instantes; recarregue se ainda não aparecer.",
     "soon": "Os pagamentos estão sendo ativados. Nada é cobrado ainda.",
-    "failed": "Não deu certo. Tente de novo em instantes."
+    "failed": "Não deu certo. Tente de novo em instantes.",
+    "useFree": "Usar meu passe grátis ({count, plural, one {# disponível} other {# disponíveis}})",
+    "freeUsed": "Pronto: esta viagem tem passe agora."
   },
   "tripMembers": {
     "title": "Pessoas nesta viagem",
@@ -2003,5 +2005,14 @@
     "metaTitle": "{destination} em {days} dias: roteiro, custos e quanto guardar",
     "metaDescription": "Roteiro de {days} dias por {destination} com {stops} paradas, experiências fora do óbvio, o custo típico por pessoa e quanto guardar por mês.",
     "imageCost": "Custo típico por pessoa: {cost}"
+  },
+  "referral": {
+    "title": "Traga um amigo, ganhe um passe",
+    "body": "Mande seu link. Quando um amigo que entrar por ele comprar um plano ou um passe pela primeira vez, você ganha um passe da viagem grátis.",
+    "linkLabel": "Seu link",
+    "copy": "Copiar",
+    "copied": "Link copiado.",
+    "copyFailed": "Não deu para copiar: selecione o link e copie.",
+    "counts": "{joined, plural, one {# amigo entrou} other {# amigos entraram}} · {credits, plural, =0 {nenhum passe grátis para usar} one {# passe grátis para usar} other {# passes grátis para usar}}"
   }
 }

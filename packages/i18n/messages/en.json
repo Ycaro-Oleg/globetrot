@@ -1851,7 +1851,9 @@
     "active": "This trip has a pass until {date}.",
     "thanks": "Thank you! The pass switches on in a moment; reload if it does not show yet.",
     "soon": "Payments are being switched on. Nothing is charged yet.",
-    "failed": "That did not work. Try again in a moment."
+    "failed": "That did not work. Try again in a moment.",
+    "useFree": "Use my free pass ({count} left)",
+    "freeUsed": "Done: this trip has a pass now."
   },
   "tripMembers": {
     "title": "People on this trip",
@@ -2003,5 +2005,14 @@
     "metaTitle": "{destination} in {days} days: itinerary, costs and how much to save",
     "metaDescription": "A {days}-day {destination} itinerary with {stops} stops, experiences off the usual list, the typical cost per person and how much to set aside each month.",
     "imageCost": "Typical cost per person: {cost}"
+  },
+  "referral": {
+    "title": "Bring a friend, get a trip pass",
+    "body": "Send your link. When a friend who signs up through it buys a plan or a trip pass for the first time, you get a trip pass for free.",
+    "linkLabel": "Your link",
+    "copy": "Copy",
+    "copied": "Link copied.",
+    "copyFailed": "Could not copy: select the link and copy it.",
+    "counts": "{joined, plural, one {# friend joined} other {# friends joined}} · {credits, plural, =0 {no free pass to use} one {# free pass to use} other {# free passes to use}}"
   }
 }

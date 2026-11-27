@@ -268,3 +268,22 @@ a.secondary {
   background: var(--gt-semantic-color-surface-card);
   font-weight: 700;
 }
+
+/* The referral link: a field to copy from and its button. */
+.linkRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.linkRow input {
+  flex: 1 1 220px;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--gt-semantic-color-input-border);
+  border-radius: 14px;
+  background: var(--gt-semantic-color-input-surface);
+  color: var(--gt-semantic-color-text);
+  font: inherit;
+}

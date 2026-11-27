@@ -2,7 +2,7 @@ import { cookies } from 'next/headers';
 import { getTranslations } from 'next-intl/server';
 import { apiInternalUrl } from '../../../lib/api-proxy';
 import { fetchBilling } from '../../../lib/billing';
-import { sessionCookieHeader } from '../../../lib/stored-preferences';
+import { createServerApiClient, sessionCookieHeader } from '../../../lib/stored-preferences';
 import { SITE_NAME } from '../../site';
 import { PlanView } from './plan-view';
 
@@ -20,12 +20,21 @@ export default async function PlanPage({
   const { paid, status } = await searchParams;
   const store = await cookies();
   const cookieHeader = sessionCookieHeader(store.getAll());
-  const billing = cookieHeader
-    ? await fetchBilling({ cookieHeader, apiUrl: apiInternalUrl() })
-    : null;
+  const options = cookieHeader ? { cookieHeader, apiUrl: apiInternalUrl() } : null;
+  const [billing, referral] = options
+    ? await Promise.all([
+        fetchBilling(options),
+        // Makes the person's code the first time they open the page (ADR-0029).
+        createServerApiClient(options)
+          .POST('/v1/me/referral')
+          .then((response) => response.data ?? null)
+          .catch(() => null),
+      ])
+    : [null, null];
   return (
     <PlanView
       billing={billing}
+      referral={referral}
       planRequired={status === 'plan-required'}
       paid={
         paid === 'top-up' ? 'top-up' : paid === 'explorer' || paid === 'voyager' ? 'plan' : null

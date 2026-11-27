@@ -6,6 +6,7 @@ import { useEffect, useId, useState, useTransition } from 'react';
 import { track } from '../../../../lib/analytics';
 import { tripPassPrice } from '../../../../lib/plan-config';
 import { startCheckout } from '../../plan/actions';
+import { redeemFreePass } from '../../_components/referral-actions';
 import styles from './trip-hub.module.css';
 
 /**
@@ -17,11 +18,14 @@ export function PassCard({
   currency,
   validUntil,
   justPaid,
+  freePasses = 0,
 }: {
   tripId: string;
   currency: PriceCurrency;
   validUntil: string | null;
   justPaid: boolean;
+  /** Free passes earned by referring friends (ADR-0029). */
+  freePasses?: number;
 }) {
   const t = useTranslations('tripPass');
   const locale = useLocale();
@@ -57,7 +61,26 @@ export function PassCard({
         <>
           <p className={styles.hint}>{t('body')}</p>
           {justPaid ? <p role="status">{t('thanks')}</p> : null}
-          <button type="button" className={styles.primary} disabled={pending} onClick={buy}>
+          {freePasses > 0 ? (
+            <button
+              type="button"
+              className={styles.primary}
+              disabled={pending}
+              onClick={() =>
+                startTransition(async () => {
+                  setNotice((await redeemFreePass(tripId)) ? t('freeUsed') : t('failed'));
+                })
+              }
+            >
+              {t('useFree', { count: freePasses })}
+            </button>
+          ) : null}
+          <button
+            type="button"
+            className={freePasses > 0 ? styles.ghost : styles.primary}
+            disabled={pending}
+            onClick={buy}
+          >
             {t('cta', { price })}
           </button>
         </>
