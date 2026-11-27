@@ -48,6 +48,7 @@ export type PipFill = {
   error: string | null;
 };
 import { PhotoPicker } from '../_components/photo-picker';
+import { NO_PARTNERS, staysUrl, toursUrl, type Partners } from '../../../lib/partners';
 import { SpotIcon } from './spot-icon';
 import styles from './world-map.module.css';
 
@@ -89,7 +90,10 @@ export function PinCard({
   onChange,
   onShowSpot,
   onClose,
+  partners = NO_PARTNERS,
 }: {
+  /** Partner ids for the "see tours" and "see stays" links (ADR-0031). */
+  partners?: Partners;
   stop: RouteStop;
   index: number;
   name: string;
@@ -325,6 +329,7 @@ export function PinCard({
 
         {tab === 'spots' ? (
           <>
+            <PartnerLinks partners={partners} place={name} />
             {stop.spots.length ? (
               <ul className={styles.checkList}>
                 {stop.spots.map((spot, i) => {
@@ -735,5 +740,28 @@ export function PinCard({
         ) : null}
       </div>
     </div>
+  );
+}
+
+/** Searches on partner sites for the stop, labelled as partner links; nothing without a partner id. */
+function PartnerLinks({ partners, place }: { partners: Partners; place: string }) {
+  const t = useTranslations('mapBoard.partners');
+  const tours = toursUrl(partners, place);
+  const stays = staysUrl(partners, place);
+  if (!tours && !stays) return null;
+  return (
+    <p className={styles.partnerLinks}>
+      {tours ? (
+        <a href={tours} target="_blank" rel="sponsored noopener noreferrer">
+          {t('tours', { place })}
+        </a>
+      ) : null}
+      {stays ? (
+        <a href={stays} target="_blank" rel="sponsored noopener noreferrer">
+          {t('stays', { place })}
+        </a>
+      ) : null}
+      <small>{t('label')}</small>
+    </p>
   );
 }

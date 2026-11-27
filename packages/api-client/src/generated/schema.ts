@@ -1109,6 +1109,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/metrics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The internal dashboard’s counts (admins only)
+         * @description Counts only, never people (ADR-0031). Only verified accounts listed in `ADMIN_EMAILS`; everyone else gets `404`.
+         */
+        get: operations["getAdminMetrics"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/trips/{id}/share": {
         parameters: {
             query?: never;
@@ -10995,6 +11015,108 @@ export interface operations {
                 };
             };
             /** @description No such trip of the caller’s, or no free pass left. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    getAdminMetrics: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The counts. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        accounts: {
+                            total: number;
+                            last7: number;
+                            last30: number;
+                            verified: number;
+                        };
+                        trips: {
+                            active: number;
+                            created30: number;
+                            fromPlan30: number;
+                            fromExample30: number;
+                            byHand30: number;
+                            savingMonthly: number;
+                        };
+                        checkinsByWeek: {
+                            week: string;
+                            count: number;
+                        }[];
+                        sharing: {
+                            invites30: number;
+                            joins30: number;
+                            inviters30: number;
+                        };
+                        retention: {
+                            cohort: number;
+                            week1: number;
+                            week4: number;
+                            week8: number;
+                        };
+                        money: {
+                            explorer: number;
+                            voyager: number;
+                            activePasses: number;
+                            referrals: number;
+                        };
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description Not an admin. */
             404: {
                 headers: {
                     [name: string]: unknown;

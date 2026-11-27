@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import { useId, useState, useTransition } from 'react';
 import { track } from '../../../lib/analytics';
 import { addPhaseTask, checkIn } from './actions';
+import { NO_PARTNERS, type Partners } from '../../../lib/partners';
 import styles from './today.module.css';
 
 type Amount = { amount: string; currency: string };
@@ -46,9 +47,12 @@ const plain = (amount: string) => amount.replace(/\.00$/, '');
 export function TodayView({
   trip,
   habit,
+  partners = NO_PARTNERS,
 }: {
   trip: { id: string; title: string; canEdit: boolean } | null;
   habit: HabitData | null;
+  /** Insurance and eSIM partner pages, offered next to those suggestions when configured (ADR-0031). */
+  partners?: Partners;
 }) {
   const t = useTranslations('todayPage');
   const locale = useLocale() as SupportedLocale;
@@ -156,7 +160,23 @@ export function TodayView({
           <ul className={styles.tasks}>
             {tasks.map((task) => (
               <li key={task}>
-                <span>{t(`tasks.${task}`)}</span>
+                <span>
+                  {t(`tasks.${task}`)}
+                  {(task === 'insurance' && partners.insurance) ||
+                  (task === 'esim' && partners.esim) ? (
+                    <>
+                      {' '}
+                      <a
+                        className={styles.partner}
+                        href={(task === 'insurance' ? partners.insurance : partners.esim)!}
+                        target="_blank"
+                        rel="sponsored noopener noreferrer"
+                      >
+                        {t('partnerLink')}
+                      </a>
+                    </>
+                  ) : null}
+                </span>
                 {TASK_GROUP[task] && trip.canEdit ? (
                   added.includes(task) ? (
                     <span className={styles.added}>{t('added')}</span>

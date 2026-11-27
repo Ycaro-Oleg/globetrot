@@ -79,6 +79,8 @@ export function buildOpenApiDocument() {
       cities: { search: unreachable },
       geocoding: { search: unreachable, reverse: unreachable, sights: unreachable },
       rateLimiter: { consume: unreachable },
+      admins: { isAdmin: unreachable },
+      metrics: { snapshot: unreachable },
     }),
     trustedOrigins: [],
   });

@@ -34,6 +34,7 @@ import {
   type ApiDestination,
 } from './board-route';
 import type { PipFill, PipSpotChange } from './pin-card';
+import { NO_PARTNERS, type Partners } from '../../../lib/partners';
 import {
   MapCanvas,
   type BoardMapController,
@@ -164,6 +165,7 @@ export function WorldMapBoard({
   pipSuggestion = null,
   home = null,
   demo = false,
+  partners = NO_PARTNERS,
 }: {
   /** The trip the route belongs to, or `null` when there is no trip yet (the board then works unsaved). */
   tripId: string | null;
@@ -182,6 +184,8 @@ export function WorldMapBoard({
    * shown, nothing is saved or remembered, and the map leaves the page's scrolling alone.
    */
   demo?: boolean;
+  /** Partner ids for the pin card's partner links (ADR-0031); none by default. */
+  partners?: Partners;
 }) {
   const t = useTranslations('mapBoard');
   const locale = useLocale();
@@ -1161,6 +1165,7 @@ export function WorldMapBoard({
       {cardStop ? (
         <PinCard
           key={cardStop.id}
+          partners={partners}
           stop={cardStop}
           index={cardIndex}
           name={cardStop.name}

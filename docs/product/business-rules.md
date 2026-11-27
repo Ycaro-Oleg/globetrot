@@ -191,6 +191,12 @@ Decided in [ADR-0028](../architecture/adr/0028-public-itineraries-and-story-card
 - Prices are in US dollars until the visitor picks another currency on the page; the conversion says its source.
 - The trip's page offers a progress image for stories from the trip's public link: amounts only when the link shows amounts, otherwise the percentage saved.
 
+## Partner links
+
+Decided in [ADR-0031](../architecture/adr/0031-partner-links-and-metrics.md).
+
+- A stop's card can offer "Tours in {place}" and "Stays in {place}", and Today's insurance and eSIM suggestions a partner page, only when the owner configured the partner. Each is labelled as a partner link that may earn a commission, never shows a price and opens the partner's own page.
+
 ## Miles
 
 Decided in [ADR-0030](../architecture/adr/0030-miles-in-the-savings.md).

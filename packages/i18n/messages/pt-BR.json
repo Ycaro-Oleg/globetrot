@@ -844,7 +844,12 @@
     "layersClose": "Fechar",
     "spotPinned": "{name} está no mapa.",
     "spotPinHint": "Clique no mapa onde fica {name}, em {place}. Esc cancela.",
-    "spotAria": "{name}, {kind}, em {place}"
+    "spotAria": "{name}, {kind}, em {place}",
+    "partners": {
+      "tours": "Passeios em {place}",
+      "stays": "Hospedagem em {place}",
+      "label": "Links de parceiro: o Globetrot pode ganhar uma comissão; os preços estão na página do parceiro."
+    }
   },
   "daysPage": {
     "title": "Dias",
@@ -1973,7 +1978,8 @@
       "photos": "Adicione fotos aos lugares que visitar",
       "memories": "Marque os lugares que visitou",
       "settle": "Acerte as contas com quem viajou com você"
-    }
+    },
+    "partnerLink": "Ver opções (link de parceiro)"
   },
   "itinerary": {
     "navLabel": "Globetrot",
@@ -2039,5 +2045,37 @@
       "esfera": "Esfera"
     },
     "add": "Adicionar minhas milhas"
+  },
+  "adminMetrics": {
+    "title": "Métricas",
+    "note": "Só contagens, direto do banco. Últimos 30 dias, salvo indicação.",
+    "accounts": "Contas",
+    "total": "Total",
+    "verified": "E-mail confirmado",
+    "last7": "Novas, últimos 7 dias",
+    "last30": "Novas, últimos 30 dias",
+    "trips": "Viagens",
+    "active": "Ativas",
+    "created30": "Criadas",
+    "fromPlan": "Do plano da landing",
+    "fromExample": "De um exemplo",
+    "byHand": "À mão",
+    "saving": "Guardando por mês",
+    "retention": "Retenção",
+    "cohort": "Cadastradas há 8 a 16 semanas",
+    "week1": "Ativas na semana 1",
+    "week4": "Ativas na semana 4",
+    "week8": "Ativas na semana 8",
+    "sharing": "Compartilhamento",
+    "invites": "Links de convite criados",
+    "joins": "Pessoas que entraram",
+    "viral": "Entradas por quem convidou",
+    "referrals": "Indicações (total)",
+    "money": "Pagantes",
+    "explorer": "Explorer",
+    "voyager": "Voyager",
+    "passes": "Passes da viagem válidos",
+    "checkins": "Check-ins por semana",
+    "none": "Nenhum check-in ainda."
   }
 }

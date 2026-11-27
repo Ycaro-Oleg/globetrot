@@ -17,6 +17,7 @@ import {
 import { createGetGroupMoney, createSetShares, createUpdateMyMoney } from './members/money';
 import { createCheckIn, createGetHabit } from './habit/operations';
 import { createGetMiles, createSetMiles, createSetTripMiles } from './miles/operations';
+import { createGetAdminMetrics } from './admin/metrics';
 import {
   createClaimReferral,
   createGetReferral,
@@ -46,6 +47,7 @@ export { billingSchema } from './billing/operations';
 export { groupMoneySchema } from './members/money';
 export { habitSchema } from './habit/operations';
 export { referralSchema } from './billing/referrals';
+export { adminMetricsSchema } from './admin/metrics';
 export { milesSchema_ as milesViewSchema } from './miles/operations';
 export {
   createWeeklyReminders,
@@ -477,6 +479,7 @@ export function createApplication(ports: Ports) {
     getMiles: createGetMiles(ports),
     setMiles: createSetMiles(ports),
     setTripMiles: createSetTripMiles(ports),
+    getAdminMetrics: createGetAdminMetrics(ports),
     shareTrip: createShareTrip(ports),
     unshareTrip: createUnshareTrip(ports),
     suggestDayPlaces: createSuggestDayPlaces(ports),

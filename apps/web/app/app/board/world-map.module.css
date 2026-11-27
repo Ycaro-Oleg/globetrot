@@ -2498,3 +2498,22 @@
   opacity: 0.45;
   cursor: default;
 }
+
+/* Partner links in the pin card (ADR-0031): plain links, always labelled. */
+.partnerLinks {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 14px;
+  margin: 0 0 10px;
+  font-size: 13px;
+}
+
+.partnerLinks a {
+  color: var(--gt-semantic-color-primary);
+  font-weight: 700;
+}
+
+.partnerLinks small {
+  color: var(--gt-semantic-color-text-secondary);
+}

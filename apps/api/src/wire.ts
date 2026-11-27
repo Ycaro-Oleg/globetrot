@@ -19,6 +19,7 @@ import {
   createMediaRepository,
   createChecklistRepository,
   createMemberRepository,
+  createMetricsRepository,
   createDayPlaceRepository,
   createVisaRepository,
   createExpenseRepository,
@@ -144,6 +145,16 @@ export function createServices(
       geocoding: overrides.geocoding ?? createGeoapifyGeocoder(config.geoapifyKey),
       cities: createCityIndex(),
       rateLimiter: createMemoryRateLimiter(),
+      // The internal dashboard (ADR-0031): only the addresses in ADMIN_EMAILS, with a verified email.
+      admins: {
+        async isAdmin(userId: string) {
+          const user = await users.findById(userId);
+          return Boolean(
+            user?.emailVerified && config.adminEmails.includes(user.email.toLowerCase()),
+          );
+        },
+      },
+      metrics: createMetricsRepository(db),
     }),
     trustedOrigins: config.auth.trustedOrigins,
     readiness: async () => {

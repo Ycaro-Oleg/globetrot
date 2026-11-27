@@ -73,6 +73,8 @@ export interface FakeState {
   members: { tripId: string; userId: string; role: MemberRole; joinedAt: Date }[];
   /** Each person's part and savings on a shared trip (ADR-0025). */
   money: PersonMoneyRecord[];
+  /** Accounts that may see the internal dashboard. */
+  admins: string[];
   /** Miles balances and the miles put towards trips (ADR-0030). */
   miles: { userId: string; program: MilesProgram; balance: number }[];
   tripMiles: { tripId: string; userId: string; program: MilesProgram; miles: number }[];
@@ -150,6 +152,7 @@ export function createFakePorts(options: FakeOptions = {}) {
     members: [],
     money: [],
     checkins: [],
+    admins: [],
     miles: [],
     tripMiles: [],
     invites: [],
@@ -793,6 +796,30 @@ export function createFakePorts(options: FakeOptions = {}) {
   };
 
   const ports: Ports = {
+    admins: {
+      async isAdmin(userId) {
+        return state.admins.includes(userId);
+      },
+    },
+    metrics: {
+      async snapshot() {
+        return {
+          accounts: { total: users.length, last7: 0, last30: 0, verified: users.length },
+          trips: {
+            active: [...state.trips.values()].filter((t) => t.status !== 'archived').length,
+            created30: 0,
+            fromPlan30: 0,
+            fromExample30: 0,
+            byHand30: 0,
+            savingMonthly: 0,
+          },
+          checkinsByWeek: [],
+          sharing: { invites30: 0, joins30: 0, inviters30: 0 },
+          retention: { cohort: 0, week1: 0, week4: 0, week8: 0 },
+          money: { explorer: 0, voyager: 0, activePasses: 0, referrals: 0 },
+        };
+      },
+    },
     users: {
       async findById(userId) {
         return users.find((user) => user.id === userId) ?? null;
@@ -879,6 +906,7 @@ export function createFakePorts(options: FakeOptions = {}) {
           members: [...state.members],
           money: [...state.money],
           checkins: [...state.checkins],
+          admins: [...state.admins],
           miles: [...state.miles],
           tripMiles: [...state.tripMiles],
           invites: [...state.invites],

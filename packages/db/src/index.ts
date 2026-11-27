@@ -78,3 +78,4 @@ export {
   recreateDatabase,
   withDatabase,
 } from './admin';
+export { createMetricsRepository, type MetricsRepository } from './metrics-repository';
