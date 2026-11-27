@@ -70,14 +70,16 @@ export const tripSchema = z.object({
   visibility: z.enum(TRIP_VISIBILITIES),
   createdAt: z.iso.datetime(),
   updatedAt: z.iso.datetime(),
+  /** How the caller reaches the trip: its owner, or a member who edits or views it (ADR-0024). */
+  role: z.enum(['owner', 'editor', 'viewer']),
 });
 export type TripView = z.infer<typeof tripSchema>;
 
 /**
- * What a client may know about a trip. The owner id is left out on purpose: a client only ever sees its own
- * trips, and the schema drops any field it does not name.
+ * What a client may know about a trip. The owner id is left out on purpose: a client sees its own trips and the
+ * ones shared with it (with its `role`), and the schema drops any field it does not name.
  */
-export function toTripView(record: TripRecord): TripView {
+export function toTripView(record: TripRecord, role: TripView['role'] = 'owner'): TripView {
   return {
     id: record.id,
     title: record.title,
@@ -87,5 +89,6 @@ export function toTripView(record: TripRecord): TripView {
     visibility: record.visibility,
     createdAt: record.createdAt.toISOString(),
     updatedAt: record.updatedAt.toISOString(),
+    role,
   };
 }

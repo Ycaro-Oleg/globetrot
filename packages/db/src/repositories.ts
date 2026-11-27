@@ -10,6 +10,7 @@ import { createAccountRepository, type AccountRepository } from './account-repos
 import { createAssistantRepository, type AssistantRepository } from './assistant-repository';
 import { createBillingRepository, type BillingRepository } from './billing-repository';
 import { createShareRepository, type ShareRepository } from './share-repository';
+import { createMemberRepository, type MemberRepository } from './member-repository';
 import { createCommunityRepository, type CommunityRepository } from './community-repository';
 import type { Database } from './client';
 import {
@@ -20,6 +21,7 @@ import {
   idempotencyKey,
   rateLimit,
   trip,
+  tripMember,
   tripPlace,
   tripSavings,
   tripStamp,
@@ -38,7 +40,7 @@ import {
  */
 
 /** A pooled client or a transaction: both run the same queries. */
-type Executor = Pick<Database, 'select' | 'insert' | 'update' | 'delete'>;
+type Executor = Pick<Database, 'select' | 'selectDistinct' | 'insert' | 'update' | 'delete'>;
 
 /** Most trips returned by one list call. Pagination arrives when a user can plausibly reach it. */
 export const MAX_LISTED_TRIPS = 200;
@@ -66,6 +68,34 @@ export function createTripRepository(executor: Executor) {
     async findById(id: string): Promise<TripRow | null> {
       const [row] = await executor.select().from(trip).where(eq(trip.id, id)).limit(1);
       return row ? asTripRow(row) : null;
+    },
+
+    async roleOf(tripId: string, userId: string): Promise<'editor' | 'viewer' | null> {
+      const [row] = await executor
+        .select({ role: tripMember.role })
+        .from(tripMember)
+        .where(and(eq(tripMember.tripId, tripId), eq(tripMember.userId, userId)))
+        .limit(1);
+      return (row?.role as 'editor' | 'viewer' | undefined) ?? null;
+    },
+
+    async listShared(
+      userId: string,
+      options: { readonly includeArchived: boolean },
+    ): Promise<(TripRow & { readonly role: 'editor' | 'viewer' })[]> {
+      const filters: SQL[] = [eq(tripMember.userId, userId)];
+      if (!options.includeArchived) filters.push(ne(trip.status, 'archived'));
+      const rows = await executor
+        .select({ trip, role: tripMember.role })
+        .from(tripMember)
+        .innerJoin(trip, eq(trip.id, tripMember.tripId))
+        .where(and(...filters))
+        .orderBy(desc(trip.createdAt), desc(trip.id))
+        .limit(MAX_LISTED_TRIPS);
+      return rows.map((row) => ({
+        ...asTripRow(row.trip),
+        role: row.role as 'editor' | 'viewer',
+      }));
     },
 
     async listByOwner(
@@ -412,6 +442,14 @@ export function createDestinationRepository(executor: Executor) {
       .orderBy(destination.position);
   return {
     listByTrip: list,
+
+    async tripIdsWithPhoto(mediaId: string): Promise<string[]> {
+      const rows = await executor
+        .selectDistinct({ tripId: destination.tripId })
+        .from(destination)
+        .where(sql`${destination.photos} @> ${JSON.stringify([{ mediaId }])}::jsonb`);
+      return rows.map((row) => row.tripId);
+    },
 
     /** Deletes the trip's stops and writes `items` in order (position = index). Returns what is stored. */
     async replaceForTrip(
@@ -779,6 +817,7 @@ export type MediaRepository = ReturnType<typeof createMediaRepository>;
 
 export interface Transaction {
   readonly trips: TripRepository;
+  readonly members: MemberRepository;
   readonly destinations: DestinationRepository;
   readonly expenses: ExpenseRepository;
   readonly checklist: ChecklistRepository;
@@ -803,6 +842,7 @@ export function createUnitOfWork(db: Database) {
       return db.transaction((tx) =>
         work({
           trips: createTripRepository(tx),
+          members: createMemberRepository(tx),
           destinations: createDestinationRepository(tx),
           expenses: createExpenseRepository(tx),
           checklist: createChecklistRepository(tx),

@@ -50,6 +50,7 @@ export { createMaintenanceRepository, type MaintenanceRepository } from './maint
 export { createBillingRepository, type BillingRepository } from './billing-repository';
 export { createNoticeRepository, type NoticeRepository } from './notice-repository';
 export { createShareRepository, type ShareRepository } from './share-repository';
+export { createMemberRepository, type MemberRepository } from './member-repository';
 export {
   createAssistantRepository,
   type AssistantRepository,

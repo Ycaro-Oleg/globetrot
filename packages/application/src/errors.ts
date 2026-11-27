@@ -81,12 +81,13 @@ export class UnavailableError extends ApplicationError {
 }
 
 /**
- * The account's plan does not allow this (HTTP 402). `code` says which limit: the trial is over and there is no
- * plan (`PLAN_REQUIRED`), the plan's active trips are all used (`TRIP_LIMIT_REACHED`), or Pip credits are spent
- * (`OUT_OF_CREDITS`). Nothing was changed; the person can see, export or delete everything.
+ * The account's plan does not allow this (HTTP 402). `code` says which limit: more trips are active than the plan
+ * keeps (`PLAN_REQUIRED`), the plan's active trips are all used (`TRIP_LIMIT_REACHED`), Pip credits are spent
+ * (`OUT_OF_CREDITS`), or the trip already has every guest its plan allows (`GUEST_LIMIT_REACHED`). Nothing was
+ * changed; the person can see, export or delete everything.
  */
 export class PlanLimitError extends ApplicationError {
-  readonly code: 'PLAN_REQUIRED' | 'TRIP_LIMIT_REACHED' | 'OUT_OF_CREDITS';
+  readonly code: 'PLAN_REQUIRED' | 'TRIP_LIMIT_REACHED' | 'OUT_OF_CREDITS' | 'GUEST_LIMIT_REACHED';
   constructor(code: PlanLimitError['code'], message: string) {
     super(message);
     this.name = 'PlanLimitError';
