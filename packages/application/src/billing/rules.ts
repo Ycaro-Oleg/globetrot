@@ -97,4 +97,9 @@ export const OPEN_WHEN_READ_ONLY: ReadonlySet<string> = new Set([
   'openBillingPortal',
   // Stopping a public link must always work.
   'unshareTrip',
+  // Joining someone else's trip, leaving it, and managing who plans one's own trip are not one's own trips.
+  'acceptInvite',
+  'leaveTrip',
+  'removeMember',
+  'revokeInvite',
 ]);

@@ -1403,6 +1403,14 @@
                           "updatedAt": {
                             "type": "string",
                             "format": "date-time"
+                          },
+                          "role": {
+                            "type": "string",
+                            "enum": [
+                              "owner",
+                              "editor",
+                              "viewer"
+                            ]
                           }
                         },
                         "required": [
@@ -1413,7 +1421,8 @@
                           "status",
                           "visibility",
                           "createdAt",
-                          "updatedAt"
+                          "updatedAt",
+                          "role"
                         ]
                       }
                     }
@@ -1656,6 +1665,14 @@
                     "updatedAt": {
                       "type": "string",
                       "format": "date-time"
+                    },
+                    "role": {
+                      "type": "string",
+                      "enum": [
+                        "owner",
+                        "editor",
+                        "viewer"
+                      ]
                     }
                   },
                   "required": [
@@ -1666,7 +1683,8 @@
                     "status",
                     "visibility",
                     "createdAt",
-                    "updatedAt"
+                    "updatedAt",
+                    "role"
                   ]
                 }
               }
@@ -2023,6 +2041,14 @@
                     "updatedAt": {
                       "type": "string",
                       "format": "date-time"
+                    },
+                    "role": {
+                      "type": "string",
+                      "enum": [
+                        "owner",
+                        "editor",
+                        "viewer"
+                      ]
                     }
                   },
                   "required": [
@@ -2033,7 +2059,8 @@
                     "status",
                     "visibility",
                     "createdAt",
-                    "updatedAt"
+                    "updatedAt",
+                    "role"
                   ]
                 }
               }
@@ -2436,6 +2463,14 @@
                     "updatedAt": {
                       "type": "string",
                       "format": "date-time"
+                    },
+                    "role": {
+                      "type": "string",
+                      "enum": [
+                        "owner",
+                        "editor",
+                        "viewer"
+                      ]
                     }
                   },
                   "required": [
@@ -2446,7 +2481,8 @@
                     "status",
                     "visibility",
                     "createdAt",
-                    "updatedAt"
+                    "updatedAt",
+                    "role"
                   ]
                 }
               }
@@ -2820,6 +2856,14 @@
                     "updatedAt": {
                       "type": "string",
                       "format": "date-time"
+                    },
+                    "role": {
+                      "type": "string",
+                      "enum": [
+                        "owner",
+                        "editor",
+                        "viewer"
+                      ]
                     }
                   },
                   "required": [
@@ -2830,7 +2874,8 @@
                     "status",
                     "visibility",
                     "createdAt",
-                    "updatedAt"
+                    "updatedAt",
+                    "role"
                   ]
                 }
               }
@@ -3130,6 +3175,14 @@
                     "updatedAt": {
                       "type": "string",
                       "format": "date-time"
+                    },
+                    "role": {
+                      "type": "string",
+                      "enum": [
+                        "owner",
+                        "editor",
+                        "viewer"
+                      ]
                     }
                   },
                   "required": [
@@ -3140,7 +3193,8 @@
                     "status",
                     "visibility",
                     "createdAt",
-                    "updatedAt"
+                    "updatedAt",
+                    "role"
                   ]
                 }
               }
@@ -3622,6 +3676,14 @@
                     "updatedAt": {
                       "type": "string",
                       "format": "date-time"
+                    },
+                    "role": {
+                      "type": "string",
+                      "enum": [
+                        "owner",
+                        "editor",
+                        "viewer"
+                      ]
                     }
                   },
                   "required": [
@@ -3632,7 +3694,8 @@
                     "status",
                     "visibility",
                     "createdAt",
-                    "updatedAt"
+                    "updatedAt",
+                    "role"
                   ]
                 }
               }
@@ -17937,6 +18000,14 @@
                     "updatedAt": {
                       "type": "string",
                       "format": "date-time"
+                    },
+                    "role": {
+                      "type": "string",
+                      "enum": [
+                        "owner",
+                        "editor",
+                        "viewer"
+                      ]
                     }
                   },
                   "required": [
@@ -17947,7 +18018,8 @@
                     "status",
                     "visibility",
                     "createdAt",
-                    "updatedAt"
+                    "updatedAt",
+                    "role"
                   ]
                 }
               }
@@ -26409,6 +26481,1444 @@
           },
           "404": {
             "description": "No such trip, or not yours.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "description": "A URN identifying the kind of problem."
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "integer"
+                    },
+                    "code": {
+                      "type": "string",
+                      "description": "Stable machine-readable code. Clients switch on this."
+                    },
+                    "detail": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "field": {
+                            "type": "string"
+                          },
+                          "code": {
+                            "type": "string"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "field",
+                          "code",
+                          "message"
+                        ]
+                      },
+                      "description": "Per-field problems, present for VALIDATION_FAILED."
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "title",
+                    "status",
+                    "code"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/trips/{id}/members": {
+      "get": {
+        "operationId": "getTripMembers",
+        "tags": [
+          "Trips"
+        ],
+        "summary": "Who plans the trip",
+        "description": "The owner first, then the members (ADR-0024). The owner also sees the open invite links and how many people the plan lets join.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The people.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "members": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "userId": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "role": {
+                            "type": "string",
+                            "enum": [
+                              "owner",
+                              "editor",
+                              "viewer"
+                            ]
+                          },
+                          "you": {
+                            "type": "boolean",
+                            "description": "This is the caller."
+                          }
+                        },
+                        "required": [
+                          "userId",
+                          "name",
+                          "role",
+                          "you"
+                        ]
+                      }
+                    },
+                    "invites": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "role": {
+                            "type": "string",
+                            "enum": [
+                              "editor",
+                              "viewer"
+                            ]
+                          },
+                          "expiresAt": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "role",
+                          "expiresAt"
+                        ]
+                      },
+                      "description": "Open invite links; only the owner sees them."
+                    },
+                    "guestLimit": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ],
+                      "description": "People who may join besides the owner; null for no limit."
+                    }
+                  },
+                  "required": [
+                    "members",
+                    "invites",
+                    "guestLimit"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid session.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "description": "A URN identifying the kind of problem."
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "integer"
+                    },
+                    "code": {
+                      "type": "string",
+                      "description": "Stable machine-readable code. Clients switch on this."
+                    },
+                    "detail": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "field": {
+                            "type": "string"
+                          },
+                          "code": {
+                            "type": "string"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "field",
+                          "code",
+                          "message"
+                        ]
+                      },
+                      "description": "Per-field problems, present for VALIDATION_FAILED."
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "title",
+                    "status",
+                    "code"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such trip, or not one the caller plans.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "description": "A URN identifying the kind of problem."
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "integer"
+                    },
+                    "code": {
+                      "type": "string",
+                      "description": "Stable machine-readable code. Clients switch on this."
+                    },
+                    "detail": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "field": {
+                            "type": "string"
+                          },
+                          "code": {
+                            "type": "string"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "field",
+                          "code",
+                          "message"
+                        ]
+                      },
+                      "description": "Per-field problems, present for VALIDATION_FAILED."
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "title",
+                    "status",
+                    "code"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/trips/{id}/invites": {
+      "post": {
+        "operationId": "createInvite",
+        "tags": [
+          "Trips"
+        ],
+        "summary": "A link to plan the trip together",
+        "description": "Owner only. The token is shown once and only its hash is stored; the link works for 7 days. Globetrot sends nothing: the owner copies the link. `402 GUEST_LIMIT_REACHED` when the plan allows no more people.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "role": {
+                    "type": "string",
+                    "enum": [
+                      "editor",
+                      "viewer"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The new link.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "token": {
+                      "type": "string",
+                      "description": "The link’s secret, shown once."
+                    },
+                    "role": {
+                      "type": "string",
+                      "enum": [
+                        "editor",
+                        "viewer"
+                      ]
+                    },
+                    "expiresAt": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "token",
+                    "role",
+                    "expiresAt"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid session.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "description": "A URN identifying the kind of problem."
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "integer"
+                    },
+                    "code": {
+                      "type": "string",
+                      "description": "Stable machine-readable code. Clients switch on this."
+                    },
+                    "detail": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "field": {
+                            "type": "string"
+                          },
+                          "code": {
+                            "type": "string"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "field",
+                          "code",
+                          "message"
+                        ]
+                      },
+                      "description": "Per-field problems, present for VALIDATION_FAILED."
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "title",
+                    "status",
+                    "code"
+                  ]
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "The plan allows no more people (`GUEST_LIMIT_REACHED`).",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "description": "A URN identifying the kind of problem."
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "integer"
+                    },
+                    "code": {
+                      "type": "string",
+                      "description": "Stable machine-readable code. Clients switch on this."
+                    },
+                    "detail": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "field": {
+                            "type": "string"
+                          },
+                          "code": {
+                            "type": "string"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "field",
+                          "code",
+                          "message"
+                        ]
+                      },
+                      "description": "Per-field problems, present for VALIDATION_FAILED."
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "title",
+                    "status",
+                    "code"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such trip, or not the caller’s.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "description": "A URN identifying the kind of problem."
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "integer"
+                    },
+                    "code": {
+                      "type": "string",
+                      "description": "Stable machine-readable code. Clients switch on this."
+                    },
+                    "detail": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "field": {
+                            "type": "string"
+                          },
+                          "code": {
+                            "type": "string"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "field",
+                          "code",
+                          "message"
+                        ]
+                      },
+                      "description": "Per-field problems, present for VALIDATION_FAILED."
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "title",
+                    "status",
+                    "code"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/trips/{id}/invites/{inviteId}": {
+      "delete": {
+        "operationId": "revokeInvite",
+        "tags": [
+          "Trips"
+        ],
+        "summary": "Stop an invite link for good",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true,
+            "name": "inviteId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Stopped.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "revoked": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "revoked"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid session.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "description": "A URN identifying the kind of problem."
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "integer"
+                    },
+                    "code": {
+                      "type": "string",
+                      "description": "Stable machine-readable code. Clients switch on this."
+                    },
+                    "detail": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "field": {
+                            "type": "string"
+                          },
+                          "code": {
+                            "type": "string"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "field",
+                          "code",
+                          "message"
+                        ]
+                      },
+                      "description": "Per-field problems, present for VALIDATION_FAILED."
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "title",
+                    "status",
+                    "code"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such trip or open link.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "description": "A URN identifying the kind of problem."
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "integer"
+                    },
+                    "code": {
+                      "type": "string",
+                      "description": "Stable machine-readable code. Clients switch on this."
+                    },
+                    "detail": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "field": {
+                            "type": "string"
+                          },
+                          "code": {
+                            "type": "string"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "field",
+                          "code",
+                          "message"
+                        ]
+                      },
+                      "description": "Per-field problems, present for VALIDATION_FAILED."
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "title",
+                    "status",
+                    "code"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/trips/{id}/members/{userId}": {
+      "delete": {
+        "operationId": "removeMember",
+        "tags": [
+          "Trips"
+        ],
+        "summary": "Take someone off the trip (owner only)",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "required": true,
+            "name": "userId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Removed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "removed": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "removed"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid session.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "description": "A URN identifying the kind of problem."
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "integer"
+                    },
+                    "code": {
+                      "type": "string",
+                      "description": "Stable machine-readable code. Clients switch on this."
+                    },
+                    "detail": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "field": {
+                            "type": "string"
+                          },
+                          "code": {
+                            "type": "string"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "field",
+                          "code",
+                          "message"
+                        ]
+                      },
+                      "description": "Per-field problems, present for VALIDATION_FAILED."
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "title",
+                    "status",
+                    "code"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such trip or member.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "description": "A URN identifying the kind of problem."
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "integer"
+                    },
+                    "code": {
+                      "type": "string",
+                      "description": "Stable machine-readable code. Clients switch on this."
+                    },
+                    "detail": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "field": {
+                            "type": "string"
+                          },
+                          "code": {
+                            "type": "string"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "field",
+                          "code",
+                          "message"
+                        ]
+                      },
+                      "description": "Per-field problems, present for VALIDATION_FAILED."
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "title",
+                    "status",
+                    "code"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/trips/{id}/leave": {
+      "post": {
+        "operationId": "leaveTrip",
+        "tags": [
+          "Trips"
+        ],
+        "summary": "Leave a trip the caller was invited to",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Left.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "left": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "left"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid session.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "description": "A URN identifying the kind of problem."
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "integer"
+                    },
+                    "code": {
+                      "type": "string",
+                      "description": "Stable machine-readable code. Clients switch on this."
+                    },
+                    "detail": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "field": {
+                            "type": "string"
+                          },
+                          "code": {
+                            "type": "string"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "field",
+                          "code",
+                          "message"
+                        ]
+                      },
+                      "description": "Per-field problems, present for VALIDATION_FAILED."
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "title",
+                    "status",
+                    "code"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such trip, or the caller owns it or is not a member.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "description": "A URN identifying the kind of problem."
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "integer"
+                    },
+                    "code": {
+                      "type": "string",
+                      "description": "Stable machine-readable code. Clients switch on this."
+                    },
+                    "detail": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "field": {
+                            "type": "string"
+                          },
+                          "code": {
+                            "type": "string"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "field",
+                          "code",
+                          "message"
+                        ]
+                      },
+                      "description": "Per-field problems, present for VALIDATION_FAILED."
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "title",
+                    "status",
+                    "code"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/invites/{token}": {
+      "get": {
+        "operationId": "previewInvite",
+        "tags": [
+          "Trips"
+        ],
+        "summary": "What an invite link opens",
+        "description": "A revoked, expired or unknown link, and an archived trip, all answer 404.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "required": true,
+            "name": "token",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The trip and role.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "tripTitle": {
+                      "type": "string"
+                    },
+                    "ownerName": {
+                      "type": "string"
+                    },
+                    "role": {
+                      "type": "string",
+                      "enum": [
+                        "editor",
+                        "viewer"
+                      ]
+                    },
+                    "joined": {
+                      "type": "boolean",
+                      "description": "The caller already plans this trip."
+                    },
+                    "tripId": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "tripTitle",
+                    "ownerName",
+                    "role",
+                    "joined",
+                    "tripId"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid session.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "description": "A URN identifying the kind of problem."
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "integer"
+                    },
+                    "code": {
+                      "type": "string",
+                      "description": "Stable machine-readable code. Clients switch on this."
+                    },
+                    "detail": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "field": {
+                            "type": "string"
+                          },
+                          "code": {
+                            "type": "string"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "field",
+                          "code",
+                          "message"
+                        ]
+                      },
+                      "description": "Per-field problems, present for VALIDATION_FAILED."
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "title",
+                    "status",
+                    "code"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such link.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "description": "A URN identifying the kind of problem."
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "integer"
+                    },
+                    "code": {
+                      "type": "string",
+                      "description": "Stable machine-readable code. Clients switch on this."
+                    },
+                    "detail": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "field": {
+                            "type": "string"
+                          },
+                          "code": {
+                            "type": "string"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "field",
+                          "code",
+                          "message"
+                        ]
+                      },
+                      "description": "Per-field problems, present for VALIDATION_FAILED."
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "title",
+                    "status",
+                    "code"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "acceptInvite",
+        "tags": [
+          "Trips"
+        ],
+        "summary": "Join the trip through an invite link",
+        "description": "Accepting twice, or as the owner, changes nothing.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "required": true,
+            "name": "token",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The trip, with the caller’s role.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Trip id (UUID)."
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "startDate": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "format": "date",
+                      "description": "Calendar date, no time zone.",
+                      "example": "2027-04-03"
+                    },
+                    "currency": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "active",
+                        "traveling",
+                        "completed",
+                        "archived"
+                      ]
+                    },
+                    "visibility": {
+                      "type": "string",
+                      "enum": [
+                        "private"
+                      ]
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "updatedAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "role": {
+                      "type": "string",
+                      "enum": [
+                        "owner",
+                        "editor",
+                        "viewer"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "title",
+                    "startDate",
+                    "currency",
+                    "status",
+                    "visibility",
+                    "createdAt",
+                    "updatedAt",
+                    "role"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid session.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "description": "A URN identifying the kind of problem."
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "integer"
+                    },
+                    "code": {
+                      "type": "string",
+                      "description": "Stable machine-readable code. Clients switch on this."
+                    },
+                    "detail": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "field": {
+                            "type": "string"
+                          },
+                          "code": {
+                            "type": "string"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "field",
+                          "code",
+                          "message"
+                        ]
+                      },
+                      "description": "Per-field problems, present for VALIDATION_FAILED."
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "title",
+                    "status",
+                    "code"
+                  ]
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "The plan allows no more people (`GUEST_LIMIT_REACHED`).",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "description": "A URN identifying the kind of problem."
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "integer"
+                    },
+                    "code": {
+                      "type": "string",
+                      "description": "Stable machine-readable code. Clients switch on this."
+                    },
+                    "detail": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "field": {
+                            "type": "string"
+                          },
+                          "code": {
+                            "type": "string"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "field",
+                          "code",
+                          "message"
+                        ]
+                      },
+                      "description": "Per-field problems, present for VALIDATION_FAILED."
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "title",
+                    "status",
+                    "code"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such link.",
             "content": {
               "application/problem+json": {
                 "schema": {

@@ -24,7 +24,7 @@ import type { Actor } from '../actor';
 import { NotFoundError, ValidationError } from '../errors';
 import { defineOperation } from '../operation';
 import type { ExpenseRecord, Ports, SavingsRecord, TripRecord } from '../ports';
-import { loadOwnedTrip } from '../trips/operations';
+import { loadTripFor } from '../trips/operations';
 import { tripIdSchema } from '../trips/schemas';
 import {
   budgetSchema,
@@ -218,7 +218,7 @@ export function createGetBudget(deps: Reads) {
     input: z.object({ tripId: tripIdSchema }),
     output: budgetSchema,
     async handler(actor, input) {
-      const trip = await loadOwnedTrip(deps.trips, actor, input.tripId);
+      const trip = await loadTripFor(deps.trips, actor, input.tripId, 'view');
       const [expenses, savings] = await Promise.all([
         deps.expenses.listByTrip(trip.id),
         deps.savings.find(trip.id),
@@ -235,7 +235,7 @@ export function createListExpenses(deps: Pick<Ports, 'trips' | 'expenses'>) {
     input: z.object({ tripId: tripIdSchema }),
     output: expenseListSchema,
     async handler(actor, input) {
-      const trip = await loadOwnedTrip(deps.trips, actor, input.tripId);
+      const trip = await loadTripFor(deps.trips, actor, input.tripId, 'view');
       const records = await deps.expenses.listByTrip(trip.id);
       return { expenses: records.map((record) => toExpenseView(record, trip.currency)) };
     },
@@ -253,7 +253,7 @@ export function createCreateExpense(deps: Writes) {
     async handler(actor, input) {
       const now = deps.clock.now();
       return deps.unitOfWork.run(async (tx) => {
-        const trip = await loadOwnedTrip(tx.trips, actor, input.tripId);
+        const trip = await loadTripFor(tx.trips, actor, input.tripId, 'edit');
         const priced = priceExpense(input, trip.currency, now);
         const guess = input.guess === true;
         if (guess && (await tx.expenses.listByTrip(trip.id)).some((expense) => expense.guess)) {
@@ -306,7 +306,7 @@ export function createUpdateExpense(deps: Writes) {
     async handler(actor, input) {
       const now = deps.clock.now();
       return deps.unitOfWork.run(async (tx) => {
-        const trip = await loadOwnedTrip(tx.trips, actor, input.tripId);
+        const trip = await loadTripFor(tx.trips, actor, input.tripId, 'edit');
         await loadOwnedExpense(tx, trip.id, input.expenseId);
         const priced = priceExpense(input, trip.currency, now);
         const record = await tx.expenses.update(
@@ -344,7 +344,7 @@ export function createDeleteExpense(deps: Writes) {
     async handler(actor, input) {
       const now = deps.clock.now();
       return deps.unitOfWork.run(async (tx) => {
-        const trip = await loadOwnedTrip(tx.trips, actor, input.tripId);
+        const trip = await loadTripFor(tx.trips, actor, input.tripId, 'edit');
         await loadOwnedExpense(tx, trip.id, input.expenseId);
         await tx.expenses.delete(input.expenseId);
         await tx.audit.record({
@@ -379,7 +379,7 @@ export function createUpdateSavings(deps: Writes) {
     async handler(actor, input) {
       const now = deps.clock.now();
       return deps.unitOfWork.run(async (tx) => {
-        const trip = await loadOwnedTrip(tx.trips, actor, input.tripId);
+        const trip = await loadTripFor(tx.trips, actor, input.tripId, 'edit');
         const savings = await tx.savings.upsert(
           trip.id,
           {

@@ -33,6 +33,9 @@ import type {
   SubscriptionRecord,
   ShareWriter,
   TripShareRecord,
+  InviteRecord,
+  MemberRole,
+  MemberWriter,
 } from '../ports';
 import {
   createFakeCommunity,
@@ -64,6 +67,9 @@ export interface FakeState {
   /** Public links by trip id. */
   shares: Map<string, TripShareRecord>;
   credits: { userId: string; delta: number; reason: string; ref: string | null }[];
+  /** Trip members (never the owner) and invite links (ADR-0024). */
+  members: { tripId: string; userId: string; role: MemberRole; joinedAt: Date }[];
+  invites: InviteRecord[];
   passes: {
     id: string;
     tripId: string;
@@ -123,6 +129,8 @@ export function createFakePorts(options: FakeOptions = {}) {
     subscriptions: new Map(),
     shares: new Map(),
     credits: [],
+    members: [],
+    invites: [],
     passes: [],
     audit: [],
     idempotency: new Map(),
@@ -131,6 +139,23 @@ export function createFakePorts(options: FakeOptions = {}) {
   const tripWriter: TripWriter = {
     async findById(id) {
       return state.trips.get(id) ?? null;
+    },
+    async roleOf(tripId, userId) {
+      return (
+        state.members.find((member) => member.tripId === tripId && member.userId === userId)
+          ?.role ?? null
+      );
+    },
+    async listShared(userId, { includeArchived }) {
+      return state.members
+        .filter((member) => member.userId === userId)
+        .flatMap((member) => {
+          const trip = state.trips.get(member.tripId);
+          return trip && (includeArchived || trip.status !== 'archived')
+            ? [{ ...trip, role: member.role }]
+            : [];
+        })
+        .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
     },
     async listByOwner(ownerId, { includeArchived }) {
       return [...state.trips.values()]
@@ -217,6 +242,11 @@ export function createFakePorts(options: FakeOptions = {}) {
   const destinationWriter: DestinationWriter = {
     async listByTrip(tripId) {
       return [...(state.destinations.get(tripId) ?? [])];
+    },
+    async tripIdsWithPhoto(mediaId) {
+      return [...state.destinations.entries()]
+        .filter(([, stops]) => stops.some((stop) => stop.photos.some((p) => p.mediaId === mediaId)))
+        .map(([tripId]) => tripId);
     },
     async replaceForTrip(tripId, items, now) {
       const records = items.map((item, position): DestinationRecord => ({
@@ -545,8 +575,52 @@ export function createFakePorts(options: FakeOptions = {}) {
     },
   };
 
+  const memberWriter: MemberWriter = {
+    async listByTrip(tripId) {
+      return state.members
+        .filter((member) => member.tripId === tripId)
+        .sort((a, b) => a.joinedAt.getTime() - b.joinedAt.getTime())
+        .map((member) => ({
+          ...member,
+          name: users.find((user) => user.id === member.userId)?.name ?? '',
+        }));
+    },
+    async findInviteByHash(tokenHash) {
+      return state.invites.find((invite) => invite.tokenHash === tokenHash) ?? null;
+    },
+    async listOpenInvites(tripId, now) {
+      return state.invites
+        .filter(
+          (invite) =>
+            invite.tripId === tripId && invite.revokedAt === null && invite.expiresAt > now,
+        )
+        .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    },
+    async add(row) {
+      if (state.members.some((m) => m.tripId === row.tripId && m.userId === row.userId)) {
+        return false;
+      }
+      state.members.push({ ...row });
+      return true;
+    },
+    async remove(tripId, userId) {
+      const before = state.members.length;
+      state.members = state.members.filter((m) => !(m.tripId === tripId && m.userId === userId));
+      return state.members.length < before;
+    },
+    async insertInvite(row) {
+      state.invites.push({ ...row, revokedAt: null });
+    },
+    async revokeInvite(id, at) {
+      state.invites = state.invites.map((invite) =>
+        invite.id === id ? { ...invite, revokedAt: at } : invite,
+      );
+    },
+  };
+
   const transaction: Transaction = {
     trips: tripWriter,
+    members: memberWriter,
     expenses: expenseWriter,
     checklist: checklistWriter,
     dayPlaces: dayPlaceWriter,
@@ -591,6 +665,7 @@ export function createFakePorts(options: FakeOptions = {}) {
       },
     },
     trips: tripWriter,
+    members: memberWriter,
     destinations: destinationWriter,
     expenses: expenseWriter,
     checklist: checklistWriter,
@@ -667,6 +742,8 @@ export function createFakePorts(options: FakeOptions = {}) {
           subscriptions: new Map(state.subscriptions),
           shares: new Map(state.shares),
           credits: [...state.credits],
+          members: [...state.members],
+          invites: [...state.invites],
           passes: [...state.passes],
           audit: [...state.audit],
           idempotency: new Map(

@@ -16,6 +16,7 @@ import { openTripAt } from '../../_components/trip-actions';
 import { archiveTrip, undoArchiveTrip } from '../actions';
 import { fetchBilling } from '../../../../lib/billing';
 import { MakeCurrent } from './make-current';
+import { MembersCard, type MembersView } from './members-card';
 import { PassCard } from './pass-card';
 import { ShareCard } from './share-card';
 import { TitleEditor } from './title-editor';
@@ -84,12 +85,19 @@ export default async function TripHub({
     );
   }
 
-  const [checklist, stops, budget, billing] = await Promise.all([
+  const [checklist, stops, budget, billing, members] = await Promise.all([
     fetchChecklist(options, trip.id),
     fetchDestinations(options, trip.id),
     fetchBudget(options, trip.id),
     fetchBilling(options),
+    createServerApiClient(options)
+      .GET('/v1/trips/{id}/members', { params: { path: { id: trip.id } } })
+      .then((response): MembersView | null => response.data ?? null)
+      .catch(() => null),
   ]);
+  // Members plan the trip; only the owner manages it (archive, public link, pass, people).
+  const isOwner = trip.role === 'owner';
+  const canEdit = trip.role !== 'viewer';
   const pass = billing?.passes.find((entry) => entry.tripId === trip.id) ?? null;
   const onPaidPlan = billing?.access === 'explorer' || billing?.access === 'voyager';
   const readiness = checklist?.readiness;
@@ -121,7 +129,13 @@ export default async function TripHub({
         <span aria-hidden="true">←</span> {t('backToTrips')}
       </Link>
       <header className={styles.header}>
-        <TitleEditor tripId={trip.id} title={trip.title} />
+        {canEdit ? (
+          <TitleEditor tripId={trip.id} title={trip.title} />
+        ) : (
+          <h1 id="trip-title" className={styles.title}>
+            {trip.title}
+          </h1>
+        )}
         <p className={styles.meta}>
           <span className={styles.chip}>
             <span aria-hidden="true">{archived ? '▣ ' : '◇ '}</span>
@@ -196,14 +210,20 @@ export default async function TripHub({
         <div className={styles.side}>
           <section className={styles.card} aria-labelledby="when-title">
             <h2 id="when-title">{t('whenTitle')}</h2>
-            <StartDateForm tripId={trip.id} startDate={trip.startDate} />
+            {canEdit ? <StartDateForm tripId={trip.id} startDate={trip.startDate} /> : null}
             {answer ? <p className={styles.answer}>{answer}</p> : null}
             <p className={styles.hint}>{t('whenHint')}</p>
           </section>
 
-          {!archived ? <ShareCard tripId={trip.id} title={trip.title} initial={share} /> : null}
+          {!archived && members ? (
+            <MembersCard tripId={trip.id} isOwner={isOwner} initial={members} />
+          ) : null}
 
-          {!archived && billing && !onPaidPlan ? (
+          {!archived && isOwner ? (
+            <ShareCard tripId={trip.id} title={trip.title} initial={share} />
+          ) : null}
+
+          {!archived && isOwner && billing && !onPaidPlan ? (
             <PassCard
               tripId={trip.id}
               currency={billing.priceCurrency}
@@ -212,7 +232,7 @@ export default async function TripHub({
             />
           ) : null}
 
-          {!archived ? (
+          {!archived && isOwner ? (
             <form action={archiveTrip} className={styles.archive}>
               <input type="hidden" name="tripId" value={trip.id} />
               <button type="submit" className={styles.ghost}>

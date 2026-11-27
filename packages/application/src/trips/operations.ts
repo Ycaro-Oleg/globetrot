@@ -8,10 +8,15 @@ import {
 import { z } from 'zod';
 import { assertOwner } from '../authorization';
 import { canonicalJson } from '../canonical-json';
-import { IdempotencyKeyReusedError, NotFoundError, ValidationError } from '../errors';
+import {
+  ForbiddenError,
+  IdempotencyKeyReusedError,
+  NotFoundError,
+  ValidationError,
+} from '../errors';
 import { defineOperation } from '../operation';
 import type { Actor } from '../actor';
-import type { AuditMetadata, Ports, TripPatch, TripRecord } from '../ports';
+import type { AuditMetadata, Ports, TripAccess, TripPatch, TripReader, TripRecord } from '../ports';
 import {
   createTripFields,
   hasAChange,
@@ -32,7 +37,35 @@ export const idempotencyKeySchema = z
     example: 'b5f1c0de-6a3e-4c1a-9d52-3a1e8a0b7f10',
   });
 
-/** Loads a trip for an actor. Missing and someone else's are the same `NotFoundError`. */
+/** What a command needs to do on a trip (ADR-0024): read it, change its plan, or manage it as its owner. */
+export type TripNeed = 'view' | 'edit' | 'own';
+
+/**
+ * Loads a trip for an actor who needs to `view`, `edit` or `own` it. The owner may do everything; an editor
+ * views and edits; a viewer only views. Someone who is neither owner nor member, and a missing trip, get the
+ * same `NotFoundError`, so nothing tells them apart. A member asking for more than their role is `Forbidden`
+ * (they already know the trip exists).
+ */
+export async function loadTripFor(
+  reader: Pick<TripReader, 'findById' | 'roleOf'>,
+  actor: Actor,
+  id: string,
+  need: TripNeed,
+): Promise<TripRecord & { readonly access: TripAccess }> {
+  const trip = await reader.findById(id);
+  if (!trip) throw new NotFoundError();
+  if (trip.ownerId === actor.userId) return { ...trip, access: 'owner' };
+  const role = await reader.roleOf(trip.id, actor.userId);
+  if (!role) throw new NotFoundError();
+  if (need === 'own' || (need === 'edit' && role !== 'editor')) {
+    throw new ForbiddenError(
+      need === 'own' ? 'Only the trip’s owner can do this' : 'You can only view this trip',
+    );
+  }
+  return { ...trip, access: role };
+}
+
+/** Loads a trip only its owner may act on. Missing and someone else's are the same `NotFoundError`. */
 export async function loadOwnedTrip(
   reader: { findById(id: string): Promise<TripRecord | null> },
   actor: Actor,
@@ -56,11 +89,19 @@ export function createListTrips(deps: Pick<Ports, 'trips'>) {
     }),
     output: z.object({ trips: z.array(tripSchema) }),
     async handler(actor, input) {
-      const trips = await deps.trips.listByOwner(actor.userId, {
-        includeArchived: input.includeArchived,
-      });
-      // Defence in depth: the store already filters by owner.
-      return { trips: trips.filter((trip) => trip.ownerId === actor.userId).map(toTripView) };
+      const [owned, shared] = await Promise.all([
+        deps.trips.listByOwner(actor.userId, { includeArchived: input.includeArchived }),
+        deps.trips.listShared(actor.userId, { includeArchived: input.includeArchived }),
+      ]);
+      // Defence in depth: the store already filters by owner. Trips shared with the person follow theirs.
+      return {
+        trips: [
+          ...owned.filter((trip) => trip.ownerId === actor.userId).map((trip) => toTripView(trip)),
+          ...shared
+            .filter((trip) => trip.ownerId !== actor.userId)
+            .map((trip) => toTripView(trip, trip.role)),
+        ],
+      };
     },
   });
 }
@@ -72,7 +113,8 @@ export function createGetTrip(deps: Pick<Ports, 'trips'>) {
     input: z.object({ id: tripIdSchema }),
     output: tripSchema,
     async handler(actor, input) {
-      return toTripView(await loadOwnedTrip(deps.trips, actor, input.id));
+      const trip = await loadTripFor(deps.trips, actor, input.id, 'view');
+      return toTripView(trip, trip.access);
     },
   });
 }
@@ -157,7 +199,13 @@ export function createUpdateTrip(deps: Pick<Ports, 'unitOfWork' | 'clock' | 'ids
       );
 
       return deps.unitOfWork.run(async (tx) => {
-        const current = await loadOwnedTrip(tx.trips, actor, input.id);
+        // An editor changes the plan (title, dates, currency); archiving and restoring are the owner's.
+        const current = await loadTripFor(
+          tx.trips,
+          actor,
+          input.id,
+          input.status === undefined ? 'edit' : 'own',
+        );
         // Bringing a trip back from the archive takes one of the plan's active trips.
         if (
           current.status === 'archived' &&
@@ -194,7 +242,7 @@ export function createUpdateTrip(deps: Pick<Ports, 'unitOfWork' | 'clock' | 'ids
           // Names of the fields, never their values. The status is a fixed word, so it is safe to keep.
           metadata: statusAware({ fields }, input.status),
         });
-        return toTripView(trip);
+        return toTripView(trip, current.access);
       });
     },
   });

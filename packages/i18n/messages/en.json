@@ -1820,5 +1820,50 @@
     "thanks": "Thank you! The pass switches on in a moment; reload if it does not show yet.",
     "soon": "Payments are being switched on. Nothing is charged yet.",
     "failed": "That did not work. Try again in a moment."
+  },
+  "tripMembers": {
+    "title": "People on this trip",
+    "you": "{name} (you)",
+    "role": {
+      "owner": "Organiser",
+      "editor": "Can edit",
+      "viewer": "Can view"
+    },
+    "hint": "Send a link to plan together. Whoever opens it joins with the role you choose.",
+    "hintLimit": "Send a link to plan together. Your plan lets {count, plural, one {# person} other {# people}} join; a trip pass or a plan opens it to anyone.",
+    "roleLabel": "They can",
+    "roleChoice": {
+      "editor": "Edit the plan",
+      "viewer": "Only view"
+    },
+    "invite": "Create an invite link",
+    "linkLabel": "Invite link",
+    "linkReady": "Link ready. Copy it and send it to whoever you are travelling with; it works for 7 days.",
+    "copy": "Copy",
+    "copied": "Link copied.",
+    "copyFailed": "Could not copy: select the link and copy it.",
+    "openLinks": "Open invite links",
+    "openLink": "Open link · {role}",
+    "revoke": "Stop link",
+    "revoked": "The link no longer works.",
+    "remove": "Remove",
+    "removed": "{name} is no longer on this trip.",
+    "leave": "Leave this trip",
+    "limit": "Your plan lets no more people join. Add a trip pass or choose a plan to invite more.",
+    "failed": "That did not work. Try again in a moment.",
+    "shared": "Shared"
+  },
+  "invitePage": {
+    "title": "Plan a trip together",
+    "body": "{owner} invited you to plan “{trip}”.",
+    "roleEditor": "You will be able to change the plan: stops, days, money and checklist.",
+    "roleViewer": "You will be able to see the plan.",
+    "accept": "Join the trip",
+    "joined": "You already plan this trip.",
+    "open": "Open the trip",
+    "notFound": "This invite link does not work anymore. Ask for a new one.",
+    "limit": "This trip has every person its plan allows. Ask the organiser to add a trip pass.",
+    "error": "That did not work. Try again in a moment.",
+    "back": "Go to my trips"
   }
 }

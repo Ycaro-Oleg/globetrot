@@ -183,6 +183,13 @@
       "when": 1795777873458,
       "tag": "0025_trip_pass",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1795780352737,
+      "tag": "0026_trip_members",
+      "breakpoints": true
     }
   ]
 }

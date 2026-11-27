@@ -13,3 +13,4 @@ export * from './community';
 export * from './assistant';
 export * from './billing';
 export * from './share';
+export * from './member';

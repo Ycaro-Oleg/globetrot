@@ -10,6 +10,7 @@ import { PlanBanner } from './plan-banner';
 import { PipLookProvider } from './pip-look';
 import { BottomBar, GlobalNav, TripTabs } from './nav-links';
 import { PipFab } from './pip-fab';
+import { TripRefresh } from './trip-refresh';
 import { TripSwitcher } from './trip-switcher';
 import styles from './shell.module.css';
 
@@ -40,6 +41,7 @@ export function AppShell({
   children: ReactNode;
 }) {
   const t = useTranslations('shell');
+  const activeTrip = trips.find((trip) => trip.id === activeTripId);
 
   return (
     <PipLookProvider look={pipLook ?? DEFAULT_PIP_LOOK} name={pipName}>
@@ -69,6 +71,8 @@ export function AppShell({
           {children}
         </main>
 
+        {/* A trip shared with the person refreshes on its own; the owner's when they come back to the tab. */}
+        <TripRefresh shared={activeTrip !== undefined && activeTrip.role !== 'owner'} />
         {pipEnabled ? <PipFab /> : null}
         <BottomBar />
       </div>

@@ -6,6 +6,15 @@ import { createSuggestDayPlaces } from './days/ideas';
 import { createGetPreferences, createUpdatePreferences } from './preferences/operations';
 import { createGetTripShare, createShareTrip, createUnshareTrip } from './trips/share';
 import {
+  createAcceptInvite,
+  createCreateInvite,
+  createGetTripMembers,
+  createLeaveTrip,
+  createPreviewInvite,
+  createRemoveMember,
+  createRevokeInvite,
+} from './members/operations';
+import {
   createGetBilling,
   createOpenBillingPortal,
   createStartCheckout,
@@ -26,6 +35,12 @@ export const PACKAGE_NAME = '@globetrot/application' as const;
 export type { Actor } from './actor';
 export { assertOwner } from './authorization';
 export { billingSchema } from './billing/operations';
+export {
+  inviteCreatedSchema,
+  invitePreviewSchema,
+  inviteRoleSchema,
+  tripMembersSchema,
+} from './members/operations';
 export { dayIdeasSchema } from './days/ideas';
 export {
   createSharedTrips,
@@ -426,6 +441,13 @@ export function createApplication(ports: Ports) {
     startCheckout: createStartCheckout(ports),
     openBillingPortal: createOpenBillingPortal(ports),
     getTripShare: createGetTripShare(ports),
+    getTripMembers: createGetTripMembers(ports),
+    createInvite: createCreateInvite(ports),
+    revokeInvite: createRevokeInvite(ports),
+    previewInvite: createPreviewInvite(ports),
+    acceptInvite: createAcceptInvite(ports),
+    removeMember: createRemoveMember(ports),
+    leaveTrip: createLeaveTrip(ports),
     shareTrip: createShareTrip(ports),
     unshareTrip: createUnshareTrip(ports),
     suggestDayPlaces: createSuggestDayPlaces(ports),

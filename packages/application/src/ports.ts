@@ -69,9 +69,21 @@ export interface TripPatch {
   readonly status?: TripStatus | undefined;
 }
 
+/** What a member of someone else's trip may do (ADR-0024): change the plan, or only read it. */
+export type MemberRole = 'editor' | 'viewer';
+/** How the actor reaches a trip: as its owner or as a member. */
+export type TripAccess = 'owner' | MemberRole;
+
 export interface TripReader {
-  /** By id alone: the caller decides, with `assertOwner`, whether the actor may see the record. */
+  /** By id alone: the caller decides, with `loadTripFor`, whether the actor may see the record. */
   findById(id: string): Promise<TripRecord | null>;
+  /** The actor's role on someone else's trip, or null when they are not a member. */
+  roleOf(tripId: string, userId: string): Promise<MemberRole | null>;
+  /** Trips the user is a member of (not the ones they own), newest first; archived ones only when asked. */
+  listShared(
+    userId: string,
+    options: { readonly includeArchived: boolean },
+  ): Promise<(TripRecord & { readonly role: MemberRole })[]>;
   /** Newest first. Archived trips only when `includeArchived`. */
   listByOwner(
     ownerId: string,
@@ -204,6 +216,8 @@ export interface NewDestination {
 export interface DestinationReader {
   /** In route order. */
   listByTrip(tripId: string): Promise<DestinationRecord[]>;
+  /** The trips with a stop that shows this photo (so a trip's members may see it). */
+  tripIdsWithPhoto(mediaId: string): Promise<string[]>;
 }
 
 export interface DestinationWriter extends DestinationReader {
@@ -776,6 +790,50 @@ export interface ShareWriter extends ShareReader {
   deleteByTrip(tripId: string): Promise<void>;
 }
 
+// --- Trip members and invites (ADR-0024) ---------------------------------------------------------------
+
+export interface MemberRecord {
+  readonly tripId: string;
+  readonly userId: string;
+  readonly name: string;
+  readonly role: MemberRole;
+  readonly joinedAt: Date;
+}
+
+export interface InviteRecord {
+  readonly id: string;
+  readonly tripId: string;
+  /** SHA-256 of the link's token, hex: the token itself is never stored. */
+  readonly tokenHash: string;
+  readonly role: MemberRole;
+  readonly createdBy: string;
+  readonly createdAt: Date;
+  readonly expiresAt: Date;
+  readonly revokedAt: Date | null;
+}
+
+export interface MemberReader {
+  /** The trip's members (never the owner), oldest first. */
+  listByTrip(tripId: string): Promise<MemberRecord[]>;
+  findInviteByHash(tokenHash: string): Promise<InviteRecord | null>;
+  /** Invites not revoked and not expired at `now`, newest first. */
+  listOpenInvites(tripId: string, now: Date): Promise<InviteRecord[]>;
+}
+
+export interface MemberWriter extends MemberReader {
+  /** Adds a member; false (and nothing changed) when they already are one. */
+  add(row: {
+    readonly tripId: string;
+    readonly userId: string;
+    readonly role: MemberRole;
+    readonly joinedAt: Date;
+  }): Promise<boolean>;
+  /** Removes a member; false when they were not one. */
+  remove(tripId: string, userId: string): Promise<boolean>;
+  insertInvite(row: Omit<InviteRecord, 'revokedAt'>): Promise<void>;
+  revokeInvite(id: string, at: Date): Promise<void>;
+}
+
 // --- Billing (ADR-0019) --------------------------------------------------------------------------------
 
 export interface BillingAccount {
@@ -847,6 +905,7 @@ export interface PaymentsPort {
 /** What a mutation may touch. Everything in one `UnitOfWork.run` commits or rolls back together. */
 export interface Transaction {
   readonly trips: TripWriter;
+  readonly members: MemberWriter;
   readonly destinations: DestinationWriter;
   readonly expenses: ExpenseWriter;
   readonly checklist: ChecklistWriter;
@@ -883,6 +942,7 @@ export interface Ports {
   readonly users: UserReader;
   /** Reads outside a transaction (queries). */
   readonly trips: TripReader;
+  readonly members: MemberReader;
   readonly destinations: DestinationReader;
   readonly expenses: ExpenseReader;
   readonly checklist: ChecklistReader;
