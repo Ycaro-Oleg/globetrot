@@ -25,7 +25,7 @@ One project, region US East. The three app services are created from the GitHub 
 |---|---|---|---|---|
 | `Postgres` | none (PostGIS template or `postgis/postgis:17-3.7` with a volume) | 5432 | — | Others read `${{Postgres.DATABASE_URL}}`. Backups: the volume's Backups tab, daily |
 | Bucket | none (Railway Bucket) | — | — | Private. Its Credentials tab gives the `S3_*` values; `S3_FORCE_PATH_STYLE=false` (try `true` if uploads fail) |
-| `api` | `apps/api/Dockerfile` | 4000 | `/ready` (checks the database) | **Pre-deploy command: `node dist/migrate.js`** (applies migrations, safe to repeat). No public domain |
+| `api` | `apps/api/Dockerfile` | 4000 | `/ready` (checks the database) | **Pre-deploy command: `node dist/migrate.js`** (applies migrations, safe to repeat). No public domain. `CLIENT_IP_HEADER=x-real-ip` |
 | `worker` | `apps/worker/Dockerfile` | — | none | Hourly housekeeping and the weekly reminders ([ADR-0017](../architecture/adr/0017-worker-housekeeping.md)); one instance |
 | `web` | `apps/web/Dockerfile` | 3000 | `/` | The only public service, on the custom domain. `API_INTERNAL_URL=http://${{api.RAILWAY_PRIVATE_DOMAIN}}:4000`. `NEXT_PUBLIC_*` values are **build arguments**: change one, redeploy |
 
