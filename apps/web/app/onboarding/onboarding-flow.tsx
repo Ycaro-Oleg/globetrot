@@ -12,13 +12,12 @@ import { SITE_NAME } from '../site';
 import { currencyOptions } from '../settings/options';
 import { finishOnboarding, type OnboardingPlace } from './actions';
 import { CityPicker } from './city-picker';
-import { PipIntro } from './pip-intro';
 import { TripPip } from './trip-pip';
 import { TripVisual } from './trip-visual';
 import { nightsOf, TripDates, type TripRange } from './trip-dates';
 import styles from './onboarding.module.css';
 
-const LAST = 6;
+const LAST = 3;
 
 function todayLocal() {
   const now = new Date();
@@ -27,8 +26,8 @@ function todayLocal() {
 }
 
 /**
- * The first trip in seven steps (design handoff v2, "Onboarding"): welcome, home city, destination, month and
- * length, money, Pip, and the answer. The answer uses the domain's savings rule on the person's own rough guess,
+ * The first trip in four steps: where (the destination, and where the person leaves from if they want), when, money,
+ * and the answer. Someone who built a plan on the landing skips this altogether (`/app/start`). The answer uses the domain's savings rule on the person's own rough guess,
  * labelled as an estimate. "Open my map" creates the real trip through the API and opens the board.
  */
 export function OnboardingFlow({
@@ -77,7 +76,7 @@ export function OnboardingFlow({
   const [estimate, setEstimate] = useState(draft?.cost ?? '');
   const [saved, setSaved] = useState(draft?.saved ?? '0');
   const [monthly, setMonthly] = useState(draft?.monthly ?? '300');
-  const [pip, setPip] = useState(initialPip);
+  const pip = initialPip;
   const [error, setError] = useState<string | null>(null);
   const [today] = useState(todayLocal);
   const [pending, startTransition] = useTransition();
@@ -153,9 +152,9 @@ export function OnboardingFlow({
   const monthlyMoney = parseAmount(monthly, tripCurrency) ?? zero;
 
   const validate = (): string | null => {
-    if (step === 2 && !destination) return t('errDest');
-    if (step === 3 && (!range || nights < 1)) return t('errDates');
-    if (step === 4 && (!estimateMoney || estimateMoney.amountMinor <= 0n)) return t('errEstimate');
+    if (step === 0 && !destination) return t('errDest');
+    if (step === 1 && (!range || nights < 1)) return t('errDates');
+    if (step === 2 && (!estimateMoney || estimateMoney.amountMinor <= 0n)) return t('errEstimate');
     return null;
   };
   const next = (event?: FormEvent) => {
@@ -232,22 +231,16 @@ export function OnboardingFlow({
   // Pip's line on the map for this step, reacting to what was just picked (none on its own intro step, and
   // none on the answer when the person turned Pip off).
   const guide = (() => {
-    if (step === 0) return t('guideWelcome');
-    if (step === 1) return home?.name ? t('guideHomeSet', { place: home.name }) : t('guideHome');
-    if (step === 2)
+    if (step === 0)
       return destination ? t('guideDestSet', { place: destination.name }) : t('guideDest');
-    if (step === 3) return nights > 0 ? t('guideDatesSet', { count: nights }) : t('guideDates');
-    if (step === 4) return t('guideMoney');
-    if (step === LAST && pip && answer) return answer.ok ? t('guideYes') : t('guideNotYet');
+    if (step === 1) return nights > 0 ? t('guideDatesSet', { count: nights }) : t('guideDates');
+    if (step === 2) return t('guideMoney');
+    if (step === LAST && answer) return answer.ok ? t('guideYes') : t('guideNotYet');
     return null;
   })();
 
   const kicker =
-    step === 0
-      ? t('welcomeKicker')
-      : step === LAST
-        ? t('answerKicker')
-        : t('stepLabel', { step, total: LAST - 1 });
+    step === LAST ? t('answerKicker') : t('stepLabel', { step: step + 1, total: LAST });
 
   return (
     <div className={styles.page}>
@@ -261,7 +254,7 @@ export function OnboardingFlow({
         </header>
 
         <div className={styles.progress} aria-hidden="true">
-          {[1, 2, 3, 4, 5, 6].map((i) => (
+          {[0, 1, 2, 3].map((i) => (
             <span key={i} data-on={i <= step || undefined} />
           ))}
         </div>
@@ -270,68 +263,34 @@ export function OnboardingFlow({
           <div className={styles.question}>
             <span className={styles.kicker}>{kicker}</span>
             <h1 ref={heading} tabIndex={-1}>
-              {
-                [
-                  t('welcomeTitle'),
-                  t('originTitle'),
-                  t('destTitle'),
-                  t('whenTitle'),
-                  t('moneyTitle'),
-                  t('pipTitle'),
-                  t('answerTitle'),
-                ][step]
-              }
+              {[t('destTitle'), t('whenTitle'), t('moneyTitle'), t('answerTitle')][step]}
             </h1>
-            <p>
-              {
-                [
-                  t('welcomeBody'),
-                  t('originBody'),
-                  t('destBody'),
-                  t('whenBody'),
-                  t('moneyBody'),
-                  t('pipBody'),
-                  t('answerBody'),
-                ][step]
-              }
-            </p>
+            <p>{[t('destBody'), t('whenBody'), t('moneyBody'), t('answerBody')][step]}</p>
           </div>
 
           {step === 0 ? (
-            <ul className={styles.promises}>
-              {(['promise1', 'promise2', 'promise3'] as const).map((key) => (
-                <li key={key}>
-                  <span aria-hidden="true">✓</span>
-                  {t(key)}
-                </li>
-              ))}
-            </ul>
+            <div className={styles.places}>
+              <CityPicker
+                id="onboarding-destination"
+                label={t('destLabel')}
+                placeholder={t('destPlaceholder')}
+                chosen={destination}
+                onChoose={chooseDestination}
+                picks
+                allowTyped
+              />
+              <CityPicker
+                id="onboarding-home"
+                label={t('originLabelOptional')}
+                placeholder={t('originPlaceholder')}
+                chosen={home}
+                onChoose={setHome}
+                allowTyped
+              />
+            </div>
           ) : null}
 
           {step === 1 ? (
-            <CityPicker
-              id="onboarding-home"
-              label={t('originLabel')}
-              placeholder={t('originPlaceholder')}
-              chosen={home}
-              onChoose={setHome}
-              allowTyped
-            />
-          ) : null}
-
-          {step === 2 ? (
-            <CityPicker
-              id="onboarding-destination"
-              label={t('destLabel')}
-              placeholder={t('destPlaceholder')}
-              chosen={destination}
-              onChoose={chooseDestination}
-              picks
-              allowTyped
-            />
-          ) : null}
-
-          {step === 3 ? (
             <TripDates
               value={range}
               onChange={(next) => {
@@ -341,7 +300,7 @@ export function OnboardingFlow({
             />
           ) : null}
 
-          {step === 4 ? (
+          {step === 2 ? (
             <div className={styles.money}>
               <label className={styles.field}>
                 <span>{t('currencyLabel')}</span>
@@ -411,10 +370,6 @@ export function OnboardingFlow({
             </div>
           ) : null}
 
-          {step === 5 ? (
-            <PipIntro destination={destination?.name ?? ''} value={pip} onChange={setPip} />
-          ) : null}
-
           {step === LAST && answer ? (
             <div
               ref={answerCard}
@@ -460,13 +415,11 @@ export function OnboardingFlow({
           <button type="submit" className={styles.cta} disabled={pending}>
             {pending
               ? t('creating')
-              : step === 0
-                ? t('start')
-                : step === LAST - 1
-                  ? t('seeAnswer')
-                  : step === LAST
-                    ? t('openMap')
-                    : t('continue')}
+              : step === LAST - 1
+                ? t('seeAnswer')
+                : step === LAST
+                  ? t('openMap')
+                  : t('continue')}
           </button>
         </div>
       </form>
@@ -517,11 +470,7 @@ export function OnboardingFlow({
             </div>
             <div>
               <dt>{t('perMonth')}</dt>
-              <dd>{step >= 4 ? fmt(monthlyMoney) : t('none')}</dd>
-            </div>
-            <div>
-              <dt>{t('pip')}</dt>
-              <dd>{step >= 5 ? (pip ? t('on') : t('off')) : t('none')}</dd>
+              <dd>{step >= 2 ? fmt(monthlyMoney) : t('none')}</dd>
             </div>
           </dl>
         </div>

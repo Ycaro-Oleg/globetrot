@@ -10,7 +10,26 @@ describe('readDraft', () => {
       saved: '500',
       monthly: '300',
       currency: null,
+      suggestion: null,
     });
+  });
+  it('keeps the plan built on the landing, only when every part of it checks out', () => {
+    const plan = { destination: 'japan', likes: ['food', 'food'], days: 12, comfort: 'budget' };
+    const base = { cost: '3000', saved: '0', monthly: '300', currency: 'USD' };
+    expect(readDraft(cookie({ ...base, suggestion: plan }))?.suggestion).toEqual({
+      ...plan,
+      likes: ['food'],
+    });
+    for (const broken of [
+      { ...plan, destination: 'mars' },
+      { ...plan, likes: ['sleeping'] },
+      { ...plan, days: 90 },
+      { ...plan, days: 2.5 },
+      { ...plan, comfort: 'luxury' },
+      'japan',
+    ]) {
+      expect(readDraft(cookie({ ...base, suggestion: broken }))?.suggestion).toBeNull();
+    }
   });
   it('keeps the currency picked on the landing page, only when it is a real code', () => {
     const draft = { cost: '15000', saved: '2500', monthly: '1500' };

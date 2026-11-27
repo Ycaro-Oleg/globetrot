@@ -87,6 +87,7 @@ import {
   createRemoveDayPlace,
 } from './days/operations';
 import { createCreateTripFromExample } from './examples/operations';
+import { createCreateTripFromSuggestion } from './examples/suggestion';
 import { createReversePlace, createSearchCities, createSearchPlaces } from './places/operations';
 import {
   createListDestinations,
@@ -251,6 +252,7 @@ export {
   type ExampleTripId,
 } from './examples/catalog';
 export { createTripFromExampleFields } from './examples/operations';
+export { createTripFromSuggestionFields } from './examples/suggestion';
 
 export {
   addChecklistItemsFields,
@@ -367,6 +369,7 @@ export function createApplication(ports: Ports) {
     archiveTrip: createArchiveTrip(ports),
     listDestinations: createListDestinations(ports),
     createTripFromExample: createCreateTripFromExample(ports),
+    createTripFromSuggestion: createCreateTripFromSuggestion(ports),
     searchPlaces: createSearchPlaces(ports),
     searchCities: createSearchCities(ports),
     reversePlace: createReversePlace(ports),
