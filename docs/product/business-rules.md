@@ -240,23 +240,24 @@ Decided in [ADR-0026](../architecture/adr/0026-saving-habit-and-countdown.md).
 
 ## Plans, trial and Pip credits
 
-Decided in [ADR-0019](../architecture/adr/0019-plans-trial-and-pip-credits.md), changed by [ADR-0023](../architecture/adr/0023-free-plan-trip-pass-and-prices-in-reais.md). Prices come from `PLAN_PRICES`, `TRIP_PASS` and `TOP_UP_PRICES` in the domain, never from components.
+Decided in [ADR-0019](../architecture/adr/0019-plans-trial-and-pip-credits.md), changed by [ADR-0023](../architecture/adr/0023-free-plan-trip-pass-and-prices-in-reais.md) and [ADR-0033](../architecture/adr/0033-pricing-adjustments-before-launch.md). Prices come from `PLAN_PRICES`, `TRIP_PASS`, `TOP_UP_PRICES` and `TOP_UP_SMALL` in the domain, never from components.
 
 | | Free | Explorer | Voyager | Trip pass |
 |---|---|---|---|---|
 | Price (USD) | free for good | US$4.99 a month or US$39.99 a year | US$9.99 a month or US$79.99 a year | US$9.99 once |
-| Price (BRL) | free for good | R$14,90 a month or R$119 a year | R$29,90 a month or R$239 a year | R$39 once |
-| Pip credits | 15 in the first 7 days, then 5 a month | 100 a month | 400 a month | (the account's) |
+| Price (BRL) | free for good | R$14,90 a month or R$119 a year | R$29,90 a month or R$239 a year | R$49 once |
+| Pip credits | 15 in the first 7 days, then 5 a month | 100 a month | 400 a month | 50 added to the account, never expire |
 | Active trips | 10 in the first 7 days, then 1 | 10 | Unlimited | does not count |
 | People to plan with | 1 (unlimited in the first 7 days) | unlimited | unlimited | unlimited on that trip |
 
 - **Price currency:** reais for someone whose chosen currency is BRL, US dollars for everyone else. Never inferred from language, country or nationality. The landing shows US dollars until the visitor picks reais.
 - **The first 7 days** (the free week) have everything open: 15 credits and up to 10 active trips. After them the account stays on the **free plan for good**.
 - **One credit is one answered Pip request.** Monthly credits reset each month (from the plan's start, or from the end of the free week on the free plan) and do not roll over.
-- **Top-up:** 200 credits for US$2.99 or R$14,90. They never expire and are spent after the monthly ones.
+- **Top-ups:** 200 credits for US$2.99 or R$14,90, or 50 credits for US$0.99 or R$4,90. They never expire and are spent after the monthly ones.
+- **Coupons:** the trip pass and the top-ups accept Stripe promotion codes, like the plans (the launch and founder offers).
 - **Daily cap:** 40 Pip requests a day on any plan.
 - **Active trips** are trips that are not archived. Archiving frees a place; restoring a trip takes one. **Trips with a valid pass do not count.**
-- **A trip pass** opens everything paid on one trip (any number of people, offline reading), for one payment. It lasts until 30 days after the trip's last day, or 12 months from the purchase when the trip has no dates, and never less than 30 days. Only the trip's owner can buy it, from the trip's page.
+- **A trip pass** opens everything paid on one trip (any number of people, offline reading), for one payment, and adds 50 Pip credits to the buyer's account (bought credits: they never expire). It lasts until 30 days after the trip's last day, or 12 months from the purchase when the trip has no dates, and never less than 30 days. Only the trip's owner can buy it, from the trip's page.
 - **More counted trips than the plan keeps** (after the free week, or when a plan lapses): creating or changing anything else waits, with the way out shown (archive trips, add a pass, or choose a plan).
   - Everything can still be seen and exported, and trips archived or deleted.
   - Settings, the community handle, deleting own posts and comments, reporting, muting and paying stay open.

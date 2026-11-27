@@ -10660,7 +10660,7 @@ export interface operations {
             content: {
                 "application/json": {
                     /** @enum {string} */
-                    item: "explorer" | "voyager" | "top-up" | "trip-pass";
+                    item: "explorer" | "voyager" | "top-up" | "top-up-small" | "trip-pass";
                     /** @enum {string} */
                     interval?: "month" | "year";
                     /**

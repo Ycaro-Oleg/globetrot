@@ -50,7 +50,7 @@ const checkoutRoute = createRoute({
       content: {
         'application/json': {
           schema: z.object({
-            item: z.enum(['explorer', 'voyager', 'top-up', 'trip-pass']),
+            item: z.enum(['explorer', 'voyager', 'top-up', 'top-up-small', 'trip-pass']),
             interval: z.enum(['month', 'year']).optional(),
             tripId: z.uuid().optional().meta({ description: 'The trip a pass is for.' }),
           }),

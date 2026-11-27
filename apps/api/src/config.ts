@@ -76,6 +76,9 @@ const envSchema = z.object({
   STRIPE_PRICE_VOYAGER_YEARLY_BRL: z.string().optional(),
   STRIPE_PRICE_TOP_UP_BRL: z.string().optional(),
   STRIPE_PRICE_TRIP_PASS_BRL: z.string().optional(),
+  // The small credit pack (ADR-0033); optional: without it that pack's checkout is not offered.
+  STRIPE_PRICE_TOP_UP_SMALL: z.string().optional(),
+  STRIPE_PRICE_TOP_UP_SMALL_BRL: z.string().optional(),
   PORT: number(4000, 1, 65535),
 });
 
@@ -95,6 +98,8 @@ export interface StripePriceIds {
   readonly explorer: { readonly month: string; readonly year: string };
   readonly voyager: { readonly month: string; readonly year: string };
   readonly topUp: string;
+  /** The small pack (ADR-0033); null while its Price is not set. */
+  readonly topUpSmall: string | null;
   readonly tripPass: string;
 }
 
@@ -308,6 +313,7 @@ export function loadApiConfig(
             year: values.STRIPE_PRICE_VOYAGER_YEARLY!,
           },
           topUp: values.STRIPE_PRICE_TOP_UP!,
+          topUpSmall: values.STRIPE_PRICE_TOP_UP_SMALL ?? null,
           tripPass: values.STRIPE_PRICE_TRIP_PASS!,
         },
         BRL: {
@@ -321,6 +327,8 @@ export function loadApiConfig(
             year: values.STRIPE_PRICE_VOYAGER_YEARLY_BRL ?? values.STRIPE_PRICE_VOYAGER_YEARLY!,
           },
           topUp: values.STRIPE_PRICE_TOP_UP_BRL ?? values.STRIPE_PRICE_TOP_UP!,
+          topUpSmall:
+            values.STRIPE_PRICE_TOP_UP_SMALL_BRL ?? values.STRIPE_PRICE_TOP_UP_SMALL ?? null,
           tripPass: values.STRIPE_PRICE_TRIP_PASS_BRL ?? values.STRIPE_PRICE_TRIP_PASS!,
         },
       },

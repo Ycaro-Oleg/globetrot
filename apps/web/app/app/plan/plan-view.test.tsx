@@ -103,7 +103,9 @@ describe.each(SUPPORTED_LOCALES)('plan page (%s)', (locale) => {
   it('shows prices in reais to someone who chose reais', () => {
     const html = wrap(locale, <PlanView billing={{ ...free, priceCurrency: 'BRL' }} />);
     expect(html).toMatch(/R\$\s?14[,.]90/);
-    expect(html).toMatch(/R\$\s?39[,.]00/);
+    expect(html).toMatch(/R\$\s?49[,.]00/);
+    // The small credit pack sits beside the large one.
+    expect(html).toMatch(/R\$\s?4[,.]90/);
   });
 
   it('says why a change was not saved when the person was sent here over the limit', () => {

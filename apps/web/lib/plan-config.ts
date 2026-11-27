@@ -4,6 +4,7 @@ import {
   PLAN_TERMS,
   TOP_UP,
   TOP_UP_PRICES,
+  TOP_UP_SMALL,
   TRIAL_TERMS,
   TRIP_PASS,
   type PaidPlan,
@@ -49,9 +50,10 @@ export function planCards(currency: PriceCurrency): readonly PlanCard[] {
 }
 
 export const topUpPrice = (currency: PriceCurrency) => TOP_UP_PRICES[currency];
+export const topUpSmallPrice = (currency: PriceCurrency) => TOP_UP_SMALL.prices[currency];
 export const tripPassPrice = (currency: PriceCurrency) => TRIP_PASS.prices[currency];
 
-export { TOP_UP };
+export { TOP_UP, TOP_UP_SMALL, TRIP_PASS };
 
 /** A yearly price as a monthly one, rounded down to the cent. */
 export const monthlyOfAnnual = (annualMinor: bigint) => annualMinor / 12n;
