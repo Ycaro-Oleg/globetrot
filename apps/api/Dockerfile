@@ -11,7 +11,7 @@ RUN pnpm dlx turbo@2.11.10 prune @globetrot/api --docker
 
 FROM base AS builder
 COPY --from=pruner /repo/out/json/ .
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
+RUN pnpm install --frozen-lockfile
 COPY --from=pruner /repo/out/full/ .
 RUN pnpm turbo run build --filter=@globetrot/api
 
