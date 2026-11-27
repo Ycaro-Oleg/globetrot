@@ -263,6 +263,11 @@ export function loadApiConfig(
       throw new ApiConfigError('SMTP_HOST is required in production');
     if (present.EMAIL_FROM === undefined)
       throw new ApiConfigError('EMAIL_FROM is required in production');
+    // The sign-in rate limits are only as good as the client address. Which header the edge overwrites
+    // depends on the host (Railway: `x-real-ip`), so production must name it rather than fall back to
+    // `x-forwarded-for`, which Railway's edge passes through from the client.
+    if (present.CLIENT_IP_HEADER === undefined)
+      throw new ApiConfigError('CLIENT_IP_HEADER is required in production');
   }
 
   // Google is on only with both values; one without the other is a mistake worth stopping for.

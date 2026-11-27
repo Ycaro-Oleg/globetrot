@@ -291,6 +291,8 @@ describe('session cookie', () => {
       S3_BUCKET: 'globetrot-photos',
       S3_ACCESS_KEY_ID: 'production-key',
       S3_SECRET_ACCESS_KEY: 'production-secret',
+      // And a named client address header; this harness sends X-Forwarded-For.
+      CLIENT_IP_HEADER: 'x-forwarded-for',
     });
     const cookies = (await signUp()).headers.getSetCookie();
     const sessionCookie = cookies.find((cookie) =>
