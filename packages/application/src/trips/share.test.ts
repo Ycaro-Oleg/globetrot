@@ -80,10 +80,11 @@ describe('sharing a trip', () => {
     });
   });
 
-  it('stops for good when turned off, and even when the account is read-only', async () => {
+  it('stops for good when turned off, even when the account holds more trips than its plan keeps', async () => {
     const { app, shared, trip, setNow, state } = await setup();
     state.signedUpAt.set(ana.id, new Date('2026-11-07T00:00:00.000Z'));
     const { slug } = await app.shareTrip.execute(as(ana), { tripId: trip.id });
+    await app.createTrip.execute(as(ana), { title: 'A second trip', startDate: null });
     setNow(new Date('2026-12-30T00:00:00.000Z'));
     await expect(app.shareTrip.execute(as(ana), { tripId: trip.id })).rejects.toMatchObject({
       code: 'PLAN_REQUIRED',

@@ -328,13 +328,31 @@ describe('Stripe', () => {
     STRIPE_PRICE_VOYAGER_MONTHLY: 'price_vm',
     STRIPE_PRICE_VOYAGER_YEARLY: 'price_vy',
     STRIPE_PRICE_TOP_UP: 'price_top',
+    STRIPE_PRICE_TRIP_PASS: 'price_pass',
   });
 
   it('is off without settings, and on with all of them', () => {
     expect(loadApiConfig({ DATABASE_URL }).stripe).toBeNull();
     expect(loadApiConfig({ DATABASE_URL, ...stripe() }).stripe).toMatchObject({
-      prices: { voyager: { year: 'price_vy' }, topUp: 'price_top' },
+      prices: {
+        USD: { voyager: { year: 'price_vy' }, topUp: 'price_top', tripPass: 'price_pass' },
+        // Without prices in reais, a BRL checkout uses the USD ones.
+        BRL: { voyager: { year: 'price_vy' }, tripPass: 'price_pass' },
+      },
       returnOrigin: 'http://localhost:3000',
+    });
+  });
+
+  it('takes prices in reais when they are set', () => {
+    const config = loadApiConfig({
+      DATABASE_URL,
+      ...stripe(),
+      STRIPE_PRICE_EXPLORER_MONTHLY_BRL: 'price_em_brl',
+      STRIPE_PRICE_TRIP_PASS_BRL: 'price_pass_brl',
+    });
+    expect(config.stripe?.prices.BRL).toMatchObject({
+      explorer: { month: 'price_em_brl', year: 'price_ey' },
+      tripPass: 'price_pass_brl',
     });
   });
 

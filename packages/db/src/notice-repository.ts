@@ -21,6 +21,7 @@ export function createNoticeRepository(executor: Executor) {
           email: user.email,
           name: user.name,
           locale: sql<string>`coalesce(${userPreference.locale}, 'en')`,
+          currency: sql<string>`coalesce(${userPreference.currency}, 'USD')`,
           signedUpAt: user.createdAt,
           tripTitle: sql<
             string | null

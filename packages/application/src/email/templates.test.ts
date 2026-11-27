@@ -26,6 +26,9 @@ describe.each(SUPPORTED_LOCALES)('renderEmail in %s', (locale) => {
     const { text } = renderEmail('trialEnding', locale, DATA);
     expect(text).not.toContain('{price}');
     expect(text.replace(/\s+/g, ' ')).toMatch(/4[.,]99/);
+    // In reais only for someone who chose reais.
+    const brl = renderEmail('trialEnding', locale, { ...DATA, priceCurrency: 'BRL' }).text;
+    expect(brl.replace(/\s+/g, ' ')).toMatch(/R\$\s?14[.,]90/);
   });
 
   it.each(TEMPLATES)('%s uses the catalog subject, in the right language', (template) => {

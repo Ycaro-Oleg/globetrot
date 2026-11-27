@@ -64,6 +64,14 @@ export interface FakeState {
   /** Public links by trip id. */
   shares: Map<string, TripShareRecord>;
   credits: { userId: string; delta: number; reason: string; ref: string | null }[];
+  passes: {
+    id: string;
+    tripId: string;
+    userId: string;
+    purchasedAt: Date;
+    validUntil: Date;
+    providerRef: string;
+  }[];
   audit: AuditEventInput[];
   idempotency: Map<string, { fingerprint: string; response: unknown }>;
 }
@@ -115,6 +123,7 @@ export function createFakePorts(options: FakeOptions = {}) {
     subscriptions: new Map(),
     shares: new Map(),
     credits: [],
+    passes: [],
     audit: [],
     idempotency: new Map(),
   };
@@ -483,6 +492,9 @@ export function createFakePorts(options: FakeOptions = {}) {
         topUpBalance: state.credits
           .filter((line) => line.userId === userId)
           .reduce((sum, line) => sum + line.delta, 0),
+        passes: state.passes
+          .filter((pass) => pass.userId === userId)
+          .map(({ tripId, validUntil }) => ({ tripId, validUntil })),
       };
     },
     async findProviderCustomer(userId) {
@@ -506,6 +518,11 @@ export function createFakePorts(options: FakeOptions = {}) {
     },
     async saveSubscription(userId, record) {
       state.subscriptions.set(userId, record);
+    },
+    async grantTripPass(row) {
+      if (state.passes.some((pass) => pass.providerRef === row.providerRef)) return false;
+      state.passes.push({ ...row });
+      return true;
     },
   };
 
@@ -607,7 +624,7 @@ export function createFakePorts(options: FakeOptions = {}) {
     payments: {
       async checkoutUrl(input) {
         return payments.enabled
-          ? `https://pay.example.test/checkout?item=${input.item}&interval=${input.interval}`
+          ? `https://pay.example.test/checkout?item=${input.item}&interval=${input.interval}&currency=${input.currency}${input.tripId ? `&trip=${input.tripId}` : ''}`
           : null;
       },
       async portalUrl(input) {
@@ -650,6 +667,7 @@ export function createFakePorts(options: FakeOptions = {}) {
           subscriptions: new Map(state.subscriptions),
           shares: new Map(state.shares),
           credits: [...state.credits],
+          passes: [...state.passes],
           audit: [...state.audit],
           idempotency: new Map(
             [...state.idempotency].map(([key, value]) => [key, { ...value }] as const),

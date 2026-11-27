@@ -3,6 +3,8 @@ import {
   creditBalance,
   PAID_PLANS,
   PIP_DAILY_CAP,
+  PRICE_CURRENCIES,
+  priceCurrencyFor,
   SUBSCRIPTION_STATUSES,
   trialDaysLeft,
 } from '@globetrot/domain';
@@ -11,11 +13,16 @@ import type { Actor } from '../actor';
 import { NotFoundError, UnavailableError } from '../errors';
 import { defineOperation, type Operation } from '../operation';
 import type { Ports } from '../ports';
-import { assertCanChange, loadRights, OPEN_WHEN_READ_ONLY } from './rules';
+import { assertCanChange, OPEN_WHEN_READ_ONLY, tripCount } from './rules';
 
 export const billingSchema = z.object({
-  access: z.enum(['trial', 'explorer', 'voyager', 'expired']),
-  readOnly: z.boolean(),
+  access: z.enum(['trial', 'explorer', 'voyager', 'free']),
+  /** More counted trips than the plan keeps: changes wait until some are archived, passed or a plan is chosen. */
+  overLimit: z.boolean(),
+  /** The currency prices are shown in: BRL when the person chose reais, else USD (ADR-0023). */
+  priceCurrency: z.enum(PRICE_CURRENCIES),
+  /** Trips with a pass that still holds, and until when. */
+  passes: z.array(z.object({ tripId: z.string(), validUntil: z.string() })),
   trialEndsAt: z.string(),
   trialDaysLeft: z.number().int(),
   plan: z.enum(PAID_PLANS).nullable(),
@@ -24,6 +31,8 @@ export const billingSchema = z.object({
   renewsAt: z.string().nullable(),
   maxActiveTrips: z.number().int().nullable(),
   activeTrips: z.number().int(),
+  /** Active trips without a pass: the ones the plan's limit counts. */
+  countedTrips: z.number().int(),
   credits: z.object({
     monthly: z.number().int(),
     monthlyLeft: z.number().int(),
@@ -35,7 +44,9 @@ export const billingSchema = z.object({
 });
 
 /** The account's plan, trial and Pip credits, for the plan page, the banners and Pip. */
-export function createGetBilling(deps: Pick<Ports, 'billing' | 'trips' | 'assistant' | 'clock'>) {
+export function createGetBilling(
+  deps: Pick<Ports, 'billing' | 'trips' | 'assistant' | 'preferences' | 'clock'>,
+) {
   return defineOperation({
     name: 'getBilling',
     kind: 'query',
@@ -43,19 +54,25 @@ export function createGetBilling(deps: Pick<Ports, 'billing' | 'trips' | 'assist
     output: billingSchema,
     async handler(actor) {
       const now = deps.clock.now();
-      const { account, rights } = await loadRights(deps.billing, actor, now);
-      const [used, active] = await Promise.all([
+      const count = await tripCount(deps, actor, now);
+      const { rights, passed } = count;
+      const [used, account, preferences] = await Promise.all([
         deps.assistant.countRequestsSince(actor.userId, rights.periodStart),
-        deps.trips.listByOwner(actor.userId, { includeArchived: false }),
+        deps.billing.findAccount(actor.userId),
+        deps.preferences.find(actor.userId),
       ]);
       const balance = creditBalance({
         entitlements: rights,
         usedInPeriod: used,
-        topUpBalance: account.topUpBalance,
+        topUpBalance: account?.topUpBalance ?? 0,
       });
       return {
         access: rights.access,
-        readOnly: rights.readOnly,
+        overLimit: count.over,
+        priceCurrency: priceCurrencyFor(preferences?.currency),
+        passes: (account?.passes ?? [])
+          .filter((pass) => passed.has(pass.tripId) && pass.validUntil > now)
+          .map((pass) => ({ tripId: pass.tripId, validUntil: pass.validUntil.toISOString() })),
         trialEndsAt: rights.trialEndsAt.toISOString(),
         trialDaysLeft: trialDaysLeft(rights.trialEndsAt, now),
         plan: rights.plan,
@@ -63,7 +80,8 @@ export function createGetBilling(deps: Pick<Ports, 'billing' | 'trips' | 'assist
         status: rights.status,
         renewsAt: rights.renewsAt?.toISOString() ?? null,
         maxActiveTrips: rights.maxActiveTrips,
-        activeTrips: active.length,
+        activeTrips: count.active,
+        countedTrips: count.counted,
         credits: {
           monthly: rights.credits,
           monthlyLeft: balance.monthlyLeft,
@@ -78,42 +96,60 @@ export function createGetBilling(deps: Pick<Ports, 'billing' | 'trips' | 'assist
 }
 
 /**
- * Wraps a command so it runs only while the account may change things. Queries and the commands in
- * `OPEN_WHEN_READ_ONLY` pass through untouched.
+ * Wraps a command so it runs only while the account holds no more trips than its plan keeps. Queries and the
+ * commands in `OPEN_WHEN_READ_ONLY` pass through untouched.
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function guardReadOnly<T extends Operation<any, any>>(
   operation: T,
-  deps: Pick<Ports, 'billing' | 'clock'>,
+  deps: Pick<Ports, 'billing' | 'trips' | 'clock'>,
 ): T {
   if (operation.kind !== 'command' || OPEN_WHEN_READ_ONLY.has(operation.name)) return operation;
   return {
     ...operation,
     async execute(actor: Actor, input: unknown) {
-      await assertCanChange(deps.billing, actor, deps.clock.now());
+      await assertCanChange(deps, actor, deps.clock.now());
       return operation.execute(actor, input);
     },
   };
 }
 
-/** A hosted checkout for a plan or extra Pip credits. Open even when read-only: that is how the account opens again. */
-export function createStartCheckout(deps: Pick<Ports, 'users' | 'payments'>) {
+/**
+ * A hosted checkout for a plan, extra Pip credits or a trip pass, in the person's price currency. Open even over
+ * the trip limit: that is how the account opens again. A pass is only for one's own trip.
+ */
+export function createStartCheckout(
+  deps: Pick<Ports, 'users' | 'payments' | 'preferences' | 'trips'>,
+) {
   return defineOperation({
     name: 'startCheckout',
     kind: 'command',
     input: z.object({
-      item: z.enum(['explorer', 'voyager', 'top-up']),
+      item: z.enum(['explorer', 'voyager', 'top-up', 'trip-pass']),
       interval: z.enum(['month', 'year']).default('month'),
+      tripId: z
+        .uuid()
+        .optional()
+        .meta({ description: 'The trip a pass is for (`trip-pass` only).' }),
     }),
     output: z.object({ url: z.string() }),
     async handler(actor, input) {
       const user = await deps.users.findById(actor.userId);
       if (!user) throw new NotFoundError();
+      let tripId: string | undefined;
+      if (input.item === 'trip-pass') {
+        const trip = input.tripId ? await deps.trips.findById(input.tripId) : null;
+        if (!trip || trip.ownerId !== actor.userId) throw new NotFoundError();
+        tripId = trip.id;
+      }
+      const preferences = await deps.preferences.find(actor.userId);
       const url = await deps.payments.checkoutUrl({
         userId: actor.userId,
         email: user.email,
         item: input.item,
         interval: input.interval,
+        currency: priceCurrencyFor(preferences?.currency),
+        ...(tripId ? { tripId } : {}),
       });
       if (!url) throw new UnavailableError('Payments are not switched on yet');
       return { url };

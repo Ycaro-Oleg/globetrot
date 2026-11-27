@@ -1,7 +1,10 @@
 /**
- * Plans, the free trial and Pip credits (docs/product/business-rules.md#plans-trial-and-pip-credits, ADR-0019).
- * Prices are USD minor units; payment itself is Stripe's job, these rules only say what an account may do.
+ * Plans, the free week, the free plan, trip passes and Pip credits (docs/product/business-rules.md#plans-trial-and-pip-credits,
+ * ADR-0019 and ADR-0023). Prices are minor units in USD or BRL; payment itself is Stripe's job, these rules only
+ * say what an account may do.
  */
+
+const DAY_MS = 86_400_000;
 
 export const PAID_PLANS = ['explorer', 'voyager'] as const;
 export type PaidPlan = (typeof PAID_PLANS)[number];
@@ -17,20 +20,86 @@ export interface PlanTerms {
   readonly maxActiveTrips: number | null;
 }
 
+/** The currencies prices are set in. Which one a person sees follows their chosen currency, never their language. */
+export const PRICE_CURRENCIES = ['USD', 'BRL'] as const;
+export type PriceCurrency = (typeof PRICE_CURRENCIES)[number];
+
+/** Reais for someone who chose reais as their currency; US dollars for everyone else. */
+export function priceCurrencyFor(preferredCurrency: string | null | undefined): PriceCurrency {
+  return preferredCurrency === 'BRL' ? 'BRL' : 'USD';
+}
+
+export interface PlanPrice {
+  readonly monthlyMinor: bigint;
+  readonly annualMinor: bigint;
+}
+
+/** What each plan costs, per price currency (ADR-0023). `PLAN_TERMS` repeats the USD price. */
+export const PLAN_PRICES: Readonly<Record<PaidPlan, Readonly<Record<PriceCurrency, PlanPrice>>>> = {
+  explorer: {
+    USD: { monthlyMinor: 499n, annualMinor: 3999n },
+    BRL: { monthlyMinor: 1490n, annualMinor: 11900n },
+  },
+  voyager: {
+    USD: { monthlyMinor: 999n, annualMinor: 7999n },
+    BRL: { monthlyMinor: 2990n, annualMinor: 23900n },
+  },
+};
+
 export const PLAN_TERMS: Readonly<Record<PaidPlan, PlanTerms>> = {
-  explorer: { monthlyMinor: 499n, annualMinor: 3999n, credits: 100, maxActiveTrips: 10 },
-  voyager: { monthlyMinor: 999n, annualMinor: 7999n, credits: 400, maxActiveTrips: null },
+  explorer: { ...PLAN_PRICES.explorer.USD, credits: 100, maxActiveTrips: 10 },
+  voyager: { ...PLAN_PRICES.voyager.USD, credits: 400, maxActiveTrips: null },
 };
 
 export const TRIAL_TERMS = { days: 7, credits: 15, maxActiveTrips: 10 } as const;
 
+/**
+ * Free for good after the free week (ADR-0023): one active trip with every tool, a few Pip credits a month and
+ * one person to plan with. Trips with a pass do not count.
+ */
+export const FREE_TERMS = { credits: 5, maxActiveTrips: 1, guests: 1 } as const;
+
 /** Extra credits bought once; they never expire and are spent after the monthly ones. */
 export const TOP_UP = { credits: 200, priceMinor: 299n } as const;
+export const TOP_UP_PRICES: Readonly<Record<PriceCurrency, bigint>> = { USD: 299n, BRL: 1490n };
+
+/**
+ * A one-time payment that unlocks the paid tools on one trip (ADR-0023): it does not count towards the free
+ * plan's one trip, takes any number of people, and lasts until 30 days after the trip ends, or 12 months from
+ * the purchase when the trip has no dates yet.
+ */
+export const TRIP_PASS = {
+  prices: { USD: 999n, BRL: 3900n } as Readonly<Record<PriceCurrency, bigint>>,
+  daysAfterTrip: 30,
+  monthsWithoutDates: 12,
+} as const;
+
+export interface TripPassState {
+  readonly tripId: string;
+  readonly validUntil: Date;
+}
+
+/** Until when a pass bought at `purchasedAt` lasts, given the trip's last day (if it has dates). */
+export function tripPassValidUntil(purchasedAt: Date, tripEndsOn: Date | null): Date {
+  const byDates = tripEndsOn
+    ? new Date(tripEndsOn.getTime() + (TRIP_PASS.daysAfterTrip + 1) * DAY_MS)
+    : null;
+  const fallback = addMonthsUtc(purchasedAt, TRIP_PASS.monthsWithoutDates);
+  // A pass bought for a trip that already ended still gets its 30 days from the purchase.
+  const floor = new Date(purchasedAt.getTime() + TRIP_PASS.daysAfterTrip * DAY_MS);
+  if (!byDates) return fallback;
+  return byDates > floor ? byDates : floor;
+}
+
+/** The trips with a pass that still holds at `now`. */
+export function passedTripIds(passes: readonly TripPassState[], now: Date): Set<string> {
+  return new Set(passes.filter((pass) => pass.validUntil > now).map((pass) => pass.tripId));
+}
 
 /** Pip requests a day, whatever the balance: a guard against runaway use. */
 export const PIP_DAILY_CAP = 40;
 
-/** Days a failed renewal keeps the plan before the account turns read-only. */
+/** Days a failed renewal keeps the plan before the account moves to the free plan. */
 export const PAYMENT_GRACE_DAYS = 3;
 
 export const SUBSCRIPTION_STATUSES = ['active', 'past_due', 'canceled'] as const;
@@ -46,12 +115,10 @@ export interface SubscriptionState {
   readonly currentPeriodEnd: Date;
 }
 
-export type AccessLevel = 'trial' | PaidPlan | 'expired';
+export type AccessLevel = 'trial' | PaidPlan | 'free';
 
 export interface Entitlements {
   readonly access: AccessLevel;
-  /** True once the trial is over with no plan: everything can be seen and exported, nothing changed. */
-  readonly readOnly: boolean;
   readonly trialEndsAt: Date;
   readonly maxActiveTrips: number | null;
   /** Monthly (or trial) Pip credits and the window they belong to. */
@@ -64,8 +131,6 @@ export interface Entitlements {
   readonly renewsAt: Date | null;
   readonly status: SubscriptionStatus | null;
 }
-
-const DAY_MS = 86_400_000;
 
 /** `date` plus whole calendar months, in UTC, clamped to the month's last day (31 Jan + 1 → 28/29 Feb). */
 export function addMonthsUtc(date: Date, months: number): Date {
@@ -117,7 +182,6 @@ export function entitlements(input: {
     const window = monthlyWindow(subscription.startedAt, now);
     return {
       access: subscription.plan,
-      readOnly: false,
       trialEndsAt,
       maxActiveTrips: terms.maxActiveTrips,
       credits: terms.credits,
@@ -126,15 +190,26 @@ export function entitlements(input: {
       ...paidFacts,
     };
   }
-  const inTrial = now < trialEndsAt;
+  if (now < trialEndsAt) {
+    return {
+      access: 'trial',
+      trialEndsAt,
+      maxActiveTrips: TRIAL_TERMS.maxActiveTrips,
+      credits: TRIAL_TERMS.credits,
+      periodStart: signedUpAt,
+      periodEnd: trialEndsAt,
+      ...paidFacts,
+    };
+  }
+  // Free for good: the monthly credits count from the end of the free week.
+  const window = monthlyWindow(trialEndsAt, now);
   return {
-    access: inTrial ? 'trial' : 'expired',
-    readOnly: !inTrial,
+    access: 'free',
     trialEndsAt,
-    maxActiveTrips: TRIAL_TERMS.maxActiveTrips,
-    credits: inTrial ? TRIAL_TERMS.credits : 0,
-    periodStart: signedUpAt,
-    periodEnd: trialEndsAt,
+    maxActiveTrips: FREE_TERMS.maxActiveTrips,
+    credits: FREE_TERMS.credits,
+    periodStart: window.start,
+    periodEnd: window.end,
     ...paidFacts,
   };
 }
@@ -149,7 +224,7 @@ export interface CreditBalance {
   readonly next: 'monthly' | 'top-up' | null;
 }
 
-/** Monthly credits go first; bought credits only once those are spent. Read-only accounts cannot spend any. */
+/** Monthly credits go first; bought credits only once those are spent. */
 export function creditBalance(input: {
   readonly entitlements: Entitlements;
   readonly usedInPeriod: number;
@@ -158,13 +233,7 @@ export function creditBalance(input: {
   const { entitlements: rights, usedInPeriod, topUpBalance } = input;
   const monthlyLeft = Math.max(0, rights.credits - usedInPeriod);
   const topUpLeft = Math.max(0, topUpBalance);
-  const next = rights.readOnly
-    ? null
-    : monthlyLeft > 0
-      ? 'monthly'
-      : topUpLeft > 0
-        ? 'top-up'
-        : null;
+  const next = monthlyLeft > 0 ? 'monthly' : topUpLeft > 0 ? 'top-up' : null;
   return { monthlyLeft, topUpLeft, total: monthlyLeft + topUpLeft, next };
 }
 
@@ -177,3 +246,36 @@ export function trialDaysLeft(trialEndsAt: Date, now: Date): number {
 export const TRIAL_ENDING_NOTICE_HOURS = 48;
 /** The "free week is over" email is sent only this many days after the end (older accounts are not written to). */
 export const TRIAL_ENDED_NOTICE_DAYS = 3;
+
+/**
+ * Trips that count towards the plan's limit: active ones without a pass. More of them than the plan keeps (after
+ * the free week, or when a plan lapses) means changes wait until some are archived, passed or a plan is chosen.
+ */
+export function countedTrips(
+  activeTripIds: readonly string[],
+  passed: ReadonlySet<string>,
+): number {
+  return activeTripIds.filter((id) => !passed.has(id)).length;
+}
+
+/** Whether the account holds more counted trips than its plan keeps. */
+export function overTripLimit(rights: Entitlements, counted: number): boolean {
+  return rights.maxActiveTrips !== null && counted > rights.maxActiveTrips;
+}
+
+export interface TripRights {
+  /** A pass or a paid plan: the paid tools (offline, any number of people) on this trip. */
+  readonly paid: boolean;
+  /** People who may join besides the owner; null for no limit. */
+  readonly guests: number | null;
+}
+
+/** What one trip allows: a paid plan or the trip's own pass opens everything; the free plan keeps one guest. */
+export function tripEntitlements(
+  rights: Entitlements,
+  tripId: string,
+  passed: ReadonlySet<string>,
+): TripRights {
+  const paid = rights.access === 'explorer' || rights.access === 'voyager' || passed.has(tripId);
+  return { paid, guests: paid || rights.access === 'trial' ? null : FREE_TERMS.guests };
+}

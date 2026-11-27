@@ -30,7 +30,9 @@ describe('getBilling', () => {
     await newTrip();
     expect(await app.getBilling.execute(as(ana), {})).toEqual({
       access: 'trial',
-      readOnly: false,
+      overLimit: false,
+      priceCurrency: 'USD',
+      passes: [],
       trialEndsAt: '2026-11-08T12:00:00.000Z',
       trialDaysLeft: 5,
       plan: null,
@@ -39,6 +41,7 @@ describe('getBilling', () => {
       renewsAt: null,
       maxActiveTrips: 10,
       activeTrips: 1,
+      countedTrips: 1,
       credits: {
         monthly: 15,
         monthlyLeft: 15,
@@ -63,23 +66,63 @@ describe('getBilling', () => {
   });
 });
 
-describe('after the trial, without a plan', () => {
-  it('is read-only: changes are refused, reading, settings, export and leaving still work', async () => {
+describe('after the free week, without a plan (ADR-0023)', () => {
+  it('stays free for good with one active trip, every tool and 5 Pip credits a month', async () => {
     const { app, newTrip, setNow } = setup();
     const trip = await newTrip();
-    setNow(new Date('2026-11-09T00:00:00.000Z'));
-    await expect(newTrip()).rejects.toMatchObject({ code: 'PLAN_REQUIRED' });
+    setNow(new Date('2026-11-20T00:00:00.000Z'));
+    await app.updateTrip.execute(as(ana), { id: trip.id, title: 'Still mine to change' });
+    await expect(newTrip()).rejects.toMatchObject({ code: 'TRIP_LIMIT_REACHED' });
+    expect(await app.getBilling.execute(as(ana), {})).toMatchObject({
+      access: 'free',
+      overLimit: false,
+      maxActiveTrips: 1,
+      credits: { monthly: 5, monthlyLeft: 5, periodEnd: '2026-12-08T12:00:00.000Z' },
+    });
+  });
+
+  it('waits for changes while more trips than the plan keeps are active, and opens when they are archived', async () => {
+    const { app, newTrip, setNow } = setup();
+    const first = await newTrip('First');
+    const second = await newTrip('Second');
+    setNow(new Date('2026-11-20T00:00:00.000Z'));
     await expect(
-      app.updateTrip.execute(as(ana), { id: trip.id, title: 'New name' }),
+      app.updateTrip.execute(as(ana), { id: first.id, title: 'New name' }),
     ).rejects.toThrow(PlanLimitError);
-    expect((await app.listTrips.execute(as(ana), {})).trips).toHaveLength(1);
-    expect((await app.getBilling.execute(as(ana), {})).readOnly).toBe(true);
+    expect((await app.getBilling.execute(as(ana), {})).overLimit).toBe(true);
+    // Nothing is lost: both trips are still listed, settings and archiving still work.
+    expect((await app.listTrips.execute(as(ana), {})).trips).toHaveLength(2);
     await app.updatePreferences.execute(as(ana), { locale: 'pt-BR' });
-    await app.archiveTrip.execute(as(ana), { id: trip.id });
+    await app.archiveTrip.execute(as(ana), { id: second.id });
+    await app.updateTrip.execute(as(ana), { id: first.id, title: 'New name' });
+  });
+
+  it('leaves a trip with a pass out of the limit', async () => {
+    const { app, newTrip, setNow, state } = setup();
+    const first = await newTrip('First');
+    const passed = await newTrip('Passed');
+    state.passes.push({
+      id: 'pass-1',
+      tripId: passed.id,
+      userId: ana.id,
+      purchasedAt: new Date('2026-11-03T12:00:00.000Z'),
+      validUntil: new Date('2027-11-03T12:00:00.000Z'),
+      providerRef: 'pi_1',
+    });
+    setNow(new Date('2026-11-20T00:00:00.000Z'));
+    await app.updateTrip.execute(as(ana), { id: first.id, title: 'Free trip' });
+    await app.updateTrip.execute(as(ana), { id: passed.id, title: 'Passed trip' });
+    expect(await app.getBilling.execute(as(ana), {})).toMatchObject({
+      overLimit: false,
+      activeTrips: 2,
+      countedTrips: 1,
+      passes: [{ tripId: passed.id, validUntil: '2027-11-03T12:00:00.000Z' }],
+    });
   });
 
   it('opens again with a plan', async () => {
     const { newTrip, setNow, state } = setup();
+    await newTrip();
     setNow(new Date('2026-11-09T00:00:00.000Z'));
     state.subscriptions.set(ana.id, { ...voyager, startedAt: new Date('2026-11-08T00:00:00Z') });
     await expect(newTrip()).resolves.toMatchObject({ title: 'Trip' });
@@ -108,8 +151,10 @@ describe('active trip limits', () => {
 });
 
 describe('checkout', () => {
-  it('says payments are not on until the provider is configured, then opens it, even when read-only', async () => {
-    const { app, payments, setNow } = setup();
+  it('says payments are not on until the provider is configured, then opens it, even over the limit', async () => {
+    const { app, payments, setNow, newTrip } = setup();
+    await newTrip('One');
+    await newTrip('Two');
     await expect(app.startCheckout.execute(as(ana), { item: 'explorer' })).rejects.toMatchObject({
       code: 'SERVICE_UNAVAILABLE',
     });
@@ -117,9 +162,31 @@ describe('checkout', () => {
     setNow(new Date('2026-12-01T00:00:00.000Z'));
     expect(await app.startCheckout.execute(as(ana), { item: 'voyager', interval: 'year' })).toEqual(
       {
-        url: 'https://pay.example.test/checkout?item=voyager&interval=year',
+        url: 'https://pay.example.test/checkout?item=voyager&interval=year&currency=USD',
       },
     );
+  });
+
+  it('charges in reais only for someone who chose reais, and sells a pass only for one’s own trip', async () => {
+    const { app, payments, newTrip } = setup();
+    payments.enabled = true;
+    const trip = await newTrip();
+    await app.updatePreferences.execute(as(ana), { currency: 'BRL' });
+    expect((await app.getBilling.execute(as(ana), {})).priceCurrency).toBe('BRL');
+    expect(
+      await app.startCheckout.execute(as(ana), { item: 'trip-pass', tripId: trip.id }),
+    ).toEqual({
+      url: `https://pay.example.test/checkout?item=trip-pass&interval=month&currency=BRL&trip=${trip.id}`,
+    });
+    await expect(
+      app.startCheckout.execute(as(ana), {
+        item: 'trip-pass',
+        tripId: '0193c0a8-7b1e-7c4a-9e2f-3d5a6b7c9a02',
+      }),
+    ).rejects.toMatchObject({ code: 'NOT_FOUND' });
+    await expect(app.startCheckout.execute(as(ana), { item: 'trip-pass' })).rejects.toMatchObject({
+      code: 'NOT_FOUND',
+    });
   });
 
   it('has no payment page to manage before the first payment', async () => {

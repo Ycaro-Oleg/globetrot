@@ -106,11 +106,12 @@ describe('Globetrot landing page', () => {
   });
 
   it.each(SUPPORTED_LOCALES)(
-    'shows the free week and the two plans at their real prices, in USD (%s)',
+    'shows the free plan, the two paid plans and the trip pass at their real prices, in USD until the visitor picks reais (%s)',
     (locale) => {
       const text = visibleText(render(locale));
       const plans = catalogs[locale].plans;
-      expect(text).toContain(plans.trial.price);
+      expect(text).toContain(plans.free.price);
+      expect(text).toContain(plans.pass.name);
       expect(text).toContain(plans.explorer.name);
       expect(text).toContain(plans.voyager.name);
       expect(text).toMatch(locale === 'en' ? /\$4\.99/ : /US\$\s?4,99/);
@@ -131,7 +132,7 @@ describe('Globetrot landing page', () => {
     },
   );
 
-  it('never shows an amount in reais: examples are in USD, the default currency', () => {
+  it('never shows an amount in reais until the visitor picks them: USD is the default currency', () => {
     for (const locale of SUPPORTED_LOCALES) {
       expect(visibleText(render(locale))).not.toMatch(/R\$/);
     }

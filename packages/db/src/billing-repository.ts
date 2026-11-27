@@ -1,9 +1,9 @@
 import type { BillingInterval, PaidPlan, SubscriptionStatus } from '@globetrot/domain';
 import { eq, sql } from 'drizzle-orm';
 import type { Database } from './client';
-import { creditLedger, subscription, user } from './schema';
+import { creditLedger, subscription, tripPass, user } from './schema';
 
-/** PostgreSQL adapter for plans and bought credits (packages/application/src/ports.ts, ADR-0019). */
+/** PostgreSQL adapter for plans, bought credits and trip passes (packages/application/src/ports.ts, ADR-0019, ADR-0023). */
 
 type Executor = Pick<Database, 'select' | 'insert' | 'update'>;
 
@@ -19,6 +19,10 @@ export function createBillingRepository(executor: Executor) {
         .select()
         .from(subscription)
         .where(eq(subscription.userId, userId));
+      const passes = await executor
+        .select({ tripId: tripPass.tripId, validUntil: tripPass.validUntil })
+        .from(tripPass)
+        .where(eq(tripPass.userId, userId));
       const [ledger] = await executor
         .select({ balance: sql<string>`coalesce(sum(${creditLedger.delta}), 0)` })
         .from(creditLedger)
@@ -35,6 +39,7 @@ export function createBillingRepository(executor: Executor) {
             }
           : null,
         topUpBalance: Number(ledger?.balance ?? 0),
+        passes,
       };
     },
     async findProviderCustomer(userId: string) {
@@ -64,6 +69,21 @@ export function createBillingRepository(executor: Executor) {
         .values(row)
         .onConflictDoNothing({ target: creditLedger.ref })
         .returning({ id: creditLedger.id });
+      return inserted.length > 0;
+    },
+    async grantTripPass(row: {
+      readonly id: string;
+      readonly tripId: string;
+      readonly userId: string;
+      readonly purchasedAt: Date;
+      readonly validUntil: Date;
+      readonly providerRef: string;
+    }) {
+      const inserted = await executor
+        .insert(tripPass)
+        .values(row)
+        .onConflictDoNothing({ target: tripPass.providerRef })
+        .returning({ id: tripPass.id });
       return inserted.length > 0;
     },
     async saveSubscription(

@@ -64,31 +64,39 @@ export function createStripePayments(
   const stripe = client(config, options.fetch ?? fetch);
   const back = `${config.returnOrigin}/app/plan`;
   return {
-    async checkoutUrl({ userId, email, item, interval }) {
+    async checkoutUrl({ userId, email, item, interval, currency, tripId }) {
       const customer = await billing.findProviderCustomer(userId);
       const who = customer ? { customer } : { customer_email: email };
+      const prices = config.prices[currency];
       const common = {
         ...who,
         client_reference_id: userId,
         'metadata[userId]': userId,
         'metadata[item]': item,
+        'metadata[tripId]': tripId,
         'line_items[0][quantity]': '1',
-        success_url: `${back}?paid=${item}`,
+        success_url:
+          item === 'trip-pass' && tripId
+            ? `${config.returnOrigin}/app/trips/${encodeURIComponent(tripId)}?paid=trip-pass`
+            : `${back}?paid=${item}`,
         cancel_url: back,
       };
+      // One-time payments (credits, a trip pass) leave the payment methods to the dashboard, so Pix shows in
+      // reais once it is switched on there.
       const session =
-        item === 'top-up'
+        item === 'top-up' || item === 'trip-pass'
           ? await stripe.post('/checkout/sessions', {
               ...common,
               mode: 'payment',
-              'line_items[0][price]': config.prices.topUp,
+              'line_items[0][price]': item === 'top-up' ? prices.topUp : prices.tripPass,
               'payment_intent_data[metadata][userId]': userId,
+              'payment_intent_data[metadata][tripId]': tripId,
               ...(customer ? {} : { customer_creation: 'always' }),
             })
           : await stripe.post('/checkout/sessions', {
               ...common,
               mode: 'subscription',
-              'line_items[0][price]': config.prices[item][interval],
+              'line_items[0][price]': prices[item][interval],
               'subscription_data[metadata][userId]': userId,
               allow_promotion_codes: 'true',
             });
@@ -139,10 +147,12 @@ export function toSubscriptionRecord(
 ): SubscriptionRecord | null {
   const item = object((object(subscription.items).data as unknown[] | undefined)?.[0]);
   const priceId = idOf(item.price);
-  const match = (['explorer', 'voyager'] as const).flatMap((plan) =>
-    (['month', 'year'] as const)
-      .filter((interval) => prices[plan][interval] === priceId)
-      .map((interval) => ({ plan, interval })),
+  const match = Object.values(prices).flatMap((ids) =>
+    (['explorer', 'voyager'] as const).flatMap((plan) =>
+      (['month', 'year'] as const)
+        .filter((interval) => ids[plan][interval] === priceId)
+        .map((interval) => ({ plan, interval })),
+    ),
   )[0];
   if (!match) return null;
   const raw = text(subscription.status);
@@ -212,17 +222,15 @@ export function createStripeWebhook(
           const userId = text(data.client_reference_id) ?? text(object(data.metadata).userId);
           if (data.mode === 'subscription') {
             payment = await fromSubscription(idOf(data.subscription), userId);
-          } else if (
-            data.mode === 'payment' &&
-            data.payment_status === 'paid' &&
-            object(data.metadata).item === 'top-up' &&
-            userId
-          ) {
-            payment = {
-              kind: 'top-up',
-              userId,
-              paymentId: idOf(data.payment_intent) ?? text(data.id) ?? '',
-            };
+          } else if (data.mode === 'payment' && data.payment_status === 'paid' && userId) {
+            // Pix and other delayed methods arrive as `async_payment_succeeded` with the same session.
+            const metadata = object(data.metadata);
+            const paymentId = idOf(data.payment_intent) ?? text(data.id) ?? '';
+            const tripId = text(metadata.tripId);
+            if (metadata.item === 'top-up') payment = { kind: 'top-up', userId, paymentId };
+            else if (metadata.item === 'trip-pass' && tripId) {
+              payment = { kind: 'trip-pass', userId, tripId, paymentId };
+            }
           }
         } else if (type.startsWith('customer.subscription.')) {
           payment = await fromSubscription(text(data.id), text(object(data.metadata).userId));
@@ -230,7 +238,7 @@ export function createStripeWebhook(
           const nested = object(object(data.parent).subscription_details).subscription;
           payment = await fromSubscription(idOf(data.subscription) ?? idOf(nested), null);
         }
-        if (payment && (payment.kind !== 'top-up' || payment.paymentId)) {
+        if (payment && (payment.kind === 'subscription' || payment.paymentId)) {
           const outcome = await events.apply(payment);
           console.info(`stripe ${type}: ${outcome}`);
         }

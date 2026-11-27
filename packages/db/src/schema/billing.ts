@@ -13,6 +13,7 @@ import {
   uuid,
 } from 'drizzle-orm/pg-core';
 import { user } from './auth';
+import { trip } from './trip';
 
 const instant = (name: string) => timestamp(name, { withTimezone: true });
 const list = (values: readonly string[]) => sql.raw(values.map((v) => `'${v}'`).join(', '));
@@ -76,4 +77,25 @@ export const accountNotice = pgTable(
     primaryKey({ columns: [table.userId, table.kind] }),
     check('account_notice_kind_valid', sql`${table.kind} in ('trial-ending', 'trial-ended')`),
   ],
+);
+
+/**
+ * A trip pass (ADR-0023): one payment that unlocks the paid tools on one trip until `valid_until`. Granted from
+ * the payment provider's webhook; `provider_ref` (the payment) is unique, so a repeated delivery grants nothing.
+ */
+export const tripPass = pgTable(
+  'trip_pass',
+  {
+    id: uuid('id').primaryKey(),
+    tripId: uuid('trip_id')
+      .notNull()
+      .references(() => trip.id, { onDelete: 'cascade' }),
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    purchasedAt: instant('purchased_at').notNull(),
+    validUntil: instant('valid_until').notNull(),
+    providerRef: text('provider_ref').notNull().unique(),
+  },
+  (table) => [index('trip_pass_user_id_idx').on(table.userId)],
 );

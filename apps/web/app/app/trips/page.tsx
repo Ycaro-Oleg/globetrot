@@ -1,4 +1,4 @@
-import { PLAN_TERMS } from '@globetrot/domain';
+import { FREE_TERMS } from '@globetrot/domain';
 import { randomUUID } from 'node:crypto';
 import Link from 'next/link';
 import { getLocale, getTranslations } from 'next-intl/server';
@@ -113,7 +113,7 @@ export default async function TripsPage({
           : query.status === 'example-error'
             ? t('example.copyError')
             : query.status === 'trip-limit'
-              ? t('tripLimit', { count: PLAN_TERMS.explorer.maxActiveTrips ?? 0 })
+              ? t('tripLimit', { count: billing?.maxActiveTrips ?? FREE_TERMS.maxActiveTrips })
               : query.status === 'plan-required'
                 ? t('planRequired')
                 : null;
@@ -132,8 +132,8 @@ export default async function TripsPage({
           <h1>{t('title')}</h1>
           <p className={styles.description}>{t('description')}</p>
         </div>
-        {billing?.readOnly ? (
-          // Read-only after the free week: the form would only fail on save, so the button leads to the plans.
+        {billing?.overLimit ? (
+          // More trips than the plan keeps: the form would only fail on save, so the button leads to the options.
           <Link href={PLAN_REQUIRED_PATH} className={styles.primaryAction}>
             <span className={styles.createPlus} aria-hidden="true">
               +
