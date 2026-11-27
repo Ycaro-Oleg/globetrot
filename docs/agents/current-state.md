@@ -1,6 +1,6 @@
 # Current state
 
-_Last updated: 2026-11-27, release v0.2.0. Code state: `main` is release **v0.2.0** (#158, `develop` at #157); `develop` includes #83 to #157. The suggested plans' copy and the ranges marked approximate in [`suggested-plans.md`](../product/research/suggested-plans.md) wait for the owner's review. The [launch runbook](../engineering/launch-runbook.md) lists what the owner must provide. Since 2026-11-26 the repository is public, so GitHub Actions runs every job again (CI green on `develop` at #157); if it goes private again, Actions stops until the account's billing is fixed (owner)._
+_Last updated: 2026-11-27, release v0.3.0. Code state: `main` is release **v0.3.0** (#174, `develop` at #172); `develop` includes #83 to #172. The gaps from the product review are closed in code (#160 to #172); what remains is the owner's (table below): provider keys, Stripe Prices, partner ids, inbound email, and reviewing the ranges marked approximate in [`suggested-plans.md`](../product/research/suggested-plans.md) and the miles values. The [launch runbook](../engineering/launch-runbook.md) lists what the owner must provide. The repository is public, so GitHub Actions runs every job (CI green on `develop` at #172)._
 
 Read this first. It says where the project is, what exists, what is open, what only the owner can unblock and what to do next. Procedure for working: [`playbook.md`](playbook.md). Feature-by-feature progress: [`../product/progress.md`](../product/progress.md). Milestones and exit criteria: [`../product/roadmap.md`](../product/roadmap.md).
 
@@ -32,7 +32,7 @@ Read this first. It says where the project is, what exists, what is open, what o
 - **Trips can be shared** by a private link (`/t/{slug}`) with a social image for X and chats; month only, amounts only when chosen, stop for good.
 - **First run, walked as a new user** (landing calculator → sign-up → email → onboarding → board → every tool): the sign-up repeats the saved landing plan and has no terms checkbox; the confirmed-email page has one clear call to action; onboarding offers popular destinations in one tap and place search falls back to built-in popular cities, so the first trip always has a stop; the new trip starts with the suggested checklist; an empty Days plan invites the first place.  The owner confirmed `REQUIRE_VERIFIED_EMAIL=true` (2026-11-14): a password sign-in needs a confirmed email.
 - **What does not exist yet:** a staff review queue for community reports, blocking, visa privacy, deployment (billing is built and waits for the owner's Stripe settings: ADR-0019). The trip's page shows the nine stamps and the next steps; the start date can be set there and on Days.
-- **Branches:** `main` holds release **v0.1.0** (tagged, with release notes on GitHub); `develop` is the integration branch. All work goes through `feature/*` or `docs/*` PRs into `develop`.
+- **Branches:** `main` holds release **v0.3.0** (tagged, with release notes on GitHub; v0.1.0 and v0.2.0 before it); `develop` is the integration branch. All work goes through `feature/*` or `docs/*` PRs into `develop`.
 
 ## Milestone board
 
