@@ -5,8 +5,8 @@ import { useLocale, useTranslations } from 'next-intl';
 import { getLocale, getTranslations } from 'next-intl/server';
 import { siteOrigin } from '../lib/site-url';
 import { setScaffoldLocale } from './actions';
-import { AnswerCalculator } from './landing-calculator';
 import { LandingLiveMap } from './landing-live-map';
+import { LandingSuggest } from './landing-suggest';
 import { HeroRoutes } from './landing-hero-routes';
 import { LandingAnchors } from './landing-anchors';
 import { LandingPip } from './landing-pip';
@@ -228,7 +228,7 @@ export default function HomePage() {
           />
           <HeroRoutes labels={heroLabels} />
         </div>
-        <AnswerCalculator signupHref="/signup" />
+        <LandingSuggest signupHref="/signup" />
       </section>
 
       <main>

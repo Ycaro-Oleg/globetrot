@@ -24,3 +24,8 @@ export function readDraft(raw: string | undefined): PlanDraft | null {
     return null;
   }
 }
+
+/** Keeps what the landing's plan chose for 30 days, so sign-up and onboarding start from it (browser only). */
+export function saveDraft(draft: Record<string, unknown>): void {
+  document.cookie = `${PLAN_DRAFT_COOKIE}=${encodeURIComponent(JSON.stringify(draft))}; path=/; max-age=${60 * 60 * 24 * 30}; samesite=lax`;
+}

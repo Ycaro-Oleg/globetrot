@@ -401,7 +401,17 @@
 
 .calcFields {
   display: grid;
-  gap: 14px;
+  align-content: start;
+  gap: 18px;
+}
+
+/* Beside a long plan the choices stay in view while the plan scrolls by. */
+@media (min-width: 720px) {
+  .calcFields {
+    position: sticky;
+    top: 16px;
+    align-self: start;
+  }
 }
 
 .calcField {
@@ -418,72 +428,9 @@
   font-weight: 800;
 }
 
-.calcInput {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 52px;
-  padding-inline-start: 16px;
-  border: 1px solid var(--input-border);
-  border-radius: 14px;
-  background: #fff;
-  color: var(--ink-2);
-}
-
-.calcInput input {
-  flex: 1;
-  min-width: 0;
-  min-height: 50px;
-  border: 0;
-  border-radius: 12px;
-  background: transparent;
-  color: var(--ink);
-  font: inherit;
-  font-size: 18px;
-  font-weight: 800;
-}
-
-/* The monthly slider: a filled track, a big thumb with a value bubble riding above it, marks and quick amounts. */
-.calcSlider {
-  --thumb: 30px;
-  position: relative;
-  padding-top: 38px;
-}
-
-.calcBubble {
-  position: absolute;
-  top: 0;
-  left: calc(var(--fill) * (100% - var(--thumb)) + var(--thumb) / 2);
-  padding: 4px 10px;
-  border-radius: 10px;
-  background: var(--deep);
-  color: #fff;
-  font-size: 13px;
-  font-weight: 800;
-  white-space: nowrap;
-  transform: translateX(-50%);
-  transition: transform 160ms cubic-bezier(0.34, 1.56, 0.64, 1);
-  pointer-events: none;
-}
-
-.calcBubble::after {
-  position: absolute;
-  bottom: -5px;
-  left: 50%;
-  width: 10px;
-  height: 10px;
-  border-radius: 2px;
-  background: inherit;
-  transform: translateX(-50%) rotate(45deg);
-  content: '';
-}
-
-.calcSlider:has(.calcRange:active) .calcBubble,
-.calcSlider:has(.calcRange:focus-visible) .calcBubble {
-  transform: translateX(-50%) translateY(-3px) scale(1.1);
-}
-
+/* The sliders: a filled track and a big thumb. */
 .calcRange {
+  --thumb: 30px;
   width: 100%;
   height: 44px;
   margin: 0;
@@ -555,14 +502,6 @@
   border-radius: 99px;
 }
 
-.calcTicks {
-  display: flex;
-  justify-content: space-between;
-  color: var(--ink-2);
-  font-size: 12px;
-  font-weight: 600;
-}
-
 .calcChips {
   display: flex;
   flex-wrap: wrap;
@@ -605,49 +544,6 @@
 .calcChips button:focus-visible {
   outline: 3px solid var(--blue);
   outline-offset: 2px;
-}
-
-.calcAnswer {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 14px;
-  padding: 20px;
-  border-radius: 20px;
-  background: var(--band);
-}
-
-.calcSentence {
-  margin: 0;
-  font-family: var(--gt-primitive-font-display);
-  font-size: clamp(24px, 3vw, 32px);
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  line-height: 1.12;
-  text-wrap: pretty;
-}
-
-.calcLead {
-  color: #b91c1c;
-}
-
-.calcAnswer[data-ok] .calcLead {
-  color: #047857;
-}
-
-.calcNote {
-  margin: 0;
-  color: var(--ink-2);
-  font-size: 13px;
-}
-
-.calcInput:focus-within {
-  outline: 3px solid var(--blue);
-  outline-offset: 2px;
-}
-
-.calcInput input:focus-visible {
-  outline: none;
 }
 
 .calc a:focus-visible,
@@ -702,23 +598,6 @@
 
   .heroCopy h1 {
     font-size: clamp(36px, 10.4vw, 46px);
-  }
-}
-
-.calcSentence[data-changed] {
-  animation: answer 260ms cubic-bezier(0.2, 0.7, 0.2, 1);
-}
-
-@keyframes answer {
-  from {
-    opacity: 0.4;
-    transform: translateY(4px);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .calcSentence[data-changed] {
-    animation: none;
   }
 }
 
@@ -1519,11 +1398,6 @@
     align-items: stretch;
   }
 
-  .calcAnswer {
-    justify-content: center;
-    padding: 28px;
-  }
-
   .hero {
     padding-top: 22px;
     padding-bottom: 56px;
@@ -1762,4 +1636,133 @@
     aspect-ratio: 8;
     overflow: visible;
   }
+}
+
+/* --- The suggested plan: stops, experiences, the estimate and the savings answer --- */
+.planResult {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px;
+  border-radius: 20px;
+  background: var(--band);
+}
+
+.planTitle {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: -0.015em;
+}
+
+.planStops,
+.planExperiences {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.planStops {
+  gap: 14px;
+}
+
+.planStopHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.12);
+}
+
+.planStopHead strong {
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.planStopHead span {
+  color: var(--ink-2);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.planExperiences {
+  gap: 10px;
+  padding-top: 8px;
+}
+
+.planExperiences li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 2px 12px;
+}
+
+.planExperienceName {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.planOffbeat {
+  padding: 2px 8px;
+  border-radius: 99px;
+  background: var(--deep);
+  color: #fff;
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 700;
+}
+
+.planExperiences small {
+  grid-column: 1;
+  color: var(--ink-2);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.planCost {
+  grid-column: 2;
+  grid-row: 1;
+  color: var(--ink-2);
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.planLeg {
+  margin: 8px 0 0;
+  color: var(--ink-2);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.planEstimate {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(15, 23, 42, 0.12);
+}
+
+.planEstimate strong {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.015em;
+}
+
+.planEstimate small {
+  color: var(--ink-2);
+  font-size: 12px;
+}
+
+.planAnswer {
+  margin: 6px 0 0;
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.35;
 }
