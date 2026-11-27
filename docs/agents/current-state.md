@@ -17,7 +17,7 @@ Read this first. It says where the project is, what exists, what is open, what o
 - **Pip v1 works behind `FEATURE_PIP`** on DeepSeek (ADR-0016), with Claude Haiku as the backup when DeepSeek does not answer (ADR-0022): ask, review a change list, apply, undo. Pip is a floating button on every screen except the map and its own page.
 - **Navigation in three areas** (November 2026): the trip (map, days, money, checklist), Discover (ready plans that become a trip in one tap, and the community when `FEATURE_COMMUNITY` is on; it is off by default) and you (the avatar menu). Place icons on the map are SVG. The app is installable (web manifest and icons).
 - **Monitoring and product analytics are wired and off until configured** (ADR-0021): Sentry for errors in web, API and worker; PostHog for the named product events after consent.
-- **Plans and credits are built** (ADR-0019): a 7-day trial from sign-up, Explorer (US$4.99/US$39.99) and Voyager (US$9.99/US$79.99), Pip credits per request with top-ups, read-only after the trial, `/app/plan`, the free-week line on every signed-in page, and two trial emails from the worker. **Stripe is built** (Checkout, Portal, webhooks) and off until the `STRIPE_*` settings are set (**owner:** the [steps](../integrations/stripe.md#switching-it-on-the-owner-in-the-stripe-dashboard-test-mode-first), test mode first).
+- **Plans and credits are built** (ADR-0019, changed by ADR-0023): a 7-day free week, then **free for good with one active trip** (5 Pip credits a month, one guest); Explorer and Voyager; a **trip pass** (one payment per trip, not counted in the limit); **prices in reais** for people whose currency is BRL (Explorer R$14,90, Voyager R$29,90, pass R$39); no read-only wall, only "archive, add a pass or choose a plan" when more trips are active than the plan keeps. **Stripe is built** (Checkout, Portal, webhooks, Pix for one-time payments via the dashboard) and off until the `STRIPE_*` settings are set (**owner:** the [steps](../integrations/stripe.md#switching-it-on-the-owner-in-the-stripe-dashboard-test-mode-first), test mode first, including the new trip pass and BRL Prices).
 - **Pip has its six states** drawn in code (idle, research, draft, deliver, celebrate, unsure) and used where they fit; commissioning final Rive art stays the owner's choice (#9).
 - **Days suggests places** near each stop (Geoapify when the key is set, a built-in list for popular cities otherwise), one tap each, and exports the days to a calendar file.
 - **Trips can be shared** by a private link (`/t/{slug}`) with a social image for X and chats; month only, amounts only when chosen, stop for good.
@@ -71,7 +71,7 @@ These cannot be finished by an agent. Do not work around them, and do not mark t
 | **Legal text** | Fill the `[bracketed]` facts in the drafted Terms and Privacy policy and have them reviewed; then remove the draft banner. Acceptance is not stored yet | A public release |
 | **Production email provider** | Choose Resend or Postmark, then provide settings and a verified sending domain | Production (M11). SMTP settings are the only change |
 | **GitHub billing** | Only if the repository goes private again: fix the account's billing or raise the spending limit (Settings → Billing & plans) | CI on every PR while private |
-| **Regional pricing** | A business decision (base prices are approved: [ADR-0019](../architecture/adr/0019-plans-trial-and-pip-credits.md)) | Later |
+| **Stripe Prices for ADR-0023** | Create the trip pass Price (US$9.99) and the BRL Prices (Explorer R$14,90/R$119, Voyager R$29,90/R$239, top-up R$14,90, pass R$39), set `STRIPE_PRICE_TRIP_PASS` and the `*_BRL` settings, switch Pix on for one-time payments | Charging for passes and in reais |
 | **Imagery licensing source** | Choose where destination images come from | Imagery in the board and landing |
 | **Production object storage** ([ADR-0014](../architecture/adr/0014-photos-and-storage.md)) | Choose an S3-compatible provider (or self-host on the Hetzner box) and provide `S3_*` settings as secrets | Photos in production (M11) |
 | **Suggested plans review** ([ADR-0020](../architecture/adr/0020-suggested-plans-and-curated-cost-ranges.md)) | Review the landing's suggested-plan texts and the cost ranges marked approximate in [`suggested-plans.md`](../product/research/suggested-plans.md); later, decide which destinations to add | Confidence in the estimates shown on the landing |
@@ -128,7 +128,6 @@ The product is feature-complete for launch in code; what remains is mostly the o
 
 ## Open decisions
 
-- Regional pricing.
 - Production email provider (Resend or Postmark).
 - Managed geocoding provider (#4).
 - Pip illustrator and asset timeline.

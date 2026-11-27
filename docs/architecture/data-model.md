@@ -233,6 +233,7 @@ Migration `0018_billing`. Rules: [business rules](../product/business-rules.md#p
 | `subscription` | The paid plan, one per account at most | `user_id` (primary key, `user`, cascade), `plan` in `PAID_PLANS`, `interval` (`month`, `year`), `status` (`active`, `past_due`, `canceled`), `started_at` (monthly credits count from here), `current_period_end`, `provider_customer_id`, `provider_subscription_id` (unique) |
 | `account_notice` | One-time account emails already sent (migration `0019_account_notice`) | `user_id` (cascade) and `kind` (`trial-ending`, `trial-ended`) as the primary key, `sent_at`. Claimed before sending, removed if sending failed |
 | `credit_ledger` | Bought Pip credits in, credits spent from them out | `user_id` (cascade), `delta` (non-zero), `reason` (`top-up`, `pip`, `grant`), `ref` (unique, so a payment is applied once). The balance is the sum |
+| `trip_pass` | A trip pass bought for one trip (migration `0025_trip_pass`, [ADR-0023](adr/0023-free-plan-trip-pass-and-prices-in-reais.md)) | `trip_id` and `user_id` (both cascade), `purchased_at`, `valid_until`, `provider_ref` (unique: the payment, so a webhook delivered twice grants once). A pass holds while `valid_until` is in the future |
 
 ## Extensions
 

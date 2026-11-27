@@ -172,28 +172,33 @@ Decision record: [ADR-0013](../architecture/adr/0013-community.md).
 
 ## Plans, trial and Pip credits
 
-Decided in [ADR-0019](../architecture/adr/0019-plans-trial-and-pip-credits.md). Prices are in USD and come from `PLAN_TERMS` in the domain.
+Decided in [ADR-0019](../architecture/adr/0019-plans-trial-and-pip-credits.md), changed by [ADR-0023](../architecture/adr/0023-free-plan-trip-pass-and-prices-in-reais.md). Prices come from `PLAN_PRICES`, `TRIP_PASS` and `TOP_UP_PRICES` in the domain, never from components.
 
-| | Free trial | Explorer | Voyager |
-|---|---|---|---|
-| Price | 7 days from sign-up, no card | US$4.99 a month or US$39.99 a year | US$9.99 a month or US$79.99 a year |
-| Pip credits | 15 for the week | 100 a month | 400 a month |
-| Active trips | 10 | 10 | Unlimited |
+| | Free | Explorer | Voyager | Trip pass |
+|---|---|---|---|---|
+| Price (USD) | free for good | US$4.99 a month or US$39.99 a year | US$9.99 a month or US$79.99 a year | US$9.99 once |
+| Price (BRL) | free for good | R$14,90 a month or R$119 a year | R$29,90 a month or R$239 a year | R$39 once |
+| Pip credits | 15 in the first 7 days, then 5 a month | 100 a month | 400 a month | (the account's) |
+| Active trips | 10 in the first 7 days, then 1 | 10 | Unlimited | does not count |
+| People to plan with | 1 (unlimited in the first 7 days) | unlimited | unlimited | unlimited on that trip |
 
-- **One credit is one answered Pip request.** Monthly credits reset each month from the plan's start (yearly plans too) and do not roll over.
-- **Top-up:** 200 credits for US$2.99. They never expire and are spent after the monthly ones.
+- **Price currency:** reais for someone whose chosen currency is BRL, US dollars for everyone else. Never inferred from language, country or nationality. The landing shows US dollars until the visitor picks reais.
+- **The first 7 days** (the free week) have everything open: 15 credits and up to 10 active trips. After them the account stays on the **free plan for good**.
+- **One credit is one answered Pip request.** Monthly credits reset each month (from the plan's start, or from the end of the free week on the free plan) and do not roll over.
+- **Top-up:** 200 credits for US$2.99 or R$14,90. They never expire and are spent after the monthly ones.
 - **Daily cap:** 40 Pip requests a day on any plan.
-- **Active trips** are trips that are not archived. Archiving frees a place; restoring a trip takes one.
-- **After the trial without a plan the account is read-only.**
-  - Everything can be seen and exported, and trips or the whole account deleted.
-  - Settings, the community handle, deleting own posts and comments, reporting and muting stay open.
-  - Creating or changing anything else is refused, with the way to the plans. In the web app a refused change opens the plan page, which says the change was not saved and why, with the plans right below; "Create trip" leads there directly instead of opening a form that could not be saved.
+- **Active trips** are trips that are not archived. Archiving frees a place; restoring a trip takes one. **Trips with a valid pass do not count.**
+- **A trip pass** opens everything paid on one trip (any number of people now; offline later), for one payment. It lasts until 30 days after the trip's last day, or 12 months from the purchase when the trip has no dates, and never less than 30 days. Only the trip's owner can buy it, from the trip's page.
+- **More counted trips than the plan keeps** (after the free week, or when a plan lapses): creating or changing anything else waits, with the way out shown (archive trips, add a pass, or choose a plan).
+  - Everything can still be seen and exported, and trips archived or deleted.
+  - Settings, the community handle, deleting own posts and comments, reporting, muting and paying stay open.
+  - In the web app a refused change opens the plan page, which says the change was not saved and why; "Create trip" leads there directly.
   - Data is never deleted for lack of a plan.
 - **Canceling** keeps the plan until the end of the paid period.
-- **A failed renewal** keeps it 3 more days, then the account is read-only.
-- The app shows the days left in the trial on every signed-in page, and the plan, credits and active trips on **Plan & credits** (`/app/plan`).
-- **Emails about the trial:** two days before it ends ("ends in 2 days"), and once after it ended ("your trips are safe"), in the person's language, only to a verified address without a paid plan. Each is sent at most once.
-- Payment is by Stripe's hosted checkout. Until it is switched on, choosing a plan says so and charges nothing.
+- **A failed renewal** keeps it 3 more days, then the account is on the free plan.
+- The app shows the days left in the free week on every signed-in page, and the plan, credits, counted trips and passes on **Plan & credits** (`/app/plan`).
+- **Emails about the free week:** two days before it ends, and once after it ended ("one trip stays free"), in the person's language and price currency, only to a verified address without a paid plan. Each is sent at most once.
+- Payment is by Stripe's hosted checkout (card; Pix for one-time payments in reais once switched on in the dashboard). Until payments are switched on, choosing a plan or a pass says so and charges nothing.
 
 ## Privacy (applies from day one)
 

@@ -33,7 +33,7 @@ All paths below are relative to `docs/` unless they start with `apps/`, `package
 | **Landing page** | `design/design-audit.md`, `integrations/stripe.md` (mock pricing), `architecture/i18n.md`, ADR-0020 and `product/research/suggested-plans.md` (the suggested plan) | `Globetrot - Landing.html` in the handoff |
 | **Pip / AI** | ADR-0007, `product/business-rules.md` (AI), `design/pip-character.md` | Handoff "Pip" section, `atlas/app-core.js` (change lists), `atlas/pip.js` |
 | **Passport / stamps / ranks** | `product/business-rules.md` (Readiness, Passport, Progression) | — |
-| **Stripe / billing** | `integrations/stripe.md`, `product/business-rules.md#plans-trial-and-pip-credits`, ADR-0019 | `packages/domain/src/billing.ts`, `packages/application/src/billing/`, `packages/db/src/billing-repository.ts`, `apps/api/src/routes/billing.ts`, `apps/web/app/app/plan/`, `apps/web/lib/plan-config.ts` |
+| **Stripe / billing** | `integrations/stripe.md`, `product/business-rules.md#plans-trial-and-pip-credits`, ADR-0019, ADR-0023 | `packages/domain/src/billing.ts`, `packages/application/src/billing/`, `packages/db/src/billing-repository.ts`, `apps/api/src/routes/billing.ts`, `apps/web/app/app/plan/`, `apps/web/lib/plan-config.ts` |
 | **MCP** | `integrations/mcp.md`, ADR-0006, ADR-0007, ADR-0005 | — |
 | **Accessibility / testing** | `engineering/testing-strategy.md`, `design/design-system.md` (Accessibility) | `packages/ui/scripts/check-a11y.mjs`, `apps/web/scripts/check-auth-pages.mjs` |
 | **Repo / CI / workflow** | `engineering/git-workflow.md`, `engineering/project-structure.md`, ADR-0009 | `.github/workflows/ci.yml`, `turbo.json`, `eslint.config.mjs` |

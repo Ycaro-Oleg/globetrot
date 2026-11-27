@@ -1,6 +1,6 @@
 # 0019. Plans, the free week and Pip credits
 
-- Status: Accepted (prices approved by the owner on 2026-11-13; payments are switched on when the Stripe keys are set)
+- Status: Accepted, partly superseded by [0023](0023-free-plan-trip-pass-and-prices-in-reais.md) (the free plan replaces read-only after the trial; prices in reais and the trip pass are added)
 - Date: 2026-11-14
 
 ## Context
