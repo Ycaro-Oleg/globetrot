@@ -25,7 +25,7 @@ One project, region US East. The three app services are created from the GitHub 
 |---|---|---|---|---|
 | `Postgres` | none (PostGIS template or `postgis/postgis:17-3.7` with a volume) | 5432 | — | Others read `${{Postgres.DATABASE_URL}}`. Backups: the volume's Backups tab, daily |
 | Bucket | none (Railway Bucket) | — | — | Private. Its Credentials tab gives the `S3_*` values; `S3_FORCE_PATH_STYLE=false` (try `true` if uploads fail) |
-| `api` | `apps/api/Dockerfile` | 4000 | `/ready` (checks the database) | **Pre-deploy command: `node dist/migrate.js`** (applies migrations, safe to repeat). No public domain |
+| `api` | `apps/api/Dockerfile` | 4000 | `/ready` (checks the database) | **Pre-deploy command: `node dist/migrate.js`** (applies migrations, safe to repeat). No public domain. `CLIENT_IP_HEADER=x-real-ip` |
 | `worker` | `apps/worker/Dockerfile` | — | none | Hourly housekeeping and the weekly reminders ([ADR-0017](../architecture/adr/0017-worker-housekeeping.md)); one instance |
 | `web` | `apps/web/Dockerfile` | 3000 | `/` | The only public service, on the custom domain. `API_INTERNAL_URL=http://${{api.RAILWAY_PRIVATE_DOMAIN}}:4000`. `NEXT_PUBLIC_*` values are **build arguments**: change one, redeploy |
 
@@ -33,7 +33,7 @@ The browser reaches `/api/auth/*` and `/v1/*` through the web service ([ADR-0010
 
 ## 3. Settings that production refuses to start without
 
-- **API:** `DATABASE_URL`, `BETTER_AUTH_SECRET` (32+ characters, not the dev one), `BETTER_AUTH_URL` (https, the public web origin), `SMTP_HOST`, `EMAIL_FROM`, `S3_ENDPOINT`, `S3_BUCKET`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY` (not the dev pair).
+- **API:** `DATABASE_URL`, `BETTER_AUTH_SECRET` (32+ characters, not the dev one), `BETTER_AUTH_URL` (https, the public web origin), `SMTP_HOST`, `EMAIL_FROM`, `S3_ENDPOINT`, `S3_BUCKET`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY` (not the dev pair), `CLIENT_IP_HEADER` (`x-real-ip` on Railway).
 - **Worker:** `DATABASE_URL`, the same `S3_*`, `SMTP_HOST`, `EMAIL_FROM` and an https `BETTER_AUTH_URL` (the trial emails).
 - **Web:** `API_INTERNAL_URL`.
 - Optional: `GEOAPIFY_API_KEY` (place search; without it search says it is unavailable) and `NEXT_PUBLIC_GEOAPIFY_API_KEY` (map tiles, restricted to the domain), `DEEPSEEK_API_KEY` with `DEEPSEEK_MODEL=deepseek-flash`, the `STRIPE_*` group, `GOOGLE_CLIENT_ID` + `GOOGLE_CLIENT_SECRET`, `ADMIN_EMAILS`, `SENTRY_DSN` and `NEXT_PUBLIC_SENTRY_DSN`, `NEXT_PUBLIC_POSTHOG_KEY`, `NEXT_PUBLIC_PLAUSIBLE_DOMAIN`, `NEXT_PUBLIC_META_PIXEL_ID`.
@@ -45,7 +45,7 @@ The browser reaches `/api/auth/*` and `/v1/*` through the web service ([ADR-0010
 2. Check the API's deploy logs show the migrations and that `/ready` passed the health check.
 3. Deploy the worker, then the web with its build arguments; add the custom domain to the web service and its CNAME in DNS (proxy off, "DNS only").
 4. Smoke test on the real domain: sign up with a real inbox, confirm the email, create a trip from the landing calculator, add a stop, a cost and a photo, ask Pip (if on), invite a second account, export your data, delete a test account.
-5. **Client address check:** send six wrong sign-ins to `https://<domain>/api/auth/sign-in/email`, each with a different made-up `X-Forwarded-For` header. The sixth must answer `429`, and the API logs must not contain "Rate limiting could not determine a client IP" (a `429` with that warning comes from one bucket shared by every visitor, not from your address). If either fails, Railway's edge is passing the client's header through and the rate limits can be bypassed: stop and fix the trust model ([authentication](../architecture/authentication.md#which-client-address-counts-trust-model)) before opening.
+5. **Client address check:** send six wrong sign-ins to `https://<domain>/api/auth/sign-in/email` with a made-up account, each with a different made-up `X-Real-IP` **and** a different made-up `X-Forwarded-For` header in the same request (for example `X-Real-IP: 203.0.113.1N` and `X-Forwarded-For: 198.51.100.1N` for N = 1 to 6). The sixth must answer `429`, and the API logs must not contain "Rate limiting could not determine a client IP" (a `429` with that warning comes from one bucket shared by every visitor, not from your address). If either fails, Railway's edge is passing the client's header through and the rate limits can be bypassed: stop and fix the trust model ([authentication](../architecture/authentication.md#which-client-address-counts-trust-model)) before opening.
 6. Check that responses are compressed (`content-encoding: br` or `gzip` on `/` and `/world-halftone-blue.svg`) and that the landing loads under 2.5 s on a phone.
 7. Point ads and posts aimed at Portuguese speakers to `https://<domain>/?lang=pt-BR`; an ad for one example can go straight to `https://<domain>/signup?next=%2Fapp%2Ftrips%3Fexample%3Dportugal&lang=pt-BR` (and English ones to `?lang=en`): the page opens in that language with no extra click ([`i18n.md`](../architecture/i18n.md)).
 8. Check response headers on `/` (`Strict-Transport-Security`, `X-Frame-Options`, `X-Content-Type-Options`) and that the consent banner appears only with a Pixel ID.
