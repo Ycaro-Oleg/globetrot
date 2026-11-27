@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 import { LogOut } from 'lucide-react';
 import { createAuthClient } from '../../../lib/auth-client';
+import { clearOfflineCopies } from '../../../lib/offline';
 import styles from './shell.module.css';
 
 export function SignOutButton() {
@@ -16,6 +17,8 @@ export function SignOutButton() {
   async function signOut() {
     if (pending) return;
     setPending(true);
+    // The saved trip screens belong to this account: they go with it.
+    await clearOfflineCopies();
     await client.signOut();
     // Even if the request failed the person asked to leave: go to the log-in page, which shows the truth.
     router.replace('/login');

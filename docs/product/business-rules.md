@@ -183,6 +183,14 @@ Decided in [ADR-0024](../architecture/adr/0024-trip-members.md).
 - Screens of a shared trip refresh every 30 seconds while open, and every trip refreshes when the person comes back to the tab. There is no live sync yet: the last save of the route wins.
 - **Money between the people** ([ADR-0025](../architecture/adr/0025-money-between-members.md)): the trip's total is split equally, or in custom parts the owner sets (adding up to the whole trip). Each person keeps their own "already set aside" and "each month" for their part and sees when they will have it. A cost can say who paid it (someone on the trip). **Settling up** counts only paid costs (never the rough guess) and says who pays whom, in as few payments as it finds; paid costs with nobody named stay out and the screen says how much. Paying each other happens outside Globetrot.
 
+## Offline reading
+
+Decided in [ADR-0027](../architecture/adr/0027-offline-reading.md).
+
+- On a paid plan, in the free week or on a trip with a pass, the trip's screens (Today, Map, Days, Money, Checklist) keep their last version on the device and open without a connection, with a line saying it is the last saved version.
+- Changes need a connection; nothing typed offline is saved later. Map tiles are not saved.
+- Signing out deletes the saved screens.
+
 ## The saving habit
 
 Decided in [ADR-0026](../architecture/adr/0026-saving-habit-and-countdown.md).
@@ -212,7 +220,7 @@ Decided in [ADR-0019](../architecture/adr/0019-plans-trial-and-pip-credits.md), 
 - **Top-up:** 200 credits for US$2.99 or R$14,90. They never expire and are spent after the monthly ones.
 - **Daily cap:** 40 Pip requests a day on any plan.
 - **Active trips** are trips that are not archived. Archiving frees a place; restoring a trip takes one. **Trips with a valid pass do not count.**
-- **A trip pass** opens everything paid on one trip (any number of people now; offline later), for one payment. It lasts until 30 days after the trip's last day, or 12 months from the purchase when the trip has no dates, and never less than 30 days. Only the trip's owner can buy it, from the trip's page.
+- **A trip pass** opens everything paid on one trip (any number of people, offline reading), for one payment. It lasts until 30 days after the trip's last day, or 12 months from the purchase when the trip has no dates, and never less than 30 days. Only the trip's owner can buy it, from the trip's page.
 - **More counted trips than the plan keeps** (after the free week, or when a plan lapses): creating or changing anything else waits, with the way out shown (archive trips, add a pass, or choose a plan).
   - Everything can still be seen and exported, and trips archived or deleted.
   - Settings, the community handle, deleting own posts and comments, reporting, muting and paying stay open.

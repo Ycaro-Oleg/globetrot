@@ -10,6 +10,8 @@ import { PlanBanner } from './plan-banner';
 import { PipLookProvider } from './pip-look';
 import { BottomBar, GlobalNav, TripTabs } from './nav-links';
 import { PipFab } from './pip-fab';
+import { offlineAllowed } from '../../../lib/offline';
+import { OfflineSupport } from './offline-support';
 import { TripRefresh } from './trip-refresh';
 import { TripSwitcher } from './trip-switcher';
 import styles from './shell.module.css';
@@ -65,6 +67,7 @@ export function AppShell({
           </header>
           <TripTabs variant="row" />
           <PlanBanner billing={billing} />
+          <OfflineSupport enabled={offlineAllowed(billing, activeTripId)} />
         </div>
 
         <main id="main" tabIndex={-1} className={styles.main}>

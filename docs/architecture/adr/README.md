@@ -36,3 +36,4 @@ ADRs 0010 to 0012 were written after the work they describe (#53 to #61), which 
 | [0024](0024-trip-members.md) | Trip members: editors and viewers by invite link (hash stored, 7 days), one access check, guest limit from the plan | Accepted |
 | [0025](0025-money-between-members.md) | Money between members: equal or custom parts, each person's savings, who paid, settling up the paid costs | Accepted |
 | [0026](0026-saving-habit-and-countdown.md) | The saving habit: weekly check-in with a streak, countdown phases, the Today screen and a weekly reminder email | Accepted |
+| [0027](0027-offline-reading.md) | Offline reading of a paid trip: a small service worker keeps the trip's screens, cleared on sign-out | Accepted |
