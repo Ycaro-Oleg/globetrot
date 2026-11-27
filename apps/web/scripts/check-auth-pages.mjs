@@ -857,6 +857,12 @@ try {
         VIEWPORTS[layout],
       ]);
     }
+    for (const [name, path, layout] of [
+      ['itinerary-pt-phone', '/roteiros/japao', 'phone'],
+      ['itinerary-en-desktop', '/itineraries/portugal?currency=EUR', 'desktop'],
+    ]) {
+      entries.push([name, false, async (page) => go(page, `${base}${path}`), VIEWPORTS[layout]]);
+    }
     entries.push([
       'invite-gone-phone',
       true,

@@ -183,6 +183,14 @@ Decided in [ADR-0024](../architecture/adr/0024-trip-members.md).
 - Screens of a shared trip refresh every 30 seconds while open, and every trip refreshes when the person comes back to the tab. There is no live sync yet: the last save of the route wins.
 - **Money between the people** ([ADR-0025](../architecture/adr/0025-money-between-members.md)): the trip's total is split equally, or in custom parts the owner sets (adding up to the whole trip). Each person keeps their own "already set aside" and "each month" for their part and sees when they will have it. A cost can say who paid it (someone on the trip). **Settling up** counts only paid costs (never the rough guess) and says who pays whom, in as few payments as it finds; paid costs with nobody named stay out and the screen says how much. Paying each other happens outside Globetrot.
 
+## Public itineraries and the progress card
+
+Decided in [ADR-0028](../architecture/adr/0028-public-itineraries-and-story-card.md).
+
+- Each suggested destination has a public itinerary page in Portuguese (`/roteiros/...`) and English (`/itineraries/...`): the reference route, the experiences (the little-known ones marked), the typical cost per person on a budget and in comfort with the research date, and what to set aside each month for 6 or 12 months. "Make this trip mine" opens the planner with that destination.
+- Prices are in US dollars until the visitor picks another currency on the page; the conversion says its source.
+- The trip's page offers a progress image for stories from the trip's public link: amounts only when the link shows amounts, otherwise the percentage saved.
+
 ## Offline reading
 
 Decided in [ADR-0027](../architecture/adr/0027-offline-reading.md).

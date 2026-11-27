@@ -91,6 +91,16 @@ export function LandingSuggest({ signupHref }: { signupHref: string }) {
   const heading = useRef<HTMLHeadingElement>(null);
   const moved = useRef(false);
 
+  // Arriving from a public itinerary ("Make this trip mine", `/?plano=japan#planner`): that destination is
+  // already picked, so the next step is what the person likes.
+  useEffect(() => {
+    const picked = new URLSearchParams(window.location.search).get('plano');
+    if (picked && SUGGESTED_DESTINATIONS.some((option) => option.id === picked)) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setDestination(picked);
+    }
+  }, []);
+
   const currency = toCurrencyCode(code);
   const unit = 10n ** BigInt(minorUnitExponent(currency));
   const whole = (value: number) =>
@@ -181,7 +191,12 @@ export function LandingSuggest({ signupHref }: { signupHref: string }) {
   const step = phase;
   const titles = [t('title'), t('stepLikes'), t('stepDays'), t('stepMoney')];
   return (
-    <section className={styles.calc} aria-labelledby={`${id}-title`} data-phase="steps">
+    <section
+      id="planner"
+      className={styles.calc}
+      aria-labelledby={`${id}-title`}
+      data-phase="steps"
+    >
       <div className={styles.calcHead}>
         <h2 id={`${id}-title`} ref={heading} tabIndex={-1} className={styles.calcTitle}>
           {titles[step]}

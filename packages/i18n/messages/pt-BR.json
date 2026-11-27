@@ -1651,7 +1651,8 @@
       "on": "O link está ativo.",
       "off": "O link foi desativado. O endereço antigo não abre mais.",
       "error": "Não deu certo. Tente de novo.",
-      "shareMoment": "Compartilhar minha viagem"
+      "shareMoment": "Compartilhar minha viagem",
+      "story": "Imagem para stories"
     }
   },
   "consent": {
@@ -1772,7 +1773,15 @@
     "note": "Compartilhado por quem está planejando. Só o mês aparece, nunca as datas exatas.",
     "metaDescription": "{title}: {nights, plural, one {# noite} other {# noites}}, planejada no Globetrot.",
     "ogReady": "Pronto em {month}",
-    "ogNights": "{nights, plural, one {# noite} other {# noites}}"
+    "ogNights": "{nights, plural, one {# noite} other {# noites}}",
+    "story": {
+      "left": "Faltam {amount}",
+      "progress": "{percent}% guardado",
+      "ready": "Pronto para ir",
+      "month": "Pronto em {month}",
+      "footer": "Planejado no Globetrot",
+      "download": "Imagem para stories"
+    }
   },
   "languageSuggestion": {
     "text": "O Globetrot também está em português.",
@@ -1963,5 +1972,36 @@
       "memories": "Marque os lugares que visitou",
       "settle": "Acerte as contas com quem viajou com você"
     }
+  },
+  "itinerary": {
+    "navLabel": "Globetrot",
+    "otherLanguage": "In English",
+    "kicker": "Roteiro",
+    "title": "{destination} em {days} dias",
+    "lead": "{stops, plural, one {# parada} other {# paradas}}, {nights} noites, com experiências que pouca gente conhece.",
+    "currencyLabel": "Preços em",
+    "costTitle": "Quanto costuma custar por pessoa",
+    "budget": "Econômico",
+    "comfort": "Conforto",
+    "save": "Para ir em 6 meses, guarde {six} por mês; em 12 meses, {twelve} por mês.",
+    "costNote": "Faixas típicas pesquisadas em {date}, sem a passagem de ida e volta. Estimativas, nunca cotações.",
+    "rateNote": "Convertido de dólares pela taxa de referência do Banco Central Europeu para {currency}.",
+    "cta": "Quero esse roteiro",
+    "nights": "{count, plural, one {# noite} other {# noites}}",
+    "offbeat": "Pouca gente conhece",
+    "free": "Grátis",
+    "leg": {
+      "flight": "De avião",
+      "train": "De trem",
+      "bus": "De ônibus",
+      "car": "De carro",
+      "boat": "De barco",
+      "walk": "A pé",
+      "other": "Como chegar"
+    },
+    "moreTitle": "Mais roteiros",
+    "metaTitle": "{destination} em {days} dias: roteiro, custos e quanto guardar",
+    "metaDescription": "Roteiro de {days} dias por {destination} com {stops} paradas, experiências fora do óbvio, o custo típico por pessoa e quanto guardar por mês.",
+    "imageCost": "Custo típico por pessoa: {cost}"
   }
 }

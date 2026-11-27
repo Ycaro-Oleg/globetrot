@@ -1,0 +1,209 @@
+/* A public itinerary: one readable column, the cost and the way to make it yours near the top. */
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  max-width: 760px;
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: 24px 16px 64px;
+  color: var(--gt-semantic-color-text);
+}
+
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.top a {
+  color: var(--gt-semantic-color-text);
+  font-weight: 700;
+}
+
+.logo {
+  color: #ea580c !important;
+  font-size: 22px;
+  font-weight: 800 !important;
+  text-decoration: none;
+}
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.kicker {
+  margin: 0;
+  color: var(--gt-semantic-color-primary);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.hero h1 {
+  margin: 0;
+  font-size: clamp(32px, 6vw, 52px);
+  letter-spacing: -0.025em;
+  line-height: 1.05;
+}
+
+.lead {
+  margin: 0;
+  color: var(--gt-semantic-color-text-secondary);
+  font-size: 18px;
+}
+
+.currencies {
+  display: flex;
+  gap: 4px;
+  align-self: flex-start;
+  padding: 4px;
+  border-radius: 999px;
+  background: var(--gt-semantic-color-surface-card);
+}
+
+.currencies a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: 999px;
+  color: var(--gt-semantic-color-text);
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.currencies a[aria-current='true'] {
+  background: var(--gt-semantic-color-primary);
+  color: var(--gt-semantic-color-on-primary);
+}
+
+.costs,
+.stops > li,
+.more {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 24px;
+  border: 1px solid var(--gt-semantic-color-hairline);
+  border-radius: 24px;
+  background: var(--gt-semantic-color-surface-card);
+}
+
+.costs h2,
+.stops h2,
+.more h2 {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 0;
+  font-size: 22px;
+}
+
+.stops h2 span {
+  color: var(--gt-semantic-color-text-secondary);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.costs dl {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px 40px;
+  margin: 0;
+}
+
+.costs dt {
+  color: var(--gt-semantic-color-text-secondary);
+  font-size: 14px;
+}
+
+.costs dd {
+  margin: 4px 0 0;
+  font-size: 26px;
+  font-weight: 800;
+}
+
+.costs p {
+  margin: 0;
+}
+
+.note,
+.leg {
+  color: var(--gt-semantic-color-text-secondary);
+  font-size: 13px;
+}
+
+.leg {
+  margin: 0;
+}
+
+.cta {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  min-height: 48px;
+  padding: 0 24px;
+  border-radius: 999px;
+  background: var(--gt-semantic-color-cta);
+  color: var(--gt-semantic-color-on-cta);
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.cta:hover {
+  filter: brightness(1.05);
+}
+
+.stops {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.stops ul,
+.more ul {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.stops ul li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 10px;
+}
+
+.offbeat {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--gt-semantic-color-primary-tint);
+  color: var(--gt-semantic-color-text);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.price {
+  margin-left: auto;
+  color: var(--gt-semantic-color-text-secondary);
+  font-size: 14px;
+}
+
+.more a {
+  color: var(--gt-semantic-color-primary);
+  font-weight: 700;
+}

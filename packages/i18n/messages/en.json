@@ -1651,7 +1651,8 @@
       "on": "The link is on.",
       "off": "The link is off. The old address no longer opens.",
       "error": "That did not work. Try again.",
-      "shareMoment": "Share my trip"
+      "shareMoment": "Share my trip",
+      "story": "Image for stories"
     }
   },
   "consent": {
@@ -1772,7 +1773,15 @@
     "note": "Shared by the person planning it. Only the month is shown, never the exact dates.",
     "metaDescription": "{title}: {nights, plural, one {# night} other {# nights}}, planned on Globetrot.",
     "ogReady": "Ready in {month}",
-    "ogNights": "{nights, plural, one {# night} other {# nights}}"
+    "ogNights": "{nights, plural, one {# night} other {# nights}}",
+    "story": {
+      "left": "{amount} to go",
+      "progress": "{percent}% saved",
+      "ready": "Ready to go",
+      "month": "Ready in {month}",
+      "footer": "Planned on Globetrot",
+      "download": "Image for stories"
+    }
   },
   "languageSuggestion": {
     "text": "Globetrot is also in English.",
@@ -1963,5 +1972,36 @@
       "memories": "Mark the places you visited",
       "settle": "Settle up with the people you travelled with"
     }
+  },
+  "itinerary": {
+    "navLabel": "Globetrot",
+    "otherLanguage": "Em português",
+    "kicker": "Itinerary",
+    "title": "{destination} in {days} days",
+    "lead": "{stops, plural, one {# stop} other {# stops}}, {nights} nights, with experiences few people talk about.",
+    "currencyLabel": "Prices in",
+    "costTitle": "What it typically costs per person",
+    "budget": "Budget",
+    "comfort": "Comfort",
+    "save": "To go in 6 months, set aside {six} a month; in 12 months, {twelve} a month.",
+    "costNote": "Typical ranges researched on {date}, without flights from home. Estimates, never quotes.",
+    "rateNote": "Converted from US dollars at the European Central Bank reference rate for {currency}.",
+    "cta": "Make this trip mine",
+    "nights": "{count, plural, one {# night} other {# nights}}",
+    "offbeat": "Few people know it",
+    "free": "Free",
+    "leg": {
+      "flight": "By plane",
+      "train": "By train",
+      "bus": "By bus",
+      "car": "By car",
+      "boat": "By boat",
+      "walk": "On foot",
+      "other": "Getting there"
+    },
+    "moreTitle": "More itineraries",
+    "metaTitle": "{destination} in {days} days: itinerary, costs and how much to save",
+    "metaDescription": "A {days}-day {destination} itinerary with {stops} stops, experiences off the usual list, the typical cost per person and how much to set aside each month.",
+    "imageCost": "Typical cost per person: {cost}"
   }
 }

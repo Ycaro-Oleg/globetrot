@@ -95,6 +95,17 @@ export function ShareCard({
                 {t('postX')}
               </a>
             ) : null}
+            {share.slug ? (
+              <a
+                className={styles.tool}
+                href={`/t/${share.slug}/story`}
+                download={`${title}.png`}
+                target="_blank"
+                rel="noopener"
+              >
+                {t('story')}
+              </a>
+            ) : null}
           </div>
           <label className={styles.check}>
             <input
