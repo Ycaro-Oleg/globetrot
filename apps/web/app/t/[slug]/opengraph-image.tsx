@@ -2,6 +2,7 @@ import { ImageResponse } from 'next/og';
 import { getLocale, getTranslations } from 'next-intl/server';
 import { arcPath, routeSketch } from '../../../lib/route-sketch';
 import { fetchSharedTrip, formatMonth } from '../../../lib/shared-trip';
+import { BrandLockup } from '../../brand-mark';
 import { SITE_NAME } from '../../site';
 
 export const size = { width: 1200, height: 630 };
@@ -54,9 +55,7 @@ export default async function SharedTripImage({ params }: { params: Promise<{ sl
           flex: 1,
         }}
       >
-        <div style={{ display: 'flex', fontSize: 34, fontWeight: 800, color: '#fb923c' }}>
-          {SITE_NAME.toLowerCase()}
-        </div>
+        <BrandLockup fontSize={34} color="#f8fafc" />
         <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
           <div
             style={{

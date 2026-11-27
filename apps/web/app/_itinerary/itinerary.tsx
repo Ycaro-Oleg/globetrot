@@ -107,7 +107,7 @@ export async function Itinerary({
     <main className={styles.page} lang={locale}>
       <nav className={styles.top} aria-label={t('navLabel')}>
         <Link href="/" className={styles.logo}>
-          {SITE_NAME.toLowerCase()}
+          {SITE_NAME}
         </Link>
         <Link href={itineraryPath(destination, pt ? 'en' : 'pt')} hrefLang={pt ? 'en' : 'pt-BR'}>
           {t('otherLanguage')}

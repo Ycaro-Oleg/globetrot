@@ -2,7 +2,7 @@ import { formatMoney, fromDecimal, subtract } from '@globetrot/domain';
 import { ImageResponse } from 'next/og';
 import { getTranslations } from 'next-intl/server';
 import { fetchSharedTrip, formatMonth } from '../../../../lib/shared-trip';
-import { SITE_NAME } from '../../../site';
+import { BrandLockup } from '../../../brand-mark';
 
 /**
  * The progress card for stories (1080×1920, ADR-0028), made from a trip's public link: the trip, how far the
@@ -48,9 +48,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ slu
         fontFamily: 'sans-serif',
       }}
     >
-      <div style={{ display: 'flex', fontSize: 44, fontWeight: 800, color: '#f97316' }}>
-        {SITE_NAME.toLowerCase()}
-      </div>
+      <BrandLockup fontSize={44} color="#f8fafc" />
       <div style={{ display: 'flex', flexDirection: 'column', gap: 40 }}>
         <div style={{ display: 'flex', fontSize: 104, fontWeight: 800, lineHeight: 1.02 }}>
           {trip.title}

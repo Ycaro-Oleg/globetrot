@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
+import { Logomark } from '../logomark';
 import { SITE_NAME } from '../site';
 import { LanguageSwitcher } from './_components/language-switcher';
 import styles from './auth.module.css';
@@ -24,7 +25,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
       <main className={styles.panel}>
         <div className={styles.panelInner}>
           <Link href="/" className={styles.brand} aria-label={SITE_NAME}>
-            <span className={styles.brandMark} aria-hidden="true" />
+            <Logomark className={styles.brandMark} />
             <span>{SITE_NAME}</span>
           </Link>
           {children}

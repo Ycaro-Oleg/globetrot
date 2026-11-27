@@ -1,6 +1,7 @@
 import { formatMoney, type SuggestedDestination } from '@globetrot/domain';
 import { ImageResponse } from 'next/og';
 import { getTranslations } from 'next-intl/server';
+import { BrandLockup } from '../brand-mark';
 import { SITE_NAME } from '../site';
 import { referencePlan, type ItineraryLanguage } from './itinerary';
 
@@ -36,9 +37,7 @@ export async function itineraryImage(
         fontFamily: 'sans-serif',
       }}
     >
-      <div style={{ display: 'flex', fontSize: 32, fontWeight: 800, color: '#f97316' }}>
-        {SITE_NAME.toLowerCase()}
-      </div>
+      <BrandLockup fontSize={32} color="#f8fafc" />
       <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
         <div style={{ display: 'flex', fontSize: 66, fontWeight: 800, lineHeight: 1.05 }}>
           {title}

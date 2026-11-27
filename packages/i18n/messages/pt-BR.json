@@ -563,6 +563,7 @@
     "metaHeadline": "Sua próxima viagem, além do óbvio.",
     "ogTrial": "{days} dias grátis",
     "ogQuestion": "Dá para ir?",
+    "ogYes": "Sim:",
     "ogAnswer": "{count, plural, one {# mês} other {# meses}} guardando {monthly} por mês.",
     "navStart": "Testar grátis",
     "closeTitle": "Sua próxima viagem tem data. Descubra qual.",

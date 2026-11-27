@@ -3,6 +3,7 @@ import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { ImageResponse } from 'next/og';
 import { getLocale, getTranslations } from 'next-intl/server';
+import { BrandLockup } from './brand-mark';
 import { SITE_NAME } from './site';
 
 export const size = { width: 1200, height: 630 };
@@ -58,32 +59,7 @@ export default async function OpengraphImage() {
           flex: 1,
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-          <div
-            style={{
-              display: 'flex',
-              width: 40,
-              height: 40,
-              borderRadius: 999,
-              border: '5px solid #f97316',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <div
-              style={{
-                display: 'flex',
-                width: 16,
-                height: 16,
-                borderRadius: 999,
-                background: '#f97316',
-              }}
-            />
-          </div>
-          <div style={{ display: 'flex', fontSize: 38, fontWeight: 800, letterSpacing: -1 }}>
-            {SITE_NAME.toLowerCase()}
-          </div>
-        </div>
+        <BrandLockup fontSize={38} color="#f8fafc" />
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           <div
             style={{
@@ -192,7 +168,7 @@ export default async function OpengraphImage() {
               lineHeight: 1.15,
             }}
           >
-            <span style={{ color: '#15803d', marginRight: 8 }}>{t('calc.yes')}</span>
+            <span style={{ color: '#15803d', marginRight: 8 }}>{t('ogYes')}</span>
             <span>{t('ogAnswer', { count: 9, monthly })}</span>
           </div>
         </div>

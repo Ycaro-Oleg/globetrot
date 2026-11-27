@@ -8,6 +8,7 @@ import { useEffect, useRef, useState, useTransition, type FormEvent } from 'reac
 import { track } from '../../lib/analytics';
 import { confetti } from '../../lib/confetti';
 import { livePlan, parseAmount } from '../app/budget/budget-plan';
+import { Logomark } from '../logomark';
 import { SITE_NAME } from '../site';
 import { currencyOptions } from '../settings/options';
 import { finishOnboarding, type OnboardingPlace } from './actions';
@@ -247,8 +248,8 @@ export function OnboardingFlow({
       <form className={styles.panel} onSubmit={next} noValidate>
         <header className={styles.top}>
           <Link href="/app" className={styles.brand}>
-            <span className={styles.brandRing} aria-hidden="true" />
-            <span>{SITE_NAME.toLowerCase()}</span>
+            <Logomark className={styles.brandRing} />
+            <span>{SITE_NAME}</span>
           </Link>
           <span className={styles.skip}>{t('skipNote')}</span>
         </header>

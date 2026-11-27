@@ -563,6 +563,7 @@
     "metaHeadline": "Your next trip, beyond the obvious.",
     "ogTrial": "{days} days free",
     "ogQuestion": "Can I go?",
+    "ogYes": "Yes:",
     "ogAnswer": "{count, plural, one {# month} other {# months}} at {monthly} a month.",
     "navStart": "Try free",
     "closeTitle": "Your next trip has a date. Find it.",

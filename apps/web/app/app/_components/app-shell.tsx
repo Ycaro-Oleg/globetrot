@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import type { ReactNode } from 'react';
 import type { TripView } from '../../../lib/trips';
+import { Logomark } from '../../logomark';
 import { SITE_NAME } from '../../site';
 import { DEFAULT_PIP_LOOK, type PipLook } from '@globetrot/domain';
 import type { BillingView } from '../../../lib/billing';
@@ -56,8 +57,8 @@ export function AppShell({
         <div className={styles.top}>
           <header className={styles.bar}>
             <Link href="/app/board" className={styles.logo}>
-              <span className={styles.logoRing} aria-hidden="true" />
-              <span className={styles.wordmark}>{SITE_NAME.toLowerCase()}</span>
+              <Logomark className={styles.logoRing} />
+              <span className={styles.wordmark}>{SITE_NAME}</span>
             </Link>
             <TripSwitcher trips={trips} activeTripId={activeTripId} />
             <TripTabs variant="inline" />

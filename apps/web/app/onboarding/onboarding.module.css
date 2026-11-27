@@ -38,13 +38,9 @@
 }
 
 .brandRing {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: #f97316;
-  box-shadow:
-    inset 0 0 0 5px #f8f9fa,
-    0 0 0 2px #f97316;
+  flex: none;
+  width: 32px;
+  height: 32px;
 }
 
 .skip {

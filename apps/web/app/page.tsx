@@ -24,6 +24,7 @@ import { PipDemo, Pricing } from './landing-interactive';
 import { StickyCta } from './landing-sticky-cta';
 import { ConsentLink } from './analytics';
 import { TrackedLink } from './tracked-link';
+import { Logomark } from './logomark';
 import { SITE_NAME } from './site';
 import styles from './landing.module.css';
 
@@ -185,8 +186,8 @@ export default function HomePage() {
       <section className={styles.hero} id="top" aria-labelledby="hero-title">
         <header className={styles.nav}>
           <Link href="/" className={styles.brand}>
-            <span className={styles.brandRing} aria-hidden="true" />
-            <span>{SITE_NAME.toLowerCase()}</span>
+            <Logomark className={styles.brandRing} onDark />
+            <span>{SITE_NAME}</span>
           </Link>
           <nav className={styles.navLinks} aria-label={t('navSections')}>
             <a href="#how">{t('navHow')}</a>
@@ -409,8 +410,8 @@ export default function HomePage() {
       <footer className={styles.footer}>
         <div className={styles.footerInner}>
           <span className={styles.brand}>
-            <span className={styles.brandRing} aria-hidden="true" />
-            <span>{SITE_NAME.toLowerCase()}</span>
+            <Logomark className={styles.brandRing} onDark />
+            <span>{SITE_NAME}</span>
           </span>
           <span>{t('footTagline')}</span>
           <span>{t('mapAttribution')}</span>
