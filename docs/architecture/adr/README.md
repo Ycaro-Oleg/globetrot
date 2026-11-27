@@ -31,7 +31,7 @@ ADRs 0010 to 0012 were written after the work they describe (#53 to #61), which 
 | [0019](0019-plans-trial-and-pip-credits.md) | Plans, the free week and Pip credits: credits per request, payments behind a port (read-only after the trial superseded by 0023) | Partly superseded |
 | [0020](0020-suggested-plans-and-curated-cost-ranges.md) | Suggested plans: curated destinations, experiences and typical cost ranges with a research date; the landing plans the trip | Accepted |
 | [0021](0021-error-monitoring-and-product-analytics.md) | Error monitoring with Sentry and product analytics with PostHog, both off unless configured and without personal data | Accepted |
-| [0022](0022-backup-ai-provider.md) | A backup AI provider for Pip: Claude Haiku, asked when DeepSeek does not answer | Accepted |
+| [0022](0022-backup-ai-provider.md) | A backup AI provider for Pip: Claude Haiku, asked when DeepSeek does not answer | Accepted, dormant |
 | [0023](0023-free-plan-trip-pass-and-prices-in-reais.md) | A free plan for one trip, the trip pass and prices in reais; no read-only wall after the free week | Accepted |
 | [0024](0024-trip-members.md) | Trip members: editors and viewers by invite link (hash stored, 7 days), one access check, guest limit from the plan | Accepted |
 | [0025](0025-money-between-members.md) | Money between members: equal or custom parts, each person's savings, who paid, settling up the paid costs | Accepted |
