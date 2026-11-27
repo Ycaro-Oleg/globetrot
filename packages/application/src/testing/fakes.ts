@@ -75,6 +75,8 @@ export interface FakeState {
   money: PersonMoneyRecord[];
   /** Accounts that may see the internal dashboard. */
   admins: string[];
+  /** Forwarding tokens by account (ADR-0032). */
+  inbound: Map<string, string>;
   /** Miles balances and the miles put towards trips (ADR-0030). */
   miles: { userId: string; program: MilesProgram; balance: number }[];
   tripMiles: { tripId: string; userId: string; program: MilesProgram; miles: number }[];
@@ -153,6 +155,7 @@ export function createFakePorts(options: FakeOptions = {}) {
     money: [],
     checkins: [],
     admins: [],
+    inbound: new Map(),
     miles: [],
     tripMiles: [],
     invites: [],
@@ -579,6 +582,14 @@ export function createFakePorts(options: FakeOptions = {}) {
     async recordUsage(row) {
       state.aiUsage.push({ userId: row.userId, createdAt: row.createdAt });
     },
+    async findInboundUser(token) {
+      for (const [userId, value] of state.inbound) if (value === token) return userId;
+      return null;
+    },
+    async ensureInboundToken(userId, candidate) {
+      if (!state.inbound.has(userId)) state.inbound.set(userId, candidate);
+      return state.inbound.get(userId)!;
+    },
     async countRequestsSince(userId, since) {
       return state.aiUsage.filter((u) => u.userId === userId && u.createdAt >= since).length;
     },
@@ -907,6 +918,7 @@ export function createFakePorts(options: FakeOptions = {}) {
           money: [...state.money],
           checkins: [...state.checkins],
           admins: [...state.admins],
+          inbound: new Map(state.inbound),
           miles: [...state.miles],
           tripMiles: [...state.tripMiles],
           invites: [...state.invites],

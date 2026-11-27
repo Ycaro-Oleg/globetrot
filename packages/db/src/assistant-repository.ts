@@ -1,6 +1,6 @@
 import { and, count, desc, eq, gte } from 'drizzle-orm';
 import type { Database } from './client';
-import { aiProposal, aiUsage } from './schema';
+import { aiProposal, aiUsage, inboundAddress } from './schema';
 
 /** PostgreSQL adapter for Pip's proposals and usage (packages/application/src/ports.ts). */
 
@@ -22,6 +22,25 @@ export interface ProposalRow {
 
 export function createAssistantRepository(executor: Executor) {
   return {
+    async findInboundUser(token: string): Promise<string | null> {
+      const [row] = await executor
+        .select({ userId: inboundAddress.userId })
+        .from(inboundAddress)
+        .where(eq(inboundAddress.token, token));
+      return row?.userId ?? null;
+    },
+    async ensureInboundToken(userId: string, candidate: string, at: Date): Promise<string> {
+      await executor
+        .insert(inboundAddress)
+        .values({ userId, token: candidate, createdAt: at })
+        .onConflictDoNothing();
+      const [row] = await executor
+        .select({ token: inboundAddress.token })
+        .from(inboundAddress)
+        .where(eq(inboundAddress.userId, userId));
+      if (!row) throw new Error('inbound address was not stored');
+      return row.token;
+    },
     async findProposal(id: string): Promise<ProposalRow | null> {
       const [row] = await executor.select().from(aiProposal).where(eq(aiProposal.id, id));
       return row ?? null;

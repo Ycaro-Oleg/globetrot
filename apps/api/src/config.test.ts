@@ -385,3 +385,20 @@ describe('the internal dashboard', () => {
     ).toEqual(['owner@example.com', 'b@example.com']);
   });
 });
+
+describe('bookings by email', () => {
+  it('stay off without the secret and the domain, and on with both', () => {
+    expect(loadApiConfig({ DATABASE_URL }).inboundEmail).toBeNull();
+    expect(
+      loadApiConfig({
+        DATABASE_URL,
+        INBOUND_EMAIL_SECRET: 'a-long-shared-secret-1234567890',
+        INBOUND_EMAIL_DOMAIN: 'in.example.com',
+      }).inboundEmail,
+    ).toEqual({
+      secret: 'a-long-shared-secret-1234567890',
+      domain: 'in.example.com',
+      local: 'trips',
+    });
+  });
+});

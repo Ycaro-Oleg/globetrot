@@ -1,5 +1,6 @@
 import {
   createApplication,
+  createInboundEmail,
   createPaymentEvents,
   createSharedTrips,
   type EmailPort,
@@ -118,44 +119,46 @@ export function createServices(
     shares: createShareRepository(db),
     preferences: createPreferencesRepository(db),
   };
+  const assistant = createAssistantRepository(db);
+  const application = createApplication({
+    ...reads,
+    users,
+    checklist: createChecklistRepository(db),
+    members: createMemberRepository(db),
+    dayPlaces: createDayPlaceRepository(db),
+    visas: createVisaRepository(db),
+    community: createCommunityRepository(db),
+    media: createMediaRepository(db),
+    account: createAccountRepository(db),
+    assistant,
+    billing,
+    // Without Stripe settings, checkout answers 503 (ADR-0019).
+    payments,
+    ai:
+      overrides.ai ??
+      fallbackAi([createDeepSeekAi(config.ai), createAnthropicAi(config.aiFallback)]),
+    storage: overrides.storage ?? createS3Storage(config.storage),
+    unitOfWork,
+    clock,
+    ids,
+    geocoding: overrides.geocoding ?? createGeoapifyGeocoder(config.geoapifyKey),
+    cities: createCityIndex(),
+    rateLimiter: createMemoryRateLimiter(),
+    // The internal dashboard (ADR-0031): only the addresses in ADMIN_EMAILS, with a verified email.
+    admins: {
+      async isAdmin(userId: string) {
+        const user = await users.findById(userId);
+        return Boolean(
+          user?.emailVerified && config.adminEmails.includes(user.email.toLowerCase()),
+        );
+      },
+    },
+    metrics: createMetricsRepository(db),
+  });
   const app = createApp({
     auth: toAuthService(auth),
     sharedTrips: createSharedTrips({ ...reads, clock }),
-    application: createApplication({
-      ...reads,
-      users,
-      checklist: createChecklistRepository(db),
-      members: createMemberRepository(db),
-      dayPlaces: createDayPlaceRepository(db),
-      visas: createVisaRepository(db),
-      community: createCommunityRepository(db),
-      media: createMediaRepository(db),
-      account: createAccountRepository(db),
-      assistant: createAssistantRepository(db),
-      billing,
-      // Without Stripe settings, checkout answers 503 (ADR-0019).
-      payments,
-      ai:
-        overrides.ai ??
-        fallbackAi([createDeepSeekAi(config.ai), createAnthropicAi(config.aiFallback)]),
-      storage: overrides.storage ?? createS3Storage(config.storage),
-      unitOfWork,
-      clock,
-      ids,
-      geocoding: overrides.geocoding ?? createGeoapifyGeocoder(config.geoapifyKey),
-      cities: createCityIndex(),
-      rateLimiter: createMemoryRateLimiter(),
-      // The internal dashboard (ADR-0031): only the addresses in ADMIN_EMAILS, with a verified email.
-      admins: {
-        async isAdmin(userId: string) {
-          const user = await users.findById(userId);
-          return Boolean(
-            user?.emailVerified && config.adminEmails.includes(user.email.toLowerCase()),
-          );
-        },
-      },
-      metrics: createMetricsRepository(db),
-    }),
+    application,
     trustedOrigins: config.auth.trustedOrigins,
     readiness: async () => {
       await db.execute(sql`select 1`);
@@ -163,6 +166,12 @@ export function createServices(
     },
     enabledProviders: config.auth.google ? ['google'] : [],
     paymentWebhook: config.stripe ? (raw, signature) => webhook.handle(raw, signature) : undefined,
+    inboundEmail: config.inboundEmail
+      ? {
+          ...config.inboundEmail,
+          receive: createInboundEmail({ assistant, trips }, application).receive,
+        }
+      : undefined,
     onUnexpectedError: reportError,
   });
   return { auth, app };

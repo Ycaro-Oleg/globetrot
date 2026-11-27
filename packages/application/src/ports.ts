@@ -669,9 +669,13 @@ export interface AssistantReader {
   listProposals(tripId: string, limit: number): Promise<ProposalRecord[]>;
   /** How many times the person asked an AI in a window (each costs tokens, answered or not). */
   countRequestsSince(userId: string, since: Date): Promise<number>;
+  /** Whose forwarding address a token is (ADR-0032), or null. */
+  findInboundUser(token: string): Promise<string | null>;
 }
 
 export interface AssistantWriter extends AssistantReader {
+  /** The account's forwarding token, made with `candidate` the first time. */
+  ensureInboundToken(userId: string, candidate: string, at: Date): Promise<string>;
   insertProposal(
     record: Omit<ProposalRecord, 'applied' | 'undo' | 'decidedAt' | 'status'>,
   ): Promise<void>;

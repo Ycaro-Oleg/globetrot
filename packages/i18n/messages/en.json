@@ -1550,7 +1550,16 @@
       "lists": "Ask Pip what to pack"
     },
     "creditsLeft": "{count, plural, one {# Pip credit left} other {# Pip credits left}}",
-    "seePlans": "See plans"
+    "seePlans": "See plans",
+    "forward": {
+      "title": "Forward your bookings",
+      "body": "Forward a flight, hotel or tour confirmation to this address: Pip reads it and proposes adding it to your latest trip, for you to review here.",
+      "label": "Your forwarding address",
+      "copy": "Copy",
+      "copied": "Address copied.",
+      "copyFailed": "Could not copy: select the address and copy it.",
+      "note": "Only the start of the email is read. Costs come in as estimates for you to mark as paid. It uses a Pip credit."
+    }
   },
   "tripHub": {
     "metaTitle": "Trip",

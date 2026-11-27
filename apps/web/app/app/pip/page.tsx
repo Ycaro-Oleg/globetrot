@@ -7,6 +7,7 @@ import { createServerApiClient, sessionCookieHeader } from '../../../lib/stored-
 import { fetchDestinations, fetchTrips, SELECTED_TRIP_COOKIE } from '../../../lib/trips';
 import { fetchBilling } from '../../../lib/billing';
 import { SITE_NAME } from '../../site';
+import { ForwardCard } from './forward-card';
 import { PipView } from './pip-view';
 
 export async function generateMetadata() {
@@ -35,7 +36,16 @@ export default async function PipPage({
   const trips = options ? ((await fetchTrips(options)) ?? []) : [];
   const savedId = store.get(SELECTED_TRIP_COOKIE)?.value;
   const trip = trips.find((candidate) => candidate.id === savedId) ?? trips[0] ?? null;
-  const billing = options ? await fetchBilling(options) : null;
+  const [billing, forward] = options
+    ? await Promise.all([
+        fetchBilling(options),
+        // The address for forwarding bookings, when forwarding is switched on (ADR-0032).
+        createServerApiClient(options)
+          .POST('/v1/me/inbound')
+          .then((r) => r.data?.address ?? null)
+          .catch(() => null),
+      ])
+    : [null, null];
   const [stops, proposals] =
     options && trip
       ? await Promise.all([
@@ -47,12 +57,15 @@ export default async function PipPage({
         ])
       : [null, []];
   return (
-    <PipView
-      trip={trip ? { id: trip.id, title: trip.title, currency: trip.currency } : null}
-      stops={(stops ?? []).map((stop) => ({ id: stop.id, name: stop.name }))}
-      initial={proposals}
-      idea={idea}
-      credits={billing?.credits.total ?? null}
-    />
+    <>
+      <PipView
+        trip={trip ? { id: trip.id, title: trip.title, currency: trip.currency } : null}
+        stops={(stops ?? []).map((stop) => ({ id: stop.id, name: stop.name }))}
+        initial={proposals}
+        idea={idea}
+        credits={billing?.credits.total ?? null}
+      />
+      {forward ? <ForwardCard address={forward} /> : null}
+    </>
   );
 }
