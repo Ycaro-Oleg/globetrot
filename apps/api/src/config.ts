@@ -46,7 +46,7 @@ const envSchema = z.object({
   GEOAPIFY_API_KEY: z.string().optional(),
   DEEPSEEK_API_KEY: z.string().optional(),
   DEEPSEEK_BASE_URL: z.url().default('https://api.deepseek.com'),
-  DEEPSEEK_MODEL: z.string().default('deepseek-chat'),
+  DEEPSEEK_MODEL: z.string().default('deepseek-flash'),
   SENTRY_DSN: z.url().optional(),
   ADMIN_EMAILS: z.string().optional(),
   INBOUND_EMAIL_SECRET: z.string().min(24).optional(),
