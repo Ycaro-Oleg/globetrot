@@ -127,6 +127,14 @@ export function PinCard({
   const t = useTranslations('mapBoard.card');
   const counts = kitCounts(stop);
   const [note, setNote] = useState(stop.note);
+  const noteField = useRef<HTMLTextAreaElement>(null);
+  // The note grows with its text, so nobody has to drag it open (browsers without CSS field sizing).
+  useEffect(() => {
+    const field = noteField.current;
+    if (!field || CSS.supports?.('field-sizing', 'content')) return;
+    field.style.height = 'auto';
+    field.style.height = `${field.scrollHeight + 2}px`;
+  }, [note, tab]);
   const [spotDraft, setSpotDraft] = useState('');
   const [spotKind, setSpotKind] = useState<SpotKind>('sight');
   const spotInput = useRef<HTMLInputElement>(null);
@@ -645,6 +653,7 @@ export function PinCard({
             </label>
             <textarea
               id="stop-note"
+              ref={noteField}
               className={styles.noteField}
               value={note}
               maxLength={NOTE_MAX}

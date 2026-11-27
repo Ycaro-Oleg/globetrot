@@ -990,10 +990,15 @@
   font-size: 11px;
 }
 
+/* The note grows with what is written (never wider than the card); the card scrolls when it gets long. */
 .noteField {
+  box-sizing: border-box;
+  display: block;
   width: 100%;
   min-height: 140px;
   padding: 12px;
+  overflow: hidden;
+  field-sizing: content;
   border: 1px solid #8a94a3;
   border-radius: 14px;
   background: #fff;
@@ -1001,7 +1006,7 @@
   font: inherit;
   font-size: 14px;
   line-height: 1.55;
-  resize: vertical;
+  resize: none;
 }
 
 .autosave {
