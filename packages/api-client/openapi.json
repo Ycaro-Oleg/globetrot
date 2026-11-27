@@ -1731,7 +1731,7 @@
             }
           },
           "402": {
-            "description": "The plan’s active trips are used (`TRIP_LIMIT_REACHED`) or the trial is over (`PLAN_REQUIRED`).",
+            "description": "The plan’s active trips are used (`TRIP_LIMIT_REACHED`) or more trips are active than the plan keeps (`PLAN_REQUIRED`).",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -2098,7 +2098,7 @@
             }
           },
           "402": {
-            "description": "The plan’s active trips are used (`TRIP_LIMIT_REACHED`) or the trial is over (`PLAN_REQUIRED`).",
+            "description": "The plan’s active trips are used (`TRIP_LIMIT_REACHED`) or more trips are active than the plan keeps (`PLAN_REQUIRED`).",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -2511,7 +2511,7 @@
             }
           },
           "402": {
-            "description": "The plan’s active trips are used (`TRIP_LIMIT_REACHED`) or the trial is over (`PLAN_REQUIRED`).",
+            "description": "The plan’s active trips are used (`TRIP_LIMIT_REACHED`) or more trips are active than the plan keeps (`PLAN_REQUIRED`).",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -22419,7 +22419,7 @@
             }
           },
           "402": {
-            "description": "Pip credits are used up (`OUT_OF_CREDITS`) or the trial is over (`PLAN_REQUIRED`).",
+            "description": "Pip credits are used up (`OUT_OF_CREDITS`) or more trips are active than the plan keeps (`PLAN_REQUIRED`).",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -25158,8 +25158,8 @@
         "tags": [
           "Account"
         ],
-        "summary": "The caller’s plan, trial and Pip credits",
-        "description": "Whether the account is in its 7-day trial, on Explorer or Voyager, or read-only after the trial; the active-trip limit; and Pip credits left this period (monthly first, then bought ones). Commands refused by the plan answer `402` with `PLAN_REQUIRED`, `TRIP_LIMIT_REACHED` or `OUT_OF_CREDITS` (ADR-0019).",
+        "summary": "The caller’s plan, trial, trip passes and Pip credits",
+        "description": "Whether the account is in its 7-day trial, on Explorer or Voyager, or on the free plan; the active-trip limit (trips with a pass do not count) and whether more trips are active than it keeps; the currency prices are shown in; and Pip credits left this period (monthly first, then bought ones). Commands refused by the plan answer `402` with `PLAN_REQUIRED`, `TRIP_LIMIT_REACHED` or `OUT_OF_CREDITS` (ADR-0019, ADR-0023).",
         "security": [
           {
             "cookieAuth": []
@@ -25179,11 +25179,36 @@
                         "trial",
                         "explorer",
                         "voyager",
-                        "expired"
+                        "free"
                       ]
                     },
-                    "readOnly": {
+                    "overLimit": {
                       "type": "boolean"
+                    },
+                    "priceCurrency": {
+                      "type": "string",
+                      "enum": [
+                        "USD",
+                        "BRL"
+                      ]
+                    },
+                    "passes": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "tripId": {
+                            "type": "string"
+                          },
+                          "validUntil": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "tripId",
+                          "validUntil"
+                        ]
+                      }
                     },
                     "trialEndsAt": {
                       "type": "string"
@@ -25240,6 +25265,9 @@
                     "activeTrips": {
                       "type": "integer"
                     },
+                    "countedTrips": {
+                      "type": "integer"
+                    },
                     "credits": {
                       "type": "object",
                       "properties": {
@@ -25274,7 +25302,9 @@
                   },
                   "required": [
                     "access",
-                    "readOnly",
+                    "overLimit",
+                    "priceCurrency",
+                    "passes",
                     "trialEndsAt",
                     "trialDaysLeft",
                     "plan",
@@ -25283,6 +25313,7 @@
                     "renewsAt",
                     "maxActiveTrips",
                     "activeTrips",
+                    "countedTrips",
                     "credits"
                   ]
                 }
@@ -25356,8 +25387,8 @@
         "tags": [
           "Account"
         ],
-        "summary": "A hosted checkout for a plan or extra Pip credits",
-        "description": "Answers the payment provider’s checkout URL for Explorer or Voyager (monthly or yearly) or a top-up of Pip credits. Works when the account is read-only. `503` while payments are not switched on.",
+        "summary": "A hosted checkout for a plan, extra Pip credits or a trip pass",
+        "description": "Answers the payment provider’s checkout URL for Explorer or Voyager (monthly or yearly), a top-up of Pip credits or a pass for one of the person’s trips (ADR-0023), in reais when their currency is BRL and in US dollars otherwise. Works over the trip limit. `404` for a pass on a trip that is not theirs, `503` while payments are not switched on.",
         "security": [
           {
             "cookieAuth": []
@@ -25375,7 +25406,8 @@
                     "enum": [
                       "explorer",
                       "voyager",
-                      "top-up"
+                      "top-up",
+                      "trip-pass"
                     ]
                   },
                   "interval": {
@@ -25384,6 +25416,11 @@
                       "month",
                       "year"
                     ]
+                  },
+                  "tripId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "The trip a pass is for."
                   }
                 },
                 "required": [
@@ -25414,6 +25451,64 @@
           },
           "401": {
             "description": "No valid session.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "description": "A URN identifying the kind of problem."
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "integer"
+                    },
+                    "code": {
+                      "type": "string",
+                      "description": "Stable machine-readable code. Clients switch on this."
+                    },
+                    "detail": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "field": {
+                            "type": "string"
+                          },
+                          "code": {
+                            "type": "string"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "field",
+                          "code",
+                          "message"
+                        ]
+                      },
+                      "description": "Per-field problems, present for VALIDATION_FAILED."
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "title",
+                    "status",
+                    "code"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The trip for the pass is not one of the person’s trips.",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -26088,7 +26183,7 @@
             }
           },
           "402": {
-            "description": "The trial is over (`PLAN_REQUIRED`).",
+            "description": "More trips are active than the plan keeps (`PLAN_REQUIRED`).",
             "content": {
               "application/problem+json": {
                 "schema": {

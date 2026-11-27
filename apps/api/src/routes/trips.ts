@@ -58,7 +58,7 @@ const createTripRoute = createRoute({
     201: { description: 'The trip.', content: { 'application/json': { schema: tripSchema } } },
     401: problemResponse('No valid session.'),
     402: problemResponse(
-      'The plan’s active trips are used (`TRIP_LIMIT_REACHED`) or the trial is over (`PLAN_REQUIRED`).',
+      'The plan’s active trips are used (`TRIP_LIMIT_REACHED`) or more trips are active than the plan keeps (`PLAN_REQUIRED`).',
     ),
     409: problemResponse('The Idempotency-Key was already used with a different request.'),
     422: problemResponse('The body or the header is not valid.'),
@@ -86,7 +86,7 @@ const createFromExampleRoute = createRoute({
     201: { description: 'The new trip.', content: { 'application/json': { schema: tripSchema } } },
     401: problemResponse('No valid session.'),
     402: problemResponse(
-      'The plan’s active trips are used (`TRIP_LIMIT_REACHED`) or the trial is over (`PLAN_REQUIRED`).',
+      'The plan’s active trips are used (`TRIP_LIMIT_REACHED`) or more trips are active than the plan keeps (`PLAN_REQUIRED`).',
     ),
     409: problemResponse('The Idempotency-Key was already used with a different request.'),
     422: problemResponse('The body or the header is not valid.'),
@@ -115,7 +115,7 @@ const createFromSuggestionRoute = createRoute({
     201: { description: 'The new trip.', content: { 'application/json': { schema: tripSchema } } },
     401: problemResponse('No valid session.'),
     402: problemResponse(
-      'The plan’s active trips are used (`TRIP_LIMIT_REACHED`) or the trial is over (`PLAN_REQUIRED`).',
+      'The plan’s active trips are used (`TRIP_LIMIT_REACHED`) or more trips are active than the plan keeps (`PLAN_REQUIRED`).',
     ),
     404: problemResponse('No such suggested destination.'),
     409: problemResponse('The Idempotency-Key was already used with a different request.'),

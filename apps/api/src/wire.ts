@@ -100,15 +100,17 @@ export function createServices(
     newId: () => uuidV7(Date.now(), crypto.getRandomValues(new Uint8Array(10))),
     newToken: () => Buffer.from(crypto.getRandomValues(new Uint8Array(16))).toString('base64url'),
   };
+  const trips = createTripRepository(db);
+  const destinations = createDestinationRepository(db);
   const webhook = createStripeWebhook(
     config.stripe,
-    createPaymentEvents({ users, billing, unitOfWork, clock, ids }),
+    createPaymentEvents({ users, billing, trips, destinations, unitOfWork, clock, ids }),
     { fetch: overrides.stripeFetch },
   );
   const auth = createAuth(db, config.auth, { email });
   const reads = {
-    trips: createTripRepository(db),
-    destinations: createDestinationRepository(db),
+    trips,
+    destinations,
     expenses: createExpenseRepository(db),
     savings: createSavingsRepository(db),
     shares: createShareRepository(db),

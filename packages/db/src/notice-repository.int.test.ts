@@ -58,6 +58,7 @@ describe('account notices', () => {
         email: 'u-soon@example.com',
         name: 'u-soon',
         locale: 'pt-BR',
+        currency: 'USD',
         signedUpAt: daysAgo(6),
         tripTitle: null,
       },

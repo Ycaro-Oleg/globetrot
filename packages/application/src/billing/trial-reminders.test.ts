@@ -78,6 +78,8 @@ describe('trial reminders', () => {
       url: 'https://globetrot.example/app/plan',
       name: 'soon',
       expiresInHours: 36,
+      // Prices in reais only for someone who chose reais, never from the language.
+      priceCurrency: 'USD',
     });
   });
 

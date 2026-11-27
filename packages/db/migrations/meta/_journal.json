@@ -176,6 +176,13 @@
       "when": 1795651216954,
       "tag": "0024_spot_route",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1795777873458,
+      "tag": "0025_trip_pass",
+      "breakpoints": true
     }
   ]
 }

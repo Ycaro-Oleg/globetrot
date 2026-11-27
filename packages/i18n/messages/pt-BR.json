@@ -124,18 +124,18 @@
     "trialEnding": {
       "subject": "Sua semana grátis termina em 2 dias",
       "subjectTrip": "“{trip}” está esperando: sua semana grátis termina em 2 dias",
-      "body": "Sua semana grátis no Globetrot está acabando. Suas viagens, orçamento e listas estão lá; escolha um plano agora e continue planejando sem pausa. O Explorer começa em {price} por mês.",
+      "body": "Sua semana grátis no Globetrot está acabando. Depois dela, uma viagem continua grátis para sempre. Para planejar várias, escolha um plano; para só mais uma viagem, adicione um passe. O Explorer começa em {price} por mês.",
       "trip": "Sua viagem “{trip}” está esperando por você.",
       "action": "Ver planos",
       "expiry": "Sua semana grátis termina em {hours, plural, one {# hora} other {# horas}}.",
-      "ignore": "Se você não fizer nada, suas viagens continuam seguras e você ainda pode vê-las e exportá-las."
+      "ignore": "Se você não fizer nada, uma viagem continua grátis e todas continuam suas."
     },
     "trialEnded": {
-      "subject": "Sua semana grátis acabou: suas viagens estão seguras",
-      "subjectTrip": "“{trip}” está segura: sua semana grátis acabou",
-      "body": "Sua semana grátis no Globetrot terminou. Tudo o que você planejou continua lá, somente leitura. Escolha um plano para continuar editando, ou exporte quando quiser.",
-      "trip": "Sua viagem “{trip}” está segura e continua sua.",
-      "action": "Escolher um plano",
+      "subject": "Sua semana grátis acabou: uma viagem continua grátis",
+      "subjectTrip": "“{trip}” continua grátis: sua semana grátis acabou",
+      "body": "Sua semana grátis no Globetrot terminou. Uma viagem ativa continua grátis para sempre, com todas as ferramentas. Arquive as outras, adicione um passe ou escolha um plano para editar mais de uma.",
+      "trip": "Sua viagem “{trip}” continua sua.",
+      "action": "Ver as opções",
       "expiry": "Enviamos este e-mail uma vez só. Nada é cobrado a menos que você escolha um plano.",
       "ignore": "Você pode excluir sua conta em Configurações quando quiser."
     }
@@ -359,8 +359,8 @@
       "trial": "{days, plural, one {Último dia da sua semana grátis} other {Faltam # dias da sua semana grátis}}",
       "trialShort": "{days, plural, one {Último dia grátis} other {# dias grátis}}",
       "trialCta": "Ver planos",
-      "expired": "Sua semana grátis acabou. Suas viagens estão seguras: veja e exporte quando quiser.",
-      "expiredCta": "Escolher um plano para continuar",
+      "expired": "Seu plano grátis mantém uma viagem ativa. Arquive as outras, adicione um passe ou escolha um plano para voltar a editar. Nada se perde.",
+      "expiredCta": "Ver as opções",
       "label": "Seu plano"
     }
   },
@@ -446,8 +446,8 @@
     "deleteCancel": "Cancelar",
     "deleteConfirm": "Excluir para sempre",
     "deletedMessage": "Viagem excluída.",
-    "tripLimit": "Este plano mantém {count} viagens ativas. Arquive uma, ou passe para o Voyager e tenha viagens ilimitadas.",
-    "planRequired": "Sua semana grátis acabou: escolha um plano para criar ou mudar viagens.",
+    "tripLimit": "Seu plano mantém {count, plural, one {# viagem ativa} other {# viagens ativas}}. Arquive uma, adicione um passe ou escolha um plano para ter mais.",
+    "planRequired": "Seu plano grátis mantém uma viagem ativa: arquive as outras, adicione um passe ou escolha um plano para editá-las.",
     "seePlans": "Ver planos",
     "routeSummary": "{route} · {nights, plural, one {# noite} other {# noites}}"
   },
@@ -473,7 +473,7 @@
     "kicker": "Planejador de viagens no mapa",
     "heroTitle": "Sua próxima viagem, <accent>além do óbvio.</accent>",
     "heroLead": "O Globetrot monta o roteiro com você, sugere passeios que quase ninguém conhece e mostra quanto guardar por mês para ir.",
-    "heroCta": "Começar minha semana grátis",
+    "heroCta": "Começar a planejar grátis",
     "heroCta2": "Como funciona",
     "seeKicker": "O app",
     "seeTitle": "A viagem inteira num mapa só.",
@@ -535,7 +535,7 @@
     "examplesTitle": "Copie uma viagem e deixe do seu jeito.",
     "examplesUse": "Copiar esta viagem",
     "pricingKicker": "Preços",
-    "pricingTitle": "Teste tudo grátis por uma semana. Depois escolha seu plano.",
+    "pricingTitle": "Grátis para uma viagem. Pague só quando quiser mais.",
     "faqTitle": "Perguntas",
     "footTagline": "Sua próxima viagem, além do óbvio.",
     "footTerms": "Termos",
@@ -550,7 +550,7 @@
     "closeLogin": "Já tenho conta",
     "stickyNote": "7 dias grátis",
     "faq5Q": "Quanto custa?",
-    "faq5A": "Os primeiros {days} dias são grátis, com tudo incluído. Depois, o Explorer custa {explorerMonthly} por mês ({explorerAnnual} por ano) e o Voyager {voyagerMonthly} por mês ({voyagerAnnual} por ano). Se você não escolher um plano, suas viagens continuam suas para ver e exportar.",
+    "faq5A": "Planejar uma viagem por vez é grátis, para sempre, com {credits} créditos do Pip por mês; nos primeiros {days} dias tudo fica liberado. O Explorer custa {explorerMonthly} por mês ({explorerAnnual} por ano), o Voyager {voyagerMonthly} por mês ({voyagerAnnual} por ano), e o passe da viagem custa {pass} uma vez só, para uma viagem.",
     "faq6Q": "Minhas viagens são privadas?",
     "faq6A": "Sim. As viagens são privadas por padrão e ninguém mais consegue abri-las. Em Configurações você baixa todos os seus dados ou exclui sua conta quando quiser.",
     "faq7Q": "Funciona no celular?",
@@ -1658,21 +1658,12 @@
     "perYear": "/ ano",
     "annualNote": "{monthly} por mês, cobrado por ano. Economize 33%.",
     "popular": "Para uma grande viagem",
-    "trial": {
-      "name": "Teste grátis",
-      "price": "7 dias grátis",
-      "tagline": "Tudo incluído. Sem cartão.",
-      "f1": "Mapa, dias, orçamento e listas",
-      "f2": "{credits} créditos do Pip",
-      "f3": "Até {trips} viagens ativas",
-      "cta": "Começar minha semana grátis"
-    },
     "explorer": {
       "name": "Explorer",
       "tagline": "Para a viagem que você está juntando dinheiro.",
       "f1": "{trips} viagens ativas",
       "f2": "{credits} créditos do Pip por mês",
-      "f3": "Tudo do teste grátis",
+      "f3": "Planeje com quantas pessoas quiser",
       "cta": "Comece grátis, depois Explorer"
     },
     "voyager": {
@@ -1685,15 +1676,34 @@
     },
     "topUp": "Precisa de mais Pip? {credits, number} créditos extras por {price}, e eles nunca expiram.",
     "credit": "1 crédito = 1 pedido ao Pip.",
-    "after": "Depois da semana grátis, suas viagens continuam suas para ver e exportar. Escolha um plano para continuar planejando."
+    "after": "Depois da primeira semana, uma viagem continua grátis, para sempre. Arquive uma para começar outra, adicione um passe ou escolha um plano.",
+    "free": {
+      "name": "Grátis",
+      "tagline": "Uma viagem por vez, pelo tempo que quiser.",
+      "f1": "{trips, plural, one {# viagem ativa} other {# viagens ativas}} com mapa, dias, dinheiro e checklist",
+      "f2": "{credits} créditos do Pip por mês",
+      "f3": "Planeje com mais uma pessoa",
+      "f4": "Os primeiros {days} dias com tudo liberado",
+      "cta": "Começar grátis"
+    },
+    "pass": {
+      "name": "Passe da viagem",
+      "tagline": "Um pagamento para uma viagem: tudo do pago liberado nela, sem assinatura.",
+      "f1": "Não conta na viagem grátis",
+      "f2": "Qualquer pessoa planeja junto com você",
+      "f3": "Vale até 30 dias depois da volta",
+      "cta": "Comece grátis, adicione o passe depois",
+      "once": "uma vez"
+    },
+    "currency": "Preços em"
   },
   "planPage": {
     "title": "Plano e créditos",
     "trialTitle": "{days, plural, =0 {Sua semana grátis termina hoje} one {Falta # dia da sua semana grátis} other {Faltam # dias da sua semana grátis}}",
-    "trialBody": "Tudo está incluído até {date}. Escolha um plano agora e continue planejando sem pausa.",
-    "expiredTitle": "Sua semana grátis acabou",
-    "expiredBody": "Suas viagens, orçamento e listas continuam aqui. Você pode ver, exportar ou excluir; escolha um plano para voltar a editar.",
-    "planRequiredBody": "Essa mudança não foi salva porque sua semana grátis acabou. Escolha um plano para continuar editando. Suas viagens, orçamento e listas continuam aqui.",
+    "trialBody": "Tudo fica liberado até {date}. Depois, uma viagem continua grátis, para sempre.",
+    "expiredTitle": "Mais viagens do que seu plano mantém",
+    "expiredBody": "O plano grátis mantém uma viagem ativa. Todas as suas viagens estão aqui: arquive as que você não está planejando agora, adicione um passe a uma viagem ou escolha um plano para voltar a editar.",
+    "planRequiredBody": "Essa mudança não foi salva: o plano grátis mantém uma viagem ativa. Arquive as outras, adicione um passe ou escolha um plano. Nada se perde.",
     "paidTitle": "Você está no {plan}",
     "renews": "Renova em {date}.",
     "ends": "Termina em {date}.",
@@ -1702,17 +1712,23 @@
     "creditsMeter": "{left, number} de {total, number} restantes neste período",
     "creditsReset": "Mais créditos em {date}.",
     "topUpLeft": "{count, plural, one {# crédito extra} other {# créditos extras}} que nunca expiram",
-    "trips": "{max, select, none {{count, number} viagens ativas (sem limite)} other {{count, number} de {max} viagens ativas}}",
+    "trips": "{max, select, none {{count, number} ativas (sem limite)} other {{count, number} ativas, o plano mantém {max}}}",
     "choose": "Escolher {plan}",
     "current": "Seu plano",
-    "checkoutSoon": "Os pagamentos estão sendo ativados. Sua semana grátis continua, e nada é cobrado ainda.",
+    "checkoutSoon": "Os pagamentos estão sendo ativados. Nada é cobrado ainda.",
     "manage": "Gerenciar pagamento",
     "perMonthShort": "{price}/mês",
     "tripsTitle": "Viagens ativas",
     "choosePlans": "Escolha seu plano",
     "failed": "Não deu certo. Tente de novo em instantes.",
-    "thanksPlan": "Obrigado! Seu pagamento foi aprovado. Seu plano é ativado em instantes; recarregue se ainda aparecer o teste grátis.",
-    "thanksTopUp": "Obrigado! Seus créditos extras do Pip chegam em instantes."
+    "thanksPlan": "Obrigado! Seu pagamento foi aprovado. Seu plano é ativado em instantes; recarregue se ainda não aparecer.",
+    "thanksTopUp": "Obrigado! Seus créditos extras do Pip chegam em instantes.",
+    "freeTitle": "Você está no plano grátis",
+    "freeBody": "Uma viagem ativa com todas as ferramentas, {credits} créditos do Pip por mês e mais uma pessoa para planejar junto. Viagens com passe não contam.",
+    "passTitle": "Só uma viagem?",
+    "passBody": "O passe da viagem libera tudo do pago em uma viagem por {price}, uma vez só. Compre na página da viagem.",
+    "passTrips": "Ir para minhas viagens",
+    "passCounted": "{count, plural, one {# viagem com passe, fora da conta} other {# viagens com passe, fora da conta}}"
   },
   "sharedTrip": {
     "kicker": "Uma viagem planejada no Globetrot",
@@ -1795,5 +1811,14 @@
       "mvd-rambla": "Mais de 20 km de calçadão à beira do rio, a sala de estar da cidade.",
       "mvd-candombe": "Nas tardes de domingo, os grupos de tambores desfilam pelos bairros antigos."
     }
+  },
+  "tripPass": {
+    "title": "Passe da viagem",
+    "body": "Tudo do pago nesta viagem, uma vez só: não conta na sua viagem grátis, qualquer pessoa planeja junto e vale até 30 dias depois da volta.",
+    "cta": "Comprar o passe por {price}",
+    "active": "Esta viagem tem passe até {date}.",
+    "thanks": "Obrigado! O passe é ativado em instantes; recarregue se ainda não aparecer.",
+    "soon": "Os pagamentos estão sendo ativados. Nada é cobrado ainda.",
+    "failed": "Não deu certo. Tente de novo em instantes."
   }
 }

@@ -7,6 +7,8 @@ import type {
   SightKind,
   SpotKind,
   SubscriptionState,
+  PriceCurrency,
+  TripPassState,
   TripStatus,
   TripVisibility,
   UnitSystem,
@@ -782,6 +784,8 @@ export interface BillingAccount {
   readonly subscription: SubscriptionState | null;
   /** Bought credits left (the ledger's sum). */
   readonly topUpBalance: number;
+  /** Trip passes bought, valid or not (ADR-0023). */
+  readonly passes: readonly TripPassState[];
 }
 
 export interface SubscriptionRecord extends SubscriptionState {
@@ -808,9 +812,18 @@ export interface BillingWriter extends BillingReader {
     readonly createdAt: Date;
   }): Promise<boolean>;
   saveSubscription(userId: string, record: SubscriptionRecord, updatedAt: Date): Promise<void>;
+  /** Records a trip pass; false (and nothing added) when `providerRef` was already used. */
+  grantTripPass(row: {
+    readonly id: string;
+    readonly tripId: string;
+    readonly userId: string;
+    readonly purchasedAt: Date;
+    readonly validUntil: Date;
+    readonly providerRef: string;
+  }): Promise<boolean>;
 }
 
-export type CheckoutItem = 'explorer' | 'voyager' | 'top-up';
+export type CheckoutItem = 'explorer' | 'voyager' | 'top-up' | 'trip-pass';
 
 /** The payment provider (Stripe, ADR-0019). `null` from a method means payments are not configured. */
 export interface PaymentsPort {
@@ -820,6 +833,10 @@ export interface PaymentsPort {
     readonly email: string;
     readonly item: CheckoutItem;
     readonly interval: 'month' | 'year';
+    /** The currency the person sees prices in (their chosen currency when it is BRL, else USD). */
+    readonly currency: PriceCurrency;
+    /** The trip a pass is for; only with `trip-pass`. */
+    readonly tripId?: string;
   }): Promise<string | null>;
   /** The provider's page to change the card, switch or cancel the plan. */
   portalUrl(input: { readonly providerCustomerId: string }): Promise<string | null>;

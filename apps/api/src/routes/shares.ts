@@ -51,7 +51,7 @@ const shareRoute = createRoute({
   responses: {
     200: { description: 'The link.', content: { 'application/json': { schema: tripShareSchema } } },
     401: problemResponse('No valid session.'),
-    402: problemResponse('The trial is over (`PLAN_REQUIRED`).'),
+    402: problemResponse('More trips are active than the plan keeps (`PLAN_REQUIRED`).'),
     404: problemResponse('No such trip, or not yours.'),
   },
 });

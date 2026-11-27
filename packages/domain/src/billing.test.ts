@@ -1,10 +1,18 @@
 import { describe, expect, it } from 'vitest';
 import {
   addMonthsUtc,
+  countedTrips,
   creditBalance,
   entitlements,
+  FREE_TERMS,
   monthlyWindow,
+  overTripLimit,
+  passedTripIds,
+  PLAN_PRICES,
   PLAN_TERMS,
+  priceCurrencyFor,
+  tripEntitlements,
+  tripPassValidUntil,
   subscriptionGrants,
   TRIAL_TERMS,
   trialDaysLeft,
@@ -52,19 +60,25 @@ describe('addMonthsUtc and monthlyWindow', () => {
 });
 
 describe('entitlements', () => {
-  it('gives a 7-day trial with 15 credits from sign-up, then read-only', () => {
+  it('gives a 7-day trial with 15 credits from sign-up, then the free plan for good', () => {
     const trial = entitlements({ signedUpAt, subscription: null, now: at('2026-11-03T00:00:00Z') });
     expect(trial).toMatchObject({
       access: 'trial',
-      readOnly: false,
       credits: TRIAL_TERMS.credits,
       maxActiveTrips: 10,
       trialEndsAt: at('2026-11-08T10:00:00.000Z'),
       periodStart: signedUpAt,
       plan: null,
     });
-    const over = entitlements({ signedUpAt, subscription: null, now: at('2026-11-08T10:00:00Z') });
-    expect(over).toMatchObject({ access: 'expired', readOnly: true, credits: 0 });
+    const free = entitlements({ signedUpAt, subscription: null, now: at('2026-11-20T00:00:00Z') });
+    expect(free).toMatchObject({
+      access: 'free',
+      credits: FREE_TERMS.credits,
+      maxActiveTrips: 1,
+      // Free credits renew each month from the end of the free week.
+      periodStart: at('2026-11-08T10:00:00.000Z'),
+      periodEnd: at('2026-12-08T10:00:00.000Z'),
+    });
   });
 
   it('gives the plan’s credits and limits while paid, counted per month from the start', () => {
@@ -75,7 +89,6 @@ describe('entitlements', () => {
     });
     expect(rights).toMatchObject({
       access: 'voyager',
-      readOnly: false,
       credits: PLAN_TERMS.voyager.credits,
       maxActiveTrips: null,
       periodStart: at('2026-11-05T00:00:00Z'),
@@ -97,8 +110,7 @@ describe('entitlements', () => {
       now: at('2027-01-01T00:00:00Z'),
     });
     expect(lapsed).toMatchObject({
-      access: 'expired',
-      readOnly: true,
+      access: 'free',
       plan: 'explorer',
       renewsAt: null,
     });
@@ -127,11 +139,12 @@ describe('creditBalance', () => {
     ).toBeNull();
   });
 
-  it('lets a read-only account spend nothing, even with bought credits', () => {
-    const over = entitlements({ signedUpAt, subscription: null, now: at('2026-12-01T00:00:00Z') });
-    expect(creditBalance({ entitlements: over, usedInPeriod: 0, topUpBalance: 50 })).toMatchObject({
+  it('lets a free account spend its monthly credits, then bought ones', () => {
+    const free = entitlements({ signedUpAt, subscription: null, now: at('2026-12-01T00:00:00Z') });
+    expect(creditBalance({ entitlements: free, usedInPeriod: 5, topUpBalance: 50 })).toMatchObject({
+      monthlyLeft: 0,
       topUpLeft: 50,
-      next: null,
+      next: 'top-up',
     });
   });
 });
@@ -141,4 +154,54 @@ it('counts trial days left, a started day as one', () => {
   expect(trialDaysLeft(ends, at('2026-11-01T10:00:00Z'))).toBe(7);
   expect(trialDaysLeft(ends, at('2026-11-08T09:00:00Z'))).toBe(1);
   expect(trialDaysLeft(ends, at('2026-11-09T00:00:00Z'))).toBe(0);
+});
+
+describe('prices, the free plan and trip passes (ADR-0023)', () => {
+  it('shows reais only to someone who chose reais, never from language or country', () => {
+    expect(priceCurrencyFor('BRL')).toBe('BRL');
+    expect(priceCurrencyFor('USD')).toBe('USD');
+    expect(priceCurrencyFor('EUR')).toBe('USD');
+    expect(priceCurrencyFor(null)).toBe('USD');
+    expect(PLAN_PRICES.explorer.BRL).toEqual({ monthlyMinor: 1490n, annualMinor: 11900n });
+    expect(PLAN_TERMS.explorer.monthlyMinor).toBe(PLAN_PRICES.explorer.USD.monthlyMinor);
+  });
+
+  it('lasts a pass 30 days past the trip, or 12 months without dates, and never less than 30 days', () => {
+    const bought = at('2027-01-10T12:00:00Z');
+    expect(tripPassValidUntil(bought, at('2027-03-20T00:00:00Z'))).toEqual(
+      at('2027-04-20T00:00:00Z'),
+    );
+    expect(tripPassValidUntil(bought, null)).toEqual(at('2028-01-10T12:00:00Z'));
+    expect(tripPassValidUntil(bought, at('2026-12-01T00:00:00Z'))).toEqual(
+      at('2027-02-09T12:00:00Z'),
+    );
+  });
+
+  it('leaves passed trips out of the limit and opens the paid tools on them', () => {
+    const now = at('2027-02-01T00:00:00Z');
+    const passed = passedTripIds(
+      [
+        { tripId: 'japan', validUntil: at('2027-05-01T00:00:00Z') },
+        { tripId: 'old', validUntil: at('2027-01-01T00:00:00Z') },
+      ],
+      now,
+    );
+    expect([...passed]).toEqual(['japan']);
+    const free = entitlements({ signedUpAt, subscription: null, now });
+    expect(countedTrips(['japan', 'lisbon'], passed)).toBe(1);
+    expect(overTripLimit(free, 1)).toBe(false);
+    expect(overTripLimit(free, 2)).toBe(true);
+    expect(tripEntitlements(free, 'japan', passed)).toEqual({ paid: true, guests: null });
+    expect(tripEntitlements(free, 'lisbon', passed)).toEqual({
+      paid: false,
+      guests: FREE_TERMS.guests,
+    });
+    const paid = entitlements({
+      signedUpAt,
+      subscription: sub({ status: 'active', currentPeriodEnd: at('2027-03-01T00:00:00Z') }),
+      now,
+    });
+    expect(tripEntitlements(paid, 'lisbon', passed).paid).toBe(true);
+    expect(overTripLimit(paid, 9)).toBe(false);
+  });
 });

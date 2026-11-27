@@ -1,3 +1,4 @@
+import type { PriceCurrency } from '@globetrot/domain';
 import { loadDatabaseConfig } from '@globetrot/db';
 import { storageConfigFromEnv, StorageConfigError, type StorageConfig } from '@globetrot/storage';
 import { z } from 'zod';
@@ -57,6 +58,14 @@ const envSchema = z.object({
   STRIPE_PRICE_VOYAGER_MONTHLY: z.string().optional(),
   STRIPE_PRICE_VOYAGER_YEARLY: z.string().optional(),
   STRIPE_PRICE_TOP_UP: z.string().optional(),
+  STRIPE_PRICE_TRIP_PASS: z.string().optional(),
+  // Prices in reais (ADR-0023); each one unset falls back to the USD price above.
+  STRIPE_PRICE_EXPLORER_MONTHLY_BRL: z.string().optional(),
+  STRIPE_PRICE_EXPLORER_YEARLY_BRL: z.string().optional(),
+  STRIPE_PRICE_VOYAGER_MONTHLY_BRL: z.string().optional(),
+  STRIPE_PRICE_VOYAGER_YEARLY_BRL: z.string().optional(),
+  STRIPE_PRICE_TOP_UP_BRL: z.string().optional(),
+  STRIPE_PRICE_TRIP_PASS_BRL: z.string().optional(),
   PORT: number(4000, 1, 65535),
 });
 
@@ -68,16 +77,22 @@ const STRIPE_SETTINGS = [
   'STRIPE_PRICE_VOYAGER_MONTHLY',
   'STRIPE_PRICE_VOYAGER_YEARLY',
   'STRIPE_PRICE_TOP_UP',
+  'STRIPE_PRICE_TRIP_PASS',
 ] as const;
+
+/** The Stripe Price ids of one price currency. */
+export interface StripePriceIds {
+  readonly explorer: { readonly month: string; readonly year: string };
+  readonly voyager: { readonly month: string; readonly year: string };
+  readonly topUp: string;
+  readonly tripPass: string;
+}
 
 export interface StripeConfig {
   readonly secretKey: string;
   readonly webhookSecret: string;
-  readonly prices: {
-    readonly explorer: { readonly month: string; readonly year: string };
-    readonly voyager: { readonly month: string; readonly year: string };
-    readonly topUp: string;
-  };
+  /** Per price currency; a BRL price not set is the USD one (ADR-0023). */
+  readonly prices: Readonly<Record<PriceCurrency, StripePriceIds>>;
   /** The public web origin: where checkout returns the person. */
   readonly returnOrigin: string;
 }
@@ -265,15 +280,31 @@ export function loadApiConfig(
       secretKey,
       webhookSecret: values.STRIPE_WEBHOOK_SECRET!,
       prices: {
-        explorer: {
-          month: values.STRIPE_PRICE_EXPLORER_MONTHLY!,
-          year: values.STRIPE_PRICE_EXPLORER_YEARLY!,
+        USD: {
+          explorer: {
+            month: values.STRIPE_PRICE_EXPLORER_MONTHLY!,
+            year: values.STRIPE_PRICE_EXPLORER_YEARLY!,
+          },
+          voyager: {
+            month: values.STRIPE_PRICE_VOYAGER_MONTHLY!,
+            year: values.STRIPE_PRICE_VOYAGER_YEARLY!,
+          },
+          topUp: values.STRIPE_PRICE_TOP_UP!,
+          tripPass: values.STRIPE_PRICE_TRIP_PASS!,
         },
-        voyager: {
-          month: values.STRIPE_PRICE_VOYAGER_MONTHLY!,
-          year: values.STRIPE_PRICE_VOYAGER_YEARLY!,
+        BRL: {
+          explorer: {
+            month:
+              values.STRIPE_PRICE_EXPLORER_MONTHLY_BRL ?? values.STRIPE_PRICE_EXPLORER_MONTHLY!,
+            year: values.STRIPE_PRICE_EXPLORER_YEARLY_BRL ?? values.STRIPE_PRICE_EXPLORER_YEARLY!,
+          },
+          voyager: {
+            month: values.STRIPE_PRICE_VOYAGER_MONTHLY_BRL ?? values.STRIPE_PRICE_VOYAGER_MONTHLY!,
+            year: values.STRIPE_PRICE_VOYAGER_YEARLY_BRL ?? values.STRIPE_PRICE_VOYAGER_YEARLY!,
+          },
+          topUp: values.STRIPE_PRICE_TOP_UP_BRL ?? values.STRIPE_PRICE_TOP_UP!,
+          tripPass: values.STRIPE_PRICE_TRIP_PASS_BRL ?? values.STRIPE_PRICE_TRIP_PASS!,
         },
-        topUp: values.STRIPE_PRICE_TOP_UP!,
       },
       returnOrigin: new URL(values.BETTER_AUTH_URL).origin,
     };

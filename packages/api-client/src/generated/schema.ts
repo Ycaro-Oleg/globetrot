@@ -1000,8 +1000,8 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * The caller’s plan, trial and Pip credits
-         * @description Whether the account is in its 7-day trial, on Explorer or Voyager, or read-only after the trial; the active-trip limit; and Pip credits left this period (monthly first, then bought ones). Commands refused by the plan answer `402` with `PLAN_REQUIRED`, `TRIP_LIMIT_REACHED` or `OUT_OF_CREDITS` (ADR-0019).
+         * The caller’s plan, trial, trip passes and Pip credits
+         * @description Whether the account is in its 7-day trial, on Explorer or Voyager, or on the free plan; the active-trip limit (trips with a pass do not count) and whether more trips are active than it keeps; the currency prices are shown in; and Pip credits left this period (monthly first, then bought ones). Commands refused by the plan answer `402` with `PLAN_REQUIRED`, `TRIP_LIMIT_REACHED` or `OUT_OF_CREDITS` (ADR-0019, ADR-0023).
          */
         get: operations["getBilling"];
         put?: never;
@@ -1022,8 +1022,8 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * A hosted checkout for a plan or extra Pip credits
-         * @description Answers the payment provider’s checkout URL for Explorer or Voyager (monthly or yearly) or a top-up of Pip credits. Works when the account is read-only. `503` while payments are not switched on.
+         * A hosted checkout for a plan, extra Pip credits or a trip pass
+         * @description Answers the payment provider’s checkout URL for Explorer or Voyager (monthly or yearly), a top-up of Pip credits or a pass for one of the person’s trips (ADR-0023), in reais when their currency is BRL and in US dollars otherwise. Works over the trip limit. `404` for a pass on a trip that is not theirs, `503` while payments are not switched on.
          */
         post: operations["startCheckout"];
         delete?: never;
@@ -1784,7 +1784,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description The plan’s active trips are used (`TRIP_LIMIT_REACHED`) or the trial is over (`PLAN_REQUIRED`). */
+            /** @description The plan’s active trips are used (`TRIP_LIMIT_REACHED`) or more trips are active than the plan keeps (`PLAN_REQUIRED`). */
             402: {
                 headers: {
                     [name: string]: unknown;
@@ -1941,7 +1941,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description The plan’s active trips are used (`TRIP_LIMIT_REACHED`) or the trial is over (`PLAN_REQUIRED`). */
+            /** @description The plan’s active trips are used (`TRIP_LIMIT_REACHED`) or more trips are active than the plan keeps (`PLAN_REQUIRED`). */
             402: {
                 headers: {
                     [name: string]: unknown;
@@ -2109,7 +2109,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description The plan’s active trips are used (`TRIP_LIMIT_REACHED`) or the trial is over (`PLAN_REQUIRED`). */
+            /** @description The plan’s active trips are used (`TRIP_LIMIT_REACHED`) or more trips are active than the plan keeps (`PLAN_REQUIRED`). */
             402: {
                 headers: {
                     [name: string]: unknown;
@@ -9509,7 +9509,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Pip credits are used up (`OUT_OF_CREDITS`) or the trial is over (`PLAN_REQUIRED`). */
+            /** @description Pip credits are used up (`OUT_OF_CREDITS`) or more trips are active than the plan keeps (`PLAN_REQUIRED`). */
             402: {
                 headers: {
                     [name: string]: unknown;
@@ -10202,8 +10202,14 @@ export interface operations {
                 content: {
                     "application/json": {
                         /** @enum {string} */
-                        access: "trial" | "explorer" | "voyager" | "expired";
-                        readOnly: boolean;
+                        access: "trial" | "explorer" | "voyager" | "free";
+                        overLimit: boolean;
+                        /** @enum {string} */
+                        priceCurrency: "USD" | "BRL";
+                        passes: {
+                            tripId: string;
+                            validUntil: string;
+                        }[];
                         trialEndsAt: string;
                         trialDaysLeft: number;
                         /** @enum {string|null} */
@@ -10215,6 +10221,7 @@ export interface operations {
                         renewsAt: string | null;
                         maxActiveTrips: number | null;
                         activeTrips: number;
+                        countedTrips: number;
                         credits: {
                             monthly: number;
                             monthlyLeft: number;
@@ -10262,9 +10269,14 @@ export interface operations {
             content: {
                 "application/json": {
                     /** @enum {string} */
-                    item: "explorer" | "voyager" | "top-up";
+                    item: "explorer" | "voyager" | "top-up" | "trip-pass";
                     /** @enum {string} */
                     interval?: "month" | "year";
+                    /**
+                     * Format: uuid
+                     * @description The trip a pass is for.
+                     */
+                    tripId?: string;
                 };
             };
         };
@@ -10282,6 +10294,29 @@ export interface operations {
             };
             /** @description No valid session. */
             401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description The trip for the pass is not one of the person’s trips. */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -10565,7 +10600,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description The trial is over (`PLAN_REQUIRED`). */
+            /** @description More trips are active than the plan keeps (`PLAN_REQUIRED`). */
             402: {
                 headers: {
                     [name: string]: unknown;

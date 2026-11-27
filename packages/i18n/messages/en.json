@@ -124,18 +124,18 @@
     "trialEnding": {
       "subject": "Your free week ends in 2 days",
       "subjectTrip": "“{trip}” is waiting: your free week ends in 2 days",
-      "body": "Your Globetrot free week ends soon. Your trips, budget and lists are all there; pick a plan now and keep planning without a break. Explorer starts at {price} a month.",
+      "body": "Your Globetrot free week ends soon. After it, one trip stays free for good. To keep planning several, choose a plan; for just one more trip, add a trip pass. Explorer starts at {price} a month.",
       "trip": "Your trip “{trip}” is waiting for you.",
       "action": "See plans",
       "expiry": "Your free week ends in {hours, plural, one {# hour} other {# hours}}.",
-      "ignore": "If you do nothing, your trips stay safe and you can still see and export them."
+      "ignore": "If you do nothing, you keep one trip free and every trip stays yours."
     },
     "trialEnded": {
-      "subject": "Your free week is over: your trips are safe",
-      "subjectTrip": "“{trip}” is safe: your free week is over",
-      "body": "Your Globetrot free week has ended. Everything you planned is still there, read-only. Choose a plan to keep changing it, or export it any time.",
-      "trip": "Your trip “{trip}” is safe and still yours.",
-      "action": "Choose a plan",
+      "subject": "Your free week is over: one trip stays free",
+      "subjectTrip": "“{trip}” stays free: your free week is over",
+      "body": "Your Globetrot free week has ended. One active trip stays free for good, with every tool. Archive the others, add a trip pass or choose a plan to change more than one.",
+      "trip": "Your trip “{trip}” is still yours.",
+      "action": "See the options",
       "expiry": "We send this once. Nothing is charged unless you choose a plan.",
       "ignore": "You can delete your account from Settings whenever you like."
     }
@@ -359,8 +359,8 @@
       "trial": "{days, plural, one {Last day of your free week} other {# days left in your free week}}",
       "trialShort": "{days, plural, one {Last free day} other {# free days left}}",
       "trialCta": "See plans",
-      "expired": "Your free week is over. Your trips are safe: see and export them any time.",
-      "expiredCta": "Choose a plan to keep planning",
+      "expired": "Your free plan keeps one active trip. Archive the others, add a trip pass or choose a plan to keep changing them. Nothing is lost.",
+      "expiredCta": "See the options",
       "label": "Your plan"
     }
   },
@@ -446,8 +446,8 @@
     "deleteCancel": "Cancel",
     "deleteConfirm": "Delete forever",
     "deletedMessage": "Trip deleted.",
-    "tripLimit": "This plan keeps {count} active trips. Archive one, or move to Voyager for unlimited trips.",
-    "planRequired": "Your free week is over: choose a plan to add or change trips.",
+    "tripLimit": "Your plan keeps {count, plural, one {# active trip} other {# active trips}}. Archive one, add a trip pass, or choose a plan for more.",
+    "planRequired": "Your free plan keeps one active trip: archive the others, add a trip pass or choose a plan to change them.",
     "seePlans": "See plans",
     "routeSummary": "{route} · {nights, plural, one {# night} other {# nights}}"
   },
@@ -473,7 +473,7 @@
     "kicker": "Map-first trip planner",
     "heroTitle": "Your next trip, <accent>beyond the obvious.</accent>",
     "heroLead": "Globetrot builds the route with you, suggests experiences few people talk about and shows how much to save each month to go.",
-    "heroCta": "Start your free week",
+    "heroCta": "Start planning free",
     "heroCta2": "How it works",
     "seeKicker": "The app",
     "seeTitle": "Your whole trip on one map.",
@@ -535,7 +535,7 @@
     "examplesTitle": "Copy a trip, then make it yours.",
     "examplesUse": "Copy this trip",
     "pricingKicker": "Pricing",
-    "pricingTitle": "Try everything free for a week. Then pick your plan.",
+    "pricingTitle": "Free for one trip. Pay only when you want more.",
     "faqTitle": "Questions",
     "footTagline": "Your next trip, beyond the obvious.",
     "footTerms": "Terms",
@@ -550,7 +550,7 @@
     "closeLogin": "I already have an account",
     "stickyNote": "7 days free",
     "faq5Q": "How much does it cost?",
-    "faq5A": "The first {days} days are free with everything included. Then Explorer is {explorerMonthly} a month ({explorerAnnual} a year) and Voyager {voyagerMonthly} a month ({voyagerAnnual} a year). If you don’t choose a plan, your trips stay yours to see and export.",
+    "faq5A": "Planning one trip at a time is free, for good, with {credits} Pip credits a month; the first {days} days have everything open. Explorer is {explorerMonthly} a month ({explorerAnnual} a year), Voyager {voyagerMonthly} a month ({voyagerAnnual} a year), and a trip pass is {pass} once for a single trip.",
     "faq6Q": "Are my trips private?",
     "faq6A": "Yes. Trips are private by default and nobody else can open them. In Settings you can download all your data or delete your account at any time.",
     "faq7Q": "Does it work on my phone?",
@@ -1658,21 +1658,12 @@
     "perYear": "/ year",
     "annualNote": "{monthly} a month, billed yearly. Save 33%.",
     "popular": "For one big trip",
-    "trial": {
-      "name": "Free trial",
-      "price": "7 days free",
-      "tagline": "Everything included. No card.",
-      "f1": "Map, days, budget and lists",
-      "f2": "{credits} Pip credits",
-      "f3": "Up to {trips} active trips",
-      "cta": "Start your free week"
-    },
     "explorer": {
       "name": "Explorer",
       "tagline": "For the trip you are saving for.",
       "f1": "{trips} active trips",
       "f2": "{credits} Pip credits a month",
-      "f3": "Everything in the trial",
+      "f3": "Plan with as many people as you like",
       "cta": "Start free, then Explorer"
     },
     "voyager": {
@@ -1685,15 +1676,34 @@
     },
     "topUp": "Need more Pip? {credits, number} extra credits for {price}, and they never expire.",
     "credit": "1 credit = 1 Pip request.",
-    "after": "After the free week, your trips stay yours to see and export. Choose a plan to keep planning."
+    "after": "After the first week you keep one trip free, for good. Archive one to start another, add a trip pass, or choose a plan.",
+    "free": {
+      "name": "Free",
+      "tagline": "One trip at a time, for as long as you like.",
+      "f1": "{trips, plural, one {# active trip} other {# active trips}} with the map, days, money and checklist",
+      "f2": "{credits} Pip credits a month",
+      "f3": "Plan with one other person",
+      "f4": "The first {days} days with everything open",
+      "cta": "Start free"
+    },
+    "pass": {
+      "name": "Trip pass",
+      "tagline": "One payment for one trip: everything paid opens on it, with no subscription.",
+      "f1": "Does not count towards the free trip",
+      "f2": "Anyone can plan it with you",
+      "f3": "Lasts until 30 days after you come back",
+      "cta": "Start free, add the pass later",
+      "once": "once"
+    },
+    "currency": "Prices in"
   },
   "planPage": {
     "title": "Plan & credits",
     "trialTitle": "{days, plural, =0 {Your free week ends today} one {# day left in your free week} other {# days left in your free week}}",
-    "trialBody": "Everything is included until {date}. Pick a plan now and keep planning without a break.",
-    "expiredTitle": "Your free week is over",
-    "expiredBody": "Your trips, budget and lists are all still here. You can see, export or delete them; choose a plan to change them again.",
-    "planRequiredBody": "That change was not saved: your free week is over. Choose a plan to keep editing. Your trips, budget and lists are all still here.",
+    "trialBody": "Everything is open until {date}. After that you keep one trip free, for good.",
+    "expiredTitle": "More trips than your plan keeps",
+    "expiredBody": "The free plan keeps one active trip. Your trips are all here: archive the ones you are not planning now, add a pass to a trip, or choose a plan to change them again.",
+    "planRequiredBody": "That change was not saved: the free plan keeps one active trip. Archive the others, add a trip pass or choose a plan. Nothing is lost.",
     "paidTitle": "You are on {plan}",
     "renews": "Renews on {date}.",
     "ends": "Ends on {date}.",
@@ -1702,17 +1712,23 @@
     "creditsMeter": "{left, number} of {total, number} left this period",
     "creditsReset": "More credits on {date}.",
     "topUpLeft": "{count, plural, one {# extra credit} other {# extra credits}} that never expire",
-    "trips": "{max, select, none {{count, number} active trips (no limit)} other {{count, number} of {max} active trips}}",
+    "trips": "{max, select, none {{count, number} active (no limit)} other {{count, number} active, the plan keeps {max}}}",
     "choose": "Choose {plan}",
     "current": "Your plan",
-    "checkoutSoon": "Payments are being switched on. Your free week keeps running, and nothing is charged yet.",
+    "checkoutSoon": "Payments are being switched on. Nothing is charged yet.",
     "manage": "Manage payment",
     "perMonthShort": "{price}/month",
     "tripsTitle": "Active trips",
     "choosePlans": "Choose your plan",
     "failed": "That did not work. Try again in a moment.",
-    "thanksPlan": "Thank you! Your payment went through. Your plan switches on in a moment; reload if it still shows the trial.",
-    "thanksTopUp": "Thank you! Your extra Pip credits arrive in a moment."
+    "thanksPlan": "Thank you! Your payment went through. Your plan switches on in a moment; reload if it does not show yet.",
+    "thanksTopUp": "Thank you! Your extra Pip credits arrive in a moment.",
+    "freeTitle": "You are on the free plan",
+    "freeBody": "One active trip with every tool, {credits} Pip credits a month and one person to plan with. Trips with a pass do not count.",
+    "passTitle": "Just one trip?",
+    "passBody": "A trip pass opens everything paid on one trip for {price}, once. Buy it from the trip’s page.",
+    "passTrips": "Go to my trips",
+    "passCounted": "{count, plural, one {# trip with a pass, not counted} other {# trips with a pass, not counted}}"
   },
   "sharedTrip": {
     "kicker": "A trip planned on Globetrot",
@@ -1795,5 +1811,14 @@
       "mvd-rambla": "More than 20 km of riverside promenade, the city's living room.",
       "mvd-candombe": "On Sunday evenings the drum troupes parade through the old neighbourhoods."
     }
+  },
+  "tripPass": {
+    "title": "Trip pass",
+    "body": "Everything paid on this trip, once: it does not count towards your free trip, anyone can plan it with you, and it lasts until 30 days after you come back.",
+    "cta": "Get the pass for {price}",
+    "active": "This trip has a pass until {date}.",
+    "thanks": "Thank you! The pass switches on in a moment; reload if it does not show yet.",
+    "soon": "Payments are being switched on. Nothing is charged yet.",
+    "failed": "That did not work. Try again in a moment."
   }
 }

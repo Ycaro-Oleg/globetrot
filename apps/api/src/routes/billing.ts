@@ -9,11 +9,12 @@ const getBillingRoute = createRoute({
   path: '/v1/me/billing',
   operationId: 'getBilling',
   tags: ['Account'],
-  summary: 'The caller’s plan, trial and Pip credits',
+  summary: 'The caller’s plan, trial, trip passes and Pip credits',
   description:
-    'Whether the account is in its 7-day trial, on Explorer or Voyager, or read-only after the trial; the ' +
-    'active-trip limit; and Pip credits left this period (monthly first, then bought ones). Commands refused by ' +
-    'the plan answer `402` with `PLAN_REQUIRED`, `TRIP_LIMIT_REACHED` or `OUT_OF_CREDITS` (ADR-0019).',
+    'Whether the account is in its 7-day trial, on Explorer or Voyager, or on the free plan; the active-trip ' +
+    'limit (trips with a pass do not count) and whether more trips are active than it keeps; the currency ' +
+    'prices are shown in; and Pip credits left this period (monthly first, then bought ones). Commands refused ' +
+    'by the plan answer `402` with `PLAN_REQUIRED`, `TRIP_LIMIT_REACHED` or `OUT_OF_CREDITS` (ADR-0019, ADR-0023).',
   security,
   responses: {
     200: {
@@ -31,10 +32,12 @@ const checkoutRoute = createRoute({
   path: '/v1/me/billing/checkout',
   operationId: 'startCheckout',
   tags: ['Account'],
-  summary: 'A hosted checkout for a plan or extra Pip credits',
+  summary: 'A hosted checkout for a plan, extra Pip credits or a trip pass',
   description:
-    'Answers the payment provider’s checkout URL for Explorer or Voyager (monthly or yearly) or a top-up of ' +
-    'Pip credits. Works when the account is read-only. `503` while payments are not switched on.',
+    'Answers the payment provider’s checkout URL for Explorer or Voyager (monthly or yearly), a top-up of ' +
+    'Pip credits or a pass for one of the person’s trips (ADR-0023), in reais when their currency is BRL and ' +
+    'in US dollars otherwise. Works over the trip limit. `404` for a pass on a trip that is not theirs, `503` ' +
+    'while payments are not switched on.',
   security,
   request: {
     body: {
@@ -42,8 +45,9 @@ const checkoutRoute = createRoute({
       content: {
         'application/json': {
           schema: z.object({
-            item: z.enum(['explorer', 'voyager', 'top-up']),
+            item: z.enum(['explorer', 'voyager', 'top-up', 'trip-pass']),
             interval: z.enum(['month', 'year']).optional(),
+            tripId: z.uuid().optional().meta({ description: 'The trip a pass is for.' }),
           }),
         },
       },
@@ -55,6 +59,7 @@ const checkoutRoute = createRoute({
       content: { 'application/json': { schema: urlSchema } },
     },
     401: problemResponse('No valid session.'),
+    404: problemResponse('The trip for the pass is not one of the person’s trips.'),
     422: problemResponse('The body is not valid.'),
     503: problemResponse('Payments are not switched on yet.'),
   },

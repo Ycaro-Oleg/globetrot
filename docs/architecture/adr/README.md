@@ -28,7 +28,8 @@ ADRs 0010 to 0012 were written after the work they describe (#53 to #61), which 
 | [0016](0016-pip-on-deepseek.md) | Pip v1 on DeepSeek, through a small JSON port | Accepted (supersedes the provider choice in 0007) |
 | [0017](0017-worker-housekeeping.md) | The worker: hourly housekeeping behind an advisory lock | Accepted |
 | [0018](0018-launch-measurement-and-consent.md) | Launch measurement: cookieless analytics, and the Meta Pixel only with consent | Accepted |
-| [0019](0019-plans-trial-and-pip-credits.md) | Plans, the free week and Pip credits: read-only after the trial, credits per request, payments behind a port | Accepted |
+| [0019](0019-plans-trial-and-pip-credits.md) | Plans, the free week and Pip credits: credits per request, payments behind a port (read-only after the trial superseded by 0023) | Partly superseded |
 | [0020](0020-suggested-plans-and-curated-cost-ranges.md) | Suggested plans: curated destinations, experiences and typical cost ranges with a research date; the landing plans the trip | Accepted |
 | [0021](0021-error-monitoring-and-product-analytics.md) | Error monitoring with Sentry and product analytics with PostHog, both off unless configured and without personal data | Accepted |
 | [0022](0022-backup-ai-provider.md) | A backup AI provider for Pip: Claude Haiku, asked when DeepSeek does not answer | Accepted |
+| [0023](0023-free-plan-trip-pass-and-prices-in-reais.md) | A free plan for one trip, the trip pass and prices in reais; no read-only wall after the free week | Accepted |

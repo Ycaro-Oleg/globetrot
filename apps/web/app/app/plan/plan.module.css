@@ -210,6 +210,13 @@
   box-shadow: var(--gt-primitive-shadow-cta);
 }
 
+/* A link that looks like the secondary button (to the trips list). */
+a.secondary {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+}
+
 .secondary {
   align-self: flex-start;
   /* The top-up offer wraps on narrow cards: two lines still read as one button. */
