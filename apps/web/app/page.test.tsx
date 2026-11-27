@@ -73,21 +73,16 @@ describe('Globetrot landing page', () => {
   });
 
   it.each(SUPPORTED_LOCALES)(
-    'plans a trip before anyone touches anything: stops, experiences with why, an estimate and the month (%s)',
+    'asks one question at a time, starting with where to go (%s)',
     (locale) => {
       const html = render(locale);
       const copy = catalogs[locale].landing.suggest;
-      const why = catalogs[locale].suggest.why;
       const text = visibleText(html);
       expect(text).toContain(copy.title);
-      // Japan, 12 days, adrenaline and food by default: the drift day trip and the Hozugawa rapids are in it.
-      expect(text).toContain(why['tokyo-ebisu-drift']);
-      expect(text).toContain(why['kyoto-hozugawa']);
-      expect(text).toContain(copy.offbeat);
-      expect(text).toMatch(locale === 'en' ? /per person/ : /por pessoa/);
-      expect(text).not.toContain(copy.answerNone);
-      expect(html).toContain('href="/signup"');
-      expect(html).toMatch(/type="range"/);
+      expect(text).toContain(copy.step.replace('{n}', '1').replace('{total}', '4'));
+      expect(text).toContain(copy.next);
+      expect(text).not.toContain(copy.stepMoney);
+      expect(html).toMatch(/aria-pressed="true"[^>]*><strong>(Japan|Japão)<\/strong>/);
     },
   );
 
@@ -100,20 +95,6 @@ describe('Globetrot landing page', () => {
         expect(text).toContain(copy[key]);
       }
       expect(text).not.toContain('Most popular');
-    },
-  );
-
-  it.each(SUPPORTED_LOCALES)(
-    'shows the plan in the main currencies, starting from USD (%s)',
-    (locale) => {
-      const html = render(locale);
-      const copy = catalogs[locale].landing;
-      const select = /<select[^>]*>([\s\S]*?)<\/select>/.exec(html)?.[1] ?? '';
-      for (const code of ['USD', 'EUR', 'GBP', 'BRL', 'JPY']) {
-        expect(select).toContain(`value="${code}"`);
-      }
-      expect(select).toMatch(/<option value="USD" selected="">/);
-      expect(visibleText(html)).toContain(copy.suggest.currency);
     },
   );
 
