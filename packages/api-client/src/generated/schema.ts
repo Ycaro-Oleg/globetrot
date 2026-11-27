@@ -2402,7 +2402,7 @@ export interface operations {
                      * @description Which suggested destination.
                      * @enum {string}
                      */
-                    destination: "japan" | "portugal" | "rio-de-la-plata";
+                    destination: "japan" | "portugal" | "rio-de-la-plata" | "italy" | "chile" | "mexico" | "paris" | "new-york";
                     /** @description What the person enjoys; empty means everything. */
                     likes: ("adrenaline" | "food" | "culture" | "nature" | "nightlife")[];
                     days: number;
