@@ -1,10 +1,17 @@
 'use client';
 
-import { formatMoney, money } from '@globetrot/domain';
+import { formatMoney, money, PRICE_CURRENCIES, type PriceCurrency } from '@globetrot/domain';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import { useRef, useState } from 'react';
-import { featureValues, monthlyOfAnnual, PLAN_CARDS, TOP_UP } from '../lib/plan-config';
+import {
+  featureValues,
+  monthlyOfAnnual,
+  planCards,
+  TOP_UP,
+  topUpPrice,
+  tripPassPrice,
+} from '../lib/plan-config';
 import { pipReact } from './landing-pip';
 import styles from './landing.module.css';
 
@@ -140,14 +147,18 @@ function motionAllowed() {
   );
 }
 
-/** The free week and the two plans, with a monthly / yearly switch. Everyone starts with the trial. */
+/**
+ * The free plan, the two paid plans and the trip pass, with a monthly / yearly switch and the price currency the
+ * visitor picks (US dollars until they choose; never guessed from the language).
+ */
 export function Pricing() {
   const t = useTranslations('landing');
   const p = useTranslations('plans');
   const locale = useLocale();
   const [annual, setAnnual] = useState(false);
+  const [currency, setCurrency] = useState<PriceCurrency>('USD');
   const price = (minor: bigint) =>
-    formatMoney(money(minor, 'USD'), locale, { precision: minor === 0n ? 'whole' : 'full' });
+    formatMoney(money(minor, currency), locale, { precision: minor === 0n ? 'whole' : 'full' });
 
   return (
     <>
@@ -156,18 +167,35 @@ export function Pricing() {
           <span className={styles.kicker}>{t('pricingKicker')}</span>
           <h2 id="pricing-title">{t('pricingTitle')}</h2>
         </div>
-        <div className={styles.billing} role="group" aria-label={p('billing')}>
-          <button type="button" aria-pressed={!annual} onClick={() => setAnnual(false)}>
-            {p('monthly')}
-          </button>
-          <button type="button" aria-pressed={annual} onClick={() => setAnnual(true)}>
-            {p('annual')}
-          </button>
+        <div className={styles.pricingSwitches}>
+          <div className={styles.billing} role="group" aria-label={p('billing')}>
+            <button type="button" aria-pressed={!annual} onClick={() => setAnnual(false)}>
+              {p('monthly')}
+            </button>
+            <button type="button" aria-pressed={annual} onClick={() => setAnnual(true)}>
+              {p('annual')}
+            </button>
+          </div>
+          <div className={styles.billing} role="group" aria-label={p('currency')}>
+            {PRICE_CURRENCIES.map((code) => (
+              <button
+                key={code}
+                type="button"
+                aria-pressed={currency === code}
+                onClick={() => setCurrency(code)}
+              >
+                {code}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
       <ul className={styles.plans}>
-        {PLAN_CARDS.map((plan) => {
-          const trial = plan.id === 'trial';
+        {planCards(currency).map((plan) => {
+          const free = plan.id === 'free';
+          const features = free
+            ? (['f1', 'f2', 'f3', 'f4'] as const)
+            : (['f1', 'f2', 'f3'] as const);
           return (
             <li
               key={plan.id}
@@ -179,8 +207,8 @@ export function Pricing() {
                 {plan.highlighted ? <span className={styles.popular}>{p('popular')}</span> : null}
               </div>
               <p className={styles.planPrice}>
-                {trial ? (
-                  <strong>{p('trial.price')}</strong>
+                {free ? (
+                  <strong>{price(0n)}</strong>
                 ) : (
                   <>
                     <strong>{price(annual ? plan.annualMinor : plan.monthlyMinor)}</strong>
@@ -189,12 +217,12 @@ export function Pricing() {
                 )}
               </p>
               <p className={styles.planNote}>
-                {!trial && annual
+                {!free && annual
                   ? p('annualNote', { monthly: price(monthlyOfAnnual(plan.annualMinor)) })
                   : p(`${plan.id}.tagline`)}
               </p>
               <ul className={styles.features}>
-                {(['f1', 'f2', 'f3'] as const).map((feature) => (
+                {features.map((feature) => (
                   <li key={feature}>
                     <span aria-hidden="true">✓</span>
                     {p(`${plan.id}.${feature}`, featureValues(plan))}
@@ -208,8 +236,28 @@ export function Pricing() {
           );
         })}
       </ul>
+      <div className={styles.passRow}>
+        <div>
+          <h3>{p('pass.name')}</h3>
+          <p className={styles.planPrice}>
+            <strong>{price(tripPassPrice(currency))}</strong>
+            <span>{p('pass.once')}</span>
+          </p>
+        </div>
+        <div>
+          <p className={styles.planNote}>{p('pass.tagline')}</p>
+          <ul className={styles.features}>
+            {(['f1', 'f2', 'f3'] as const).map((feature) => (
+              <li key={feature}>
+                <span aria-hidden="true">✓</span>
+                {p(`pass.${feature}`)}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
       <p className={styles.placeholderNote}>
-        {p('topUp', { credits: TOP_UP.credits, price: price(TOP_UP.priceMinor) })} {p('credit')}
+        {p('topUp', { credits: TOP_UP.credits, price: price(topUpPrice(currency)) })} {p('credit')}
       </p>
     </>
   );

@@ -26,6 +26,8 @@ import type { Option } from '../../settings/options';
 import { addExpense, removeExpense, saveSavings, type ExpenseInput } from './actions';
 import { chartBars, livePlan, parseAmount } from './budget-plan';
 import { AskPipLink } from '../_components/ask-pip-link';
+import { GroupMoney, type GroupMoneyData } from './group-money';
+import { MilesCard, type MilesData } from './miles-card';
 import styles from './budget.module.css';
 
 /** Status glyphs (business rules: a status always shows a glyph and a word, never colour alone). */
@@ -59,12 +61,18 @@ export function BudgetView({
   expenses,
   currencies,
   pipEnabled = false,
+  group = null,
+  miles = null,
 }: {
   pipEnabled?: boolean;
   trip: Trip | null;
   budget: BudgetData | null;
   expenses: readonly ExpenseData[];
   currencies: readonly Option[];
+  /** Each person's part and the settling up, when the trip is planned together (ADR-0025). */
+  group?: GroupMoneyData | null;
+  /** The person's miles and the answer counting them (ADR-0030); null hides the card. */
+  miles?: MilesData | null;
 }) {
   const t = useTranslations('budgetPage');
 
@@ -96,6 +104,8 @@ export function BudgetView({
       expenses={expenses}
       currencies={currencies}
       pipEnabled={pipEnabled}
+      group={group}
+      miles={miles}
     />
   );
 }
@@ -106,8 +116,12 @@ function Board({
   expenses,
   currencies,
   pipEnabled,
+  group,
+  miles,
 }: {
   pipEnabled: boolean;
+  group: GroupMoneyData | null;
+  miles: MilesData | null;
   trip: Trip;
   budget: BudgetData;
   expenses: readonly ExpenseData[];
@@ -302,6 +316,9 @@ function Board({
         <Totals budget={budget} total={total} ceiling={ceiling} fmt={fmt} view={view} />
       </div>
 
+      {group ? <GroupMoney tripId={trip.id} group={group} /> : null}
+      {miles ? <MilesCard tripId={trip.id} miles={miles} /> : null}
+
       <section className={styles.card} aria-labelledby="expenses-title">
         <div className={styles.listHead}>
           <h2 id="expenses-title">{t('expensesTitle')}</h2>
@@ -315,7 +332,16 @@ function Board({
               <li key={expense.id} className={styles.row}>
                 <div className={styles.rowMain}>
                   <strong>{expense.description}</strong>
-                  <span>{t(`categories.${expense.category}`)}</span>
+                  <span>
+                    {t(`categories.${expense.category}`)}
+                    {group && expense.paidBy
+                      ? ` · ${t('paidByName', {
+                          name:
+                            group.people.find((person) => person.userId === expense.paidBy)?.name ??
+                            '',
+                        })}`
+                      : ''}
+                  </span>
                   {expense.guess && budget.guess ? (
                     <span className={styles.guessNote}>
                       {guessNote(budget.guess, expenses.length > 1)}
@@ -368,6 +394,7 @@ function Board({
       {drawerOpen ? (
         <ExpenseDrawer
           trip={trip}
+          people={group?.people ?? null}
           currencies={currencies}
           fmt={fmt}
           onClose={() => {
@@ -648,12 +675,15 @@ function Totals({
 
 function ExpenseDrawer({
   trip,
+  people,
   currencies,
   fmt,
   onClose,
   onAdded,
 }: {
   trip: Trip;
+  /** Who can have paid, on a trip planned together; null otherwise. */
+  people: GroupMoneyData['people'] | null;
   currencies: readonly Option[];
   fmt: (value: Money, whole?: boolean) => string;
   onClose: () => void;
@@ -668,6 +698,7 @@ function ExpenseDrawer({
   const [fxRate, setFxRate] = useState('');
   const [category, setCategory] = useState<(typeof EXPENSE_CATEGORIES)[number]>('food');
   const [status, setStatus] = useState<ExpenseStatus>('estimate');
+  const [paidBy, setPaidBy] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -723,6 +754,7 @@ function ExpenseDrawer({
       amount: amount.trim().replace(',', '.'),
       currency,
       fxRate: foreign ? fxRate.trim().replace(',', '.') : undefined,
+      paidBy: paidBy || null,
     }).then((result) => {
       setBusy(false);
       if (result.ok) onAdded();
@@ -809,6 +841,23 @@ function ExpenseDrawer({
                 ? t('preview', { amount: preview })
                 : t('fxHelp', { currency: trip.currency })}
             </small>
+          </label>
+        ) : null}
+        {people ? (
+          <label className={styles.field}>
+            <span>{t('paidBy')}</span>
+            <select
+              id="expense-paid-by"
+              value={paidBy}
+              onChange={(event) => setPaidBy(event.target.value)}
+            >
+              <option value="">{t('paidByNobody')}</option>
+              {people.map((person) => (
+                <option key={person.userId} value={person.userId}>
+                  {person.name}
+                </option>
+              ))}
+            </select>
           </label>
         ) : null}
         <fieldset className={styles.choices}>

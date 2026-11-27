@@ -1,4 +1,5 @@
 import type {
+  MilesProgram,
   MotionChoice,
   ThemeChoice,
   TripStatus,
@@ -10,6 +11,7 @@ import { createAccountRepository, type AccountRepository } from './account-repos
 import { createAssistantRepository, type AssistantRepository } from './assistant-repository';
 import { createBillingRepository, type BillingRepository } from './billing-repository';
 import { createShareRepository, type ShareRepository } from './share-repository';
+import { createMemberRepository, type MemberRepository } from './member-repository';
 import { createCommunityRepository, type CommunityRepository } from './community-repository';
 import type { Database } from './client';
 import {
@@ -18,8 +20,12 @@ import {
   destination,
   expense,
   idempotencyKey,
+  milesBalance,
   rateLimit,
+  savingsCheckin,
+  tripMiles,
   trip,
+  tripMember,
   tripPlace,
   tripSavings,
   tripStamp,
@@ -38,7 +44,7 @@ import {
  */
 
 /** A pooled client or a transaction: both run the same queries. */
-type Executor = Pick<Database, 'select' | 'insert' | 'update' | 'delete'>;
+type Executor = Pick<Database, 'select' | 'selectDistinct' | 'insert' | 'update' | 'delete'>;
 
 /** Most trips returned by one list call. Pagination arrives when a user can plausibly reach it. */
 export const MAX_LISTED_TRIPS = 200;
@@ -66,6 +72,34 @@ export function createTripRepository(executor: Executor) {
     async findById(id: string): Promise<TripRow | null> {
       const [row] = await executor.select().from(trip).where(eq(trip.id, id)).limit(1);
       return row ? asTripRow(row) : null;
+    },
+
+    async roleOf(tripId: string, userId: string): Promise<'editor' | 'viewer' | null> {
+      const [row] = await executor
+        .select({ role: tripMember.role })
+        .from(tripMember)
+        .where(and(eq(tripMember.tripId, tripId), eq(tripMember.userId, userId)))
+        .limit(1);
+      return (row?.role as 'editor' | 'viewer' | undefined) ?? null;
+    },
+
+    async listShared(
+      userId: string,
+      options: { readonly includeArchived: boolean },
+    ): Promise<(TripRow & { readonly role: 'editor' | 'viewer' })[]> {
+      const filters: SQL[] = [eq(tripMember.userId, userId)];
+      if (!options.includeArchived) filters.push(ne(trip.status, 'archived'));
+      const rows = await executor
+        .select({ trip, role: tripMember.role })
+        .from(tripMember)
+        .innerJoin(trip, eq(trip.id, tripMember.tripId))
+        .where(and(...filters))
+        .orderBy(desc(trip.createdAt), desc(trip.id))
+        .limit(MAX_LISTED_TRIPS);
+      return rows.map((row) => ({
+        ...asTripRow(row.trip),
+        role: row.role as 'editor' | 'viewer',
+      }));
     },
 
     async listByOwner(
@@ -149,6 +183,7 @@ export interface PreferencesRow {
   readonly homeCity: string | null;
   readonly homePoint: { readonly latitude: number; readonly longitude: number } | null;
   readonly pipOptIn: boolean;
+  readonly weeklyReminder: boolean;
   readonly pipLook: { hat: string; outfit: string; bag: string; bagColor: string };
   readonly pipName: string | null;
 }
@@ -168,6 +203,7 @@ const asPreferencesRow = (row: typeof userPreference.$inferSelect): PreferencesR
       ? null
       : { latitude: row.homeLatitude, longitude: row.homeLongitude },
   pipOptIn: row.pipOptIn,
+  weeklyReminder: row.weeklyReminder,
   pipLook: { hat: row.pipHat, outfit: row.pipOutfit, bag: row.pipBag, bagColor: row.pipBagColor },
   pipName: row.pipName,
 });
@@ -203,6 +239,7 @@ export function createPreferencesRepository(executor: Executor) {
         readonly homePoint?:
           { readonly latitude: number; readonly longitude: number } | null | undefined;
         readonly pipOptIn?: boolean | undefined;
+        readonly weeklyReminder?: boolean | undefined;
         readonly pipLook?:
           { hat: string; outfit: string; bag: string; bagColor: string } | undefined;
         readonly pipName?: string | null | undefined;
@@ -226,6 +263,7 @@ export function createPreferencesRepository(executor: Executor) {
               homeLongitude: patch.homePoint?.longitude ?? null,
             }),
         ...(patch.pipOptIn === undefined ? {} : { pipOptIn: patch.pipOptIn }),
+        ...(patch.weeklyReminder === undefined ? {} : { weeklyReminder: patch.weeklyReminder }),
         ...(patch.pipLook === undefined
           ? {}
           : {
@@ -413,6 +451,14 @@ export function createDestinationRepository(executor: Executor) {
   return {
     listByTrip: list,
 
+    async tripIdsWithPhoto(mediaId: string): Promise<string[]> {
+      const rows = await executor
+        .selectDistinct({ tripId: destination.tripId })
+        .from(destination)
+        .where(sql`${destination.photos} @> ${JSON.stringify([{ mediaId }])}::jsonb`);
+      return rows.map((row) => row.tripId);
+    },
+
     /** Deletes the trip's stops and writes `items` in order (position = index). Returns what is stored. */
     async replaceForTrip(
       tripId: string,
@@ -490,9 +536,13 @@ export interface ExpenseRow {
   readonly guess: boolean;
   readonly createdAt: Date;
   readonly updatedAt: Date;
+  /** Who paid it on a trip planned together; null when nobody said. */
+  readonly paidBy: string | null;
 }
 
-export type NewExpenseRow = Omit<ExpenseRow, 'updatedAt'>;
+export type NewExpenseRow = Omit<ExpenseRow, 'updatedAt' | 'paidBy'> & {
+  readonly paidBy?: string | null;
+};
 
 export type ExpensePatchRow = Partial<
   Omit<ExpenseRow, 'id' | 'tripId' | 'guess' | 'createdAt' | 'updatedAt'>
@@ -701,6 +751,102 @@ export function createSavingsRepository(executor: Executor) {
         .limit(1);
       return row ?? null;
     },
+    async listMiles(userId: string) {
+      const rows = await executor
+        .select({ program: milesBalance.program, balance: milesBalance.balance })
+        .from(milesBalance)
+        .where(eq(milesBalance.userId, userId))
+        .orderBy(milesBalance.program);
+      return rows.map((row) => ({ ...row, program: row.program as MilesProgram }));
+    },
+    async listTripMiles(tripId: string, userId: string) {
+      const rows = await executor
+        .select({ program: tripMiles.program, miles: tripMiles.miles })
+        .from(tripMiles)
+        .where(and(eq(tripMiles.tripId, tripId), eq(tripMiles.userId, userId)))
+        .orderBy(tripMiles.program);
+      return rows.map((row) => ({ ...row, program: row.program as MilesProgram }));
+    },
+    async setMiles(userId: string, program: MilesProgram, balance: number, at: Date) {
+      if (balance <= 0) {
+        await executor
+          .delete(milesBalance)
+          .where(and(eq(milesBalance.userId, userId), eq(milesBalance.program, program)));
+        await executor
+          .delete(tripMiles)
+          .where(and(eq(tripMiles.userId, userId), eq(tripMiles.program, program)));
+        return;
+      }
+      await executor
+        .insert(milesBalance)
+        .values({ userId, program, balance, updatedAt: at })
+        .onConflictDoUpdate({
+          target: [milesBalance.userId, milesBalance.program],
+          set: { balance, updatedAt: at },
+        });
+    },
+    async setTripMiles(
+      tripId: string,
+      userId: string,
+      program: MilesProgram,
+      miles: number,
+      at: Date,
+    ) {
+      if (miles <= 0) {
+        await executor
+          .delete(tripMiles)
+          .where(
+            and(
+              eq(tripMiles.tripId, tripId),
+              eq(tripMiles.userId, userId),
+              eq(tripMiles.program, program),
+            ),
+          );
+        return;
+      }
+      await executor
+        .insert(tripMiles)
+        .values({ tripId, userId, program, miles, updatedAt: at })
+        .onConflictDoUpdate({
+          target: [tripMiles.tripId, tripMiles.userId, tripMiles.program],
+          set: { miles, updatedAt: at },
+        });
+    },
+    async listCheckins(tripId: string, userId: string) {
+      return executor
+        .select({ week: savingsCheckin.week, amountMinor: savingsCheckin.amountMinor })
+        .from(savingsCheckin)
+        .where(and(eq(savingsCheckin.tripId, tripId), eq(savingsCheckin.userId, userId)))
+        .orderBy(desc(savingsCheckin.week))
+        .limit(60);
+    },
+    async upsertCheckin(row: {
+      readonly tripId: string;
+      readonly userId: string;
+      readonly week: string;
+      readonly amountMinor: bigint;
+      readonly createdAt: Date;
+    }): Promise<bigint | null> {
+      const [before] = await executor
+        .select({ amountMinor: savingsCheckin.amountMinor })
+        .from(savingsCheckin)
+        .where(
+          and(
+            eq(savingsCheckin.tripId, row.tripId),
+            eq(savingsCheckin.userId, row.userId),
+            eq(savingsCheckin.week, row.week),
+          ),
+        )
+        .limit(1);
+      await executor
+        .insert(savingsCheckin)
+        .values(row)
+        .onConflictDoUpdate({
+          target: [savingsCheckin.tripId, savingsCheckin.userId, savingsCheckin.week],
+          set: { amountMinor: row.amountMinor },
+        });
+      return before?.amountMinor ?? null;
+    },
     /** Creates the row (zero for what the patch leaves out) or changes only the fields in the patch. */
     async upsert(
       tripId: string,
@@ -779,6 +925,7 @@ export type MediaRepository = ReturnType<typeof createMediaRepository>;
 
 export interface Transaction {
   readonly trips: TripRepository;
+  readonly members: MemberRepository;
   readonly destinations: DestinationRepository;
   readonly expenses: ExpenseRepository;
   readonly checklist: ChecklistRepository;
@@ -803,6 +950,7 @@ export function createUnitOfWork(db: Database) {
       return db.transaction((tx) =>
         work({
           trips: createTripRepository(tx),
+          members: createMemberRepository(tx),
           destinations: createDestinationRepository(tx),
           expenses: createExpenseRepository(tx),
           checklist: createChecklistRepository(tx),

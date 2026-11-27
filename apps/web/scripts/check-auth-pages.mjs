@@ -68,6 +68,7 @@ const TRIPS = [
     visibility: 'private',
     createdAt: NOW,
     updatedAt: NOW,
+    role: 'owner',
   },
   {
     id: '01a1c28d-afc9-7767-af40-c937c80dd9dd',
@@ -78,9 +79,34 @@ const TRIPS = [
     visibility: 'private',
     createdAt: NOW,
     updatedAt: NOW,
+    role: 'owner',
   },
 ];
 const TRIP_ID = TRIPS[0].id;
+/** Who plans the first trip (ADR-0024): the signed-in owner, an editor and an open link. */
+const MEMBERS = {
+  members: [
+    { userId: 'u-qa', name: 'QA Tester', role: 'owner', you: true },
+    { userId: 'u-bruno', name: 'Bruno Costa', role: 'editor', you: false },
+  ],
+  invites: [{ id: '0193c0a8-7b1e-7c4a-9e2f-3d5a6b7c9a55', role: 'viewer', expiresAt: NOW }],
+  guestLimit: null,
+};
+const HABIT = {
+  week: '2026-W45',
+  checkedIn: null,
+  streak: 2,
+  suggested: { amount: '20000.00', currency: 'JPY' },
+  countdown: { daysLeft: 153, phase: 'six-months', tasks: ['passport', 'entryRules', 'flights'] },
+};
+const INVITE_TOKEN = 'abcdefghijklmnopqrstuv';
+const INVITE_PREVIEW = {
+  tripTitle: 'Patagonia',
+  ownerName: 'Ana Ribeiro',
+  role: 'editor',
+  joined: false,
+  tripId: '01a1c28d-afc9-7767-af40-c937c80dd9ff',
+};
 
 const usd = (amount) => ({ amount, currency: 'USD' });
 const CATEGORY_KEYS = [
@@ -451,6 +477,20 @@ const stub = createServer(async (request, response) => {
     if (!signedIn) return reply(response, 401, { code: 'UNAUTHENTICATED' });
     return reply(response, 200, VISAS);
   }
+  if (/^\/v1\/trips\/[^/]+\/members$/.test(url.pathname) && request.method === 'GET') {
+    if (!signedIn) return reply(response, 401, { code: 'UNAUTHENTICATED' });
+    return reply(response, 200, MEMBERS);
+  }
+  if (/^\/v1\/trips\/[^/]+\/habit$/.test(url.pathname) && request.method === 'GET') {
+    if (!signedIn) return reply(response, 401, { code: 'UNAUTHENTICATED' });
+    return reply(response, 200, HABIT);
+  }
+  if (/^\/v1\/invites\/[^/]+$/.test(url.pathname) && request.method === 'GET') {
+    if (!signedIn) return reply(response, 401, { code: 'UNAUTHENTICATED' });
+    return url.pathname.endsWith(INVITE_TOKEN)
+      ? reply(response, 200, INVITE_PREVIEW)
+      : reply(response, 404, { code: 'NOT_FOUND' });
+  }
   if (/^\/v1\/trips\/[^/]+\/destinations$/.test(url.pathname) && request.method === 'GET') {
     if (!signedIn) return reply(response, 401, { code: 'UNAUTHENTICATED' });
     return reply(response, 200, DESTINATIONS);
@@ -553,8 +593,9 @@ async function waitUntilUp(url) {
   }
 }
 
-// The main app has Pip switched off (the default); a second copy has the flag on, to check both states.
-const main = launch();
+// The main app has Pip switched off (the default) and the community on, so its screens are checked; a second
+// copy has Pip on and the community off (the default), to check both states of each flag.
+const main = launch({ FEATURE_COMMUNITY: 'true' });
 const withPip = launch({ FEATURE_PIP: 'true' });
 const base = main.url;
 const pipBase = withPip.url;
@@ -800,6 +841,34 @@ try {
         VIEWPORTS[layout],
       ]);
     }
+    for (const layout of ['desktop', 'phone']) {
+      entries.push([
+        `invite-${layout}`,
+        true,
+        async (page) => go(page, `${base}/app/invite/${INVITE_TOKEN}`),
+        VIEWPORTS[layout],
+      ]);
+    }
+    for (const layout of ['desktop', 'phone']) {
+      entries.push([
+        `today-${layout}`,
+        true,
+        async (page) => go(page, `${base}/app/today`),
+        VIEWPORTS[layout],
+      ]);
+    }
+    for (const [name, path, layout] of [
+      ['itinerary-pt-phone', '/roteiros/japao', 'phone'],
+      ['itinerary-en-desktop', '/itineraries/portugal?currency=EUR', 'desktop'],
+    ]) {
+      entries.push([name, false, async (page) => go(page, `${base}${path}`), VIEWPORTS[layout]]);
+    }
+    entries.push([
+      'invite-gone-phone',
+      true,
+      async (page) => go(page, `${base}/app/invite/zyxwvutsrqponmlkjihgfe`),
+      VIEWPORTS.phone,
+    ]);
     entries.push([
       'trips-archived-desktop',
       true,
@@ -1003,6 +1072,21 @@ try {
       },
       VIEWPORTS.phone,
     ]);
+    entries.push([
+      'shell-community-off-404',
+      true,
+      async (page) => {
+        // The community is hidden by default (FEATURE_COMMUNITY): the copy with Pip on has it off.
+        const response = await page.goto(`${pipBase}/app/community`);
+        await page.waitForLoadState('networkidle');
+        if (response?.status() !== 404) {
+          throw new Error(`/app/community answered ${response?.status()} with the flag off`);
+        }
+      },
+      VIEWPORTS.phone,
+    ]);
+    entries.push(['shell-discover-desktop', true, ...at('/app/discover', VIEWPORTS.desktop)]);
+    entries.push(['shell-discover-phone', true, ...at('/app/discover', VIEWPORTS.phone)]);
     entries.push(['shell-pip-home-phone', true, ...at('/app', VIEWPORTS.phone, pipBase)]);
     entries.push(['shell-pip-home-desktop', true, ...at('/app', VIEWPORTS.desktop, pipBase)]);
     entries.push(['shell-pip-page', true, ...at('/app/pip', VIEWPORTS.phone, pipBase)]);
@@ -1326,8 +1410,7 @@ try {
         'desktop: expected exactly one visible account navigation',
       );
       check(
-        JSON.stringify(await names(places)) ===
-          JSON.stringify([shell.nav.trips, shell.nav.community, shell.nav.passport]),
+        JSON.stringify(await names(places)) === JSON.stringify([shell.nav.discover]),
         `desktop: the account places are ${JSON.stringify(await names(places))}`,
       );
       const bar = await page.locator('header').first().boundingBox();
@@ -1376,7 +1459,7 @@ try {
           if (!onMap) {
             check(
               JSON.stringify(await names(bottom)) ===
-                JSON.stringify([nav.trip, nav.community, nav.passport, nav.profile]),
+                JSON.stringify([nav.trip, nav.discover, nav.profile]),
               `${where}: the bottom bar is ${JSON.stringify(await names(bottom))}`,
             );
           }
@@ -1491,7 +1574,7 @@ try {
       );
       await nav.getByRole('link', { name: shell.nav.budget, exact: true }).click();
       await page.waitForURL(`${base}/app/budget`);
-      await page.getByRole('heading', { name: shell.nav.budget, level: 1 }).waitFor();
+      await page.getByRole('heading', { name: CATALOGS.en.budgetPage.title, level: 1 }).waitFor();
       check(
         (await nav.locator('[aria-current="page"]').allInnerTexts()).join() === shell.nav.budget,
         'Budget is not the marked tool on /app/budget',
@@ -1501,15 +1584,15 @@ try {
         'the Budget page does not show the savings answer',
       );
       check(
-        (await page.title()).startsWith(shell.nav.budget),
+        (await page.title()).startsWith(CATALOGS.en.budgetPage.title),
         `the Budget page title is "${await page.title()}"`,
       );
-      await placesNav(page).getByRole('link', { name: shell.nav.passport, exact: true }).click();
-      await page.waitForURL(`${base}/app/passport`);
+      await placesNav(page).getByRole('link', { name: shell.nav.discover, exact: true }).click();
+      await page.waitForURL(`${base}/app/discover`);
       check(
         (await placesNav(page).locator('[aria-current="page"]').allInnerTexts()).join() ===
-          shell.nav.passport,
-        'Passport is not the marked place on /app/passport',
+          shell.nav.discover,
+        'Discover is not the marked place on /app/discover',
       );
       await context.close();
     }
@@ -1599,7 +1682,8 @@ try {
           `the Pip entry point is under 44px at ${viewport.width}px`,
         );
         await entry.click();
-        await on.page.waitForURL(`${pipBase}/app/pip`);
+        // The floating button opens Pip on the screen's topic (here the budget).
+        await on.page.waitForURL((next) => next.pathname === '/app/pip');
         // The URL changes before the page streams in behind the loading state: wait for the text itself.
         const pipCopy = CATALOGS.en.pipPage;
         await on.page

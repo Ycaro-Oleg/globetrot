@@ -80,6 +80,7 @@ describe('/v1/me/preferences', () => {
       homeCity: null,
       homePoint: null,
       pipOptIn: false,
+      weeklyReminder: true,
       pipLook: { hat: 'straw', outfit: 'none', bag: 'trolley', bagColor: 'amber' },
       pipName: null,
     });
@@ -101,6 +102,7 @@ describe('/v1/me/preferences', () => {
       homeCity: null,
       homePoint: null,
       pipOptIn: false,
+      weeklyReminder: true,
       pipLook: { hat: 'straw', outfit: 'none', bag: 'trolley', bagColor: 'amber' },
       pipName: null,
     });

@@ -22,7 +22,7 @@ import {
 } from '@globetrot/domain';
 import { useLocale, useTranslations } from 'next-intl';
 import { useEffect, useId, useRef, useState, type CSSProperties, type Ref } from 'react';
-import { PipAvatar } from './app/_components/pip-avatar';
+import { LazyPipAvatar as PipAvatar } from './app/_components/lazy-pip-avatar';
 import type { PipPose } from './app/_components/pip-pose';
 import { livePlan } from './app/budget/budget-plan';
 import styles from './landing.module.css';
@@ -91,6 +91,16 @@ export function LandingSuggest({ signupHref }: { signupHref: string }) {
   const heading = useRef<HTMLHeadingElement>(null);
   const moved = useRef(false);
 
+  // Arriving from a public itinerary ("Make this trip mine", `/?plano=japan#planner`): that destination is
+  // already picked, so the next step is what the person likes.
+  useEffect(() => {
+    const picked = new URLSearchParams(window.location.search).get('plano');
+    if (picked && SUGGESTED_DESTINATIONS.some((option) => option.id === picked)) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setDestination(picked);
+    }
+  }, []);
+
   const currency = toCurrencyCode(code);
   const unit = 10n ** BigInt(minorUnitExponent(currency));
   const whole = (value: number) =>
@@ -120,7 +130,9 @@ export function LandingSuggest({ signupHref }: { signupHref: string }) {
 
   // The plan is ready: the live map below shows it too.
   useEffect(() => {
-    if (phase === 'done') sharePlan({ destination, likes, days, comfort });
+    if (phase !== 'done') return;
+    sharePlan({ destination, likes, days, comfort });
+    track('plan_built');
   }, [phase, destination, likes, days, comfort]);
 
   const go = (next: Phase) => {
@@ -165,6 +177,8 @@ export function LandingSuggest({ signupHref }: { signupHref: string }) {
     return (
       <SuggestResult
         plan={plan}
+        likes={likes}
+        comfort={comfort}
         code={code}
         monthly={monthlyValue}
         headingRef={heading}
@@ -177,7 +191,12 @@ export function LandingSuggest({ signupHref }: { signupHref: string }) {
   const step = phase;
   const titles = [t('title'), t('stepLikes'), t('stepDays'), t('stepMoney')];
   return (
-    <section className={styles.calc} aria-labelledby={`${id}-title`} data-phase="steps">
+    <section
+      id="planner"
+      className={styles.calc}
+      aria-labelledby={`${id}-title`}
+      data-phase="steps"
+    >
       <div className={styles.calcHead}>
         <h2 id={`${id}-title`} ref={heading} tabIndex={-1} className={styles.calcTitle}>
           {titles[step]}
@@ -201,9 +220,12 @@ export function LandingSuggest({ signupHref }: { signupHref: string }) {
                 onClick={() => setDestination(option.id)}
               >
                 <strong>{pt ? option.namePt : option.name}</strong>
-                <small>
-                  {option.stops.map((stop) => (pt ? stop.namePt : stop.name)).join(' · ')}
-                </small>
+                {/* A one-city trip would only repeat its name: its stops are listed for multi-city ones. */}
+                {option.stops.length > 1 ? (
+                  <small>
+                    {option.stops.map((stop) => (pt ? stop.namePt : stop.name)).join(' · ')}
+                  </small>
+                ) : null}
               </button>
             ))}
           </div>
@@ -336,6 +358,8 @@ export function LandingSuggest({ signupHref }: { signupHref: string }) {
  */
 export function SuggestResult({
   plan,
+  likes,
+  comfort,
   code,
   monthly,
   signupHref,
@@ -343,6 +367,8 @@ export function SuggestResult({
   headingRef,
 }: {
   plan: SuggestedPlan;
+  likes: readonly SuggestLike[];
+  comfort: SuggestComfort;
   code: string;
   monthly: number;
   signupHref: string;
@@ -389,7 +415,7 @@ export function SuggestResult({
       saved: '0',
       monthly: String(Math.round(monthly)),
       currency: code,
-      suggestion: { destination: plan.destination, days: plan.days },
+      suggestion: { destination: plan.destination, likes, days: plan.days, comfort },
     });
   };
 

@@ -65,6 +65,9 @@ export interface SuggestedDestination {
   readonly id: string;
   readonly name: string;
   readonly namePt: string;
+  /** Its public itinerary page's address: `/itineraries/{slug}` and `/roteiros/{slugPt}`. */
+  readonly slug: string;
+  readonly slugPt: string;
   readonly stops: readonly SuggestedStop[];
   /** `legs[i]` goes from `stops[i]` to `stops[i + 1]`. */
   readonly legs: readonly SuggestedLeg[];
@@ -99,6 +102,8 @@ const JAPAN: SuggestedDestination = {
   id: 'japan',
   name: 'Japan',
   namePt: 'Japão',
+  slug: 'japan',
+  slugPt: 'japao',
   stops: [
     {
       key: 'tokyo',
@@ -211,6 +216,8 @@ const PORTUGAL: SuggestedDestination = {
   id: 'portugal',
   name: 'Portugal',
   namePt: 'Portugal',
+  slug: 'portugal',
+  slugPt: 'portugal',
   stops: [
     {
       key: 'lisbon',
@@ -295,6 +302,8 @@ const RIO_DE_LA_PLATA: SuggestedDestination = {
   id: 'rio-de-la-plata',
   name: 'Argentina and Uruguay',
   namePt: 'Argentina e Uruguai',
+  slug: 'argentina-and-uruguay',
+  slugPt: 'argentina-e-uruguai',
   stops: [
     {
       key: 'buenos-aires',
@@ -373,12 +382,330 @@ const RIO_DE_LA_PLATA: SuggestedDestination = {
   ],
 };
 
+const ITALY: SuggestedDestination = {
+  id: 'italy',
+  name: 'Italy',
+  namePt: 'Itália',
+  slug: 'italy',
+  slugPt: 'italia',
+  stops: [
+    {
+      key: 'rome',
+      name: 'Rome',
+      namePt: 'Roma',
+      countryCode: 'IT',
+      region: 'Lazio',
+      latitude: 41.9028,
+      longitude: 12.4964,
+      nights: 4,
+      minNights: 2,
+      priority: 1,
+      daily: {
+        budget: { stay: [22, 38], food: [22, 38], local: [6, 9] },
+        comfort: { stay: [100, 180], food: [45, 90], local: [8, 15] },
+      },
+      // prettier-ignore
+      experiences: experiences([
+        ['rome-colosseum', 'The Colosseum and the Roman Forum', 'O Coliseu e o Fórum Romano', 'sight', ['culture'], false, [20, 35], 41.8902, 12.4922],
+        ['rome-vatican', 'The Vatican Museums and the Sistine Chapel', 'Os Museus do Vaticano e a Capela Sistina', 'sight', ['culture'], false, [25, 40], 41.9065, 12.4536],
+        ['rome-testaccio', 'Trapizzino at the Testaccio market', 'Trapizzino no mercado de Testaccio', 'food', ['food'], true, [10, 20], 41.8763, 12.4757],
+        ['rome-appia-bike', 'Cycling the Appian Way', 'De bicicleta pela Via Ápia', 'sight', ['nature', 'adrenaline'], true, [15, 35], 41.8564, 12.5157],
+        ['rome-aqueducts', 'The aqueducts park at sunset', 'O parque dos aquedutos ao pôr do sol', 'sight', ['nature', 'culture'], true, [0, 0], 41.8536, 12.5578],
+        ['rome-trastevere', 'Trastevere at night', 'Trastevere à noite', 'other', ['nightlife'], false, [15, 40], 41.8897, 12.4697],
+      ]),
+    },
+    {
+      key: 'florence',
+      name: 'Florence',
+      namePt: 'Florença',
+      countryCode: 'IT',
+      region: 'Tuscany',
+      latitude: 43.7696,
+      longitude: 11.2558,
+      nights: 3,
+      minNights: 2,
+      priority: 1,
+      daily: {
+        budget: { stay: [24, 40], food: [22, 38], local: [3, 6] },
+        comfort: { stay: [110, 200], food: [45, 90], local: [6, 12] },
+      },
+      // prettier-ignore
+      experiences: experiences([
+        ['florence-uffizi', 'The Uffizi', 'A Galeria Uffizi', 'sight', ['culture'], false, [25, 35], 43.7678, 11.2553],
+        ['florence-lampredotto', 'Lampredotto from a street cart', 'Lampredotto num carrinho de rua', 'food', ['food'], true, [6, 10], 43.7765, 11.2534],
+        ['florence-chianti-vespa', 'The Chianti hills by Vespa', 'As colinas do Chianti de Vespa', 'sight', ['adrenaline', 'food', 'nature'], true, [90, 140], 43.58, 11.32],
+        ['florence-oltrarno', 'Artisan workshops in Oltrarno', 'Ateliês de artesãos em Oltrarno', 'shop', ['culture'], true, [0, 20], 43.765, 11.249],
+        ['florence-santo-spirito', 'Piazza Santo Spirito at night', 'A Piazza Santo Spirito à noite', 'other', ['nightlife'], false, [10, 30], 43.7672, 11.248],
+      ]),
+    },
+    {
+      key: 'venice',
+      name: 'Venice',
+      namePt: 'Veneza',
+      countryCode: 'IT',
+      region: 'Veneto',
+      latitude: 45.4408,
+      longitude: 12.3155,
+      nights: 2,
+      minNights: 1,
+      priority: 2,
+      daily: {
+        budget: { stay: [42, 60], food: [28, 45], local: [10, 27] },
+        comfort: { stay: [140, 260], food: [55, 100], local: [15, 30] },
+      },
+      // prettier-ignore
+      experiences: experiences([
+        ['venice-st-marks', "St Mark's Basilica", 'A Basílica de São Marcos', 'sight', ['culture'], false, [3, 20], 45.4345, 12.3397],
+        ['venice-cicchetti', 'A cicchetti crawl in Cannaregio', 'Um roteiro de cicchetti em Cannaregio', 'food', ['food', 'nightlife'], true, [20, 40], 45.4446, 12.3283],
+        ['venice-burano', 'Burano and Torcello by water bus', 'Burano e Torcello de vaporetto', 'sight', ['culture', 'nature'], true, [10, 27], 45.4853, 12.4167],
+        ['venice-rowing', 'A Venetian rowing lesson', 'Uma aula de remo veneziano', 'sight', ['adrenaline', 'culture'], true, [80, 110], 45.443, 12.33],
+      ]),
+    },
+  ],
+  legs: [
+    { mode: 'train', cost: [16, 50] },
+    { mode: 'train', cost: [20, 55] },
+  ],
+};
+
+const CHILE: SuggestedDestination = {
+  id: 'chile',
+  name: 'Chile',
+  namePt: 'Chile',
+  slug: 'chile',
+  slugPt: 'chile',
+  stops: [
+    {
+      key: 'santiago',
+      name: 'Santiago',
+      namePt: 'Santiago',
+      countryCode: 'CL',
+      region: 'Santiago Metropolitan',
+      latitude: -33.4489,
+      longitude: -70.6693,
+      nights: 3,
+      minNights: 2,
+      priority: 1,
+      daily: {
+        budget: { stay: [13, 25], food: [15, 30], local: [3, 6] },
+        comfort: { stay: [70, 130], food: [35, 70], local: [8, 15] },
+      },
+      // prettier-ignore
+      experiences: experiences([
+        ['santiago-cajon-maipo', 'Hiking in the Cajón del Maipo', 'Trilha no Cajón del Maipo', 'sight', ['nature', 'adrenaline'], true, [40, 80], -33.64, -70.35],
+        ['santiago-winery', 'A Maipo Valley winery', 'Uma vinícola no Vale do Maipo', 'food', ['food', 'culture'], false, [25, 60], -33.64, -70.57],
+        ['santiago-la-vega', 'Lunch at La Vega market', 'Almoço no mercado La Vega', 'food', ['food'], true, [6, 12], -33.429, -70.649],
+        ['santiago-bellavista', 'Barrio Bellavista at night', 'O bairro Bellavista à noite', 'other', ['nightlife'], false, [15, 40], -33.432, -70.634],
+        ['santiago-san-cristobal', 'Cerro San Cristóbal by funicular', 'O Cerro San Cristóbal de funicular', 'sight', ['nature'], false, [3, 8], -33.425, -70.633],
+      ]),
+    },
+    {
+      key: 'valparaiso',
+      name: 'Valparaíso',
+      namePt: 'Valparaíso',
+      countryCode: 'CL',
+      region: 'Valparaíso',
+      latitude: -33.0472,
+      longitude: -71.6127,
+      nights: 1,
+      minNights: 1,
+      priority: 3,
+      daily: {
+        budget: { stay: [15, 28], food: [12, 25], local: [2, 5] },
+        comfort: { stay: [60, 110], food: [30, 60], local: [5, 10] },
+      },
+      // prettier-ignore
+      experiences: experiences([
+        ['valpo-murals', 'Street art on Cerro Alegre', 'Arte de rua no Cerro Alegre', 'sight', ['culture'], false, [0, 15], -33.041, -71.627],
+        ['valpo-funiculars', 'The old funiculars', 'Os elevadores antigos', 'sight', ['culture'], true, [1, 3], -33.04, -71.629],
+        ['valpo-seafood', 'Seafood at Caleta Portales', 'Frutos do mar na Caleta Portales', 'food', ['food'], true, [10, 20], -33.031, -71.592],
+      ]),
+    },
+    {
+      key: 'san-pedro',
+      name: 'San Pedro de Atacama',
+      namePt: 'San Pedro de Atacama',
+      countryCode: 'CL',
+      region: 'Antofagasta',
+      latitude: -22.9087,
+      longitude: -68.1997,
+      nights: 3,
+      minNights: 2,
+      priority: 2,
+      daily: {
+        budget: { stay: [20, 40], food: [18, 35], local: [3, 8] },
+        comfort: { stay: [110, 250], food: [40, 80], local: [10, 20] },
+      },
+      // prettier-ignore
+      experiences: experiences([
+        ['atacama-valle-luna', 'The Valley of the Moon at sunset', 'O Vale da Lua ao pôr do sol', 'sight', ['nature'], false, [15, 35], -22.913, -68.283],
+        ['atacama-stars', 'Stargazing in the desert', 'Observação de estrelas no deserto', 'sight', ['nature', 'culture'], false, [35, 55], -22.95, -68.2],
+        ['atacama-sandboard', 'Sandboarding in Death Valley', 'Sandboard no Vale da Morte', 'sight', ['adrenaline'], true, [25, 40], -22.92, -68.25],
+        ['atacama-tatio', 'El Tatio geysers at dawn', 'Os gêiseres de El Tatio ao amanhecer', 'sight', ['nature'], false, [40, 70], -22.332, -68.011],
+        ['atacama-lagoons', 'The high-plateau lagoons', 'As lagunas altiplânicas', 'sight', ['nature'], true, [50, 90], -23.73, -67.87],
+      ]),
+    },
+  ],
+  legs: [
+    { mode: 'bus', cost: [6, 12] },
+    { mode: 'flight', cost: [70, 180] },
+  ],
+};
+
+const MEXICO: SuggestedDestination = {
+  id: 'mexico',
+  name: 'Mexico',
+  namePt: 'México',
+  slug: 'mexico',
+  slugPt: 'mexico',
+  stops: [
+    {
+      key: 'mexico-city',
+      name: 'Mexico City',
+      namePt: 'Cidade do México',
+      countryCode: 'MX',
+      region: 'Mexico City',
+      latitude: 19.4326,
+      longitude: -99.1332,
+      nights: 4,
+      minNights: 2,
+      priority: 1,
+      daily: {
+        budget: { stay: [12, 25], food: [12, 25], local: [3, 8] },
+        comfort: { stay: [70, 140], food: [35, 70], local: [8, 16] },
+      },
+      // prettier-ignore
+      experiences: experiences([
+        ['cdmx-teotihuacan', 'The Teotihuacan pyramids at opening time', 'As pirâmides de Teotihuacan na abertura', 'sight', ['culture'], false, [10, 30], 19.6925, -98.8438],
+        ['cdmx-tacos', 'A taco crawl in Roma and Condesa', 'Um roteiro de tacos em Roma e Condesa', 'food', ['food'], true, [10, 25], 19.415, -99.162],
+        ['cdmx-lucha', 'Lucha libre at Arena México', 'Lucha libre na Arena México', 'other', ['nightlife', 'culture'], true, [10, 35], 19.4247, -99.152],
+        ['cdmx-xochimilco', 'A trajinera in Xochimilco', 'Uma trajinera em Xochimilco', 'sight', ['culture', 'nightlife'], false, [10, 30], 19.257, -99.103],
+        ['cdmx-casa-azul', "Casa Azul, Frida Kahlo's house", 'A Casa Azul, de Frida Kahlo', 'sight', ['culture'], false, [15, 20], 19.3551, -99.1626],
+      ]),
+    },
+    {
+      key: 'tulum',
+      name: 'Tulum',
+      namePt: 'Tulum',
+      countryCode: 'MX',
+      region: 'Quintana Roo',
+      latitude: 20.2114,
+      longitude: -87.4654,
+      nights: 3,
+      minNights: 2,
+      priority: 1,
+      daily: {
+        budget: { stay: [20, 40], food: [18, 35], local: [4, 10] },
+        comfort: { stay: [120, 250], food: [45, 90], local: [12, 25] },
+      },
+      // prettier-ignore
+      experiences: experiences([
+        ['tulum-gran-cenote', 'Swimming in the Gran Cenote', 'Nadar no Gran Cenote', 'sight', ['nature', 'adrenaline'], false, [20, 30], 20.246, -87.464],
+        ['tulum-ruins', 'The Tulum ruins above the sea', 'As ruínas de Tulum sobre o mar', 'sight', ['culture'], false, [5, 10], 20.215, -87.429],
+        ['tulum-sian-kaan', "Sian Ka'an by boat", "Sian Ka'an de barco", 'sight', ['nature'], true, [60, 110], 19.83, -87.56],
+        ['tulum-dos-ojos', 'Snorkelling or cave diving at Dos Ojos', 'Snorkel ou mergulho em caverna em Dos Ojos', 'sight', ['adrenaline', 'nature'], true, [30, 150], 20.327, -87.391],
+        ['tulum-cochinita', 'Cochinita pibil at a local taquería', 'Cochinita pibil numa taquería local', 'food', ['food'], true, [5, 12], 20.211, -87.465],
+      ]),
+    },
+  ],
+  legs: [{ mode: 'flight', cost: [60, 180] }],
+};
+
+const PARIS: SuggestedDestination = {
+  id: 'paris',
+  name: 'Paris',
+  namePt: 'Paris',
+  slug: 'paris',
+  slugPt: 'paris',
+  stops: [
+    {
+      key: 'paris',
+      name: 'Paris',
+      namePt: 'Paris',
+      countryCode: 'FR',
+      region: 'Île-de-France',
+      latitude: 48.8566,
+      longitude: 2.3522,
+      nights: 5,
+      minNights: 3,
+      priority: 1,
+      daily: {
+        budget: { stay: [38, 55], food: [27, 45], local: [5, 10] },
+        comfort: { stay: [160, 280], food: [50, 100], local: [8, 15] },
+      },
+      // prettier-ignore
+      experiences: experiences([
+        ['paris-louvre', 'The Louvre', 'O Louvre', 'sight', ['culture'], false, [24, 30], 48.8606, 2.3376],
+        ['paris-canal', 'A picnic by the Canal Saint-Martin', 'Um piquenique no Canal Saint-Martin', 'food', ['food', 'nightlife'], true, [10, 20], 48.872, 2.365],
+        ['paris-catacombs', 'The Catacombs', 'As Catacumbas', 'sight', ['culture', 'adrenaline'], false, [30, 35], 48.8338, 2.3324],
+        ['paris-belleville', 'Street art and bars in Belleville', 'Arte de rua e bares em Belleville', 'other', ['nightlife', 'culture'], true, [0, 30], 48.872, 2.377],
+        ['paris-versailles', 'Versailles by bike', 'Versalhes de bicicleta', 'sight', ['culture', 'nature'], false, [30, 60], 48.8049, 2.1204],
+        ['paris-aligre', "The Marché d'Aligre and a cheese shop", "O Marché d'Aligre e uma queijaria", 'food', ['food'], true, [10, 25], 48.849, 2.378],
+      ]),
+    },
+  ],
+  legs: [],
+};
+
+const NEW_YORK: SuggestedDestination = {
+  id: 'new-york',
+  name: 'New York',
+  namePt: 'Nova York',
+  slug: 'new-york',
+  slugPt: 'nova-york',
+  stops: [
+    {
+      key: 'new-york',
+      name: 'New York',
+      namePt: 'Nova York',
+      countryCode: 'US',
+      region: 'New York',
+      latitude: 40.7128,
+      longitude: -74.006,
+      nights: 5,
+      minNights: 3,
+      priority: 1,
+      daily: {
+        budget: { stay: [55, 90], food: [25, 45], local: [6, 10] },
+        comfort: { stay: [220, 380], food: [60, 120], local: [10, 25] },
+      },
+      // prettier-ignore
+      experiences: experiences([
+        ['nyc-high-line', 'The High Line and Chelsea Market', 'A High Line e o Chelsea Market', 'sight', ['culture', 'food'], false, [0, 25], 40.748, -74.0048],
+        ['nyc-met', 'The Met', 'O Met', 'sight', ['culture'], false, [25, 30], 40.7794, -73.9632],
+        ['nyc-harlem-jazz', 'Late jazz in a Harlem club', 'Jazz tarde da noite num clube do Harlem', 'other', ['nightlife', 'culture'], true, [15, 40], 40.8116, -73.9465],
+        ['nyc-ferry', 'The Staten Island Ferry at sunset', 'A balsa de Staten Island ao pôr do sol', 'sight', ['nature'], true, [0, 0], 40.7013, -74.0132],
+        ['nyc-slices', 'A pizza slice crawl in Brooklyn', 'Um roteiro de pizza no Brooklyn', 'food', ['food'], true, [10, 20], 40.715, -73.957],
+        ['nyc-kayak', 'Free kayaking on the Hudson (summer)', 'Caiaque grátis no Hudson (verão)', 'sight', ['adrenaline', 'nature'], true, [0, 0], 40.7278, -74.0118],
+      ]),
+    },
+  ],
+  legs: [],
+};
+
 export const SUGGESTED_DESTINATIONS: readonly SuggestedDestination[] = [
   JAPAN,
   PORTUGAL,
   RIO_DE_LA_PLATA,
+  ITALY,
+  CHILE,
+  MEXICO,
+  PARIS,
+  NEW_YORK,
 ];
 
 export function suggestedDestination(id: string): SuggestedDestination | null {
   return SUGGESTED_DESTINATIONS.find((destination) => destination.id === id) ?? null;
+}
+
+/** The destination behind a public itinerary address, in either language. */
+export function destinationBySlug(
+  slug: string,
+  language: 'en' | 'pt',
+): SuggestedDestination | null {
+  return (
+    SUGGESTED_DESTINATIONS.find(
+      (destination) => (language === 'pt' ? destination.slugPt : destination.slug) === slug,
+    ) ?? null
+  );
 }

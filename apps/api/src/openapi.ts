@@ -14,13 +14,30 @@ export function buildOpenApiDocument() {
     auth: { handler: unreachable, getSession: unreachable },
     application: createApplication({
       users: { findById: unreachable },
-      trips: { findById: unreachable, listByOwner: unreachable, copiesOf: unreachable },
-      destinations: { listByTrip: unreachable },
+      trips: {
+        findById: unreachable,
+        listByOwner: unreachable,
+        copiesOf: unreachable,
+        roleOf: unreachable,
+        listShared: unreachable,
+      },
+      members: {
+        listByTrip: unreachable,
+        findInviteByHash: unreachable,
+        listOpenInvites: unreachable,
+        listMoney: unreachable,
+      },
+      destinations: { listByTrip: unreachable, tripIdsWithPhoto: unreachable },
       expenses: { listByTrip: unreachable, findById: unreachable },
       checklist: { listByTrip: unreachable, findById: unreachable, stamps: unreachable },
       dayPlaces: { listByTrip: unreachable, findById: unreachable },
       visas: { listByUser: unreachable },
-      savings: { find: unreachable },
+      savings: {
+        find: unreachable,
+        listCheckins: unreachable,
+        listMiles: unreachable,
+        listTripMiles: unreachable,
+      },
       preferences: { find: unreachable },
       community: {
         findProfile: unreachable,
@@ -47,6 +64,7 @@ export function buildOpenApiDocument() {
         findProposal: unreachable,
         listProposals: unreachable,
         countRequestsSince: unreachable,
+        findInboundUser: unreachable,
       },
       billing: {
         findAccount: unreachable,
@@ -62,6 +80,8 @@ export function buildOpenApiDocument() {
       cities: { search: unreachable },
       geocoding: { search: unreachable, reverse: unreachable, sights: unreachable },
       rateLimiter: { consume: unreachable },
+      admins: { isAdmin: unreachable },
+      metrics: { snapshot: unreachable },
     }),
     trustedOrigins: [],
   });

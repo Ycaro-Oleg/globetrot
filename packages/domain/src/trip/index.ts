@@ -47,3 +47,6 @@ export {
 } from './status';
 export * from './destinations';
 export { shortestSpotOrder, spotLegs, type RoutableSpot } from './spot-route';
+export * from './group';
+export * from './habit';
+export * from './timeline';

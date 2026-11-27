@@ -35,7 +35,7 @@ import type {
   Transaction,
   TripRecord,
 } from '../ports';
-import { loadOwnedTrip } from '../trips/operations';
+import { loadTripFor } from '../trips/operations';
 import { tripIdSchema } from '../trips/schemas';
 import { systemPrompt, userPrompt, type PipContext } from './prompt';
 import {
@@ -285,7 +285,7 @@ export function createAskPip(
     output: proposalSchema,
     async handler(actor, input) {
       const now = deps.clock.now();
-      const trip = await loadOwnedTrip(deps.trips, actor, input.tripId);
+      const trip = await loadTripFor(deps.trips, actor, input.tripId, 'edit');
       const used = await deps.assistant.countRequestsSince(
         actor.userId,
         new Date(now.getTime() - DAY_MS),
@@ -407,7 +407,7 @@ export function createListProposals(deps: Pick<Ports, 'trips' | 'assistant' | 'c
     input: z.object({ tripId: tripIdSchema }),
     output: proposalListSchema,
     async handler(actor, input) {
-      const trip = await loadOwnedTrip(deps.trips, actor, input.tripId);
+      const trip = await loadTripFor(deps.trips, actor, input.tripId, 'view');
       const now = deps.clock.now();
       const records = await deps.assistant.listProposals(trip.id, 10);
       return { proposals: records.map((record) => toView(record, trip.currency, now)) };
@@ -578,7 +578,7 @@ export function createApplyProposal(deps: Pick<Ports, 'unitOfWork' | 'clock' | '
       const now = deps.clock.now();
       return deps.unitOfWork.run(async (tx) => {
         const proposal = await loadOwnProposal(tx.assistant, actor, input.proposalId);
-        const trip = await loadOwnedTrip(tx.trips, actor, proposal.tripId);
+        const trip = await loadTripFor(tx.trips, actor, proposal.tripId, 'edit');
         const status = isStatus(proposal.status) ? proposal.status : 'discarded';
         if (!canDecide({ status, decidedAt: proposal.decidedAt }, 'apply', now)) {
           refuse('already_decided', 'This proposal was already applied or discarded');
@@ -623,7 +623,7 @@ export function createDiscardProposal(deps: Pick<Ports, 'unitOfWork' | 'clock' |
       const now = deps.clock.now();
       return deps.unitOfWork.run(async (tx) => {
         const proposal = await loadOwnProposal(tx.assistant, actor, input.proposalId);
-        const trip = await loadOwnedTrip(tx.trips, actor, proposal.tripId);
+        const trip = await loadTripFor(tx.trips, actor, proposal.tripId, 'edit');
         const status = isStatus(proposal.status) ? proposal.status : 'discarded';
         if (!canDecide({ status, decidedAt: proposal.decidedAt }, 'discard', now)) {
           refuse('already_decided', 'This proposal was already applied or discarded');
@@ -658,7 +658,7 @@ export function createUndoProposal(deps: Pick<Ports, 'unitOfWork' | 'clock' | 'i
       const now = deps.clock.now();
       return deps.unitOfWork.run(async (tx) => {
         const proposal = await loadOwnProposal(tx.assistant, actor, input.proposalId);
-        const trip = await loadOwnedTrip(tx.trips, actor, proposal.tripId);
+        const trip = await loadTripFor(tx.trips, actor, proposal.tripId, 'edit');
         const status = isStatus(proposal.status) ? proposal.status : 'discarded';
         if (!canDecide({ status, decidedAt: proposal.decidedAt }, 'undo', now)) {
           refuse('not_undoable', 'This proposal cannot be undone any more');

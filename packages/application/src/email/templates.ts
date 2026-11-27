@@ -1,8 +1,9 @@
-import { formatMoney, money, PLAN_TERMS } from '@globetrot/domain';
+import { formatMoney, money, PLAN_PRICES, type PriceCurrency } from '@globetrot/domain';
 import { formatMessage, type SupportedLocale } from '@globetrot/i18n';
 
 /** The transactional emails the product sends. A new template needs its strings in every catalog. */
-export type EmailTemplate = 'verifyEmail' | 'resetPassword' | 'trialEnding' | 'trialEnded';
+export type EmailTemplate =
+  'verifyEmail' | 'resetPassword' | 'trialEnding' | 'trialEnded' | 'weeklyCheckin';
 
 export interface EmailData {
   /** The single-use link the email exists for. Must be an http(s) URL. */
@@ -13,6 +14,8 @@ export interface EmailData {
   readonly expiresInHours: number;
   /** The person's own trip, named in the trial emails when they have one. User text: always escaped. */
   readonly tripTitle?: string;
+  /** The currency prices are quoted in (USD unless the person chose reais). */
+  readonly priceCurrency?: PriceCurrency;
 }
 
 export interface EmailMessage {
@@ -45,8 +48,9 @@ const escapeHtml = (value: string) =>
     .replaceAll('"', '&quot;')
     .replaceAll("'", '&#39;');
 
+/** Emails about a person's own trip, which name it when there is one. */
 const trialTemplate = (template: EmailTemplate) =>
-  template === 'trialEnding' || template === 'trialEnded';
+  template === 'trialEnding' || template === 'trialEnded' || template === 'weeklyCheckin';
 
 /** A trip title on one line, without control characters, so a subject header cannot be split. */
 const oneLine = (value: string) =>
@@ -86,9 +90,14 @@ export function renderEmail(
   const greeting = t('email.greeting', { name: data.name });
   // The only price an email quotes comes from the pricing table, never from the catalog.
   const body = t(`email.${template}.body`, {
-    price: formatMoney(money(PLAN_TERMS.explorer.monthlyMinor, 'USD'), locale, {
-      precision: 'full',
-    }),
+    price: formatMoney(
+      money(
+        PLAN_PRICES.explorer[data.priceCurrency ?? 'USD'].monthlyMinor,
+        data.priceCurrency ?? 'USD',
+      ),
+      locale,
+      { precision: 'full' },
+    ),
   });
   // Trial emails name the person's own trip when there is one: their plan, not a product, is what they come back for.
   const trip = trialTemplate(template) && data.tripTitle ? oneLine(data.tripTitle) : null;

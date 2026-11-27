@@ -2,7 +2,7 @@ import { ownedPhotos } from '../media/operations';
 import { z } from 'zod';
 import { defineOperation } from '../operation';
 import type { Ports } from '../ports';
-import { loadOwnedTrip } from '../trips/operations';
+import { loadTripFor } from '../trips/operations';
 import { tripIdSchema } from '../trips/schemas';
 import {
   destinationListSchema,
@@ -21,7 +21,7 @@ export function createListDestinations(deps: Pick<Ports, 'trips' | 'destinations
     input: z.object({ tripId: tripIdSchema }),
     output: destinationListSchema,
     async handler(actor, input) {
-      await loadOwnedTrip(deps.trips, actor, input.tripId);
+      await loadTripFor(deps.trips, actor, input.tripId, 'view');
       const records = await deps.destinations.listByTrip(input.tripId);
       return { destinations: records.map(toDestinationView) };
     },
@@ -41,16 +41,21 @@ export function createReplaceDestinations(deps: Pick<Ports, 'unitOfWork' | 'cloc
     async handler(actor, input) {
       const now = deps.clock.now();
       return deps.unitOfWork.run(async (tx) => {
-        await loadOwnedTrip(tx.trips, actor, input.tripId);
+        await loadTripFor(tx.trips, actor, input.tripId, 'edit');
+        const current = await tx.destinations.listByTrip(input.tripId);
+        // Photos already on the trip stay, whoever added them; new ones must be the actor's own uploads.
+        const placed = new Set(
+          current.flatMap((stop) => stop.photos.map((photo) => photo.mediaId)),
+        );
         const photos = await Promise.all(
           input.destinations.map((item, index) =>
-            ownedPhotos(tx.media, actor, item.photos, `destinations.${index}.photos`),
+            ownedPhotos(tx.media, actor, item.photos, `destinations.${index}.photos`, placed),
           ),
         );
         // A stop keeps its id across saves (matched by its place key), so what points at it (the day plan's
         // places) survives the route being saved as a whole.
         const existing = new Map<string, string[]>();
-        for (const record of await tx.destinations.listByTrip(input.tripId)) {
+        for (const record of current) {
           existing.set(record.placeKey, [...(existing.get(record.placeKey) ?? []), record.id]);
         }
         const keep = (placeKey: string) => existing.get(placeKey)?.shift() ?? deps.ids.newId();

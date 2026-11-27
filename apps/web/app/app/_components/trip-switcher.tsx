@@ -18,6 +18,7 @@ export function TripSwitcher({
   activeTripId: string | null;
 }) {
   const t = useTranslations('tripWorkspace');
+  const tm = useTranslations('tripMembers');
   const activeTrip = trips.find((trip) => trip.id === activeTripId);
   const title = activeTrip?.title ?? t('switcher.noTrip');
 
@@ -55,7 +56,10 @@ export function TripSwitcher({
                   </span>
                   <span className={styles.tripOptionText}>
                     <strong>{trip.title}</strong>
-                    <span>{t(`status.${trip.status}`)}</span>
+                    <span>
+                      {t(`status.${trip.status}`)}
+                      {trip.role === 'owner' ? null : ` · ${tm('shared')}`}
+                    </span>
                   </span>
                   {current ? (
                     <span className={styles.check} aria-hidden="true">
@@ -71,9 +75,14 @@ export function TripSwitcher({
         )}
         <span className={styles.menuRule} aria-hidden="true" />
         {activeTrip ? (
-          <Link className={styles.menuAction} href={`/app/trips/${activeTrip.id}`}>
-            {t('switcher.details')}
-          </Link>
+          <>
+            <Link className={styles.menuAction} href="/app/today">
+              {t('switcher.today')}
+            </Link>
+            <Link className={styles.menuAction} href={`/app/trips/${activeTrip.id}`}>
+              {t('switcher.details')}
+            </Link>
+          </>
         ) : null}
         <Link className={styles.menuAction} href="/app/trips">
           {t('switcher.manage')}

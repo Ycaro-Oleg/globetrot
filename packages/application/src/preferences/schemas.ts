@@ -75,6 +75,8 @@ export const preferencesSchema = z.object({
   /** Where the home city is, when it was picked from the city list. */
   homePoint: z.object({ latitude: z.number(), longitude: z.number() }).nullable(),
   pipOptIn: z.boolean(),
+  /** A short email on Sundays when the week's saving is not checked in yet (ADR-0026). */
+  weeklyReminder: z.boolean(),
   pipLook: pipLookSchema,
   pipName: z.string().nullable(),
 });
@@ -110,6 +112,10 @@ export const updatePreferencesFields = z.object({
     .boolean()
     .optional()
     .meta({ description: 'Whether the person wants Pip’s suggestions.' }),
+  weeklyReminder: z
+    .boolean()
+    .optional()
+    .meta({ description: 'Whether to get the weekly saving reminder email (on by default).' }),
   pipLook: pipLookSchema
     .optional()
     .meta({ description: 'The person’s Pip: hat, outfit, bag and bag colour.' }),
@@ -140,6 +146,7 @@ export const DEFAULT_PREFERENCES: PreferencesView = {
   homeCity: null,
   homePoint: null,
   pipOptIn: false,
+  weeklyReminder: true,
   pipLook: { ...DEFAULT_PIP_LOOK },
   pipName: null,
 };
@@ -156,6 +163,7 @@ export const toPreferencesView = (record: PreferencesRecord): PreferencesView =>
   homeCity: record.homeCity,
   homePoint: record.homePoint,
   pipOptIn: record.pipOptIn,
+  weeklyReminder: record.weeklyReminder,
   pipLook: toPipLook(record.pipLook),
   pipName: record.pipName,
 });

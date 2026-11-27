@@ -1,5 +1,6 @@
 import {
   createApplication,
+  createInboundEmail,
   createPaymentEvents,
   createSharedTrips,
   type EmailPort,
@@ -18,6 +19,8 @@ import {
   createDestinationRepository,
   createMediaRepository,
   createChecklistRepository,
+  createMemberRepository,
+  createMetricsRepository,
   createDayPlaceRepository,
   createVisaRepository,
   createExpenseRepository,
@@ -37,7 +40,8 @@ import { createSmtpEmail } from '@globetrot/mailer';
 import { createCityIndex } from './cities';
 import { createGeoapifyGeocoder, createMemoryRateLimiter } from './places';
 import { createS3Storage } from '@globetrot/storage';
-import { createDeepSeekAi } from './ai';
+import { createAnthropicAi, createDeepSeekAi, fallbackAi } from './ai';
+import { reportError } from './monitoring';
 import { createStripePayments, createStripeWebhook } from './stripe';
 
 /** Adapter: the application's `UserReader` port over the `user` table. Selects only what the port names. */
@@ -99,45 +103,62 @@ export function createServices(
     newId: () => uuidV7(Date.now(), crypto.getRandomValues(new Uint8Array(10))),
     newToken: () => Buffer.from(crypto.getRandomValues(new Uint8Array(16))).toString('base64url'),
   };
+  const trips = createTripRepository(db);
+  const destinations = createDestinationRepository(db);
   const webhook = createStripeWebhook(
     config.stripe,
-    createPaymentEvents({ users, billing, unitOfWork, clock, ids }),
+    createPaymentEvents({ users, billing, trips, destinations, unitOfWork, clock, ids }),
     { fetch: overrides.stripeFetch },
   );
   const auth = createAuth(db, config.auth, { email });
   const reads = {
-    trips: createTripRepository(db),
-    destinations: createDestinationRepository(db),
+    trips,
+    destinations,
     expenses: createExpenseRepository(db),
     savings: createSavingsRepository(db),
     shares: createShareRepository(db),
     preferences: createPreferencesRepository(db),
   };
+  const assistant = createAssistantRepository(db);
+  const application = createApplication({
+    ...reads,
+    users,
+    checklist: createChecklistRepository(db),
+    members: createMemberRepository(db),
+    dayPlaces: createDayPlaceRepository(db),
+    visas: createVisaRepository(db),
+    community: createCommunityRepository(db),
+    media: createMediaRepository(db),
+    account: createAccountRepository(db),
+    assistant,
+    billing,
+    // Without Stripe settings, checkout answers 503 (ADR-0019).
+    payments,
+    ai:
+      overrides.ai ??
+      fallbackAi([createDeepSeekAi(config.ai), createAnthropicAi(config.aiFallback)]),
+    storage: overrides.storage ?? createS3Storage(config.storage),
+    unitOfWork,
+    clock,
+    ids,
+    geocoding: overrides.geocoding ?? createGeoapifyGeocoder(config.geoapifyKey),
+    cities: createCityIndex(),
+    rateLimiter: createMemoryRateLimiter(),
+    // The internal dashboard (ADR-0031): only the addresses in ADMIN_EMAILS, with a verified email.
+    admins: {
+      async isAdmin(userId: string) {
+        const user = await users.findById(userId);
+        return Boolean(
+          user?.emailVerified && config.adminEmails.includes(user.email.toLowerCase()),
+        );
+      },
+    },
+    metrics: createMetricsRepository(db),
+  });
   const app = createApp({
     auth: toAuthService(auth),
     sharedTrips: createSharedTrips({ ...reads, clock }),
-    application: createApplication({
-      ...reads,
-      users,
-      checklist: createChecklistRepository(db),
-      dayPlaces: createDayPlaceRepository(db),
-      visas: createVisaRepository(db),
-      community: createCommunityRepository(db),
-      media: createMediaRepository(db),
-      account: createAccountRepository(db),
-      assistant: createAssistantRepository(db),
-      billing,
-      // Without Stripe settings, checkout answers 503 (ADR-0019).
-      payments,
-      ai: overrides.ai ?? createDeepSeekAi(config.ai),
-      storage: overrides.storage ?? createS3Storage(config.storage),
-      unitOfWork,
-      clock,
-      ids,
-      geocoding: overrides.geocoding ?? createGeoapifyGeocoder(config.geoapifyKey),
-      cities: createCityIndex(),
-      rateLimiter: createMemoryRateLimiter(),
-    }),
+    application,
     trustedOrigins: config.auth.trustedOrigins,
     readiness: async () => {
       await db.execute(sql`select 1`);
@@ -145,6 +166,13 @@ export function createServices(
     },
     enabledProviders: config.auth.google ? ['google'] : [],
     paymentWebhook: config.stripe ? (raw, signature) => webhook.handle(raw, signature) : undefined,
+    inboundEmail: config.inboundEmail
+      ? {
+          ...config.inboundEmail,
+          receive: createInboundEmail({ assistant, trips }, application).receive,
+        }
+      : undefined,
+    onUnexpectedError: reportError,
   });
   return { auth, app };
 }

@@ -439,6 +439,39 @@ async function journey(browser, { width, height, locale }) {
       'the copied trip is not the current trip',
     );
 
+    // ---- the plan built on the landing becomes a trip after sign-up (/app/start), no onboarding to answer
+    const planDraft = {
+      cost: '1660',
+      saved: '0',
+      monthly: '300',
+      currency: 'USD',
+      suggestion: { destination: 'japan', likes: ['food'], days: 12, comfort: 'budget' },
+    };
+    await context.addCookies([
+      {
+        name: 'globetrot.plan_draft',
+        value: encodeURIComponent(JSON.stringify(planDraft)),
+        url: WEB,
+      },
+    ]);
+    await go('/app/start');
+    await page.waitForURL(/\/app\/board$/, { timeout: 15_000 });
+    await page.waitForLoadState('networkidle');
+    const planned = await page
+      .waitForFunction(() => document.querySelectorAll('section ol li').length === 4, null, {
+        timeout: 15_000,
+      })
+      .then(() => true)
+      .catch(() => false);
+    expect(
+      planned,
+      `the trip from the landing's plan shows ${await page.locator('section ol li').count()} stops, not 4`,
+    );
+    expect(
+      !(await context.cookies()).some((cookie) => cookie.name === 'globetrot.plan_draft'),
+      'the plan draft is still kept after it became a trip',
+    );
+
     // ---- checklists: start from the suggested list, check an item, see the stamp count move, remove one
     const listsCopy = CATALOGS[locale].listsPage;
     await go('/app/plan');

@@ -67,6 +67,9 @@ export async function savePreferences(formData: FormData): Promise<void> {
   const submittedTheme = text(formData, 'theme');
   const submittedMotion = text(formData, 'motion');
   const theme = isThemeChoice(submittedTheme) ? submittedTheme : undefined;
+  const submittedReminder = text(formData, 'weeklyReminder');
+  const weeklyReminder =
+    submittedReminder === 'on' ? true : submittedReminder === 'off' ? false : undefined;
   const motion = isMotionChoice(submittedMotion) ? submittedMotion : undefined;
   const body = {
     ...(locale === undefined ? {} : { locale }),
@@ -78,6 +81,7 @@ export async function savePreferences(formData: FormData): Promise<void> {
     ...(units === undefined ? {} : { units }),
     ...(theme === undefined ? {} : { theme }),
     ...(motion === undefined ? {} : { motion }),
+    ...(weeklyReminder === undefined ? {} : { weeklyReminder }),
   };
   const client = createServerApiClient({ cookieHeader, apiUrl: apiInternalUrl() });
   const { error } = await client.PATCH('/v1/me/preferences', { body });

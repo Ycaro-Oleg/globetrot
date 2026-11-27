@@ -18,14 +18,13 @@ function render(locale: SupportedLocale) {
 describe.each(SUPPORTED_LOCALES)('onboarding (%s)', (locale) => {
   const copy = catalogs[locale].onboarding;
 
-  it('opens on the welcome: the promises, one coral call to action and the trip summary', () => {
+  it('opens straight on where to go, with where you leave from as optional, and the trip summary', () => {
     const html = render(locale);
-    expect(html).toContain(copy.welcomeTitle);
-    for (const key of ['promise1', 'promise2', 'promise3'] as const) {
-      expect(html).toContain(copy[key]);
-    }
+    expect(html).toContain(copy.destTitle);
+    expect(html).toContain(copy.originLabelOptional);
+    expect(html).toContain(copy.stepLabel.replace('{step}', '1').replace('{total}', '3'));
     expect(html.match(/class="[^"]*cta[^"]*"/g)).toHaveLength(1);
-    expect(html).toContain(copy.start);
+    expect(html).toContain(copy.continue);
     expect(html).toContain(`aria-label="${copy.summary}"`);
     expect(html).not.toMatch(/onboarding\.[a-zA-Z]+/);
   });

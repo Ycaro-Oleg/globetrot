@@ -1,6 +1,7 @@
 import { connectDatabase } from '@globetrot/db';
 import { serve } from '@hono/node-server';
 import { ApiConfigError, loadApiConfig, type ApiConfig } from './config';
+import { initMonitoring } from './monitoring';
 import { createServices } from './wire';
 
 // Fails fast (and loudly) on a missing or unsafe setting, before opening any port. The message names
@@ -23,6 +24,8 @@ if (config.usingInsecureSecret) {
     'BETTER_AUTH_SECRET is not set: using the public development secret. Never do this in production.',
   );
 }
+
+initMonitoring(config.sentryDsn, config.nodeEnv);
 
 const database = connectDatabase(config.databaseUrl);
 const { app } = createServices(database.db, config);

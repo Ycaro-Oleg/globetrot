@@ -16,7 +16,8 @@ This is the authoritative list. The prototype's executable spec is `design/refer
 
 - **From the landing page:** the app plans a trip for anyone ([ADR-0020](../architecture/adr/0020-suggested-plans-and-curated-cost-ranges.md)): a curated destination, what the person enjoys, the days and how they travel give the stops and nights, the experiences worth it (the ones few people talk about first, suggestions only, never bookings or contacts), the legs, and a typical cost range per person from researched ranges (an estimate with the research date, flights excluded); the savings rule answers when they can go at a monthly amount. “Save this plan” keeps the estimate (its middle), saved 0, the monthly amount, the currency picked there (one of the main currencies, USD first, shown at a recorded ECB reference rate) and the chosen plan in the `globetrot.plan_draft` cookie for 30 days so the money step starts with them after sign-up. Finishing onboarding clears it.
 
-- Seven steps (welcome, home city, destination, dates, money, Pip, the answer). Home city and destination are picked from a list of every city of 15 000 people or more (GeoNames), as on airline sites. The dates are a calendar: the day the person leaves and the day they come back give the nights. Before the Pip question, Pip introduces itself and shows one example suggestion for the destination (approve or dismiss, on that screen only). Every step can be changed later, and nothing is charged.
+- **A plan from the landing skips the onboarding.** After sign-up, `/app/start` turns the saved plan into the person's first trip (`createTripFromSuggestion`): the plan's stops, nights and legs, its experiences as places (with the A→B→C route when every place is in town), its estimate as the trip's guess (converted at the recorded reference rate when the trip is not in USD) and the monthly amount; then the board opens and the draft is cleared. A trip limit sends the person to the plan page instead.
+- Without a plan, four steps: where (the destination, and where the person leaves from if they want), dates, money, the answer. Home city and destination are picked from a list of every city of 15 000 people or more (GeoNames), as on airline sites. The dates are a calendar: the day the person leaves and the day they come back give the nights. Pip is offered from the app and Settings, not asked here. Every step can be changed later, and nothing is charged.
 - **The cost is the person's own rough guess**, or the suggested plan's estimate they carried from the landing: it is stored as one cost with status `estimate` ("Whole-trip estimate"), marked as the trip's guess, in the trip's currency (the preferred currency). Outside a suggested plan Globetrot does not show typical ranges.
   - **The guess stands for the rest of the trip.** Real costs added later come out of it instead of adding on top: the budget counts the guess minus every other cost, never below zero. So a 2,500 guess with 800 of flights still totals 2,500, and once real costs pass the guess the total follows them.
   - The guess row says how much of it still counts, and that it can be removed once the real costs cover it. A trip keeps at most one guess.
@@ -138,6 +139,8 @@ Decision record: [ADR-0014](../architecture/adr/0014-photos-and-storage.md).
 
 Decision record: [ADR-0013](../architecture/adr/0013-community.md).
 
+- **Hidden until it has enough people:** the community screens and Discover's community section show only when `FEATURE_COMMUNITY` is `true` (off by default); otherwise `/app/community` is not found. Posts, follows and profiles are kept, so turning it on loses nothing.
+
 - **Posts** are a moment, a tip, a route, a visa or a goal. Moments and tips need words (up to 500 characters) or photos; the others may add words. A place can be tagged by name (the current trip's stops are suggested). See "Photos" above.
 - **Shared data is a snapshot, made from the author's own data when they post.** A route shows the stops and nights as they were, never a link to the private trip, and its planned total only if the author unticks "Hide budget amounts" (labelled an estimate). A goal shows the trip and the month the savings plan says it is ready, **never amounts**. A visa shows the country, the city and which country it was in the passport, and says it is commemorative.
 - **Who sees a post:** its author always; everyone else when it is public (or they follow the author for "Followers only"), it is not deleted, they did not mute the author or report it, and reports did not hide it. Anything else answers "not found".
@@ -167,30 +170,103 @@ Decision record: [ADR-0013](../architecture/adr/0013-community.md).
 - **Language:** the social card and link preview speak the owner's language, like the title they wrote. A link shared from a non-default language names it (`?lang=pt-BR`), so friends open the page in that language; the page otherwise follows the visitor's own choice.
 - An archived trip's link answers "not found" too. The page invites visitors to plan their own trip (the free week).
 
+## Planning together
+
+Decided in [ADR-0024](../architecture/adr/0024-trip-members.md).
+
+- A trip has one **owner** and any number of **members**: an **editor** changes the plan (route, days, money, checklist, Pip proposals, title and dates); a **viewer** only reads it.
+- Only the owner archives, restores, deletes, shares the public link, buys a trip pass, invites, stops links and removes people. A member can leave.
+- **Invites are links the owner copies and sends**; Globetrot sends no email to other people. A link works for 7 days, for as many people as the plan allows, and can be stopped. Opening it asks to sign in or sign up first.
+- **How many people can join:** 1 on the free plan; anyone during the free week, on a paid plan, or on a trip with a pass.
+- Someone who is not on a trip gets "not found" for it, exactly like a trip that does not exist.
+- Trips shared with a person appear in their list and switcher as "Shared" and do not count towards their own active-trip limit.
+- Screens of a shared trip refresh every 30 seconds while open, and every trip refreshes when the person comes back to the tab. There is no live sync yet: the last save of the route wins.
+- **Money between the people** ([ADR-0025](../architecture/adr/0025-money-between-members.md)): the trip's total is split equally, or in custom parts the owner sets (adding up to the whole trip). Each person keeps their own "already set aside" and "each month" for their part and sees when they will have it. A cost can say who paid it (someone on the trip). **Settling up** counts only paid costs (never the rough guess) and says who pays whom, in as few payments as it finds; paid costs with nobody named stay out and the screen says how much. Paying each other happens outside Globetrot.
+
+## Public itineraries and the progress card
+
+Decided in [ADR-0028](../architecture/adr/0028-public-itineraries-and-story-card.md).
+
+- Each suggested destination has a public itinerary page in Portuguese (`/roteiros/...`) and English (`/itineraries/...`): the reference route, the experiences (the little-known ones marked), the typical cost per person on a budget and in comfort with the research date, and what to set aside each month for 6 or 12 months. "Make this trip mine" opens the planner with that destination.
+- Prices are in US dollars until the visitor picks another currency on the page; the conversion says its source.
+- The trip's page offers a progress image for stories from the trip's public link: amounts only when the link shows amounts, otherwise the percentage saved.
+
+## Bookings by email
+
+Decided in [ADR-0032](../architecture/adr/0032-bookings-by-email.md).
+
+- Each person has a private address on the Pip page. A booking confirmation forwarded there becomes a Pip proposal for their most recent active trip, reviewed and applied like any other. Only the start of the email is read; costs come in as estimates; it uses a Pip credit. Pip never books anything.
+
+## Partner links
+
+Decided in [ADR-0031](../architecture/adr/0031-partner-links-and-metrics.md).
+
+- A stop's card can offer "Tours in {place}" and "Stays in {place}", and Today's insurance and eSIM suggestions a partner page, only when the owner configured the partner. Each is labelled as a partner link that may earn a commission, never shows a price and opens the partner's own page.
+
+## Miles
+
+Decided in [ADR-0030](../architecture/adr/0030-miles-in-the-savings.md).
+
+- A person can keep their balances in Smiles, LATAM Pass, Azul Fidelidade, Livelo and Esfera, and choose how many miles of each go towards a trip (never more than the balance).
+- Each balance shows a typical value in reais (a researched range per thousand miles, with its date and sources). It is always an estimate: what miles buy depends on the route, the date and the programme.
+- On the Money screen the answer counts the middle of that value, in the trip's currency at the reference rates: what is left and when it is ready (the person's own part on a shared trip).
+
+## Referrals
+
+Decided in [ADR-0029](../architecture/adr/0029-referrals.md).
+
+- Each person has a link with their code (on the plan page). A visit through it keeps the code for 30 days.
+- A new account counts for whoever sent it once, within 7 days of signing up, never for itself.
+- When that friend first pays (a plan or a trip pass), the referrer gets one free trip pass, once per friend. It is used on any of their own trips from the trip's page and lasts like a bought pass.
+
+## Offline reading
+
+Decided in [ADR-0027](../architecture/adr/0027-offline-reading.md).
+
+- On a paid plan, in the free week or on a trip with a pass, the trip's screens (Today, Map, Days, Money, Checklist) keep their last version on the device and open without a connection, with a line saying it is the last saved version.
+- Changes need a connection; nothing typed offline is saved later. Map tiles are not saved.
+- Signing out deletes the saved screens.
+
+## The saving habit
+
+Decided in [ADR-0026](../architecture/adr/0026-saving-habit-and-countdown.md).
+
+- **Weekly check-in:** "I set this aside this week" adds the amount to the person's savings for the trip (their own part on a shared trip, the trip's savings otherwise). One per person, trip and week; checking in again that week changes the amount. Weeks follow the person's time zone.
+- **Streak:** weeks in a row with a check-in, up to this week (or last week while this week's is still to come).
+- **Suggested amount:** a week of the person's monthly amount.
+- **Countdown phases** from the start date: more than three months, one to three months, under a month, the last week, travelling, back. Each phase suggests checklist items the person can add. They are reminders, not entry rules or deadlines.
+- **Today** (`/app/today`) shows the countdown, the check-in and the phase's suggestions.
+- **Weekly reminder email:** on Sundays (the person's time), only when they save monthly for an active trip and the week has no check-in, at most once a week, to a verified address. On by default; off in Settings.
+
 ## Plans, trial and Pip credits
 
-Decided in [ADR-0019](../architecture/adr/0019-plans-trial-and-pip-credits.md). Prices are in USD and come from `PLAN_TERMS` in the domain.
+Decided in [ADR-0019](../architecture/adr/0019-plans-trial-and-pip-credits.md), changed by [ADR-0023](../architecture/adr/0023-free-plan-trip-pass-and-prices-in-reais.md). Prices come from `PLAN_PRICES`, `TRIP_PASS` and `TOP_UP_PRICES` in the domain, never from components.
 
-| | Free trial | Explorer | Voyager |
-|---|---|---|---|
-| Price | 7 days from sign-up, no card | US$4.99 a month or US$39.99 a year | US$9.99 a month or US$79.99 a year |
-| Pip credits | 15 for the week | 100 a month | 400 a month |
-| Active trips | 10 | 10 | Unlimited |
+| | Free | Explorer | Voyager | Trip pass |
+|---|---|---|---|---|
+| Price (USD) | free for good | US$4.99 a month or US$39.99 a year | US$9.99 a month or US$79.99 a year | US$9.99 once |
+| Price (BRL) | free for good | R$14,90 a month or R$119 a year | R$29,90 a month or R$239 a year | R$39 once |
+| Pip credits | 15 in the first 7 days, then 5 a month | 100 a month | 400 a month | (the account's) |
+| Active trips | 10 in the first 7 days, then 1 | 10 | Unlimited | does not count |
+| People to plan with | 1 (unlimited in the first 7 days) | unlimited | unlimited | unlimited on that trip |
 
-- **One credit is one answered Pip request.** Monthly credits reset each month from the plan's start (yearly plans too) and do not roll over.
-- **Top-up:** 200 credits for US$2.99. They never expire and are spent after the monthly ones.
+- **Price currency:** reais for someone whose chosen currency is BRL, US dollars for everyone else. Never inferred from language, country or nationality. The landing shows US dollars until the visitor picks reais.
+- **The first 7 days** (the free week) have everything open: 15 credits and up to 10 active trips. After them the account stays on the **free plan for good**.
+- **One credit is one answered Pip request.** Monthly credits reset each month (from the plan's start, or from the end of the free week on the free plan) and do not roll over.
+- **Top-up:** 200 credits for US$2.99 or R$14,90. They never expire and are spent after the monthly ones.
 - **Daily cap:** 40 Pip requests a day on any plan.
-- **Active trips** are trips that are not archived. Archiving frees a place; restoring a trip takes one.
-- **After the trial without a plan the account is read-only.**
-  - Everything can be seen and exported, and trips or the whole account deleted.
-  - Settings, the community handle, deleting own posts and comments, reporting and muting stay open.
-  - Creating or changing anything else is refused, with the way to the plans. In the web app a refused change opens the plan page, which says the change was not saved and why, with the plans right below; "Create trip" leads there directly instead of opening a form that could not be saved.
+- **Active trips** are trips that are not archived. Archiving frees a place; restoring a trip takes one. **Trips with a valid pass do not count.**
+- **A trip pass** opens everything paid on one trip (any number of people, offline reading), for one payment. It lasts until 30 days after the trip's last day, or 12 months from the purchase when the trip has no dates, and never less than 30 days. Only the trip's owner can buy it, from the trip's page.
+- **More counted trips than the plan keeps** (after the free week, or when a plan lapses): creating or changing anything else waits, with the way out shown (archive trips, add a pass, or choose a plan).
+  - Everything can still be seen and exported, and trips archived or deleted.
+  - Settings, the community handle, deleting own posts and comments, reporting, muting and paying stay open.
+  - In the web app a refused change opens the plan page, which says the change was not saved and why; "Create trip" leads there directly.
   - Data is never deleted for lack of a plan.
 - **Canceling** keeps the plan until the end of the paid period.
-- **A failed renewal** keeps it 3 more days, then the account is read-only.
-- The app shows the days left in the trial on every signed-in page, and the plan, credits and active trips on **Plan & credits** (`/app/plan`).
-- **Emails about the trial:** two days before it ends ("ends in 2 days"), and once after it ended ("your trips are safe"), in the person's language, only to a verified address without a paid plan. Each is sent at most once.
-- Payment is by Stripe's hosted checkout. Until it is switched on, choosing a plan says so and charges nothing.
+- **A failed renewal** keeps it 3 more days, then the account is on the free plan.
+- The app shows the days left in the free week on every signed-in page, and the plan, credits, counted trips and passes on **Plan & credits** (`/app/plan`).
+- **Emails about the free week:** two days before it ends, and once after it ended ("one trip stays free"), in the person's language and price currency, only to a verified address without a paid plan. Each is sent at most once.
+- Payment is by Stripe's hosted checkout (card; Pix for one-time payments in reais once switched on in the dashboard). Until payments are switched on, choosing a plan or a pass says so and charges nothing.
 
 ## Privacy (applies from day one)
 

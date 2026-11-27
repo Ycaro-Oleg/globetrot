@@ -1,4 +1,12 @@
-import { formatMoney, money, PLAN_TERMS, POPULAR_PLACES, TRIAL_TERMS } from '@globetrot/domain';
+import {
+  formatMoney,
+  FREE_TERMS,
+  money,
+  PLAN_TERMS,
+  POPULAR_PLACES,
+  TRIAL_TERMS,
+  TRIP_PASS,
+} from '@globetrot/domain';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
@@ -123,6 +131,8 @@ export default function HomePage() {
     explorerAnnual: price(PLAN_TERMS.explorer.annualMinor),
     voyagerMonthly: price(PLAN_TERMS.voyager.monthlyMinor),
     voyagerAnnual: price(PLAN_TERMS.voyager.annualMinor),
+    credits: FREE_TERMS.credits,
+    pass: price(TRIP_PASS.prices.USD),
   };
   const accent = (chunks: React.ReactNode) => <span className={styles.accent}>{chunks}</span>;
 
@@ -228,7 +238,7 @@ export default function HomePage() {
           />
           <HeroRoutes labels={heroLabels} />
         </div>
-        <LandingSuggest signupHref="/signup" />
+        <LandingSuggest signupHref="/signup?next=%2Fapp%2Fstart" />
       </section>
 
       <main>

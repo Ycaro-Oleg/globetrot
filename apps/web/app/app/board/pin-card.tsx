@@ -13,7 +13,6 @@ import {
 import {
   ITEM_MAX,
   KIT_TABS,
-  SPOT_ICONS,
   SPOT_KINDS,
   spotKindOf,
   NOTE_MAX,
@@ -49,6 +48,8 @@ export type PipFill = {
   error: string | null;
 };
 import { PhotoPicker } from '../_components/photo-picker';
+import { NO_PARTNERS, staysUrl, toursUrl, type Partners } from '../../../lib/partners';
+import { SpotIcon } from './spot-icon';
 import styles from './world-map.module.css';
 
 const GLYPHS: Record<KitTab, string> = { photos: '▣', spots: '◎', notes: '✎', todos: '✓' };
@@ -89,7 +90,10 @@ export function PinCard({
   onChange,
   onShowSpot,
   onClose,
+  partners = NO_PARTNERS,
 }: {
+  /** Partner ids for the "see tours" and "see stays" links (ADR-0031). */
+  partners?: Partners;
   stop: RouteStop;
   index: number;
   name: string;
@@ -325,6 +329,7 @@ export function PinCard({
 
         {tab === 'spots' ? (
           <>
+            <PartnerLinks partners={partners} place={name} />
             {stop.spots.length ? (
               <ul className={styles.checkList}>
                 {stop.spots.map((spot, i) => {
@@ -354,7 +359,7 @@ export function PinCard({
                         </span>
                       ) : null}
                       <span className={styles.spotIcon} data-kind={spot.kind} aria-hidden="true">
-                        {SPOT_ICONS[spot.kind]}
+                        <SpotIcon kind={spot.kind} />
                       </span>
                       <div className={styles.spotMain}>
                         <label htmlFor={`spot-${i}`}>
@@ -449,7 +454,7 @@ export function PinCard({
                           spotInput.current?.focus();
                         }}
                       >
-                        <span aria-hidden="true">{SPOT_ICONS[kind]}</span> {t(key)}
+                        <SpotIcon kind={kind} /> {t(key)}
                       </button>
                     </li>
                   ))}
@@ -560,8 +565,7 @@ export function PinCard({
                             onChange={() => pip.onToggle(index)}
                           />
                           <label htmlFor={`pip-spot-${index}`}>
-                            <span aria-hidden="true">{SPOT_ICONS[change.spotKind]}</span>{' '}
-                            <strong>{change.name}</strong>
+                            <SpotIcon kind={change.spotKind} /> <strong>{change.name}</strong>
                             <small>
                               {t(`kinds.${change.spotKind}`)}
                               {change.reason ? ` · ${change.reason}` : ''}
@@ -596,7 +600,7 @@ export function PinCard({
                   aria-checked={spotKind === kind}
                   onClick={() => setSpotKind(kind)}
                 >
-                  <span aria-hidden="true">{SPOT_ICONS[kind]}</span> {t(`kinds.${kind}`)}
+                  <SpotIcon kind={kind} /> {t(`kinds.${kind}`)}
                 </button>
               ))}
             </div>
@@ -620,7 +624,7 @@ export function PinCard({
                   {suggestions.map((place) => (
                     <li key={`${place.name}-${place.longitude}`}>
                       <button type="button" onClick={() => addNearby(place)}>
-                        <span aria-hidden="true">{SPOT_ICONS[spotKindOf(place.kind)]}</span>
+                        <SpotIcon kind={spotKindOf(place.kind)} />
                         <span>{place.name}</span>
                         <small>{t(`kinds.${spotKindOf(place.kind)}`)}</small>
                         <span className="sr-only">{t('nearbyAddHint')}</span>
@@ -736,5 +740,28 @@ export function PinCard({
         ) : null}
       </div>
     </div>
+  );
+}
+
+/** Searches on partner sites for the stop, labelled as partner links; nothing without a partner id. */
+function PartnerLinks({ partners, place }: { partners: Partners; place: string }) {
+  const t = useTranslations('mapBoard.partners');
+  const tours = toursUrl(partners, place);
+  const stays = staysUrl(partners, place);
+  if (!tours && !stays) return null;
+  return (
+    <p className={styles.partnerLinks}>
+      {tours ? (
+        <a href={tours} target="_blank" rel="sponsored noopener noreferrer">
+          {t('tours', { place })}
+        </a>
+      ) : null}
+      {stays ? (
+        <a href={stays} target="_blank" rel="sponsored noopener noreferrer">
+          {t('stays', { place })}
+        </a>
+      ) : null}
+      <small>{t('label')}</small>
+    </p>
   );
 }

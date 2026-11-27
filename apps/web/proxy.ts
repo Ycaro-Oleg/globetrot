@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { LOCALE_COOKIE, localeCookieOptions } from './i18n/locale';
 import { apiInternalUrl, apiProxyTarget } from './lib/api-proxy';
 import { isAppPath, isFlagGatedOff, loginRedirect } from './lib/app-gate';
-import { isPipEnabled } from './lib/flags';
+import { isCommunityEnabled, isPipEnabled } from './lib/flags';
 import { sessionCookieHeader } from './lib/stored-preferences';
 
 /**
@@ -48,7 +48,7 @@ export function proxy(request: NextRequest) {
       login.search = loginQuery ? `?${loginQuery}` : '';
       return NextResponse.redirect(login);
     }
-    if (isFlagGatedOff(pathname, { pip: isPipEnabled() })) {
+    if (isFlagGatedOff(pathname, { pip: isPipEnabled(), community: isCommunityEnabled() })) {
       // A page behind a feature flag that is off does not exist: answer exactly like an unknown address.
       const missing = request.nextUrl.clone();
       missing.pathname = '/feature-is-off';

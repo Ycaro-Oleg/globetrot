@@ -1,6 +1,6 @@
 'use server';
 
-import { EXPENSE_CATEGORIES, EXPENSE_STATUSES } from '@globetrot/domain';
+import { EXPENSE_CATEGORIES, EXPENSE_STATUSES, type MilesProgram } from '@globetrot/domain';
 import { revalidatePath } from 'next/cache';
 import { actionApiClient } from '../../../lib/action-client';
 
@@ -14,6 +14,8 @@ export interface ExpenseInput {
   readonly amount: string;
   readonly currency: string;
   readonly fxRate?: string | undefined;
+  /** On a trip planned together, who paid it (a user id). */
+  readonly paidBy?: string | null | undefined;
 }
 
 /**
@@ -35,10 +37,26 @@ export async function addExpense(input: ExpenseInput): Promise<{ ok: boolean }> 
       amount: input.amount.trim(),
       currency: input.currency,
       ...(fxRate ? { fxRate } : {}),
+      ...(input.paidBy ? { paidBy: input.paidBy } : {}),
     },
   });
   if (data) revalidatePath('/app/budget');
   return { ok: Boolean(data) };
+}
+
+/** The person's own savings for their part of a shared trip. `true` when it saved. */
+export async function saveMyMoney(
+  tripId: string,
+  body: { saved: string; monthly: string },
+): Promise<boolean> {
+  const client = await apiClient();
+  if (!client || !tripId) return false;
+  const { data } = await client.PUT('/v1/trips/{id}/money/me', {
+    params: { path: { id: tripId } },
+    body,
+  });
+  if (data) revalidatePath('/app/budget');
+  return Boolean(data?.saved);
 }
 
 export async function removeExpense(tripId: string, expenseId: string): Promise<{ ok: boolean }> {
@@ -74,4 +92,29 @@ export async function saveSavings(tripId: string, patch: SavingsPatch): Promise<
   });
   if (data) revalidatePath('/app/budget');
   return { ok: Boolean(data) };
+}
+
+/** Saves changed miles balances and how many go towards the trip. `true` when everything saved. */
+export async function saveMiles(
+  tripId: string,
+  changes: readonly { program: MilesProgram; balance: number; onTrip: number }[],
+): Promise<boolean> {
+  const client = await apiClient();
+  if (!client || !tripId) return false;
+  for (const change of changes) {
+    const balance = await client.PUT('/v1/me/miles/{program}', {
+      params: { path: { program: change.program } },
+      body: { balance: change.balance },
+    });
+    if (!balance.data) return false;
+    if (change.balance > 0) {
+      const onTrip = await client.PUT('/v1/trips/{id}/miles/{program}', {
+        params: { path: { id: tripId, program: change.program } },
+        body: { miles: change.onTrip },
+      });
+      if (!onTrip.data) return false;
+    }
+  }
+  revalidatePath('/app/budget');
+  return true;
 }

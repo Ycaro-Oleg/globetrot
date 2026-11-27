@@ -57,6 +57,7 @@ describe('createTrip', () => {
       'createdAt',
       'currency',
       'id',
+      'role',
       'startDate',
       'status',
       'title',

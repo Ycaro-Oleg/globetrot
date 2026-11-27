@@ -11,7 +11,7 @@ import { planOf } from '../budget/operations';
 import { NotFoundError, ValidationError } from '../errors';
 import { defineOperation } from '../operation';
 import type { ChecklistItemRecord, Ports, Transaction } from '../ports';
-import { loadOwnedTrip } from '../trips/operations';
+import { loadTripFor } from '../trips/operations';
 import { tripIdSchema } from '../trips/schemas';
 import {
   addChecklistItemsFields,
@@ -104,7 +104,7 @@ export function createGetChecklist(deps: ReadPorts) {
     input: z.object({ tripId: tripIdSchema }),
     output: checklistSchema,
     async handler(actor, input) {
-      const trip = await loadOwnedTrip(deps.trips, actor, input.tripId);
+      const trip = await loadTripFor(deps.trips, actor, input.tripId, 'view');
       return checklistOf(deps, trip, deps.clock.now());
     },
   });
@@ -121,7 +121,7 @@ export function createAddChecklistItems(deps: WritePorts) {
     async handler(actor, input) {
       const now = deps.clock.now();
       return deps.unitOfWork.run(async (tx) => {
-        const trip = await loadOwnedTrip(tx.trips, actor, input.tripId);
+        const trip = await loadTripFor(tx.trips, actor, input.tripId, 'edit');
         if ((await tx.checklist.countByTrip(trip.id)) + input.items.length > CHECKLIST_MAX_ITEMS) {
           throw new ValidationError([
             {
@@ -181,7 +181,7 @@ export function createUpdateChecklistItem(deps: WritePorts) {
     async handler(actor, input) {
       const now = deps.clock.now();
       return deps.unitOfWork.run(async (tx) => {
-        const trip = await loadOwnedTrip(tx.trips, actor, input.tripId);
+        const trip = await loadTripFor(tx.trips, actor, input.tripId, 'edit');
         await loadOwnedItem(tx, trip.id, input.itemId);
         await tx.checklist.update(
           input.itemId,
@@ -220,7 +220,7 @@ export function createDeleteChecklistItem(deps: WritePorts) {
     async handler(actor, input) {
       const now = deps.clock.now();
       return deps.unitOfWork.run(async (tx) => {
-        const trip = await loadOwnedTrip(tx.trips, actor, input.tripId);
+        const trip = await loadTripFor(tx.trips, actor, input.tripId, 'edit');
         await loadOwnedItem(tx, trip.id, input.itemId);
         await tx.checklist.delete(input.itemId);
         await tx.audit.record({

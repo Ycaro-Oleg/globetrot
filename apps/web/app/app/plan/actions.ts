@@ -15,15 +15,21 @@ async function client() {
 const problemCode = (error: unknown) =>
   typeof error === 'object' && error !== null && 'code' in error ? String(error.code) : '';
 
-/** Where to pay for a plan or extra credits; `unavailable` while payments are not switched on. */
+/**
+ * Where to pay for a plan, extra credits or a trip pass; `unavailable` while payments are not switched on. The
+ * API checks that a pass is for one of the person's own trips.
+ */
 export async function startCheckout(
-  item: 'explorer' | 'voyager' | 'top-up',
+  item: 'explorer' | 'voyager' | 'top-up' | 'trip-pass',
   interval: 'month' | 'year',
+  tripId?: string,
 ): Promise<CheckoutResult> {
   const api = await client();
   if (!api) return { error: 'failed' };
   try {
-    const { data, error } = await api.POST('/v1/me/billing/checkout', { body: { item, interval } });
+    const { data, error } = await api.POST('/v1/me/billing/checkout', {
+      body: { item, interval, ...(tripId ? { tripId } : {}) },
+    });
     if (data) return { url: data.url };
     return { error: problemCode(error) === 'SERVICE_UNAVAILABLE' ? 'unavailable' : 'failed' };
   } catch {

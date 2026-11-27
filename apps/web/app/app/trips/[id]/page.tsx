@@ -14,7 +14,10 @@ import { PipAvatar } from '../../_components/pip-avatar';
 import { StartDateForm } from '../../_components/start-date-form';
 import { openTripAt } from '../../_components/trip-actions';
 import { archiveTrip, undoArchiveTrip } from '../actions';
+import { fetchBilling } from '../../../../lib/billing';
 import { MakeCurrent } from './make-current';
+import { MembersCard, type MembersView } from './members-card';
+import { PassCard } from './pass-card';
 import { ShareCard } from './share-card';
 import { TitleEditor } from './title-editor';
 import styles from './trip-hub.module.css';
@@ -42,9 +45,16 @@ const STEPS = [
  * stamps), what to do next with a button that opens the right tool, and archive. Opening it makes the trip current, so the
  * bar's Map, Days, Budget and Lists already point at it (no second copy of them here).
  */
-export default async function TripHub({ params }: { params: Promise<{ id: string }> }) {
-  const [{ id }, locale, t, tm, store] = await Promise.all([
+export default async function TripHub({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ paid?: string }>;
+}) {
+  const [{ id }, { paid }, locale, t, tm, store] = await Promise.all([
     params,
+    searchParams,
     getLocale(),
     getTranslations('tripHub'),
     getTranslations('milestones'),
@@ -75,11 +85,21 @@ export default async function TripHub({ params }: { params: Promise<{ id: string
     );
   }
 
-  const [checklist, stops, budget] = await Promise.all([
+  const [checklist, stops, budget, billing, members] = await Promise.all([
     fetchChecklist(options, trip.id),
     fetchDestinations(options, trip.id),
     fetchBudget(options, trip.id),
+    fetchBilling(options),
+    createServerApiClient(options)
+      .GET('/v1/trips/{id}/members', { params: { path: { id: trip.id } } })
+      .then((response): MembersView | null => response.data ?? null)
+      .catch(() => null),
   ]);
+  // Members plan the trip; only the owner manages it (archive, public link, pass, people).
+  const isOwner = trip.role === 'owner';
+  const canEdit = trip.role !== 'viewer';
+  const pass = billing?.passes.find((entry) => entry.tripId === trip.id) ?? null;
+  const onPaidPlan = billing?.access === 'explorer' || billing?.access === 'voyager';
   const readiness = checklist?.readiness;
   const earned = readiness ? STEPS.filter(([key]) => readiness[key]).length : 0;
   const next = readiness ? STEPS.filter(([key]) => !readiness[key]).slice(0, 3) : [];
@@ -109,7 +129,13 @@ export default async function TripHub({ params }: { params: Promise<{ id: string
         <span aria-hidden="true">←</span> {t('backToTrips')}
       </Link>
       <header className={styles.header}>
-        <TitleEditor tripId={trip.id} title={trip.title} />
+        {canEdit ? (
+          <TitleEditor tripId={trip.id} title={trip.title} />
+        ) : (
+          <h1 id="trip-title" className={styles.title}>
+            {trip.title}
+          </h1>
+        )}
         <p className={styles.meta}>
           <span className={styles.chip}>
             <span aria-hidden="true">{archived ? '▣ ' : '◇ '}</span>
@@ -184,14 +210,30 @@ export default async function TripHub({ params }: { params: Promise<{ id: string
         <div className={styles.side}>
           <section className={styles.card} aria-labelledby="when-title">
             <h2 id="when-title">{t('whenTitle')}</h2>
-            <StartDateForm tripId={trip.id} startDate={trip.startDate} />
+            {canEdit ? <StartDateForm tripId={trip.id} startDate={trip.startDate} /> : null}
             {answer ? <p className={styles.answer}>{answer}</p> : null}
             <p className={styles.hint}>{t('whenHint')}</p>
           </section>
 
-          {!archived ? <ShareCard tripId={trip.id} title={trip.title} initial={share} /> : null}
+          {!archived && members ? (
+            <MembersCard tripId={trip.id} isOwner={isOwner} initial={members} />
+          ) : null}
 
-          {!archived ? (
+          {!archived && isOwner ? (
+            <ShareCard tripId={trip.id} title={trip.title} initial={share} />
+          ) : null}
+
+          {!archived && isOwner && billing && !onPaidPlan ? (
+            <PassCard
+              tripId={trip.id}
+              currency={billing.priceCurrency}
+              validUntil={pass?.validUntil ?? null}
+              justPaid={paid === 'trip-pass'}
+              freePasses={billing.passCredits}
+            />
+          ) : null}
+
+          {!archived && isOwner ? (
             <form action={archiveTrip} className={styles.archive}>
               <input type="hidden" name="tripId" value={trip.id} />
               <button type="submit" className={styles.ghost}>

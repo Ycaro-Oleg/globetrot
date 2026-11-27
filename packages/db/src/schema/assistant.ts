@@ -66,3 +66,15 @@ export const aiUsage = pgTable(
     ),
   ],
 );
+
+/**
+ * Each account's private address for forwarding bookings (ADR-0032): `{local}+{token}@{domain}`. Whoever knows
+ * the token can send to the account, so it is long and random, and the inbound webhook is protected by a secret.
+ */
+export const inboundAddress = pgTable('inbound_address', {
+  userId: text('user_id')
+    .primaryKey()
+    .references(() => user.id, { onDelete: 'cascade' }),
+  token: text('token').notNull().unique(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+});

@@ -48,8 +48,13 @@ export {
 export { createAccountRepository, type AccountRepository } from './account-repository';
 export { createMaintenanceRepository, type MaintenanceRepository } from './maintenance-repository';
 export { createBillingRepository, type BillingRepository } from './billing-repository';
-export { createNoticeRepository, type NoticeRepository } from './notice-repository';
+export {
+  createNoticeRepository,
+  createWeeklyNoticeRepository,
+  type NoticeRepository,
+} from './notice-repository';
 export { createShareRepository, type ShareRepository } from './share-repository';
+export { createMemberRepository, type MemberRepository } from './member-repository';
 export {
   createAssistantRepository,
   type AssistantRepository,
@@ -73,3 +78,4 @@ export {
   recreateDatabase,
   withDatabase,
 } from './admin';
+export { createMetricsRepository, type MetricsRepository } from './metrics-repository';

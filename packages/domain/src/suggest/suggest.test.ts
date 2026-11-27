@@ -133,3 +133,19 @@ describe('suggestReferenceRate', () => {
     expect(suggestReferenceRate('USD')).toBeNull();
   });
 });
+
+describe('itinerary addresses', () => {
+  it('give each destination a slug in each language, unique and URL-safe', async () => {
+    const { SUGGESTED_DESTINATIONS, destinationBySlug } = await import('./catalog');
+    for (const language of ['en', 'pt'] as const) {
+      const slugs = SUGGESTED_DESTINATIONS.map((d) => (language === 'pt' ? d.slugPt : d.slug));
+      expect(new Set(slugs).size).toBe(slugs.length);
+      for (const slug of slugs) {
+        expect(slug).toMatch(/^[a-z0-9-]+$/);
+        expect(destinationBySlug(slug, language)).not.toBeNull();
+      }
+    }
+    expect(destinationBySlug('japao', 'pt')?.id).toBe('japan');
+    expect(destinationBySlug('japao', 'en')).toBeNull();
+  });
+});

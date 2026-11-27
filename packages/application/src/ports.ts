@@ -7,6 +7,9 @@ import type {
   SightKind,
   SpotKind,
   SubscriptionState,
+  PriceCurrency,
+  TripPassState,
+  MilesProgram,
   TripStatus,
   TripVisibility,
   UnitSystem,
@@ -67,9 +70,21 @@ export interface TripPatch {
   readonly status?: TripStatus | undefined;
 }
 
+/** What a member of someone else's trip may do (ADR-0024): change the plan, or only read it. */
+export type MemberRole = 'editor' | 'viewer';
+/** How the actor reaches a trip: as its owner or as a member. */
+export type TripAccess = 'owner' | MemberRole;
+
 export interface TripReader {
-  /** By id alone: the caller decides, with `assertOwner`, whether the actor may see the record. */
+  /** By id alone: the caller decides, with `loadTripFor`, whether the actor may see the record. */
   findById(id: string): Promise<TripRecord | null>;
+  /** The actor's role on someone else's trip, or null when they are not a member. */
+  roleOf(tripId: string, userId: string): Promise<MemberRole | null>;
+  /** Trips the user is a member of (not the ones they own), newest first; archived ones only when asked. */
+  listShared(
+    userId: string,
+    options: { readonly includeArchived: boolean },
+  ): Promise<(TripRecord & { readonly role: MemberRole })[]>;
   /** Newest first. Archived trips only when `includeArchived`. */
   listByOwner(
     ownerId: string,
@@ -100,6 +115,7 @@ export interface PreferencesRecord {
   /** Where that city is, when it was picked from the city list; null when typed or unknown. */
   readonly homePoint: { readonly latitude: number; readonly longitude: number } | null;
   readonly pipOptIn: boolean;
+  readonly weeklyReminder: boolean;
   /** The person's Pip: hat, outfit, bag and bag colour (values from the domain's lists). */
   readonly pipLook: { hat: string; outfit: string; bag: string; bagColor: string };
   /** Pip's name as the person chose it, or null for "Pip". */
@@ -119,6 +135,7 @@ export interface PreferencesPatch {
   readonly homeCity?: string | null | undefined;
   readonly homePoint?: { readonly latitude: number; readonly longitude: number } | null | undefined;
   readonly pipOptIn?: boolean | undefined;
+  readonly weeklyReminder?: boolean | undefined;
   readonly pipLook?: { hat: string; outfit: string; bag: string; bagColor: string } | undefined;
   readonly pipName?: string | null | undefined;
 }
@@ -202,6 +219,8 @@ export interface NewDestination {
 export interface DestinationReader {
   /** In route order. */
   listByTrip(tripId: string): Promise<DestinationRecord[]>;
+  /** The trips with a stop that shows this photo (so a trip's members may see it). */
+  tripIdsWithPhoto(mediaId: string): Promise<string[]>;
 }
 
 export interface DestinationWriter extends DestinationReader {
@@ -254,11 +273,15 @@ export interface ExpenseRecord {
   readonly fxAsOf: string | null;
   /** The onboarding's rough guess for the whole trip: it counts minus every other cost (at most one per trip). */
   readonly guess: boolean;
+  /** Who paid it, on a trip planned together (ADR-0025); null when nobody said. */
+  readonly paidBy: string | null;
   readonly createdAt: Date;
   readonly updatedAt: Date;
 }
 
-export type NewExpense = Omit<ExpenseRecord, 'updatedAt'>;
+export type NewExpense = Omit<ExpenseRecord, 'updatedAt' | 'paidBy'> & {
+  readonly paidBy?: string | null;
+};
 /** A cost's role (guess or not) is set when it is created and never changed. */
 export type ExpensePatch = Partial<
   Omit<ExpenseRecord, 'id' | 'tripId' | 'guess' | 'createdAt' | 'updatedAt'>
@@ -288,9 +311,44 @@ export interface SavingsRecord {
 export interface SavingsReader {
   /** `null` until the trip's savings were set. */
   find(tripId: string): Promise<SavingsRecord | null>;
+  /** The person's check-ins on the trip, newest week first (at most a year's worth). */
+  listCheckins(tripId: string, userId: string): Promise<CheckinRecord[]>;
+  /** The person's miles per programme (ADR-0030). */
+  listMiles(
+    userId: string,
+  ): Promise<{ readonly program: MilesProgram; readonly balance: number }[]>;
+  /** The miles the person put towards a trip, per programme. */
+  listTripMiles(
+    tripId: string,
+    userId: string,
+  ): Promise<{ readonly program: MilesProgram; readonly miles: number }[]>;
+}
+
+/** One weekly check-in (ADR-0026). */
+export interface CheckinRecord {
+  readonly week: string;
+  readonly amountMinor: bigint;
 }
 
 export interface SavingsWriter extends SavingsReader {
+  /** Sets a programme's balance; zero removes it (and what was put towards trips from it). */
+  setMiles(userId: string, program: MilesProgram, balance: number, at: Date): Promise<void>;
+  /** Sets how many miles of a programme go towards a trip; zero removes it. */
+  setTripMiles(
+    tripId: string,
+    userId: string,
+    program: MilesProgram,
+    miles: number,
+    at: Date,
+  ): Promise<void>;
+  /** Records the week's check-in; answers the amount it replaced (null for a first check-in that week). */
+  upsertCheckin(row: {
+    readonly tripId: string;
+    readonly userId: string;
+    readonly week: string;
+    readonly amountMinor: bigint;
+    readonly createdAt: Date;
+  }): Promise<bigint | null>;
   upsert(
     tripId: string,
     patch: {
@@ -611,9 +669,13 @@ export interface AssistantReader {
   listProposals(tripId: string, limit: number): Promise<ProposalRecord[]>;
   /** How many times the person asked an AI in a window (each costs tokens, answered or not). */
   countRequestsSince(userId: string, since: Date): Promise<number>;
+  /** Whose forwarding address a token is (ADR-0032), or null. */
+  findInboundUser(token: string): Promise<string | null>;
 }
 
 export interface AssistantWriter extends AssistantReader {
+  /** The account's forwarding token, made with `candidate` the first time. */
+  ensureInboundToken(userId: string, candidate: string, at: Date): Promise<string>;
   insertProposal(
     record: Omit<ProposalRecord, 'applied' | 'undo' | 'decidedAt' | 'status'>,
   ): Promise<void>;
@@ -774,6 +836,75 @@ export interface ShareWriter extends ShareReader {
   deleteByTrip(tripId: string): Promise<void>;
 }
 
+// --- Trip members and invites (ADR-0024) ---------------------------------------------------------------
+
+export interface MemberRecord {
+  readonly tripId: string;
+  readonly userId: string;
+  readonly name: string;
+  readonly role: MemberRole;
+  readonly joinedAt: Date;
+}
+
+export interface InviteRecord {
+  readonly id: string;
+  readonly tripId: string;
+  /** SHA-256 of the link's token, hex: the token itself is never stored. */
+  readonly tokenHash: string;
+  readonly role: MemberRole;
+  readonly createdBy: string;
+  readonly createdAt: Date;
+  readonly expiresAt: Date;
+  readonly revokedAt: Date | null;
+}
+
+/** One person's money on a trip planned together (ADR-0025), in the trip's currency. */
+export interface PersonMoneyRecord {
+  readonly tripId: string;
+  readonly userId: string;
+  /** Their part in basis points; null for an equal split. */
+  readonly shareBp: number | null;
+  readonly savedMinor: bigint;
+  readonly monthlyMinor: bigint;
+}
+
+export interface MemberReader {
+  /** The trip's members (never the owner), oldest first. */
+  listByTrip(tripId: string): Promise<MemberRecord[]>;
+  /** Each person's part and savings on the trip (people without a row have the defaults). */
+  listMoney(tripId: string): Promise<PersonMoneyRecord[]>;
+  findInviteByHash(tokenHash: string): Promise<InviteRecord | null>;
+  /** Invites not revoked and not expired at `now`, newest first. */
+  listOpenInvites(tripId: string, now: Date): Promise<InviteRecord[]>;
+}
+
+export interface MemberWriter extends MemberReader {
+  /** Adds a member; false (and nothing changed) when they already are one. */
+  add(row: {
+    readonly tripId: string;
+    readonly userId: string;
+    readonly role: MemberRole;
+    readonly joinedAt: Date;
+  }): Promise<boolean>;
+  /** Removes a member; false when they were not one. */
+  remove(tripId: string, userId: string): Promise<boolean>;
+  insertInvite(row: Omit<InviteRecord, 'revokedAt'>): Promise<void>;
+  /** Changes one person's savings, creating their row with the defaults if needed. */
+  upsertMoney(
+    tripId: string,
+    userId: string,
+    patch: { readonly savedMinor?: bigint; readonly monthlyMinor?: bigint },
+    now: Date,
+  ): Promise<void>;
+  /** Sets everyone's part at once; `null` parts mean an equal split. */
+  setShares(
+    tripId: string,
+    shares: readonly { readonly userId: string; readonly shareBp: number | null }[],
+    now: Date,
+  ): Promise<void>;
+  revokeInvite(id: string, at: Date): Promise<void>;
+}
+
 // --- Billing (ADR-0019) --------------------------------------------------------------------------------
 
 export interface BillingAccount {
@@ -782,6 +913,10 @@ export interface BillingAccount {
   readonly subscription: SubscriptionState | null;
   /** Bought credits left (the ledger's sum). */
   readonly topUpBalance: number;
+  /** Trip passes bought, valid or not (ADR-0023). */
+  readonly passes: readonly TripPassState[];
+  /** Free trip passes earned by referring friends and not used yet (ADR-0029). */
+  readonly passCredits: number;
 }
 
 export interface SubscriptionRecord extends SubscriptionState {
@@ -808,9 +943,33 @@ export interface BillingWriter extends BillingReader {
     readonly createdAt: Date;
   }): Promise<boolean>;
   saveSubscription(userId: string, record: SubscriptionRecord, updatedAt: Date): Promise<void>;
+  /** The account's referral code, making it with `candidate` the first time. */
+  ensureReferralCode(userId: string, candidate: string, at: Date): Promise<string>;
+  /** Whose code it is, or null. */
+  findReferrer(code: string): Promise<string | null>;
+  /** Records who referred the account; false when it already has a referrer. */
+  claimReferral(referredUserId: string, referrerUserId: string, at: Date): Promise<boolean>;
+  /** How many accounts came through the person's link. */
+  countReferrals(userId: string): Promise<number>;
+  /**
+   * When `referredUserId` was referred and not yet rewarded: marks it rewarded and gives the referrer a free pass
+   * credit. Answers the referrer, or null when there was nothing to reward.
+   */
+  rewardReferral(referredUserId: string, creditId: string, at: Date): Promise<string | null>;
+  /** Uses one of the person's free pass credits on a trip; answers its id, or null when none is left. */
+  useCredit(userId: string, tripId: string, at: Date): Promise<string | null>;
+  /** Records a trip pass; false (and nothing added) when `providerRef` was already used. */
+  grantTripPass(row: {
+    readonly id: string;
+    readonly tripId: string;
+    readonly userId: string;
+    readonly purchasedAt: Date;
+    readonly validUntil: Date;
+    readonly providerRef: string;
+  }): Promise<boolean>;
 }
 
-export type CheckoutItem = 'explorer' | 'voyager' | 'top-up';
+export type CheckoutItem = 'explorer' | 'voyager' | 'top-up' | 'trip-pass';
 
 /** The payment provider (Stripe, ADR-0019). `null` from a method means payments are not configured. */
 export interface PaymentsPort {
@@ -820,9 +979,30 @@ export interface PaymentsPort {
     readonly email: string;
     readonly item: CheckoutItem;
     readonly interval: 'month' | 'year';
+    /** The currency the person sees prices in (their chosen currency when it is BRL, else USD). */
+    readonly currency: PriceCurrency;
+    /** The trip a pass is for; only with `trip-pass`. */
+    readonly tripId?: string;
   }): Promise<string | null>;
   /** The provider's page to change the card, switch or cancel the plan. */
   portalUrl(input: { readonly providerCustomerId: string }): Promise<string | null>;
+}
+
+/** The internal dashboard's numbers (see `adminMetricsSchema`). */
+export interface AdminMetricsView {
+  readonly accounts: { total: number; last7: number; last30: number; verified: number };
+  readonly trips: {
+    active: number;
+    created30: number;
+    fromPlan30: number;
+    fromExample30: number;
+    byHand30: number;
+    savingMonthly: number;
+  };
+  readonly checkinsByWeek: { week: string; count: number }[];
+  readonly sharing: { invites30: number; joins30: number; inviters30: number };
+  readonly retention: { cohort: number; week1: number; week4: number; week8: number };
+  readonly money: { explorer: number; voyager: number; activePasses: number; referrals: number };
 }
 
 // --- Transactions, time and ids ------------------------------------------------------------------------
@@ -830,6 +1010,7 @@ export interface PaymentsPort {
 /** What a mutation may touch. Everything in one `UnitOfWork.run` commits or rolls back together. */
 export interface Transaction {
   readonly trips: TripWriter;
+  readonly members: MemberWriter;
   readonly destinations: DestinationWriter;
   readonly expenses: ExpenseWriter;
   readonly checklist: ChecklistWriter;
@@ -866,6 +1047,7 @@ export interface Ports {
   readonly users: UserReader;
   /** Reads outside a transaction (queries). */
   readonly trips: TripReader;
+  readonly members: MemberReader;
   readonly destinations: DestinationReader;
   readonly expenses: ExpenseReader;
   readonly checklist: ChecklistReader;
@@ -883,6 +1065,10 @@ export interface Ports {
   readonly shares: ShareReader;
   readonly ai: AiPort;
   readonly unitOfWork: UnitOfWork;
+  /** Who may see the internal dashboard (ADR-0031). */
+  readonly admins: { isAdmin(userId: string): Promise<boolean> };
+  /** The internal dashboard's counts. */
+  readonly metrics: { snapshot(now: Date): Promise<AdminMetricsView> };
   readonly clock: Clock;
   readonly ids: IdGenerator;
   readonly geocoding: GeocodingPort;

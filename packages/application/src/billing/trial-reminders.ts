@@ -1,4 +1,9 @@
-import { TRIAL_ENDED_NOTICE_DAYS, TRIAL_ENDING_NOTICE_HOURS, TRIAL_TERMS } from '@globetrot/domain';
+import {
+  priceCurrencyFor,
+  TRIAL_ENDED_NOTICE_DAYS,
+  TRIAL_ENDING_NOTICE_HOURS,
+  TRIAL_TERMS,
+} from '@globetrot/domain';
 import { SUPPORTED_LOCALES, type SupportedLocale } from '@globetrot/i18n';
 import type { EmailPort } from '../email/templates';
 import type { Clock } from '../ports';
@@ -10,6 +15,8 @@ export interface TrialNoticeTarget {
   readonly email: string;
   readonly name: string;
   readonly locale: string;
+  /** The person's chosen currency: prices are quoted in reais only when it is BRL (ADR-0023). */
+  readonly currency?: string;
   readonly signedUpAt: Date;
   /** The trip changed most recently (not archived), named in the email; null without one. */
   readonly tripTitle?: string | null;
@@ -64,6 +71,7 @@ export function createTrialReminders(deps: {
             url: planUrl,
             name: target.name,
             expiresInHours: Math.max(1, Math.round((endsAt - now.getTime()) / HOUR)),
+            priceCurrency: priceCurrencyFor(target.currency),
             ...(target.tripTitle ? { tripTitle: target.tripTitle } : {}),
           },
         });

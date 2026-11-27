@@ -4,6 +4,7 @@ export {
   SUGGEST_RESEARCHED_ON,
   SUGGESTED_DESTINATIONS,
   suggestedDestination,
+  destinationBySlug,
   type DailyCosts,
   type SuggestComfort,
   type SuggestedDestination,

@@ -13,6 +13,7 @@ import {
   uuid,
 } from 'drizzle-orm/pg-core';
 import { user } from './auth';
+import { trip } from './trip';
 
 const instant = (name: string) => timestamp(name, { withTimezone: true });
 const list = (values: readonly string[]) => sql.raw(values.map((v) => `'${v}'`).join(', '));
@@ -75,5 +76,70 @@ export const accountNotice = pgTable(
   (table) => [
     primaryKey({ columns: [table.userId, table.kind] }),
     check('account_notice_kind_valid', sql`${table.kind} in ('trial-ending', 'trial-ended')`),
+  ],
+);
+
+/**
+ * A trip pass (ADR-0023): one payment that unlocks the paid tools on one trip until `valid_until`. Granted from
+ * the payment provider's webhook; `provider_ref` (the payment) is unique, so a repeated delivery grants nothing.
+ */
+export const tripPass = pgTable(
+  'trip_pass',
+  {
+    id: uuid('id').primaryKey(),
+    tripId: uuid('trip_id')
+      .notNull()
+      .references(() => trip.id, { onDelete: 'cascade' }),
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    purchasedAt: instant('purchased_at').notNull(),
+    validUntil: instant('valid_until').notNull(),
+    providerRef: text('provider_ref').notNull().unique(),
+  },
+  (table) => [index('trip_pass_user_id_idx').on(table.userId)],
+);
+
+/** Each account's referral code (ADR-0029), made the first time the person asks for their link. */
+export const referralCode = pgTable('referral_code', {
+  userId: text('user_id')
+    .primaryKey()
+    .references(() => user.id, { onDelete: 'cascade' }),
+  code: text('code').notNull().unique(),
+  createdAt: instant('created_at').defaultNow().notNull(),
+});
+
+/** Who came through whose link: one referrer per account, rewarded once, when the friend first pays. */
+export const referral = pgTable('referral', {
+  referredUserId: text('referred_user_id')
+    .primaryKey()
+    .references(() => user.id, { onDelete: 'cascade' }),
+  referrerUserId: text('referrer_user_id')
+    .notNull()
+    .references(() => user.id, { onDelete: 'cascade' }),
+  createdAt: instant('created_at').defaultNow().notNull(),
+  rewardedAt: instant('rewarded_at'),
+});
+
+/**
+ * A free trip pass to use on any trip (ADR-0029): earned when a referred friend first pays. `ref` is unique, so a
+ * reward is granted once; using it records the trip.
+ */
+export const passCredit = pgTable(
+  'pass_credit',
+  {
+    id: uuid('id').primaryKey(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    reason: text('reason').notNull(),
+    ref: text('ref').notNull().unique(),
+    createdAt: instant('created_at').defaultNow().notNull(),
+    usedTripId: uuid('used_trip_id').references(() => trip.id, { onDelete: 'set null' }),
+    usedAt: instant('used_at'),
+  },
+  (table) => [
+    index('pass_credit_user_idx').on(table.userId),
+    check('pass_credit_reason_valid', sql`${table.reason} in ('referral')`),
   ],
 );

@@ -297,6 +297,28 @@ describe('Google sign-in settings', () => {
   );
 });
 
+describe('monitoring and the backup AI provider', () => {
+  it('are off without settings', () => {
+    const config = loadApiConfig({ DATABASE_URL });
+    expect(config.sentryDsn).toBeNull();
+    expect(config.aiFallback).toBeNull();
+  });
+
+  it('turn on with a DSN and an Anthropic key, defaulting to Claude Haiku', () => {
+    const config = loadApiConfig({
+      DATABASE_URL,
+      SENTRY_DSN: 'https://public@o1.ingest.sentry.io/2',
+      ANTHROPIC_API_KEY: 'test-key',
+    });
+    expect(config.sentryDsn).toBe('https://public@o1.ingest.sentry.io/2');
+    expect(config.aiFallback).toEqual({
+      apiKey: 'test-key',
+      baseUrl: 'https://api.anthropic.com',
+      model: 'claude-haiku-5-5',
+    });
+  });
+});
+
 describe('Stripe', () => {
   const stripe = (key = 'sk_test_abc123') => ({
     STRIPE_SECRET_KEY: key,
@@ -306,13 +328,31 @@ describe('Stripe', () => {
     STRIPE_PRICE_VOYAGER_MONTHLY: 'price_vm',
     STRIPE_PRICE_VOYAGER_YEARLY: 'price_vy',
     STRIPE_PRICE_TOP_UP: 'price_top',
+    STRIPE_PRICE_TRIP_PASS: 'price_pass',
   });
 
   it('is off without settings, and on with all of them', () => {
     expect(loadApiConfig({ DATABASE_URL }).stripe).toBeNull();
     expect(loadApiConfig({ DATABASE_URL, ...stripe() }).stripe).toMatchObject({
-      prices: { voyager: { year: 'price_vy' }, topUp: 'price_top' },
+      prices: {
+        USD: { voyager: { year: 'price_vy' }, topUp: 'price_top', tripPass: 'price_pass' },
+        // Without prices in reais, a BRL checkout uses the USD ones.
+        BRL: { voyager: { year: 'price_vy' }, tripPass: 'price_pass' },
+      },
       returnOrigin: 'http://localhost:3000',
+    });
+  });
+
+  it('takes prices in reais when they are set', () => {
+    const config = loadApiConfig({
+      DATABASE_URL,
+      ...stripe(),
+      STRIPE_PRICE_EXPLORER_MONTHLY_BRL: 'price_em_brl',
+      STRIPE_PRICE_TRIP_PASS_BRL: 'price_pass_brl',
+    });
+    expect(config.stripe?.prices.BRL).toMatchObject({
+      explorer: { month: 'price_em_brl', year: 'price_ey' },
+      tripPass: 'price_pass_brl',
     });
   });
 
@@ -333,5 +373,32 @@ describe('Stripe', () => {
     expect(() =>
       loadApiConfig({ DATABASE_URL, ...stripe(), STRIPE_WEBHOOK_SECRET: 'nope' }),
     ).toThrow(/whsec_/);
+  });
+});
+
+describe('the internal dashboard', () => {
+  it('lists admin addresses in lower case, and nobody without the setting', () => {
+    expect(loadApiConfig({ DATABASE_URL }).adminEmails).toEqual([]);
+    expect(
+      loadApiConfig({ DATABASE_URL, ADMIN_EMAILS: ' Owner@Example.com, ,b@example.com ' })
+        .adminEmails,
+    ).toEqual(['owner@example.com', 'b@example.com']);
+  });
+});
+
+describe('bookings by email', () => {
+  it('stay off without the secret and the domain, and on with both', () => {
+    expect(loadApiConfig({ DATABASE_URL }).inboundEmail).toBeNull();
+    expect(
+      loadApiConfig({
+        DATABASE_URL,
+        INBOUND_EMAIL_SECRET: 'a-long-shared-secret-1234567890',
+        INBOUND_EMAIL_DOMAIN: 'in.example.com',
+      }).inboundEmail,
+    ).toEqual({
+      secret: 'a-long-shared-secret-1234567890',
+      domain: 'in.example.com',
+      local: 'trips',
+    });
   });
 });

@@ -33,7 +33,12 @@ import type {
   SubscriptionRecord,
   ShareWriter,
   TripShareRecord,
+  InviteRecord,
+  MemberRole,
+  MemberWriter,
+  PersonMoneyRecord,
 } from '../ports';
+import type { MilesProgram } from '@globetrot/domain';
 import {
   createFakeCommunity,
   emptyCommunityState,
@@ -64,6 +69,37 @@ export interface FakeState {
   /** Public links by trip id. */
   shares: Map<string, TripShareRecord>;
   credits: { userId: string; delta: number; reason: string; ref: string | null }[];
+  /** Trip members (never the owner) and invite links (ADR-0024). */
+  members: { tripId: string; userId: string; role: MemberRole; joinedAt: Date }[];
+  /** Each person's part and savings on a shared trip (ADR-0025). */
+  money: PersonMoneyRecord[];
+  /** Accounts that may see the internal dashboard. */
+  admins: string[];
+  /** Forwarding tokens by account (ADR-0032). */
+  inbound: Map<string, string>;
+  /** Miles balances and the miles put towards trips (ADR-0030). */
+  miles: { userId: string; program: MilesProgram; balance: number }[];
+  tripMiles: { tripId: string; userId: string; program: MilesProgram; miles: number }[];
+  /** Weekly check-ins (ADR-0026). */
+  checkins: {
+    tripId: string;
+    userId: string;
+    week: string;
+    amountMinor: bigint;
+    createdAt: Date;
+  }[];
+  invites: InviteRecord[];
+  referralCodes: Map<string, string>;
+  referrals: { referred: string; referrer: string; rewarded: boolean }[];
+  passCredits: { id: string; userId: string; ref: string; usedTripId: string | null }[];
+  passes: {
+    id: string;
+    tripId: string;
+    userId: string;
+    purchasedAt: Date;
+    validUntil: Date;
+    providerRef: string;
+  }[];
   audit: AuditEventInput[];
   idempotency: Map<string, { fingerprint: string; response: unknown }>;
 }
@@ -115,6 +151,18 @@ export function createFakePorts(options: FakeOptions = {}) {
     subscriptions: new Map(),
     shares: new Map(),
     credits: [],
+    members: [],
+    money: [],
+    checkins: [],
+    admins: [],
+    inbound: new Map(),
+    miles: [],
+    tripMiles: [],
+    invites: [],
+    referralCodes: new Map(),
+    referrals: [],
+    passCredits: [],
+    passes: [],
     audit: [],
     idempotency: new Map(),
   };
@@ -122,6 +170,23 @@ export function createFakePorts(options: FakeOptions = {}) {
   const tripWriter: TripWriter = {
     async findById(id) {
       return state.trips.get(id) ?? null;
+    },
+    async roleOf(tripId, userId) {
+      return (
+        state.members.find((member) => member.tripId === tripId && member.userId === userId)
+          ?.role ?? null
+      );
+    },
+    async listShared(userId, { includeArchived }) {
+      return state.members
+        .filter((member) => member.userId === userId)
+        .flatMap((member) => {
+          const trip = state.trips.get(member.tripId);
+          return trip && (includeArchived || trip.status !== 'archived')
+            ? [{ ...trip, role: member.role }]
+            : [];
+        })
+        .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
     },
     async listByOwner(ownerId, { includeArchived }) {
       return [...state.trips.values()]
@@ -182,6 +247,7 @@ export function createFakePorts(options: FakeOptions = {}) {
         homeCity: null,
         homePoint: null,
         pipOptIn: false,
+        weeklyReminder: true,
         pipLook: { hat: 'straw', outfit: 'none', bag: 'trolley', bagColor: 'amber' },
         pipName: null,
       };
@@ -197,6 +263,7 @@ export function createFakePorts(options: FakeOptions = {}) {
         homeCity: patch.homeCity === undefined ? current.homeCity : patch.homeCity,
         homePoint: patch.homePoint === undefined ? current.homePoint : patch.homePoint,
         pipOptIn: patch.pipOptIn ?? current.pipOptIn,
+        weeklyReminder: patch.weeklyReminder ?? current.weeklyReminder,
         pipLook: patch.pipLook ?? current.pipLook,
         pipName: patch.pipName === undefined ? current.pipName : patch.pipName,
       };
@@ -208,6 +275,11 @@ export function createFakePorts(options: FakeOptions = {}) {
   const destinationWriter: DestinationWriter = {
     async listByTrip(tripId) {
       return [...(state.destinations.get(tripId) ?? [])];
+    },
+    async tripIdsWithPhoto(mediaId) {
+      return [...state.destinations.entries()]
+        .filter(([, stops]) => stops.some((stop) => stop.photos.some((p) => p.mediaId === mediaId)))
+        .map(([tripId]) => tripId);
     },
     async replaceForTrip(tripId, items, now) {
       const records = items.map((item, position): DestinationRecord => ({
@@ -232,7 +304,11 @@ export function createFakePorts(options: FakeOptions = {}) {
       return state.expenses.get(id) ?? null;
     },
     async insert(expense) {
-      const record: ExpenseRecord = { ...expense, updatedAt: expense.createdAt };
+      const record: ExpenseRecord = {
+        ...expense,
+        paidBy: expense.paidBy ?? null,
+        updatedAt: expense.createdAt,
+      };
       state.expenses.set(record.id, record);
       return record;
     },
@@ -340,6 +416,43 @@ export function createFakePorts(options: FakeOptions = {}) {
   const savingsWriter: SavingsWriter = {
     async find(tripId) {
       return state.savings.get(tripId) ?? null;
+    },
+    async listMiles(userId) {
+      return state.miles
+        .filter((m) => m.userId === userId)
+        .map(({ program, balance }) => ({ program, balance }));
+    },
+    async listTripMiles(tripId, userId) {
+      return state.tripMiles
+        .filter((m) => m.tripId === tripId && m.userId === userId)
+        .map(({ program, miles }) => ({ program, miles }));
+    },
+    async setMiles(userId, program, balance) {
+      state.miles = state.miles.filter((m) => !(m.userId === userId && m.program === program));
+      if (balance > 0) state.miles.push({ userId, program, balance });
+      else
+        state.tripMiles = state.tripMiles.filter(
+          (m) => !(m.userId === userId && m.program === program),
+        );
+    },
+    async setTripMiles(tripId, userId, program, miles) {
+      state.tripMiles = state.tripMiles.filter(
+        (m) => !(m.tripId === tripId && m.userId === userId && m.program === program),
+      );
+      if (miles > 0) state.tripMiles.push({ tripId, userId, program, miles });
+    },
+    async listCheckins(tripId, userId) {
+      return state.checkins
+        .filter((c) => c.tripId === tripId && c.userId === userId)
+        .sort((a, b) => (a.week < b.week ? 1 : -1))
+        .map(({ week, amountMinor }) => ({ week, amountMinor }));
+    },
+    async upsertCheckin(row) {
+      const before = state.checkins.find(
+        (c) => c.tripId === row.tripId && c.userId === row.userId && c.week === row.week,
+      );
+      state.checkins = [...state.checkins.filter((c) => c !== before), { ...row }];
+      return before?.amountMinor ?? null;
     },
     async upsert(tripId, patch) {
       const current = state.savings.get(tripId) ?? {
@@ -469,6 +582,14 @@ export function createFakePorts(options: FakeOptions = {}) {
     async recordUsage(row) {
       state.aiUsage.push({ userId: row.userId, createdAt: row.createdAt });
     },
+    async findInboundUser(token) {
+      for (const [userId, value] of state.inbound) if (value === token) return userId;
+      return null;
+    },
+    async ensureInboundToken(userId, candidate) {
+      if (!state.inbound.has(userId)) state.inbound.set(userId, candidate);
+      return state.inbound.get(userId)!;
+    },
     async countRequestsSince(userId, since) {
       return state.aiUsage.filter((u) => u.userId === userId && u.createdAt >= since).length;
     },
@@ -483,6 +604,10 @@ export function createFakePorts(options: FakeOptions = {}) {
         topUpBalance: state.credits
           .filter((line) => line.userId === userId)
           .reduce((sum, line) => sum + line.delta, 0),
+        passes: state.passes
+          .filter((pass) => pass.userId === userId)
+          .map(({ tripId, validUntil }) => ({ tripId, validUntil })),
+        passCredits: state.passCredits.filter((c) => c.userId === userId && !c.usedTripId).length,
       };
     },
     async findProviderCustomer(userId) {
@@ -507,6 +632,45 @@ export function createFakePorts(options: FakeOptions = {}) {
     async saveSubscription(userId, record) {
       state.subscriptions.set(userId, record);
     },
+    async ensureReferralCode(userId, candidate) {
+      if (!state.referralCodes.has(userId)) state.referralCodes.set(userId, candidate);
+      return state.referralCodes.get(userId)!;
+    },
+    async findReferrer(code) {
+      for (const [userId, value] of state.referralCodes) if (value === code) return userId;
+      return null;
+    },
+    async claimReferral(referred, referrer) {
+      if (state.referrals.some((r) => r.referred === referred)) return false;
+      state.referrals.push({ referred, referrer, rewarded: false });
+      return true;
+    },
+    async countReferrals(userId) {
+      return state.referrals.filter((r) => r.referrer === userId).length;
+    },
+    async rewardReferral(referred, creditId) {
+      const entry = state.referrals.find((r) => r.referred === referred && !r.rewarded);
+      if (!entry) return null;
+      entry.rewarded = true;
+      state.passCredits.push({
+        id: creditId,
+        userId: entry.referrer,
+        ref: `referral:${referred}`,
+        usedTripId: null,
+      });
+      return entry.referrer;
+    },
+    async useCredit(userId, tripId) {
+      const free = state.passCredits.find((c) => c.userId === userId && !c.usedTripId);
+      if (!free) return null;
+      free.usedTripId = tripId;
+      return free.id;
+    },
+    async grantTripPass(row) {
+      if (state.passes.some((pass) => pass.providerRef === row.providerRef)) return false;
+      state.passes.push({ ...row });
+      return true;
+    },
   };
 
   const shareWriter: ShareWriter = {
@@ -528,8 +692,83 @@ export function createFakePorts(options: FakeOptions = {}) {
     },
   };
 
+  const memberWriter: MemberWriter = {
+    async listByTrip(tripId) {
+      return state.members
+        .filter((member) => member.tripId === tripId)
+        .sort((a, b) => a.joinedAt.getTime() - b.joinedAt.getTime())
+        .map((member) => ({
+          ...member,
+          name: users.find((user) => user.id === member.userId)?.name ?? '',
+        }));
+    },
+    async listMoney(tripId) {
+      return state.money.filter((entry) => entry.tripId === tripId);
+    },
+    async upsertMoney(tripId, userId, patch) {
+      const current = state.money.find((e) => e.tripId === tripId && e.userId === userId) ?? {
+        tripId,
+        userId,
+        shareBp: null,
+        savedMinor: 0n,
+        monthlyMinor: 0n,
+      };
+      state.money = [
+        ...state.money.filter((e) => !(e.tripId === tripId && e.userId === userId)),
+        { ...current, ...patch },
+      ];
+    },
+    async setShares(tripId, shares) {
+      for (const { userId, shareBp } of shares) {
+        const current = state.money.find((e) => e.tripId === tripId && e.userId === userId) ?? {
+          tripId,
+          userId,
+          shareBp: null,
+          savedMinor: 0n,
+          monthlyMinor: 0n,
+        };
+        state.money = [
+          ...state.money.filter((e) => !(e.tripId === tripId && e.userId === userId)),
+          { ...current, shareBp },
+        ];
+      }
+    },
+    async findInviteByHash(tokenHash) {
+      return state.invites.find((invite) => invite.tokenHash === tokenHash) ?? null;
+    },
+    async listOpenInvites(tripId, now) {
+      return state.invites
+        .filter(
+          (invite) =>
+            invite.tripId === tripId && invite.revokedAt === null && invite.expiresAt > now,
+        )
+        .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    },
+    async add(row) {
+      if (state.members.some((m) => m.tripId === row.tripId && m.userId === row.userId)) {
+        return false;
+      }
+      state.members.push({ ...row });
+      return true;
+    },
+    async remove(tripId, userId) {
+      const before = state.members.length;
+      state.members = state.members.filter((m) => !(m.tripId === tripId && m.userId === userId));
+      return state.members.length < before;
+    },
+    async insertInvite(row) {
+      state.invites.push({ ...row, revokedAt: null });
+    },
+    async revokeInvite(id, at) {
+      state.invites = state.invites.map((invite) =>
+        invite.id === id ? { ...invite, revokedAt: at } : invite,
+      );
+    },
+  };
+
   const transaction: Transaction = {
     trips: tripWriter,
+    members: memberWriter,
     expenses: expenseWriter,
     checklist: checklistWriter,
     dayPlaces: dayPlaceWriter,
@@ -568,12 +807,37 @@ export function createFakePorts(options: FakeOptions = {}) {
   };
 
   const ports: Ports = {
+    admins: {
+      async isAdmin(userId) {
+        return state.admins.includes(userId);
+      },
+    },
+    metrics: {
+      async snapshot() {
+        return {
+          accounts: { total: users.length, last7: 0, last30: 0, verified: users.length },
+          trips: {
+            active: [...state.trips.values()].filter((t) => t.status !== 'archived').length,
+            created30: 0,
+            fromPlan30: 0,
+            fromExample30: 0,
+            byHand30: 0,
+            savingMonthly: 0,
+          },
+          checkinsByWeek: [],
+          sharing: { invites30: 0, joins30: 0, inviters30: 0 },
+          retention: { cohort: 0, week1: 0, week4: 0, week8: 0 },
+          money: { explorer: 0, voyager: 0, activePasses: 0, referrals: 0 },
+        };
+      },
+    },
     users: {
       async findById(userId) {
         return users.find((user) => user.id === userId) ?? null;
       },
     },
     trips: tripWriter,
+    members: memberWriter,
     destinations: destinationWriter,
     expenses: expenseWriter,
     checklist: checklistWriter,
@@ -607,7 +871,7 @@ export function createFakePorts(options: FakeOptions = {}) {
     payments: {
       async checkoutUrl(input) {
         return payments.enabled
-          ? `https://pay.example.test/checkout?item=${input.item}&interval=${input.interval}`
+          ? `https://pay.example.test/checkout?item=${input.item}&interval=${input.interval}&currency=${input.currency}${input.tripId ? `&trip=${input.tripId}` : ''}`
           : null;
       },
       async portalUrl(input) {
@@ -650,6 +914,18 @@ export function createFakePorts(options: FakeOptions = {}) {
           subscriptions: new Map(state.subscriptions),
           shares: new Map(state.shares),
           credits: [...state.credits],
+          members: [...state.members],
+          money: [...state.money],
+          checkins: [...state.checkins],
+          admins: [...state.admins],
+          inbound: new Map(state.inbound),
+          miles: [...state.miles],
+          tripMiles: [...state.tripMiles],
+          invites: [...state.invites],
+          passes: [...state.passes],
+          referralCodes: new Map(state.referralCodes),
+          referrals: state.referrals.map((r) => ({ ...r })),
+          passCredits: state.passCredits.map((c) => ({ ...c })),
           audit: [...state.audit],
           idempotency: new Map(
             [...state.idempotency].map(([key, value]) => [key, { ...value }] as const),

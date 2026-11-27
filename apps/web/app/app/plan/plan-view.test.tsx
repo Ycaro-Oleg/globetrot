@@ -13,7 +13,10 @@ import { PlanView } from './plan-view';
 
 const trial: BillingView = {
   access: 'trial',
-  readOnly: false,
+  overLimit: false,
+  priceCurrency: 'USD',
+  passCredits: 0,
+  passes: [],
   trialEndsAt: '2026-11-08T12:00:00.000Z',
   trialDaysLeft: 5,
   plan: null,
@@ -22,6 +25,7 @@ const trial: BillingView = {
   renewsAt: null,
   maxActiveTrips: 10,
   activeTrips: 2,
+  countedTrips: 2,
   credits: {
     monthly: 15,
     monthlyLeft: 12,
@@ -31,7 +35,15 @@ const trial: BillingView = {
     dailyCap: 40,
   },
 };
-const expired: BillingView = { ...trial, access: 'expired', readOnly: true, trialDaysLeft: 0 };
+const expired: BillingView = {
+  ...trial,
+  access: 'free',
+  overLimit: true,
+  maxActiveTrips: 1,
+  trialDaysLeft: 0,
+  credits: { ...trial.credits, monthly: 5, monthlyLeft: 5, total: 5 },
+};
+const free: BillingView = { ...expired, overLimit: false, activeTrips: 2, countedTrips: 1 };
 const voyager: BillingView = {
   ...trial,
   access: 'voyager',
@@ -71,17 +83,30 @@ describe.each(SUPPORTED_LOCALES)('plan page (%s)', (locale) => {
     expect(html).not.toMatch(/planPage\.|plans\./);
   });
 
-  it('says the account is read-only and the trips are safe once the trial is over', () => {
+  it('says when more trips are active than the free plan keeps, and that nothing is lost', () => {
     const html = wrap(locale, <PlanView billing={expired} />);
     expect(text(html)).toContain(copy.expiredTitle);
     expect(text(html)).toContain(copy.expiredBody);
-    // Without a plan, credits and trip counts are noise: the plans come right after the notice.
-    expect(html).not.toContain('role="meter"');
-    expect(text(html)).not.toContain(copy.tripsTitle);
+    expect(html).toContain('href="/app/trips"');
     expect(html.match(/class="[^"]*cta[^"]*"/g)).toHaveLength(2);
   });
 
-  it('says why a change was not saved when the read-only account was sent here', () => {
+  it('describes the free plan: monthly credits, the counted trip and the trip pass', () => {
+    const shown = text(wrap(locale, <PlanView billing={free} />));
+    expect(shown).toContain(copy.freeTitle);
+    expect(shown).toContain(copy.passTitle);
+    expect(shown).toMatch(locale === 'en' ? /\$9\.99/ : /US\$\s?9,99/);
+    // One of the two active trips has a pass, so it is not counted.
+    expect(shown).toMatch(locale === 'en' ? /1 trip with a pass/ : /1 viagem com passe/);
+  });
+
+  it('shows prices in reais to someone who chose reais', () => {
+    const html = wrap(locale, <PlanView billing={{ ...free, priceCurrency: 'BRL' }} />);
+    expect(html).toMatch(/R\$\s?14[,.]90/);
+    expect(html).toMatch(/R\$\s?39[,.]00/);
+  });
+
+  it('says why a change was not saved when the person was sent here over the limit', () => {
     const html = wrap(locale, <PlanView billing={expired} planRequired />);
     expect(text(html)).toContain(copy.planRequiredBody);
     expect(text(html)).not.toContain(copy.expiredBody);
@@ -101,10 +126,11 @@ describe.each(SUPPORTED_LOCALES)('plan page (%s)', (locale) => {
 describe.each(SUPPORTED_LOCALES)('free-week line (%s)', (locale) => {
   const copy = catalogs[locale].shell.plan;
 
-  it('counts the days left in the trial, says read-only after it, and is quiet on a plan', () => {
+  it('counts the days left in the trial, says when trips are over the limit, and is quiet otherwise', () => {
     expect(wrap(locale, <PlanBanner billing={trial} />)).toContain('href="/app/plan"');
     expect(text(wrap(locale, <PlanBanner billing={expired} />))).toContain(copy.expiredCta);
     expect(wrap(locale, <PlanBanner billing={voyager} />)).toBe('');
+    expect(wrap(locale, <PlanBanner billing={free} />)).toBe('');
     expect(wrap(locale, <PlanBanner billing={null} />)).toBe('');
   });
 

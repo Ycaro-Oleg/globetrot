@@ -136,6 +136,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/trips/from-suggestion": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Turn a suggested plan into a trip
+         * @description Creates a private trip from a suggested plan (ADR-0020): its stops, nights and legs, its experiences as places, its typical cost as the trip’s estimate (at the recorded reference rate when the trip is not in USD) and the monthly amount. `Idempotency-Key` works as for `createTrip`.
+         */
+        post: operations["createTripFromSuggestion"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/trips/{id}": {
         parameters: {
             query?: never;
@@ -980,8 +1000,8 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * The caller’s plan, trial and Pip credits
-         * @description Whether the account is in its 7-day trial, on Explorer or Voyager, or read-only after the trial; the active-trip limit; and Pip credits left this period (monthly first, then bought ones). Commands refused by the plan answer `402` with `PLAN_REQUIRED`, `TRIP_LIMIT_REACHED` or `OUT_OF_CREDITS` (ADR-0019).
+         * The caller’s plan, trial, trip passes and Pip credits
+         * @description Whether the account is in its 7-day trial, on Explorer or Voyager, or on the free plan; the active-trip limit (trips with a pass do not count) and whether more trips are active than it keeps; the currency prices are shown in; and Pip credits left this period (monthly first, then bought ones). Commands refused by the plan answer `402` with `PLAN_REQUIRED`, `TRIP_LIMIT_REACHED` or `OUT_OF_CREDITS` (ADR-0019, ADR-0023).
          */
         get: operations["getBilling"];
         put?: never;
@@ -1002,8 +1022,8 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * A hosted checkout for a plan or extra Pip credits
-         * @description Answers the payment provider’s checkout URL for Explorer or Voyager (monthly or yearly) or a top-up of Pip credits. Works when the account is read-only. `503` while payments are not switched on.
+         * A hosted checkout for a plan, extra Pip credits or a trip pass
+         * @description Answers the payment provider’s checkout URL for Explorer or Voyager (monthly or yearly), a top-up of Pip credits or a pass for one of the person’s trips (ADR-0023), in reais when their currency is BRL and in US dollars otherwise. Works over the trip limit. `404` for a pass on a trip that is not theirs, `503` while payments are not switched on.
          */
         post: operations["startCheckout"];
         delete?: never;
@@ -1032,6 +1052,103 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/me/referral": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * The caller’s referral link and what it earned
+         * @description Makes the code the first time (ADR-0029). The link is the site with `?ref={code}`; a friend’s first payment gives the caller a free trip pass.
+         */
+        post: operations["getReferral"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me/referral/claim": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Say who sent this new account
+         * @description Within 7 days of signing up, never one’s own code, once. An unknown code answers `claimed: false`.
+         */
+        post: operations["claimReferral"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/trips/{id}/pass/redeem": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Use a free trip pass on one of the caller’s trips */
+        post: operations["redeemPassCredit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/metrics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The internal dashboard’s counts (admins only)
+         * @description Counts only, never people (ADR-0031). Only verified accounts listed in `ADMIN_EMAILS`; everyone else gets `404`.
+         */
+        get: operations["getAdminMetrics"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me/inbound": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * The caller’s address for forwarding bookings to Pip
+         * @description Makes the address the first time (ADR-0032). A forwarded booking becomes a Pip proposal for the latest active trip, to review. `address: null` while forwarding is not switched on.
+         */
+        post: operations["getInboundAddress"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/trips/{id}/share": {
         parameters: {
             query?: never;
@@ -1052,6 +1169,272 @@ export interface paths {
          * @description The old address answers 404 from now on. Works even when the account is read-only.
          */
         delete: operations["unshareTrip"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/trips/{id}/members": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Who plans the trip
+         * @description The owner first, then the members (ADR-0024). The owner also sees the open invite links and how many people the plan lets join.
+         */
+        get: operations["getTripMembers"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/trips/{id}/invites": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * A link to plan the trip together
+         * @description Owner only. The token is shown once and only its hash is stored; the link works for 7 days. Globetrot sends nothing: the owner copies the link. `402 GUEST_LIMIT_REACHED` when the plan allows no more people.
+         */
+        post: operations["createInvite"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/trips/{id}/invites/{inviteId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Stop an invite link for good */
+        delete: operations["revokeInvite"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/trips/{id}/members/{userId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Take someone off the trip (owner only) */
+        delete: operations["removeMember"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/trips/{id}/leave": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Leave a trip the caller was invited to */
+        post: operations["leaveTrip"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/invites/{token}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * What an invite link opens
+         * @description A revoked, expired or unknown link, and an archived trip, all answer 404.
+         */
+        get: operations["previewInvite"];
+        put?: never;
+        /**
+         * Join the trip through an invite link
+         * @description Accepting twice, or as the owner, changes nothing.
+         */
+        post: operations["acceptInvite"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/trips/{id}/money": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Each person’s part, savings and the settling up
+         * @description Everyone’s part of the trip’s cost (equal, or custom basis points), what each set aside and when they will have it, the group’s progress, and who pays whom for the costs already paid (ADR-0025).
+         */
+        get: operations["getGroupMoney"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/trips/{id}/money/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** The caller’s own savings for their part */
+        put: operations["updateMyMoney"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/trips/{id}/shares": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Who pays how much of the trip (owner only)
+         * @description Everyone’s part in basis points adding up to 10 000, or `shares: null` to split equally.
+         */
+        put: operations["setShares"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/trips/{id}/habit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * This week’s check-in, the streak and the countdown
+         * @description The ISO week in the person’s time zone, whether they checked in, weeks in a row, a suggested amount (a week of their monthly amount) and the trip’s countdown phase with checklist suggestions (ADR-0026).
+         */
+        get: operations["getHabit"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/trips/{id}/checkin": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * “I set this aside this week”
+         * @description Adds the amount to the person’s savings (their own on a shared trip, the trip’s otherwise). Checking in again the same week changes the amount instead of adding to it.
+         */
+        post: operations["checkIn"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/trips/{id}/miles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The caller’s miles, their typical value and the savings answer counting them
+         * @description Balances per programme with a typical value in reais (researched ranges with their date and sources), the miles put towards this trip and what is left counting them (ADR-0030). Always estimates.
+         */
+        get: operations["getMiles"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me/miles/{program}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** A programme’s balance (zero removes it) */
+        put: operations["setMiles"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/trips/{id}/miles/{program}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** How many miles of a programme go towards the trip (zero removes it) */
+        put: operations["setTripMiles"];
+        post?: never;
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -1370,6 +1753,7 @@ export interface operations {
                             longitude: number;
                         } | null;
                         pipOptIn: boolean;
+                        weeklyReminder: boolean;
                         pipLook: {
                             /** @enum {string} */
                             hat: "straw" | "helmet" | "cap" | "none";
@@ -1470,6 +1854,8 @@ export interface operations {
                     } | null;
                     /** @description Whether the person wants Pip’s suggestions. */
                     pipOptIn?: boolean;
+                    /** @description Whether to get the weekly saving reminder email (on by default). */
+                    weeklyReminder?: boolean;
                     /** @description The person’s Pip: hat, outfit, bag and bag colour. */
                     pipLook?: {
                         /** @enum {string} */
@@ -1522,6 +1908,7 @@ export interface operations {
                             longitude: number;
                         } | null;
                         pipOptIn: boolean;
+                        weeklyReminder: boolean;
                         pipLook: {
                             /** @enum {string} */
                             hat: "straw" | "helmet" | "cap" | "none";
@@ -1625,6 +2012,8 @@ export interface operations {
                             createdAt: string;
                             /** Format: date-time */
                             updatedAt: string;
+                            /** @enum {string} */
+                            role: "owner" | "editor" | "viewer";
                         }[];
                     };
                 };
@@ -1738,6 +2127,8 @@ export interface operations {
                         createdAt: string;
                         /** Format: date-time */
                         updatedAt: string;
+                        /** @enum {string} */
+                        role: "owner" | "editor" | "viewer";
                     };
                 };
             };
@@ -1764,7 +2155,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description The plan’s active trips are used (`TRIP_LIMIT_REACHED`) or the trial is over (`PLAN_REQUIRED`). */
+            /** @description The plan’s active trips are used (`TRIP_LIMIT_REACHED`) or more trips are active than the plan keeps (`PLAN_REQUIRED`). */
             402: {
                 headers: {
                     [name: string]: unknown;
@@ -1895,6 +2286,8 @@ export interface operations {
                         createdAt: string;
                         /** Format: date-time */
                         updatedAt: string;
+                        /** @enum {string} */
+                        role: "owner" | "editor" | "viewer";
                     };
                 };
             };
@@ -1921,8 +2314,201 @@ export interface operations {
                     };
                 };
             };
-            /** @description The plan’s active trips are used (`TRIP_LIMIT_REACHED`) or the trial is over (`PLAN_REQUIRED`). */
+            /** @description The plan’s active trips are used (`TRIP_LIMIT_REACHED`) or more trips are active than the plan keeps (`PLAN_REQUIRED`). */
             402: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description The Idempotency-Key was already used with a different request. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description The body or the header is not valid. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    createTripFromSuggestion: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Client-chosen key that makes a retry safe. */
+                "idempotency-key"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /**
+                     * @description Which suggested destination.
+                     * @enum {string}
+                     */
+                    destination: "japan" | "portugal" | "rio-de-la-plata" | "italy" | "chile" | "mexico" | "paris" | "new-york";
+                    /** @description What the person enjoys; empty means everything. */
+                    likes: ("adrenaline" | "food" | "culture" | "nature" | "nightlife")[];
+                    days: number;
+                    /** @enum {string} */
+                    comfort: "budget" | "comfort";
+                    /** @description The trip’s currency, as picked with the plan (USD by default). */
+                    currency: string;
+                    /** @description What the person plans to set aside each month, in the trip’s currency. */
+                    monthly?: string;
+                    /**
+                     * @description The trip’s title in the person’s language. Defaults to the destination’s name.
+                     * @example Japan 2027
+                     */
+                    title?: string;
+                    /** @description The description of the estimated cost, in the person’s language. */
+                    estimateLabel?: string;
+                    /**
+                     * @description The language for the stops’ and places’ names (`pt-BR` uses Portuguese names).
+                     * @enum {string}
+                     */
+                    locale?: "en" | "pt-BR";
+                };
+            };
+        };
+        responses: {
+            /** @description The new trip. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * Format: uuid
+                         * @description Trip id (UUID).
+                         */
+                        id: string;
+                        title: string;
+                        /**
+                         * Format: date
+                         * @description Calendar date, no time zone.
+                         * @example 2027-04-03
+                         */
+                        startDate: string | null;
+                        currency: string;
+                        /** @enum {string} */
+                        status: "active" | "traveling" | "completed" | "archived";
+                        /** @enum {string} */
+                        visibility: "private";
+                        /** Format: date-time */
+                        createdAt: string;
+                        /** Format: date-time */
+                        updatedAt: string;
+                        /** @enum {string} */
+                        role: "owner" | "editor" | "viewer";
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description The plan’s active trips are used (`TRIP_LIMIT_REACHED`) or more trips are active than the plan keeps (`PLAN_REQUIRED`). */
+            402: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description No such suggested destination. */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -2032,6 +2618,8 @@ export interface operations {
                         createdAt: string;
                         /** Format: date-time */
                         updatedAt: string;
+                        /** @enum {string} */
+                        role: "owner" | "editor" | "viewer";
                     };
                 };
             };
@@ -2264,6 +2852,8 @@ export interface operations {
                         createdAt: string;
                         /** Format: date-time */
                         updatedAt: string;
+                        /** @enum {string} */
+                        role: "owner" | "editor" | "viewer";
                     };
                 };
             };
@@ -2378,6 +2968,8 @@ export interface operations {
                         createdAt: string;
                         /** Format: date-time */
                         updatedAt: string;
+                        /** @enum {string} */
+                        role: "owner" | "editor" | "viewer";
                     };
                 };
             };
@@ -3116,6 +3708,7 @@ export interface operations {
                                 asOf: string;
                             } | null;
                             guess: boolean;
+                            paidBy: string | null;
                             /** Format: date-time */
                             createdAt: string;
                         }[];
@@ -3236,6 +3829,8 @@ export interface operations {
                      * @example 2027-04-03
                      */
                     fxAsOf?: string | null;
+                    /** @description On a trip planned together, who paid it: the owner’s or a member’s user id (ADR-0025). Null clears it. */
+                    paidBy?: string | null;
                     /** @description True for the rough guess of the whole trip (at most one per trip). It counts minus every other cost, never below zero, so real costs replace it instead of adding on top. */
                     guess?: boolean;
                 };
@@ -3278,6 +3873,7 @@ export interface operations {
                             asOf: string;
                         } | null;
                         guess: boolean;
+                        paidBy: string | null;
                         /** Format: date-time */
                         createdAt: string;
                     };
@@ -3398,6 +3994,8 @@ export interface operations {
                      * @example 2027-04-03
                      */
                     fxAsOf?: string | null;
+                    /** @description On a trip planned together, who paid it: the owner’s or a member’s user id (ADR-0025). Null clears it. */
+                    paidBy?: string | null;
                 };
             };
         };
@@ -3438,6 +4036,7 @@ export interface operations {
                             asOf: string;
                         } | null;
                         guess: boolean;
+                        paidBy: string | null;
                         /** Format: date-time */
                         createdAt: string;
                     };
@@ -7486,6 +8085,8 @@ export interface operations {
                         createdAt: string;
                         /** Format: date-time */
                         updatedAt: string;
+                        /** @enum {string} */
+                        role: "owner" | "editor" | "viewer";
                     };
                 };
             };
@@ -9298,7 +9899,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Pip credits are used up (`OUT_OF_CREDITS`) or the trial is over (`PLAN_REQUIRED`). */
+            /** @description Pip credits are used up (`OUT_OF_CREDITS`) or more trips are active than the plan keeps (`PLAN_REQUIRED`). */
             402: {
                 headers: {
                     [name: string]: unknown;
@@ -9991,8 +10592,15 @@ export interface operations {
                 content: {
                     "application/json": {
                         /** @enum {string} */
-                        access: "trial" | "explorer" | "voyager" | "expired";
-                        readOnly: boolean;
+                        access: "trial" | "explorer" | "voyager" | "free";
+                        overLimit: boolean;
+                        /** @enum {string} */
+                        priceCurrency: "USD" | "BRL";
+                        passCredits: number;
+                        passes: {
+                            tripId: string;
+                            validUntil: string;
+                        }[];
                         trialEndsAt: string;
                         trialDaysLeft: number;
                         /** @enum {string|null} */
@@ -10004,6 +10612,7 @@ export interface operations {
                         renewsAt: string | null;
                         maxActiveTrips: number | null;
                         activeTrips: number;
+                        countedTrips: number;
                         credits: {
                             monthly: number;
                             monthlyLeft: number;
@@ -10051,9 +10660,14 @@ export interface operations {
             content: {
                 "application/json": {
                     /** @enum {string} */
-                    item: "explorer" | "voyager" | "top-up";
+                    item: "explorer" | "voyager" | "top-up" | "trip-pass";
                     /** @enum {string} */
                     interval?: "month" | "year";
+                    /**
+                     * Format: uuid
+                     * @description The trip a pass is for.
+                     */
+                    tripId?: string;
                 };
             };
         };
@@ -10071,6 +10685,29 @@ export interface operations {
             };
             /** @description No valid session. */
             401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description The trip for the pass is not one of the person’s trips. */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -10231,6 +10868,344 @@ export interface operations {
             };
         };
     };
+    getReferral: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The code and counts. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        joined: number;
+                        passCredits: number;
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    claimReferral: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    code: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Whether it was recorded. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        claimed: boolean;
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description The code is not valid. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    redeemPassCredit: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Until when the pass holds. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        validUntil: string;
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description No such trip of the caller’s, or no free pass left. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    getAdminMetrics: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The counts. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        accounts: {
+                            total: number;
+                            last7: number;
+                            last30: number;
+                            verified: number;
+                        };
+                        trips: {
+                            active: number;
+                            created30: number;
+                            fromPlan30: number;
+                            fromExample30: number;
+                            byHand30: number;
+                            savingMonthly: number;
+                        };
+                        checkinsByWeek: {
+                            week: string;
+                            count: number;
+                        }[];
+                        sharing: {
+                            invites30: number;
+                            joins30: number;
+                            inviters30: number;
+                        };
+                        retention: {
+                            cohort: number;
+                            week1: number;
+                            week4: number;
+                            week8: number;
+                        };
+                        money: {
+                            explorer: number;
+                            voyager: number;
+                            activePasses: number;
+                            referrals: number;
+                        };
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description Not an admin. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    getInboundAddress: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The address, or null. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        address: string | null;
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
     getTripShare: {
         parameters: {
             query?: never;
@@ -10354,7 +11329,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description The trial is over (`PLAN_REQUIRED`). */
+            /** @description More trips are active than the plan keeps (`PLAN_REQUIRED`). */
             402: {
                 headers: {
                     [name: string]: unknown;
@@ -10450,6 +11425,1473 @@ export interface operations {
             };
             /** @description No such trip, or not yours. */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    getTripMembers: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The people. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        members: {
+                            userId: string;
+                            name: string;
+                            /** @enum {string} */
+                            role: "owner" | "editor" | "viewer";
+                            /** @description This is the caller. */
+                            you: boolean;
+                        }[];
+                        /** @description Open invite links; only the owner sees them. */
+                        invites: {
+                            id: string;
+                            /** @enum {string} */
+                            role: "editor" | "viewer";
+                            expiresAt: string;
+                        }[];
+                        /** @description People who may join besides the owner; null for no limit. */
+                        guestLimit: number | null;
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description No such trip, or not one the caller plans. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    createInvite: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": {
+                    /** @enum {string} */
+                    role?: "editor" | "viewer";
+                };
+            };
+        };
+        responses: {
+            /** @description The new link. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @description The link’s secret, shown once. */
+                        token: string;
+                        /** @enum {string} */
+                        role: "editor" | "viewer";
+                        expiresAt: string;
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description The plan allows no more people (`GUEST_LIMIT_REACHED`). */
+            402: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description No such trip, or not the caller’s. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    revokeInvite: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                inviteId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Stopped. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        revoked: boolean;
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description No such trip or open link. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    removeMember: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                userId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Removed. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        removed: boolean;
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description No such trip or member. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    leaveTrip: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Left. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        left: boolean;
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description No such trip, or the caller owns it or is not a member. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    previewInvite: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The trip and role. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        tripTitle: string;
+                        ownerName: string;
+                        /** @enum {string} */
+                        role: "editor" | "viewer";
+                        /** @description The caller already plans this trip. */
+                        joined: boolean;
+                        tripId: string;
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description No such link. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    acceptInvite: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The trip, with the caller’s role. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * Format: uuid
+                         * @description Trip id (UUID).
+                         */
+                        id: string;
+                        title: string;
+                        /**
+                         * Format: date
+                         * @description Calendar date, no time zone.
+                         * @example 2027-04-03
+                         */
+                        startDate: string | null;
+                        currency: string;
+                        /** @enum {string} */
+                        status: "active" | "traveling" | "completed" | "archived";
+                        /** @enum {string} */
+                        visibility: "private";
+                        /** Format: date-time */
+                        createdAt: string;
+                        /** Format: date-time */
+                        updatedAt: string;
+                        /** @enum {string} */
+                        role: "owner" | "editor" | "viewer";
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description The plan allows no more people (`GUEST_LIMIT_REACHED`). */
+            402: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description No such link. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    getGroupMoney: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The money. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        currency: string;
+                        custom: boolean;
+                        people: {
+                            userId: string;
+                            name: string;
+                            you: boolean;
+                            shareBp: number | null;
+                            share: {
+                                /**
+                                 * @description Major units, exact.
+                                 * @example 1250.00
+                                 */
+                                amount: string;
+                                currency: string;
+                            };
+                            saved: {
+                                /**
+                                 * @description Major units, exact.
+                                 * @example 1250.00
+                                 */
+                                amount: string;
+                                currency: string;
+                            };
+                            monthly: {
+                                /**
+                                 * @description Major units, exact.
+                                 * @example 1250.00
+                                 */
+                                amount: string;
+                                currency: string;
+                            };
+                            left: {
+                                /**
+                                 * @description Major units, exact.
+                                 * @example 1250.00
+                                 */
+                                amount: string;
+                                currency: string;
+                            };
+                            readyMonth: string | null;
+                        }[];
+                        group: {
+                            total: {
+                                /**
+                                 * @description Major units, exact.
+                                 * @example 1250.00
+                                 */
+                                amount: string;
+                                currency: string;
+                            };
+                            saved: {
+                                /**
+                                 * @description Major units, exact.
+                                 * @example 1250.00
+                                 */
+                                amount: string;
+                                currency: string;
+                            };
+                            left: {
+                                /**
+                                 * @description Major units, exact.
+                                 * @example 1250.00
+                                 */
+                                amount: string;
+                                currency: string;
+                            };
+                        };
+                        settlement: {
+                            transfers: {
+                                from: string;
+                                to: string;
+                                fromName: string;
+                                toName: string;
+                                amount: {
+                                    /**
+                                     * @description Major units, exact.
+                                     * @example 1250.00
+                                     */
+                                    amount: string;
+                                    currency: string;
+                                };
+                            }[];
+                            paid: {
+                                /**
+                                 * @description Major units, exact.
+                                 * @example 1250.00
+                                 */
+                                amount: string;
+                                currency: string;
+                            };
+                            unassigned: {
+                                /**
+                                 * @description Major units, exact.
+                                 * @example 1250.00
+                                 */
+                                amount: string;
+                                currency: string;
+                            };
+                        };
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description No such trip, or not one the caller plans. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    updateMyMoney: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    saved?: string;
+                    monthly?: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Saved. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        saved: boolean;
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description No such trip, or not one the caller plans. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description An amount is not valid. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    setShares: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    shares: {
+                        userId: string;
+                        shareBp: number;
+                    }[] | null;
+                };
+            };
+        };
+        responses: {
+            /** @description Saved. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        saved: boolean;
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description No such trip, or not the caller’s. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description The parts do not cover everyone or do not add up to the whole trip. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    getHabit: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The habit. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        week: string;
+                        checkedIn: {
+                            /**
+                             * @description Major units, exact.
+                             * @example 1250.00
+                             */
+                            amount: string;
+                            currency: string;
+                        } | null;
+                        streak: number;
+                        suggested: {
+                            /**
+                             * @description Major units, exact.
+                             * @example 1250.00
+                             */
+                            amount: string;
+                            currency: string;
+                        };
+                        countdown: {
+                            daysLeft: number | null;
+                            /** @enum {string|null} */
+                            phase: "six-months" | "three-months" | "one-month" | "one-week" | "travelling" | "back" | null;
+                            tasks: string[];
+                        };
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description No such trip, or not one the caller plans. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    checkIn: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    amount: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Recorded. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        week: string;
+                        amount: {
+                            amount: string;
+                            currency: string;
+                        };
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description No such trip, or not one the caller plans. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description The amount is not valid. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    getMiles: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The miles. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        programs: {
+                            /** @enum {string} */
+                            program: "smiles" | "latam-pass" | "azul" | "livelo" | "esfera";
+                            balance: number;
+                            onTrip: number;
+                            value: {
+                                low: {
+                                    /**
+                                     * @description Major units, exact.
+                                     * @example 1250.00
+                                     */
+                                    amount: string;
+                                    currency: string;
+                                };
+                                high: {
+                                    /**
+                                     * @description Major units, exact.
+                                     * @example 1250.00
+                                     */
+                                    amount: string;
+                                    currency: string;
+                                };
+                            };
+                        }[];
+                        researchedOn: string;
+                        sources: string[];
+                        applied: {
+                            low: {
+                                /**
+                                 * @description Major units, exact.
+                                 * @example 1250.00
+                                 */
+                                amount: string;
+                                currency: string;
+                            };
+                            high: {
+                                /**
+                                 * @description Major units, exact.
+                                 * @example 1250.00
+                                 */
+                                amount: string;
+                                currency: string;
+                            };
+                            middle: {
+                                /**
+                                 * @description Major units, exact.
+                                 * @example 1250.00
+                                 */
+                                amount: string;
+                                currency: string;
+                            };
+                        } | null;
+                        withMiles: {
+                            left: {
+                                /**
+                                 * @description Major units, exact.
+                                 * @example 1250.00
+                                 */
+                                amount: string;
+                                currency: string;
+                            };
+                            readyMonth: string | null;
+                        } | null;
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description No such trip, or not one the caller plans. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    setMiles: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                program: "smiles" | "latam-pass" | "azul" | "livelo" | "esfera";
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    balance: number;
+                };
+            };
+        };
+        responses: {
+            /** @description Saved. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        saved: boolean;
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description The balance is not valid. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    setTripMiles: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                program: "smiles" | "latam-pass" | "azul" | "livelo" | "esfera";
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    miles: number;
+                };
+            };
+        };
+        responses: {
+            /** @description Saved. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        saved: boolean;
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description No such trip, or not one the caller plans. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description More miles than the balance, or not a valid number. */
+            422: {
                 headers: {
                     [name: string]: unknown;
                 };

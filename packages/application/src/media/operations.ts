@@ -11,14 +11,15 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 export const mediaKey = (id: string) => `media/${id}`;
 
 /**
- * Checks that every photo is an image the actor uploaded, once each. Anything else is refused, so nobody can
- * place another person's image.
+ * Checks that every photo is an image the actor uploaded, once each, or one already in place (a trip member
+ * keeping the photos another member added). Anything else is refused, so nobody can place another person's image.
  */
 export async function ownedPhotos(
   media: MediaReader,
   actor: Actor,
   photos: readonly PhotoRecord[],
   field: string,
+  alreadyPlaced: ReadonlySet<string> = new Set(),
 ): Promise<PhotoRecord[]> {
   const ids = photos.map((photo) => photo.mediaId);
   if (new Set(ids).size !== ids.length) {
@@ -27,7 +28,9 @@ export async function ownedPhotos(
     ]);
   }
   const found = await media.findMany(ids);
-  const mine = new Set(found.filter((m) => m.ownerId === actor.userId).map((m) => m.id));
+  const mine = new Set(
+    found.filter((m) => m.ownerId === actor.userId || alreadyPlaced.has(m.id)).map((m) => m.id),
+  );
   if (ids.some((id) => !mine.has(id))) {
     throw new ValidationError([{ field, code: 'unknown_photo', message: 'No such photo' }]);
   }
@@ -91,10 +94,12 @@ export function createUploadMedia(deps: Pick<Ports, 'unitOfWork' | 'clock' | 'id
 }
 
 /**
- * An image's bytes, for its owner, or for someone who may see a post that shows it. Everyone else, and a missing
- * image, get the same "not found". Stop photos stay with the trip's owner, like the trip.
+ * An image's bytes, for its owner, for someone who may see a post that shows it, or for a member of a trip whose
+ * stop shows it. Everyone else, and a missing image, get the same "not found".
  */
-export function createGetMedia(deps: Pick<Ports, 'media' | 'community' | 'storage'>) {
+export function createGetMedia(
+  deps: Pick<Ports, 'media' | 'community' | 'storage' | 'destinations' | 'trips'>,
+) {
   return defineOperation({
     name: 'getMedia',
     kind: 'query',
@@ -106,7 +111,11 @@ export function createGetMedia(deps: Pick<Ports, 'media' | 'community' | 'storag
     async handler(actor, input) {
       const media = await deps.media.findById(input.mediaId);
       if (!media) throw new NotFoundError();
-      if (media.ownerId !== actor.userId && !(await visibleThroughAPost(deps, actor, media.id))) {
+      if (
+        media.ownerId !== actor.userId &&
+        !(await visibleThroughATrip(deps, actor, media.id)) &&
+        !(await visibleThroughAPost(deps, actor, media.id))
+      ) {
         throw new NotFoundError();
       }
       const bytes = await deps.storage.get(mediaKey(media.id));
@@ -114,6 +123,20 @@ export function createGetMedia(deps: Pick<Ports, 'media' | 'community' | 'storag
       return { bytes, contentType: media.contentType };
     },
   });
+}
+
+async function visibleThroughATrip(
+  deps: Pick<Ports, 'destinations' | 'trips'>,
+  actor: Actor,
+  mediaId: string,
+): Promise<boolean> {
+  for (const tripId of await deps.destinations.tripIdsWithPhoto(mediaId)) {
+    const trip = await deps.trips.findById(tripId);
+    if (!trip) continue;
+    if (trip.ownerId === actor.userId || (await deps.trips.roleOf(tripId, actor.userId)))
+      return true;
+  }
+  return false;
 }
 
 async function visibleThroughAPost(

@@ -6,6 +6,25 @@ import { createSuggestDayPlaces } from './days/ideas';
 import { createGetPreferences, createUpdatePreferences } from './preferences/operations';
 import { createGetTripShare, createShareTrip, createUnshareTrip } from './trips/share';
 import {
+  createAcceptInvite,
+  createCreateInvite,
+  createGetTripMembers,
+  createLeaveTrip,
+  createPreviewInvite,
+  createRemoveMember,
+  createRevokeInvite,
+} from './members/operations';
+import { createGetGroupMoney, createSetShares, createUpdateMyMoney } from './members/money';
+import { createCheckIn, createGetHabit } from './habit/operations';
+import { createGetMiles, createSetMiles, createSetTripMiles } from './miles/operations';
+import { createGetAdminMetrics } from './admin/metrics';
+import { createGetInboundToken } from './inbound/inbound';
+import {
+  createClaimReferral,
+  createGetReferral,
+  createRedeemPassCredit,
+} from './billing/referrals';
+import {
   createGetBilling,
   createOpenBillingPortal,
   createStartCheckout,
@@ -26,6 +45,29 @@ export const PACKAGE_NAME = '@globetrot/application' as const;
 export type { Actor } from './actor';
 export { assertOwner } from './authorization';
 export { billingSchema } from './billing/operations';
+export { groupMoneySchema } from './members/money';
+export { habitSchema } from './habit/operations';
+export { referralSchema } from './billing/referrals';
+export { adminMetricsSchema } from './admin/metrics';
+export {
+  createInboundEmail,
+  inboundRequest,
+  type InboundEmail,
+  type InboundOutcome,
+} from './inbound/inbound';
+export { milesSchema_ as milesViewSchema } from './miles/operations';
+export {
+  createWeeklyReminders,
+  type WeeklyNoticeStore,
+  type WeeklyReminders,
+  type WeeklyTarget,
+} from './habit/weekly-reminders';
+export {
+  inviteCreatedSchema,
+  invitePreviewSchema,
+  inviteRoleSchema,
+  tripMembersSchema,
+} from './members/operations';
 export { dayIdeasSchema } from './days/ideas';
 export {
   createSharedTrips,
@@ -87,6 +129,7 @@ import {
   createRemoveDayPlace,
 } from './days/operations';
 import { createCreateTripFromExample } from './examples/operations';
+import { createCreateTripFromSuggestion } from './examples/suggestion';
 import { createReversePlace, createSearchCities, createSearchPlaces } from './places/operations';
 import {
   createListDestinations,
@@ -251,6 +294,7 @@ export {
   type ExampleTripId,
 } from './examples/catalog';
 export { createTripFromExampleFields } from './examples/operations';
+export { createTripFromSuggestionFields } from './examples/suggestion';
 
 export {
   addChecklistItemsFields,
@@ -350,6 +394,7 @@ export {
   type ProposalView,
 } from './assistant/schemas';
 export { systemPrompt, userPrompt, type PipContext } from './assistant/prompt';
+export { createErrorReporter, type ErrorReporter } from './monitoring/report';
 export {
   ACCOUNT_EXPORT_VERSION,
   accountExportSchema,
@@ -367,6 +412,7 @@ export function createApplication(ports: Ports) {
     archiveTrip: createArchiveTrip(ports),
     listDestinations: createListDestinations(ports),
     createTripFromExample: createCreateTripFromExample(ports),
+    createTripFromSuggestion: createCreateTripFromSuggestion(ports),
     searchPlaces: createSearchPlaces(ports),
     searchCities: createSearchCities(ports),
     reversePlace: createReversePlace(ports),
@@ -422,6 +468,26 @@ export function createApplication(ports: Ports) {
     startCheckout: createStartCheckout(ports),
     openBillingPortal: createOpenBillingPortal(ports),
     getTripShare: createGetTripShare(ports),
+    getTripMembers: createGetTripMembers(ports),
+    createInvite: createCreateInvite(ports),
+    revokeInvite: createRevokeInvite(ports),
+    previewInvite: createPreviewInvite(ports),
+    acceptInvite: createAcceptInvite(ports),
+    removeMember: createRemoveMember(ports),
+    leaveTrip: createLeaveTrip(ports),
+    getGroupMoney: createGetGroupMoney(ports),
+    updateMyMoney: createUpdateMyMoney(ports),
+    setShares: createSetShares(ports),
+    getHabit: createGetHabit(ports),
+    checkIn: createCheckIn(ports),
+    getReferral: createGetReferral(ports),
+    claimReferral: createClaimReferral(ports),
+    redeemPassCredit: createRedeemPassCredit(ports),
+    getMiles: createGetMiles(ports),
+    setMiles: createSetMiles(ports),
+    setTripMiles: createSetTripMiles(ports),
+    getAdminMetrics: createGetAdminMetrics(ports),
+    getInboundToken: createGetInboundToken(ports),
     shareTrip: createShareTrip(ports),
     unshareTrip: createUnshareTrip(ports),
     suggestDayPlaces: createSuggestDayPlaces(ports),

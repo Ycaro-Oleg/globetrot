@@ -1,8 +1,14 @@
-import { createMaintenance, createTrialReminders } from '@globetrot/application';
+import {
+  createErrorReporter,
+  createMaintenance,
+  createTrialReminders,
+  createWeeklyReminders,
+} from '@globetrot/application';
 import {
   connectDatabase,
   createMaintenanceRepository,
   createNoticeRepository,
+  createWeeklyNoticeRepository,
 } from '@globetrot/db';
 import { createSmtpEmail } from '@globetrot/mailer';
 import { createS3Storage } from '@globetrot/storage';
@@ -13,6 +19,13 @@ import { startWorker } from './worker';
 const MAINTENANCE_LOCK = 4_718_221;
 
 const config = loadWorkerConfig();
+// Error monitoring (ADR-0021): only with a DSN, and without anything personal.
+const monitoring = createErrorReporter({
+  dsn: config.sentryDsn,
+  environment: process.env.NODE_ENV ?? 'development',
+  service: 'worker',
+});
+process.on('unhandledRejection', (reason) => monitoring.report(reason));
 const database = connectDatabase(config.databaseUrl, { max: 3 });
 const maintenance = createMaintenance({
   store: createMaintenanceRepository(database.db),
@@ -27,7 +40,15 @@ const reminders = createTrialReminders({
   appUrl: config.appUrl,
 });
 
+const weekly = createWeeklyReminders({
+  store: createWeeklyNoticeRepository(database.db),
+  email: createSmtpEmail(config.email),
+  clock: { now: () => new Date() },
+  appUrl: config.appUrl,
+});
+
 const worker = startWorker({
+  onError: (error) => monitoring.report(error),
   firstDelayMs: 60_000,
   intervalMs: config.intervalMinutes * 60_000,
   async runOnce() {
@@ -45,6 +66,8 @@ const worker = startWorker({
         );
         const notices = await reminders.run();
         console.log(`trial emails: ${notices.ending} ending soon, ${notices.ended} ended`);
+        const checkins = await weekly.run();
+        console.log(`weekly reminders: ${checkins.sent} sent`);
       } finally {
         await client.query('select pg_advisory_unlock($1)', [MAINTENANCE_LOCK]);
       }

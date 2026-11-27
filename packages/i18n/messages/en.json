@@ -101,6 +101,12 @@
       "cancel": "Keep my account",
       "deleteConfirm": "Delete my account forever",
       "deleting": "Deleting…"
+    },
+    "weeklyReminder": {
+      "label": "Weekly saving reminder",
+      "hint": "A short email on Sundays when the week has no check-in yet.",
+      "on": "On",
+      "off": "Off"
     }
   },
   "email": {
@@ -124,20 +130,29 @@
     "trialEnding": {
       "subject": "Your free week ends in 2 days",
       "subjectTrip": "“{trip}” is waiting: your free week ends in 2 days",
-      "body": "Your Globetrot free week ends soon. Your trips, budget and lists are all there; pick a plan now and keep planning without a break. Explorer starts at {price} a month.",
+      "body": "Your Globetrot free week ends soon. After it, one trip stays free for good. To keep planning several, choose a plan; for just one more trip, add a trip pass. Explorer starts at {price} a month.",
       "trip": "Your trip “{trip}” is waiting for you.",
       "action": "See plans",
       "expiry": "Your free week ends in {hours, plural, one {# hour} other {# hours}}.",
-      "ignore": "If you do nothing, your trips stay safe and you can still see and export them."
+      "ignore": "If you do nothing, you keep one trip free and every trip stays yours."
     },
     "trialEnded": {
-      "subject": "Your free week is over: your trips are safe",
-      "subjectTrip": "“{trip}” is safe: your free week is over",
-      "body": "Your Globetrot free week has ended. Everything you planned is still there, read-only. Choose a plan to keep changing it, or export it any time.",
-      "trip": "Your trip “{trip}” is safe and still yours.",
-      "action": "Choose a plan",
+      "subject": "Your free week is over: one trip stays free",
+      "subjectTrip": "“{trip}” stays free: your free week is over",
+      "body": "Your Globetrot free week has ended. One active trip stays free for good, with every tool. Archive the others, add a trip pass or choose a plan to change more than one.",
+      "trip": "Your trip “{trip}” is still yours.",
+      "action": "See the options",
       "expiry": "We send this once. Nothing is charged unless you choose a plan.",
       "ignore": "You can delete your account from Settings whenever you like."
+    },
+    "weeklyCheckin": {
+      "subject": "Did you set something aside this week?",
+      "subjectTrip": "“{trip}”: did you set something aside this week?",
+      "body": "A quick check-in keeps your trip moving: tell Globetrot what you set aside this week and see the date get closer.",
+      "trip": "Your trip “{trip}” is waiting for this week’s check-in.",
+      "action": "Check in",
+      "expiry": "We send this on Sundays when the week has no check-in yet.",
+      "ignore": "To stop these emails, turn off the weekly reminder in Settings."
     }
   },
   "auth": {
@@ -317,8 +332,8 @@
     "nav": {
       "board": "Map",
       "days": "Days",
-      "budget": "Budget",
-      "lists": "Lists",
+      "budget": "Money",
+      "lists": "Checklist",
       "trips": "Trips",
       "passport": "Passport",
       "settings": "Settings",
@@ -328,7 +343,8 @@
       "profile": "Profile",
       "profileMenu": "Profile & My Pip",
       "community": "Community",
-      "plan": "Plan & credits"
+      "plan": "Plan & credits",
+      "discover": "Discover"
     },
     "account": {
       "menu": "Account menu for {name}",
@@ -358,9 +374,13 @@
       "trial": "{days, plural, one {Last day of your free week} other {# days left in your free week}}",
       "trialShort": "{days, plural, one {Last free day} other {# free days left}}",
       "trialCta": "See plans",
-      "expired": "Your free week is over. Your trips are safe: see and export them any time.",
-      "expiredCta": "Choose a plan to keep planning",
+      "expired": "Your free plan keeps one active trip. Archive the others, add a trip pass or choose a plan to keep changing them. Nothing is lost.",
+      "expiredCta": "See the options",
       "label": "Your plan"
+    },
+    "offline": {
+      "reading": "You are offline: this is the last version saved on this device.",
+      "noCopy": "You are offline. Offline reading comes with a plan or a trip pass."
     }
   },
   "tripWorkspace": {
@@ -421,7 +441,8 @@
       "manage": "Manage trips",
       "aria": "Change current trip. Selected: {title}",
       "ariaEmpty": "Choose a trip or create one",
-      "details": "Trip details and progress"
+      "details": "Trip details and progress",
+      "today": "Today"
     },
     "boardAvailable": "Your world map is ready. Pin places to start building this trip route.",
     "openMap": "Open the world map",
@@ -445,8 +466,8 @@
     "deleteCancel": "Cancel",
     "deleteConfirm": "Delete forever",
     "deletedMessage": "Trip deleted.",
-    "tripLimit": "This plan keeps {count} active trips. Archive one, or move to Voyager for unlimited trips.",
-    "planRequired": "Your free week is over: choose a plan to add or change trips.",
+    "tripLimit": "Your plan keeps {count, plural, one {# active trip} other {# active trips}}. Archive one, add a trip pass, or choose a plan for more.",
+    "planRequired": "Your free plan keeps one active trip: archive the others, add a trip pass or choose a plan to change them.",
     "seePlans": "See plans",
     "routeSummary": "{route} · {nights, plural, one {# night} other {# nights}}"
   },
@@ -472,7 +493,7 @@
     "kicker": "Map-first trip planner",
     "heroTitle": "Your next trip, <accent>beyond the obvious.</accent>",
     "heroLead": "Globetrot builds the route with you, suggests experiences few people talk about and shows how much to save each month to go.",
-    "heroCta": "Start your free week",
+    "heroCta": "Start planning free",
     "heroCta2": "How it works",
     "seeKicker": "The app",
     "seeTitle": "Your whole trip on one map.",
@@ -534,7 +555,7 @@
     "examplesTitle": "Copy a trip, then make it yours.",
     "examplesUse": "Copy this trip",
     "pricingKicker": "Pricing",
-    "pricingTitle": "Try everything free for a week. Then pick your plan.",
+    "pricingTitle": "Free for one trip. Pay only when you want more.",
     "faqTitle": "Questions",
     "footTagline": "Your next trip, beyond the obvious.",
     "footTerms": "Terms",
@@ -549,7 +570,7 @@
     "closeLogin": "I already have an account",
     "stickyNote": "7 days free",
     "faq5Q": "How much does it cost?",
-    "faq5A": "The first {days} days are free with everything included. Then Explorer is {explorerMonthly} a month ({explorerAnnual} a year) and Voyager {voyagerMonthly} a month ({voyagerAnnual} a year). If you don’t choose a plan, your trips stay yours to see and export.",
+    "faq5A": "Planning one trip at a time is free, for good, with {credits} Pip credits a month; the first {days} days have everything open. Explorer is {explorerMonthly} a month ({explorerAnnual} a year), Voyager {voyagerMonthly} a month ({voyagerAnnual} a year), and a trip pass is {pass} once for a single trip.",
     "faq6Q": "Are my trips private?",
     "faq6A": "Yes. Trips are private by default and nobody else can open them. In Settings you can download all your data or delete your account at any time.",
     "faq7Q": "Does it work on my phone?",
@@ -823,7 +844,12 @@
     "layersClose": "Close",
     "spotPinned": "{name} is on the map.",
     "spotPinHint": "Click the map where {name} is, in {place}. Esc cancels.",
-    "spotAria": "{name}, {kind}, in {place}"
+    "spotAria": "{name}, {kind}, in {place}",
+    "partners": {
+      "tours": "Tours in {place}",
+      "stays": "Stays in {place}",
+      "label": "Partner links: Globetrot may earn a commission; prices are on the partner’s page."
+    }
   },
   "daysPage": {
     "title": "Days",
@@ -1011,7 +1037,10 @@
     "removed": "{description} removed",
     "undo": "Undo",
     "actionError": "That did not work. Try again in a moment.",
-    "chartGap": "{amount} to go"
+    "chartGap": "{amount} to go",
+    "paidBy": "Who paid",
+    "paidByNobody": "Nobody yet",
+    "paidByName": "paid by {name}"
   },
   "passportPage": {
     "title": "Passport",
@@ -1108,22 +1137,12 @@
     "title": "Plan your first trip",
     "language": "Language",
     "back": "Back",
-    "start": "Get started",
     "continue": "Continue",
     "seeAnswer": "See the answer",
     "openMap": "Open my map",
     "creating": "Creating your trip…",
     "skipNote": "Everything can change later",
     "stepLabel": "Step {step} of {total}",
-    "welcomeKicker": "Welcome",
-    "welcomeTitle": "Your first stamp is closer than you think.",
-    "welcomeBody": "In a minute we’ll find out if you can go, and when.",
-    "promise1": "Build the route on a real map",
-    "promise2": "Know what it costs and when you can go",
-    "promise3": "Earn stamps at every step",
-    "originTitle": "Where do you leave from?",
-    "originBody": "Kept in your settings, to show where the trip starts. Optional.",
-    "originLabel": "Your home city",
     "originPlaceholder": "e.g. São Paulo",
     "destTitle": "Where do you dream of going?",
     "destBody": "Pick one place to start. You can add more stops on the map.",
@@ -1144,12 +1163,6 @@
     "savedLabel": "Saved so far",
     "monthlyLabel": "You can save per month",
     "errEstimate": "Write a rough guess above zero, using plain numbers.",
-    "pipTitle": "Want Pip’s help?",
-    "pipBody": "Before you decide, meet Pip.",
-    "pipYes": "Yes, suggest things",
-    "pipYesBody": "Pip proposes routes, reminds you of documents and reviews the budget. You approve every change.",
-    "pipNo": "Not now",
-    "pipNoBody": "Plan on your own. You can change this in settings.",
     "answerKicker": "The answer",
     "answerTitle": "Done. Here it is.",
     "answerBody": "A first estimate from your own guess. On the map you adjust stops, days and real costs.",
@@ -1167,9 +1180,6 @@
     "when": "When",
     "cost": "Estimated cost",
     "perMonth": "Per month",
-    "pip": "Pip",
-    "on": "on",
-    "off": "off",
     "none": "Not set",
     "estimateCost": "Whole-trip estimate",
     "finishError": "We could not create the trip. Check the amounts and try again.",
@@ -1181,26 +1191,15 @@
     "currencyLabel": "Currency for this trip",
     "currencyHint": "Pick the currency you will pay in. You can change it later.",
     "currencyFromDestination": "The currency used in {place}. Change it if you prefer another.",
-    "pipHello": "Hi! I’m Pip, a little travelling globe.",
-    "pipHow": "I suggest changes to your trip. You approve or dismiss each one: nothing changes on its own.",
-    "pipExampleKicker": "For example",
-    "pipExample": "Add a night in {place}",
-    "pipExampleWhy": "Your days there are full (10 h).",
-    "pipApprove": "Approve",
-    "pipDismiss": "Dismiss",
-    "pipApproved": "✓ Approved (only here, it’s an example)",
-    "pipDismissed": "Dismissed: nothing changed",
     "citiesCredit": "City list: GeoNames (CC BY 4.0)",
-    "guideWelcome": "Hi! Five quick questions and you’ll know if you can go.",
-    "guideHome": "Where does the adventure start?",
-    "guideHomeSet": "{place}, noted! That’s where we take off.",
     "guideDest": "Now the dream part: where to?",
     "guideDestSet": "{place}! I’m drawing the route.",
     "guideDates": "Tap the day you leave, then the day you come back.",
     "guideDatesSet": "{count, plural, one {# night} other {# nights}}. Sounds good!",
     "guideMoney": "A rough guess is enough. You can fix it later.",
     "guideYes": "You can go! Let’s open your map.",
-    "guideNotYet": "Not yet, but now there’s a plan."
+    "guideNotYet": "Not yet, but now there’s a plan.",
+    "originLabelOptional": "Where do you leave from? (optional)"
   },
   "profilePage": {
     "title": "Profile",
@@ -1440,6 +1439,22 @@
       "back": "Back to the community"
     }
   },
+  "discoverPage": {
+    "title": "Discover",
+    "lead": "Ready plans to start from: pick the days, what you enjoy and how you travel, and the trip is on your map with its places and estimated cost.",
+    "plans": "Ready plans",
+    "range": "≈ {low} to {high} per person for {days} days, without the flight",
+    "days": "Days",
+    "daysValue": "{count, plural, one {# day} other {# days}}",
+    "likes": "What you enjoy",
+    "comfort": "How you travel",
+    "build": "Build my {name} trip",
+    "note": "Estimates are typical ranges researched for each city; you can change everything on the trip.",
+    "error": "The plan could not become a trip. Try again.",
+    "community": "Community",
+    "communityBody": "Routes, tips and real costs from other travellers.",
+    "communityLink": "Open the community"
+  },
   "photos": {
     "add": "Add photos",
     "left": "{count, plural, one {# left} other {# left}}",
@@ -1535,7 +1550,16 @@
       "lists": "Ask Pip what to pack"
     },
     "creditsLeft": "{count, plural, one {# Pip credit left} other {# Pip credits left}}",
-    "seePlans": "See plans"
+    "seePlans": "See plans",
+    "forward": {
+      "title": "Forward your bookings",
+      "body": "Forward a flight, hotel or tour confirmation to this address: Pip reads it and proposes adding it to your latest trip, for you to review here.",
+      "label": "Your forwarding address",
+      "copy": "Copy",
+      "copied": "Address copied.",
+      "copyFailed": "Could not copy: select the address and copy it.",
+      "note": "Only the start of the email is read. Costs come in as estimates for you to mark as paid. It uses a Pip credit."
+    }
   },
   "tripHub": {
     "metaTitle": "Trip",
@@ -1641,7 +1665,8 @@
       "on": "The link is on.",
       "off": "The link is off. The old address no longer opens.",
       "error": "That did not work. Try again.",
-      "shareMoment": "Share my trip"
+      "shareMoment": "Share my trip",
+      "story": "Image for stories"
     }
   },
   "consent": {
@@ -1671,21 +1696,12 @@
     "perYear": "/ year",
     "annualNote": "{monthly} a month, billed yearly. Save 33%.",
     "popular": "For one big trip",
-    "trial": {
-      "name": "Free trial",
-      "price": "7 days free",
-      "tagline": "Everything included. No card.",
-      "f1": "Map, days, budget and lists",
-      "f2": "{credits} Pip credits",
-      "f3": "Up to {trips} active trips",
-      "cta": "Start your free week"
-    },
     "explorer": {
       "name": "Explorer",
       "tagline": "For the trip you are saving for.",
       "f1": "{trips} active trips",
       "f2": "{credits} Pip credits a month",
-      "f3": "Everything in the trial",
+      "f3": "Plan with as many people as you like and read your trip offline",
       "cta": "Start free, then Explorer"
     },
     "voyager": {
@@ -1698,15 +1714,34 @@
     },
     "topUp": "Need more Pip? {credits, number} extra credits for {price}, and they never expire.",
     "credit": "1 credit = 1 Pip request.",
-    "after": "After the free week, your trips stay yours to see and export. Choose a plan to keep planning."
+    "after": "After the first week you keep one trip free, for good. Archive one to start another, add a trip pass, or choose a plan.",
+    "free": {
+      "name": "Free",
+      "tagline": "One trip at a time, for as long as you like.",
+      "f1": "{trips, plural, one {# active trip} other {# active trips}} with the map, days, money and checklist",
+      "f2": "{credits} Pip credits a month",
+      "f3": "Plan with one other person",
+      "f4": "The first {days} days with everything open",
+      "cta": "Start free"
+    },
+    "pass": {
+      "name": "Trip pass",
+      "tagline": "One payment for one trip: everything paid opens on it, with no subscription.",
+      "f1": "Does not count towards the free trip",
+      "f2": "Read the trip offline, anyone can plan it with you",
+      "f3": "Lasts until 30 days after you come back",
+      "cta": "Start free, add the pass later",
+      "once": "once"
+    },
+    "currency": "Prices in"
   },
   "planPage": {
     "title": "Plan & credits",
     "trialTitle": "{days, plural, =0 {Your free week ends today} one {# day left in your free week} other {# days left in your free week}}",
-    "trialBody": "Everything is included until {date}. Pick a plan now and keep planning without a break.",
-    "expiredTitle": "Your free week is over",
-    "expiredBody": "Your trips, budget and lists are all still here. You can see, export or delete them; choose a plan to change them again.",
-    "planRequiredBody": "That change was not saved: your free week is over. Choose a plan to keep editing. Your trips, budget and lists are all still here.",
+    "trialBody": "Everything is open until {date}. After that you keep one trip free, for good.",
+    "expiredTitle": "More trips than your plan keeps",
+    "expiredBody": "The free plan keeps one active trip. Your trips are all here: archive the ones you are not planning now, add a pass to a trip, or choose a plan to change them again.",
+    "planRequiredBody": "That change was not saved: the free plan keeps one active trip. Archive the others, add a trip pass or choose a plan. Nothing is lost.",
     "paidTitle": "You are on {plan}",
     "renews": "Renews on {date}.",
     "ends": "Ends on {date}.",
@@ -1715,17 +1750,23 @@
     "creditsMeter": "{left, number} of {total, number} left this period",
     "creditsReset": "More credits on {date}.",
     "topUpLeft": "{count, plural, one {# extra credit} other {# extra credits}} that never expire",
-    "trips": "{max, select, none {{count, number} active trips (no limit)} other {{count, number} of {max} active trips}}",
+    "trips": "{max, select, none {{count, number} active (no limit)} other {{count, number} active, the plan keeps {max}}}",
     "choose": "Choose {plan}",
     "current": "Your plan",
-    "checkoutSoon": "Payments are being switched on. Your free week keeps running, and nothing is charged yet.",
+    "checkoutSoon": "Payments are being switched on. Nothing is charged yet.",
     "manage": "Manage payment",
     "perMonthShort": "{price}/month",
     "tripsTitle": "Active trips",
     "choosePlans": "Choose your plan",
     "failed": "That did not work. Try again in a moment.",
-    "thanksPlan": "Thank you! Your payment went through. Your plan switches on in a moment; reload if it still shows the trial.",
-    "thanksTopUp": "Thank you! Your extra Pip credits arrive in a moment."
+    "thanksPlan": "Thank you! Your payment went through. Your plan switches on in a moment; reload if it does not show yet.",
+    "thanksTopUp": "Thank you! Your extra Pip credits arrive in a moment.",
+    "freeTitle": "You are on the free plan",
+    "freeBody": "One active trip with every tool, {credits} Pip credits a month and one person to plan with. Trips with a pass do not count.",
+    "passTitle": "Just one trip?",
+    "passBody": "A trip pass opens everything paid on one trip for {price}, once. Buy it from the trip’s page.",
+    "passTrips": "Go to my trips",
+    "passCounted": "{count, plural, one {# trip with a pass, not counted} other {# trips with a pass, not counted}}"
   },
   "sharedTrip": {
     "kicker": "A trip planned on Globetrot",
@@ -1746,7 +1787,15 @@
     "note": "Shared by the person planning it. Only the month is shown, never the exact dates.",
     "metaDescription": "{title}: {nights, plural, one {# night} other {# nights}}, planned on Globetrot.",
     "ogReady": "Ready in {month}",
-    "ogNights": "{nights, plural, one {# night} other {# nights}}"
+    "ogNights": "{nights, plural, one {# night} other {# nights}}",
+    "story": {
+      "left": "{amount} to go",
+      "progress": "{percent}% saved",
+      "ready": "Ready to go",
+      "month": "Ready in {month}",
+      "footer": "Planned on Globetrot",
+      "download": "Image for stories"
+    }
   },
   "languageSuggestion": {
     "text": "Globetrot is also in English.",
@@ -1808,5 +1857,234 @@
       "mvd-rambla": "More than 20 km of riverside promenade, the city's living room.",
       "mvd-candombe": "On Sunday evenings the drum troupes parade through the old neighbourhoods."
     }
+  },
+  "tripPass": {
+    "title": "Trip pass",
+    "body": "Everything paid on this trip, once: it does not count towards your free trip, anyone can plan it with you, and it lasts until 30 days after you come back.",
+    "cta": "Get the pass for {price}",
+    "active": "This trip has a pass until {date}.",
+    "thanks": "Thank you! The pass switches on in a moment; reload if it does not show yet.",
+    "soon": "Payments are being switched on. Nothing is charged yet.",
+    "failed": "That did not work. Try again in a moment.",
+    "useFree": "Use my free pass ({count} left)",
+    "freeUsed": "Done: this trip has a pass now."
+  },
+  "tripMembers": {
+    "title": "People on this trip",
+    "you": "{name} (you)",
+    "role": {
+      "owner": "Organiser",
+      "editor": "Can edit",
+      "viewer": "Can view"
+    },
+    "hint": "Send a link to plan together. Whoever opens it joins with the role you choose.",
+    "hintLimit": "Send a link to plan together. Your plan lets {count, plural, one {# person} other {# people}} join; a trip pass or a plan opens it to anyone.",
+    "roleLabel": "They can",
+    "roleChoice": {
+      "editor": "Edit the plan",
+      "viewer": "Only view"
+    },
+    "invite": "Create an invite link",
+    "linkLabel": "Invite link",
+    "linkReady": "Link ready. Copy it and send it to whoever you are travelling with; it works for 7 days.",
+    "copy": "Copy",
+    "copied": "Link copied.",
+    "copyFailed": "Could not copy: select the link and copy it.",
+    "openLinks": "Open invite links",
+    "openLink": "Open link · {role}",
+    "revoke": "Stop link",
+    "revoked": "The link no longer works.",
+    "remove": "Remove",
+    "removed": "{name} is no longer on this trip.",
+    "leave": "Leave this trip",
+    "limit": "Your plan lets no more people join. Add a trip pass or choose a plan to invite more.",
+    "failed": "That did not work. Try again in a moment.",
+    "shared": "Shared"
+  },
+  "invitePage": {
+    "title": "Plan a trip together",
+    "body": "{owner} invited you to plan “{trip}”.",
+    "roleEditor": "You will be able to change the plan: stops, days, money and checklist.",
+    "roleViewer": "You will be able to see the plan.",
+    "accept": "Join the trip",
+    "joined": "You already plan this trip.",
+    "open": "Open the trip",
+    "notFound": "This invite link does not work anymore. Ask for a new one.",
+    "limit": "This trip has every person its plan allows. Ask the organiser to add a trip pass.",
+    "error": "That did not work. Try again in a moment.",
+    "back": "Go to my trips"
+  },
+  "groupMoney": {
+    "title": "Each person’s part",
+    "equal": "Split equally between {count}",
+    "custom": "Split in custom parts",
+    "meReady": "You have your part ({share}) set aside.",
+    "meBy": "Your part is {share}. At your monthly amount you have it by {month}.",
+    "meNoMonthly": "Your part is {share}; {left} to go. Add a monthly amount to see when.",
+    "mySaved": "I have set aside",
+    "myMonthly": "I set aside each month",
+    "save": "Save my savings",
+    "saved": "Saved.",
+    "error": "That did not work. Try again in a moment.",
+    "you": "{name} (you)",
+    "progress": "{saved} of {share}",
+    "group": "Together: {saved} of {total} set aside.",
+    "settleTitle": "Settling up",
+    "transfer": "{from} pays {amount} to {to}",
+    "youShort": "You",
+    "youObject": "you",
+    "even": "Everyone has paid their part of what was paid so far.",
+    "nothingPaid": "Nothing paid yet. Mark costs as paid and say who paid to see who owes whom.",
+    "unassigned": "{amount} of paid costs has nobody named on it and is left out."
+  },
+  "todayPage": {
+    "title": "Today",
+    "noTrip": "Create a trip to see what to do today.",
+    "loadError": "Today could not be loaded. Try again in a moment.",
+    "goTrips": "Go to my trips",
+    "noDate": "Set the date to start the countdown",
+    "setDate": "Set the start date",
+    "daysLeft": "{count, plural, one {# day to go} other {# days to go}}",
+    "travelling": "You are travelling",
+    "back": "Welcome back",
+    "weekTitle": "This week’s saving",
+    "streak": "{count, plural, one {# week in a row} other {# weeks in a row}}",
+    "streakStart": "Start a streak: check in what you set aside this week.",
+    "doneThisWeek": "You set aside {amount} this week.",
+    "amountLabel": "I set aside",
+    "checkIn": "I set this aside this week",
+    "changeCheckIn": "Change this week’s amount",
+    "checkInHint": "It adds to your savings for this trip. Checking in again this week changes the amount.",
+    "checkedIn": "Checked in. Your savings went up.",
+    "checkInError": "That did not work. Try again in a moment.",
+    "addToChecklist": "Add to checklist",
+    "added": "Added",
+    "taskAdded": "Added to the checklist: {task}",
+    "todayPlan": "Today’s plan",
+    "todayCost": "Add today’s costs",
+    "phase": {
+      "six-months": "More than three months to go",
+      "three-months": "One to three months to go",
+      "one-month": "Less than a month to go",
+      "one-week": "The last week",
+      "travelling": "While you travel",
+      "back": "After the trip"
+    },
+    "tasks": {
+      "passport": "Check your passport is valid for the whole trip",
+      "entryRules": "Look up the entry rules for each country on official sites",
+      "flights": "Watch flight prices for your dates",
+      "insurance": "Choose travel insurance",
+      "stays": "Book where you will sleep",
+      "vaccines": "Ask a doctor about vaccines",
+      "esim": "Get an eSIM or a local SIM",
+      "cards": "Tell your bank and plan cards and cash",
+      "transfers": "Plan the airport transfers",
+      "documents": "Print or save your documents offline",
+      "packing": "Pack with the packing list",
+      "offline": "Download maps for offline use",
+      "dailyCosts": "Note each day’s costs",
+      "photos": "Add photos to the places you visit",
+      "memories": "Mark the places you visited",
+      "settle": "Settle up with the people you travelled with"
+    },
+    "partnerLink": "See options (partner link)"
+  },
+  "itinerary": {
+    "navLabel": "Globetrot",
+    "otherLanguage": "Em português",
+    "kicker": "Itinerary",
+    "title": "{destination} in {days} days",
+    "lead": "{stops, plural, one {# stop} other {# stops}}, {nights} nights, with experiences few people talk about.",
+    "currencyLabel": "Prices in",
+    "costTitle": "What it typically costs per person",
+    "budget": "Budget",
+    "comfort": "Comfort",
+    "save": "To go in 6 months, set aside {six} a month; in 12 months, {twelve} a month.",
+    "costNote": "Typical ranges researched on {date}, without flights from home. Estimates, never quotes.",
+    "rateNote": "Converted from US dollars at the European Central Bank reference rate for {currency}.",
+    "cta": "Make this trip mine",
+    "nights": "{count, plural, one {# night} other {# nights}}",
+    "offbeat": "Few people know it",
+    "free": "Free",
+    "leg": {
+      "flight": "By plane",
+      "train": "By train",
+      "bus": "By bus",
+      "car": "By car",
+      "boat": "By boat",
+      "walk": "On foot",
+      "other": "Getting there"
+    },
+    "moreTitle": "More itineraries",
+    "metaTitle": "{destination} in {days} days: itinerary, costs and how much to save",
+    "metaDescription": "A {days}-day {destination} itinerary with {stops} stops, experiences off the usual list, the typical cost per person and how much to set aside each month.",
+    "imageCost": "Typical cost per person: {cost}"
+  },
+  "referral": {
+    "title": "Bring a friend, get a trip pass",
+    "body": "Send your link. When a friend who signs up through it buys a plan or a trip pass for the first time, you get a trip pass for free.",
+    "linkLabel": "Your link",
+    "copy": "Copy",
+    "copied": "Link copied.",
+    "copyFailed": "Could not copy: select the link and copy it.",
+    "counts": "{joined, plural, one {# friend joined} other {# friends joined}} · {credits, plural, =0 {no free pass to use} one {# free pass to use} other {# free passes to use}}"
+  },
+  "miles": {
+    "title": "My miles",
+    "intro": "Add your miles and choose how many go towards this trip: the answer counts their typical value.",
+    "program": "Programme",
+    "balance": "Balance",
+    "onTrip": "For this trip",
+    "balanceOf": "{program} balance",
+    "onTripOf": "{program} miles for this trip",
+    "worth": "Worth about {low}–{high}",
+    "save": "Save my miles",
+    "saved": "Saved.",
+    "error": "That did not work. Try again in a moment.",
+    "answerReady": "With {miles, number} miles (about {value}), you have enough.",
+    "answerBy": "Counting {miles, number} miles (about {value}), {left} is left: you have it by {month}.",
+    "answerLeft": "Counting {miles, number} miles (about {value}), {left} is left. Add a monthly amount to see when.",
+    "note": "Estimates: typical value per thousand miles researched on {date} ({sources}). What miles buy depends on the route, the date and the programme.",
+    "programs": {
+      "smiles": "Smiles",
+      "latam-pass": "LATAM Pass",
+      "azul": "Azul Fidelidade",
+      "livelo": "Livelo",
+      "esfera": "Esfera"
+    },
+    "add": "Add my miles"
+  },
+  "adminMetrics": {
+    "title": "Metrics",
+    "note": "Counts only, straight from the database. Last 30 days unless said otherwise.",
+    "accounts": "Accounts",
+    "total": "Total",
+    "verified": "Verified email",
+    "last7": "New, last 7 days",
+    "last30": "New, last 30 days",
+    "trips": "Trips",
+    "active": "Active",
+    "created30": "Created",
+    "fromPlan": "From the landing’s plan",
+    "fromExample": "From an example",
+    "byHand": "By hand",
+    "saving": "Saving monthly",
+    "retention": "Retention",
+    "cohort": "Signed up 8 to 16 weeks ago",
+    "week1": "Active in week 1",
+    "week4": "Active in week 4",
+    "week8": "Active in week 8",
+    "sharing": "Sharing",
+    "invites": "Invite links made",
+    "joins": "People who joined",
+    "viral": "Joins per inviter",
+    "referrals": "Referrals (all time)",
+    "money": "Paying",
+    "explorer": "Explorer",
+    "voyager": "Voyager",
+    "passes": "Trip passes in force",
+    "checkins": "Check-ins per week",
+    "none": "No check-ins yet."
   }
 }

@@ -1,5 +1,5 @@
 import type { SupportedLocale } from '@globetrot/i18n';
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { cookies, headers } from 'next/headers';
 import type { ReactNode } from 'react';
 import { NextIntlClientProvider } from 'next-intl';
@@ -9,6 +9,7 @@ import { chooseAppearance, MOTION_COOKIE, THEME_COOKIE, THEME_SCRIPT } from '../
 import { getStoredPreferences } from '../lib/request-preferences';
 import { siteOrigin } from '../lib/site-url';
 import { Analytics } from './analytics';
+import { ReferralCapture } from './referral-capture';
 import { LanguageSuggestion } from './language-suggestion';
 import { SITE_NAME } from './site';
 import '@globetrot/tokens/tokens.css';
@@ -16,6 +17,9 @@ import '@globetrot/ui/styles.css';
 import './globals.css';
 
 /** Absolute links (the social image) resolve against the request's own origin on every page. */
+/** The phone's browser bar takes the app's ink colour, as the installed app does. */
+export const viewport: Viewport = { themeColor: '#0f172a' };
+
 export async function generateMetadata(): Promise<Metadata> {
   return { metadataBase: await siteOrigin(), title: SITE_NAME };
 }
@@ -71,6 +75,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
           ) : null}
           {children}
           <Analytics />
+          <ReferralCapture />
         </NextIntlClientProvider>
       </body>
     </html>

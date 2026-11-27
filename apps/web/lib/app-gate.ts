@@ -8,8 +8,13 @@ export const isAppPath = (pathname: string) => pathname === '/app' || pathname.s
  * not exist, so the proxy decides it before rendering: inside the app, the loading boundary has already sent a
  * 200 by the time a page could call `notFound()`.
  */
-export function isFlagGatedOff(pathname: string, flags: { readonly pip: boolean }): boolean {
-  return !flags.pip && (pathname === '/app/pip' || pathname.startsWith('/app/pip/'));
+export function isFlagGatedOff(
+  pathname: string,
+  flags: { readonly pip: boolean; readonly community?: boolean },
+): boolean {
+  const within = (base: string) => pathname === base || pathname.startsWith(`${base}/`);
+  if (!flags.pip && within('/app/pip')) return true;
+  return flags.community === false && within('/app/community');
 }
 
 /**

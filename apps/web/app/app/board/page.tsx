@@ -14,6 +14,7 @@ import {
   SELECTED_TRIP_COOKIE,
 } from '../../../lib/trips';
 import { fromDestination, type RouteStop } from './board-route';
+import { partnersFromEnv } from '../../../lib/partners';
 import { WorldMapBoard } from './world-map';
 
 export async function generateMetadata() {
@@ -81,6 +82,7 @@ export default async function BoardPage() {
       pipEnabled={pipEnabled}
       pipSuggestion={pipSuggestion}
       home={home}
+      partners={partnersFromEnv()}
     />
   );
 }

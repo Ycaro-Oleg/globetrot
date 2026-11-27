@@ -71,14 +71,22 @@ async function harness(extraEnv: Record<string, string> = {}, stripeFetch?: type
 }
 
 describe('billing against a real database', () => {
-  it('starts a 7-day trial at sign-up, turns read-only after it, and opens again with a plan', async () => {
+  it('starts a 7-day trial at sign-up, then stays free with one trip, and opens again with a plan', async () => {
     const { db, signUp, call } = await harness();
     const ana = await signUp('ana@example.com');
     const billing = await call(ana.cookie, 'GET', '/v1/me/billing');
     expect(billing.status).toBe(200);
-    expect(billing.json).toMatchObject({ access: 'trial', readOnly: false, trialDaysLeft: 7 });
+    expect(billing.json).toMatchObject({
+      access: 'trial',
+      overLimit: false,
+      priceCurrency: 'USD',
+      trialDaysLeft: 7,
+    });
+    const first = await call(ana.cookie, 'POST', '/v1/trips', { title: 'Porto' });
+    expect(first.status).toBe(201);
+    const second = await call(ana.cookie, 'POST', '/v1/trips', { title: 'Madeira' });
 
-    // Eight days ago.
+    // Eight days ago: free for good, with one active trip.
     await db
       .update(schema.user)
       .set({ createdAt: sql`now() - interval '8 days'` })
@@ -86,8 +94,26 @@ describe('billing against a real database', () => {
     const refused = await call(ana.cookie, 'POST', '/v1/trips', { title: 'Lisbon' });
     expect(refused.status).toBe(402);
     expect(refused.json.code).toBe('PLAN_REQUIRED');
+    expect((await call(ana.cookie, 'GET', '/v1/me/billing')).json).toMatchObject({
+      access: 'free',
+      overLimit: true,
+      activeTrips: 2,
+      credits: { monthly: 5 },
+    });
+    // Two active trips on a plan that keeps one: changes wait, archiving opens it again.
+    const blocked = await call(ana.cookie, 'PATCH', `/v1/trips/${first.json.id}`, {
+      title: 'Porto!',
+    });
+    expect(blocked.json.code).toBe('PLAN_REQUIRED');
+    expect((await call(ana.cookie, 'POST', `/v1/trips/${second.json.id}/archive`)).status).toBe(
+      200,
+    );
+    expect(
+      (await call(ana.cookie, 'PATCH', `/v1/trips/${first.json.id}`, { title: 'Porto!' })).status,
+    ).toBe(200);
     expect((await call(ana.cookie, 'GET', '/v1/trips')).status).toBe(200);
-    expect((await call(ana.cookie, 'GET', '/v1/me/billing')).json.readOnly).toBe(true);
+    const full = await call(ana.cookie, 'POST', '/v1/trips', { title: 'Lisbon' });
+    expect(full.json.code).toBe('TRIP_LIMIT_REACHED');
 
     await createBillingRepository(db).saveSubscription(
       ana.id,
@@ -167,6 +193,7 @@ describe('billing against a real database', () => {
       STRIPE_PRICE_VOYAGER_MONTHLY: 'price_vm',
       STRIPE_PRICE_VOYAGER_YEARLY: 'price_vy',
       STRIPE_PRICE_TOP_UP: 'price_top',
+      STRIPE_PRICE_TRIP_PASS: 'price_pass',
     };
     const now = Math.floor(Date.now() / 1000);
     const stripeFetch: typeof fetch = async (input) =>
@@ -207,6 +234,45 @@ describe('billing against a real database', () => {
       maxActiveTrips: null,
     });
     expect((await call(ana.cookie, 'POST', '/v1/me/billing/portal')).status).toBe(200);
+
+    // A trip pass, paid later by Pix: granted once, only for her own trip.
+    const trip = await call(ana.cookie, 'POST', '/v1/trips', { title: 'Lisbon' });
+    expect(
+      (
+        await call(ana.cookie, 'POST', '/v1/me/billing/checkout', {
+          item: 'trip-pass',
+          tripId: trip.json.id,
+        })
+      ).status,
+    ).toBe(200);
+    const bruno = await signUp('bruno@example.com');
+    expect(
+      (
+        await call(bruno.cookie, 'POST', '/v1/me/billing/checkout', {
+          item: 'trip-pass',
+          tripId: trip.json.id,
+        })
+      ).status,
+    ).toBe(404);
+    const pix = JSON.stringify({
+      type: 'checkout.session.async_payment_succeeded',
+      data: {
+        object: {
+          id: 'cs_pix',
+          mode: 'payment',
+          payment_status: 'paid',
+          payment_intent: 'pi_pix',
+          client_reference_id: ana.id,
+          metadata: { item: 'trip-pass', userId: ana.id, tripId: trip.json.id },
+        },
+      },
+    });
+    const pixSignature = `t=${now},v1=${createHmac('sha256', 'whsec_integration').update(`${now}.${pix}`).digest('hex')}`;
+    expect((await webhook(pix, pixSignature)).status).toBe(200);
+    expect((await webhook(pix, pixSignature)).status).toBe(200);
+    expect((await call(ana.cookie, 'GET', '/v1/me/billing')).json.passes).toMatchObject([
+      { tripId: trip.json.id },
+    ]);
   });
 
   it('shares a trip publicly by link, with no session, and stops it for good', async () => {

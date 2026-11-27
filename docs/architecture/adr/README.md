@@ -28,5 +28,17 @@ ADRs 0010 to 0012 were written after the work they describe (#53 to #61), which 
 | [0016](0016-pip-on-deepseek.md) | Pip v1 on DeepSeek, through a small JSON port | Accepted (supersedes the provider choice in 0007) |
 | [0017](0017-worker-housekeeping.md) | The worker: hourly housekeeping behind an advisory lock | Accepted |
 | [0018](0018-launch-measurement-and-consent.md) | Launch measurement: cookieless analytics, and the Meta Pixel only with consent | Accepted |
-| [0019](0019-plans-trial-and-pip-credits.md) | Plans, the free week and Pip credits: read-only after the trial, credits per request, payments behind a port | Accepted |
+| [0019](0019-plans-trial-and-pip-credits.md) | Plans, the free week and Pip credits: credits per request, payments behind a port (read-only after the trial superseded by 0023) | Partly superseded |
 | [0020](0020-suggested-plans-and-curated-cost-ranges.md) | Suggested plans: curated destinations, experiences and typical cost ranges with a research date; the landing plans the trip | Accepted |
+| [0021](0021-error-monitoring-and-product-analytics.md) | Error monitoring with Sentry and product analytics with PostHog, both off unless configured and without personal data | Accepted |
+| [0022](0022-backup-ai-provider.md) | A backup AI provider for Pip: Claude Haiku, asked when DeepSeek does not answer | Accepted |
+| [0023](0023-free-plan-trip-pass-and-prices-in-reais.md) | A free plan for one trip, the trip pass and prices in reais; no read-only wall after the free week | Accepted |
+| [0024](0024-trip-members.md) | Trip members: editors and viewers by invite link (hash stored, 7 days), one access check, guest limit from the plan | Accepted |
+| [0025](0025-money-between-members.md) | Money between members: equal or custom parts, each person's savings, who paid, settling up the paid costs | Accepted |
+| [0026](0026-saving-habit-and-countdown.md) | The saving habit: weekly check-in with a streak, countdown phases, the Today screen and a weekly reminder email | Accepted |
+| [0027](0027-offline-reading.md) | Offline reading of a paid trip: a small service worker keeps the trip's screens, cleared on sign-out | Accepted |
+| [0028](0028-public-itineraries-and-story-card.md) | Public, indexable itinerary pages from the catalog in both languages, and a progress card for stories | Accepted |
+| [0029](0029-referrals.md) | Referrals: one code per account, claimed within 7 days, a free trip pass when the friend first pays | Accepted |
+| [0030](0030-miles-in-the-savings.md) | Miles in the savings answer: balances per Brazilian programme, researched value ranges, miles put towards a trip | Accepted |
+| [0031](0031-partner-links-and-metrics.md) | Partner links (labelled, no prices, only when configured) and the internal metrics dashboard for admins | Accepted |
+| [0032](0032-bookings-by-email.md) | Bookings forwarded to a private address become Pip proposals to review; the webhook is trusted by a shared secret | Accepted |

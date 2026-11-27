@@ -1285,6 +1285,39 @@
   color: var(--deep);
 }
 
+.pricingSwitches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* The trip pass: one payment for one trip, a wide row under the plans. */
+.passRow {
+  display: grid;
+  gap: 12px 32px;
+  padding: 22px 26px;
+  border: 1px dashed var(--hairline);
+  border-radius: 26px;
+  background: var(--surface);
+}
+
+.passRow h3 {
+  margin: 0 0 4px;
+}
+
+.passRow .features {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 6px 20px;
+}
+
+@media (min-width: 860px) {
+  .passRow {
+    grid-template-columns: minmax(180px, 1fr) 3fr;
+    align-items: center;
+  }
+}
+
 .placeholderNote {
   margin: 0;
   color: var(--ink-2);
@@ -1813,8 +1846,30 @@
 
 .destinations {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 12px;
+}
+
+/* On a phone, two compact columns so all the destinations fit in one look. */
+@media (max-width: 560px) {
+  .destinations {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .destinations button {
+    min-height: 84px;
+    padding: 12px;
+    border-radius: 14px;
+  }
+
+  .destinations strong {
+    font-size: 16px;
+  }
+
+  .destinations small {
+    font-size: 12px;
+  }
 }
 
 .destinations button {

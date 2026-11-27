@@ -23,6 +23,8 @@ function render(locale: SupportedLocale, code: string, monthly: number) {
     <NextIntlClientProvider locale={locale} messages={catalogs[locale]} timeZone="UTC">
       <SuggestResult
         plan={plan}
+        likes={['adrenaline']}
+        comfort="budget"
         code={code}
         monthly={monthly}
         signupHref="/signup"

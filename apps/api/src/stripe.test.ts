@@ -1,5 +1,5 @@
 import { createHmac } from 'node:crypto';
-import { createPaymentEvents, type UserRecord } from '@globetrot/application';
+import { createApplication, createPaymentEvents, type UserRecord } from '@globetrot/application';
 import { createFakePorts } from '@globetrot/application/testing';
 import { describe, expect, it } from 'vitest';
 import type { StripeConfig } from './config';
@@ -14,9 +14,18 @@ const config: StripeConfig = {
   secretKey: 'sk_test_fake',
   webhookSecret: 'whsec_test_secret',
   prices: {
-    explorer: { month: 'price_em', year: 'price_ey' },
-    voyager: { month: 'price_vm', year: 'price_vy' },
-    topUp: 'price_top',
+    USD: {
+      explorer: { month: 'price_em', year: 'price_ey' },
+      voyager: { month: 'price_vm', year: 'price_vy' },
+      topUp: 'price_top',
+      tripPass: 'price_pass',
+    },
+    BRL: {
+      explorer: { month: 'price_em_brl', year: 'price_ey_brl' },
+      voyager: { month: 'price_vm_brl', year: 'price_vy_brl' },
+      topUp: 'price_top_brl',
+      tripPass: 'price_pass_brl',
+    },
   },
   returnOrigin: 'https://globetrot.example',
 };
@@ -93,6 +102,13 @@ describe('a Stripe subscription as ours', () => {
     expect(toSubscriptionRecord(subscription({ status: 'canceled' }), config.prices)?.status).toBe(
       'canceled',
     );
+    // A plan bought in reais is the same plan.
+    expect(
+      toSubscriptionRecord(
+        subscription({ items: { data: [{ price: { id: 'price_em_brl' } }] } }),
+        config.prices,
+      ),
+    ).toMatchObject({ plan: 'explorer', interval: 'month' });
   });
 
   it('reads the period end from the item in newer API shapes, and grants nothing for unknown prices or incomplete', () => {
@@ -128,6 +144,7 @@ describe('checkout and the portal', () => {
         email: 'ana@example.com',
         item: 'explorer',
         interval: 'year',
+        currency: 'USD',
       }),
     ).toBe('https://checkout.stripe.test/c');
     const sent = new URLSearchParams(api.calls[0]!.body);
@@ -152,6 +169,7 @@ describe('checkout and the portal', () => {
       email: 'ana@example.com',
       item: 'top-up',
       interval: 'month',
+      currency: 'USD',
     });
     const sent = new URLSearchParams(api.calls[0]!.body);
     expect(sent.get('mode')).toBe('payment');
@@ -166,8 +184,40 @@ describe('checkout and the portal', () => {
   it('is off without settings', async () => {
     const payments = createStripePayments(null, { findProviderCustomer: async () => null });
     expect(
-      await payments.checkoutUrl({ userId: 'u', email: 'e', item: 'voyager', interval: 'month' }),
+      await payments.checkoutUrl({
+        userId: 'u',
+        email: 'e',
+        item: 'voyager',
+        interval: 'month',
+        currency: 'USD',
+      }),
     ).toBeNull();
+  });
+
+  it('charges a trip pass once, in reais for someone who chose reais, and returns to the trip', async () => {
+    const api = stripeApi();
+    const payments = createStripePayments(
+      config,
+      { findProviderCustomer: async () => null },
+      { fetch: api.call },
+    );
+    await payments.checkoutUrl({
+      userId: 'u-ana',
+      email: 'ana@example.com',
+      item: 'trip-pass',
+      interval: 'month',
+      currency: 'BRL',
+      tripId: 'trip-1',
+    });
+    const sent = new URLSearchParams(api.calls[0]!.body);
+    expect(sent.get('mode')).toBe('payment');
+    expect(sent.get('line_items[0][price]')).toBe('price_pass_brl');
+    expect(sent.get('metadata[tripId]')).toBe('trip-1');
+    expect(sent.get('success_url')).toBe(
+      'https://globetrot.example/app/trips/trip-1?paid=trip-pass',
+    );
+    // Payment methods (Pix included) are left to the dashboard.
+    expect(sent.has('payment_method_types[0]')).toBe(false);
   });
 });
 
@@ -189,7 +239,7 @@ describe('the webhook', () => {
       const body = JSON.stringify(event);
       return webhook.handle(body, sign(body));
     };
-    return { ...fake, api, webhook, send };
+    return { ...fake, api, webhook, send, app: createApplication(fake.ports) };
   }
 
   it('records the plan from a completed subscription checkout, reading the subscription from Stripe', async () => {
@@ -239,6 +289,32 @@ describe('the webhook', () => {
       data: { object: { ...paid.data.object, payment_intent: 'pi_2', payment_status: 'unpaid' } },
     });
     expect(state.credits).toEqual([{ userId: 'u-ana', delta: 200, reason: 'top-up', ref: 'pi_1' }]);
+  });
+
+  it('grants a trip pass when a Pix payment clears later, once', async () => {
+    const { send, state, app } = setup();
+    const trip = await app.createTrip.execute(
+      { kind: 'user', userId: 'u-ana' },
+      { title: 'Lisbon', startDate: null },
+    );
+    const cleared = {
+      type: 'checkout.session.async_payment_succeeded',
+      data: {
+        object: {
+          id: 'cs_2',
+          mode: 'payment',
+          payment_status: 'paid',
+          payment_intent: 'pi_pix',
+          client_reference_id: 'u-ana',
+          metadata: { item: 'trip-pass', userId: 'u-ana', tripId: trip.id },
+        },
+      },
+    };
+    expect(await send(cleared)).toBe(200);
+    expect(await send(cleared)).toBe(200);
+    expect(state.passes.map((pass) => [pass.tripId, pass.providerRef])).toEqual([
+      [trip.id, 'pi_pix'],
+    ]);
   });
 
   it('refuses a bad signature, ignores other events, and asks Stripe to retry when it cannot read', async () => {

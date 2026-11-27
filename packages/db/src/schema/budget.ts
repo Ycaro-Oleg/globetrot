@@ -1,5 +1,5 @@
 // A trip's money: its expenses and its savings. Conventions: docs/architecture/data-model.md and money.md.
-import { EXPENSE_CATEGORIES, EXPENSE_STATUSES } from '@globetrot/domain';
+import { EXPENSE_CATEGORIES, EXPENSE_STATUSES, MILES_PROGRAMS } from '@globetrot/domain';
 import { sql, type AnyColumn, type SQL } from 'drizzle-orm';
 import {
   bigint,
@@ -8,12 +8,15 @@ import {
   check,
   date,
   index,
+  integer,
   pgTable,
+  primaryKey,
   text,
   timestamp,
   uniqueIndex,
   uuid,
 } from 'drizzle-orm/pg-core';
+import { user } from './auth';
 import { trip } from './trip';
 
 const instant = (name: string) => timestamp(name, { withTimezone: true });
@@ -45,6 +48,8 @@ export const expense = pgTable(
      * other cost, never below zero. At most one per trip.
      */
     guess: boolean('guess').default(false).notNull(),
+    /** Who paid it, on a trip planned together (ADR-0025); null when nobody said. Kept null if they leave. */
+    paidBy: text('paid_by').references(() => user.id, { onDelete: 'set null' }),
     createdAt: instant('created_at').defaultNow().notNull(),
     updatedAt: instant('updated_at').defaultNow().notNull(),
   },
@@ -101,5 +106,118 @@ export const tripSavings = pgTable(
       'trip_savings_ceiling_not_negative',
       sql`${table.ceilingMinor} is null or ${table.ceilingMinor} >= 0`,
     ),
+  ],
+);
+
+/**
+ * Each person's money on a trip planned together (ADR-0025): their part of the cost (basis points, null for an
+ * equal split), what they have set aside and what they put aside each month, in the trip's currency. The owner
+ * may have a row too.
+ */
+export const tripPersonMoney = pgTable(
+  'trip_person_money',
+  {
+    tripId: uuid('trip_id')
+      .notNull()
+      .references(() => trip.id, { onDelete: 'cascade' }),
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    shareBp: integer('share_bp'),
+    savedMinor: minor('saved_minor')
+      .notNull()
+      .default(sql`0`),
+    monthlyMinor: minor('monthly_minor')
+      .notNull()
+      .default(sql`0`),
+    updatedAt: instant('updated_at').defaultNow().notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.tripId, table.userId] }),
+    check(
+      'trip_person_money_share_range',
+      sql`${table.shareBp} is null or ${table.shareBp} between 0 and 10000`,
+    ),
+    check(
+      'trip_person_money_amounts',
+      sql`${table.savedMinor} >= 0 and ${table.monthlyMinor} >= 0`,
+    ),
+  ],
+);
+
+/**
+ * The weekly saving check-in (ADR-0026): what a person set aside in an ISO week (`2027-W05`) for a trip. One per
+ * person, trip and week; checking in again that week changes the amount.
+ */
+export const savingsCheckin = pgTable(
+  'savings_checkin',
+  {
+    tripId: uuid('trip_id')
+      .notNull()
+      .references(() => trip.id, { onDelete: 'cascade' }),
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    week: text('week').notNull(),
+    amountMinor: minor('amount_minor').notNull(),
+    createdAt: instant('created_at').defaultNow().notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.tripId, table.userId, table.week] }),
+    index('savings_checkin_user_idx').on(table.userId, table.week),
+    check('savings_checkin_week_format', sql`${table.week} ~ '^[0-9]{4}-W[0-9]{2}$'`),
+    check('savings_checkin_amount', sql`${table.amountMinor} >= 0`),
+  ],
+);
+
+/** Weekly reminder emails already sent, one per person and ISO week, so the worker never sends one twice. */
+export const weeklyNotice = pgTable(
+  'weekly_notice',
+  {
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    week: text('week').notNull(),
+    sentAt: instant('sent_at').defaultNow().notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.userId, table.week] })],
+);
+
+/** A person's miles in each Brazilian loyalty programme (ADR-0030); a zero balance is not kept. */
+export const milesBalance = pgTable(
+  'miles_balance',
+  {
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    program: text('program').notNull(),
+    balance: integer('balance').notNull(),
+    updatedAt: instant('updated_at').defaultNow().notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.userId, table.program] }),
+    check('miles_balance_program_valid', oneOf(table.program, MILES_PROGRAMS)),
+    check('miles_balance_positive', sql`${table.balance} > 0`),
+  ],
+);
+
+/** How many of their miles a person chose to put towards a trip, per programme. */
+export const tripMiles = pgTable(
+  'trip_miles',
+  {
+    tripId: uuid('trip_id')
+      .notNull()
+      .references(() => trip.id, { onDelete: 'cascade' }),
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    program: text('program').notNull(),
+    miles: integer('miles').notNull(),
+    updatedAt: instant('updated_at').defaultNow().notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.tripId, table.userId, table.program] }),
+    check('trip_miles_program_valid', oneOf(table.program, MILES_PROGRAMS)),
+    check('trip_miles_positive', sql`${table.miles} > 0`),
   ],
 );

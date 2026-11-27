@@ -1,4 +1,10 @@
-import { entitlements, type Entitlements } from '@globetrot/domain';
+import {
+  countedTrips,
+  entitlements,
+  overTripLimit,
+  passedTripIds,
+  type Entitlements,
+} from '@globetrot/domain';
 import type { Actor } from '../actor';
 import { NotFoundError, PlanLimitError } from '../errors';
 import type { BillingAccount, BillingReader, TripReader } from '../ports';
@@ -8,7 +14,7 @@ export async function loadRights(
   billing: BillingReader,
   actor: Actor,
   now: Date,
-): Promise<{ account: BillingAccount; rights: Entitlements }> {
+): Promise<{ account: BillingAccount; rights: Entitlements; passed: Set<string> }> {
   const account = await billing.findAccount(actor.userId);
   if (!account) throw new NotFoundError();
   return {
@@ -18,38 +24,63 @@ export async function loadRights(
       subscription: account.subscription,
       now,
     }),
+    passed: passedTripIds(account.passes, now),
   };
 }
 
-/** Throws unless the account may change things (in the trial or on a plan). */
-export async function assertCanChange(billing: BillingReader, actor: Actor, now: Date) {
-  const { rights } = await loadRights(billing, actor, now);
-  if (rights.readOnly) {
-    throw new PlanLimitError('PLAN_REQUIRED', 'The trial is over: choose a plan to keep planning');
-  }
-  return rights;
+/** The account's trips that count towards its plan (active, without a pass), and whether there are too many. */
+export async function tripCount(
+  deps: { readonly billing: BillingReader; readonly trips: TripReader },
+  actor: Actor,
+  now: Date,
+) {
+  const { rights, passed } = await loadRights(deps.billing, actor, now);
+  const active = await deps.trips.listByOwner(actor.userId, { includeArchived: false });
+  const counted = countedTrips(
+    active.map((trip) => trip.id),
+    passed,
+  );
+  return { rights, passed, active: active.length, counted, over: overTripLimit(rights, counted) };
 }
 
-/** Throws when one more active (not archived) trip would pass the plan's limit. */
+/**
+ * Throws when the account holds more counted trips than its plan keeps (after the free week, or when a plan
+ * lapses): archiving trips, a pass or a plan opens it again (ADR-0023). Nothing is ever lost or hidden.
+ */
+export async function assertCanChange(
+  deps: { readonly billing: BillingReader; readonly trips: TripReader },
+  actor: Actor,
+  now: Date,
+) {
+  const count = await tripCount(deps, actor, now);
+  if (count.over) {
+    throw new PlanLimitError(
+      'PLAN_REQUIRED',
+      `This plan keeps ${count.rights.maxActiveTrips} active trip: archive the others, add a trip pass or choose a plan`,
+    );
+  }
+  return count.rights;
+}
+
+/** Throws when one more counted trip would pass the plan's limit. */
 export async function assertTripRoom(
   deps: { readonly billing: BillingReader; readonly trips: TripReader },
   actor: Actor,
   now: Date,
 ) {
-  const { rights } = await loadRights(deps.billing, actor, now);
+  const { rights, counted } = await tripCount(deps, actor, now);
   if (rights.maxActiveTrips === null) return;
-  const active = await deps.trips.listByOwner(actor.userId, { includeArchived: false });
-  if (active.length >= rights.maxActiveTrips) {
+  if (counted >= rights.maxActiveTrips) {
     throw new PlanLimitError(
       'TRIP_LIMIT_REACHED',
-      `This plan keeps ${rights.maxActiveTrips} active trips: archive one or move to Voyager`,
+      `This plan keeps ${rights.maxActiveTrips} active trips: archive one, add a trip pass or choose a plan`,
     );
   }
 }
 
 /**
- * Commands that stay open when the account is read-only: the person can still manage their account and data,
- * leave, and keep the community safe. Everything else that changes something needs the trial or a plan.
+ * Commands that stay open when the account holds more trips than its plan keeps: the person can still manage
+ * their account and data, archive trips, pay, leave, and keep the community safe.
  */
 export const OPEN_WHEN_READ_ONLY: ReadonlySet<string> = new Set([
   'updatePreferences',
@@ -66,4 +97,20 @@ export const OPEN_WHEN_READ_ONLY: ReadonlySet<string> = new Set([
   'openBillingPortal',
   // Stopping a public link must always work.
   'unshareTrip',
+  // Joining someone else's trip, leaving it, and managing who plans one's own trip are not one's own trips.
+  'acceptInvite',
+  'leaveTrip',
+  'removeMember',
+  'revokeInvite',
+  // One's own savings on a trip shared with them.
+  'updateMyMoney',
+  // The saving habit never stops, whatever the plan.
+  'checkIn',
+  // Referrals and a free pass are how an account opens again, like paying.
+  'getReferral',
+  'claimReferral',
+  'redeemPassCredit',
+  // Miles are the person's own, like their savings.
+  'setMiles',
+  'setTripMiles',
 ]);

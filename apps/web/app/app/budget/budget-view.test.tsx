@@ -76,6 +76,7 @@ const EXPENSES: ExpenseData[] = [
     inTripCurrency: money('1250.00'),
     fx: null,
     guess: false,
+    paidBy: null,
     createdAt: '2026-11-08T12:00:00.000Z',
   },
   {
@@ -87,6 +88,7 @@ const EXPENSES: ExpenseData[] = [
     inTripCurrency: money('975.00'),
     fx: { rate: '0.0065', source: 'manual', asOf: '2026-11-01' },
     guess: false,
+    paidBy: null,
     createdAt: '2026-11-08T12:05:00.000Z',
   },
 ];
@@ -190,6 +192,7 @@ describe.each(SUPPORTED_LOCALES)('the rough guess (%s)', (locale) => {
     inTripCurrency: money('2500.00'),
     fx: null,
     guess: true,
+    paidBy: null,
     createdAt: '2026-11-08T11:00:00.000Z',
   };
   const withGuess = (amount: string, counted: string) =>

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { createDeepSeekAi } from './ai';
+import { createAnthropicAi, createDeepSeekAi, fallbackAi } from './ai';
 
 const config = { apiKey: 'test-key', baseUrl: 'https://ai.example.test/', model: 'deepseek-chat' };
 const input = { system: 'sys', user: 'usr', maxTokens: 100 };
@@ -48,5 +48,61 @@ describe('DeepSeek adapter', () => {
     expect(JSON.stringify(warn.mock.calls)).not.toContain('test-key');
     expect(JSON.stringify(warn.mock.calls)).not.toContain('usr');
     warn.mockRestore();
+  });
+});
+
+describe('Anthropic adapter', () => {
+  const claude = {
+    apiKey: 'claude-key',
+    baseUrl: 'https://claude.example.test',
+    model: 'claude-haiku-5-5',
+  };
+
+  it('sends the key and version headers, asks for JSON in the system prompt, and reads text and usage', async () => {
+    const fetch = vi.fn(async (_url: string, _init?: RequestInit) =>
+      Response.json({
+        model: 'claude-haiku-5-5',
+        content: [{ type: 'text', text: '```json\n{"summary":"ok","changes":[]}\n```' }],
+        usage: { input_tokens: 20, output_tokens: 5 },
+      }),
+    );
+    const ai = createAnthropicAi(claude, { fetch: fetch as unknown as typeof globalThis.fetch });
+    expect(await ai.completeJson(input)).toEqual({
+      content: '{"summary":"ok","changes":[]}',
+      provider: 'anthropic',
+      model: 'claude-haiku-5-5',
+      inputTokens: 20,
+      outputTokens: 5,
+    });
+    const [url, init] = fetch.mock.calls[0]!;
+    expect(url).toBe('https://claude.example.test/v1/messages');
+    const headers = init!.headers as Record<string, string>;
+    expect(headers['x-api-key']).toBe('claude-key');
+    expect(headers['anthropic-version']).toBe('2023-06-01');
+    const body = JSON.parse(init!.body as string);
+    expect(body).toMatchObject({ model: 'claude-haiku-5-5', max_tokens: 100 });
+    expect(body.system).toMatch(/JSON object only/);
+  });
+
+  it('answers null without a key or on an error, never logging the key or the prompt', async () => {
+    expect(await createAnthropicAi(null).completeJson(input)).toBeNull();
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const failing = async () => new Response('overloaded', { status: 529 });
+    const ai = createAnthropicAi(claude, { fetch: failing as unknown as typeof globalThis.fetch });
+    expect(await ai.completeJson(input)).toBeNull();
+    expect(JSON.stringify(warn.mock.calls)).not.toContain('claude-key');
+    expect(JSON.stringify(warn.mock.calls)).not.toContain('usr');
+    warn.mockRestore();
+  });
+});
+
+describe('fallback', () => {
+  it('answers with the first provider that answers, and null when none does', async () => {
+    const answer = { content: '{}', provider: 'b', model: 'm', inputTokens: 1, outputTokens: 1 };
+    const down = { completeJson: vi.fn(async () => null) };
+    const up = { completeJson: vi.fn(async () => answer) };
+    expect(await fallbackAi([down, up]).completeJson(input)).toBe(answer);
+    expect(down.completeJson).toHaveBeenCalledOnce();
+    expect(await fallbackAi([down, down]).completeJson(input)).toBeNull();
   });
 });

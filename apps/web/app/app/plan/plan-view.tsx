@@ -4,8 +4,17 @@ import { formatMoney, money } from '@globetrot/domain';
 import { useLocale, useTranslations } from 'next-intl';
 import { useId, useState, useTransition } from 'react';
 import type { BillingView } from '../../../lib/billing';
-import { featureValues, monthlyOfAnnual, PLAN_CARDS, TOP_UP } from '../../../lib/plan-config';
+import Link from 'next/link';
+import {
+  featureValues,
+  monthlyOfAnnual,
+  planCards,
+  TOP_UP,
+  topUpPrice,
+  tripPassPrice,
+} from '../../../lib/plan-config';
 import { openPortal, startCheckout } from './actions';
+import { ReferralCard } from './referral-card';
 import styles from './plan.module.css';
 
 type Interval = 'month' | 'year';
@@ -15,11 +24,14 @@ export function PlanView({
   billing,
   paid = null,
   planRequired = false,
+  referral = null,
 }: {
   billing: BillingView | null;
+  /** The person's referral link and counts; null hides the card. */
+  referral?: { code: string; joined: number; passCredits: number } | null;
   /** Back from a paid checkout: Stripe confirms it to us a moment later. */
   paid?: 'plan' | 'top-up' | null;
-  /** Sent here because a change could not be saved in the read-only account. */
+  /** Sent here because a change could not be saved: more trips are active than the plan keeps. */
   planRequired?: boolean;
 }) {
   const t = useTranslations('planPage');
@@ -31,7 +43,10 @@ export function PlanView({
   );
   const [notice, setNotice] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
-  const price = (minor: bigint) => formatMoney(money(minor, 'USD'), locale, { precision: 'full' });
+  // Reais for someone who chose reais as their currency, US dollars otherwise (the API decides, ADR-0023).
+  const currency = billing?.priceCurrency ?? 'USD';
+  const price = (minor: bigint) =>
+    formatMoney(money(minor, currency), locale, { precision: 'full' });
   const date = (iso: string) =>
     new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'long', timeZone: 'UTC' }).format(
       new Date(iso),
@@ -77,14 +92,17 @@ export function PlanView({
 
       <div
         className={styles.status}
-        data-tone={billing.readOnly ? 'expired' : onPlan ? 'paid' : 'trial'}
+        data-tone={billing.overLimit ? 'expired' : onPlan ? 'paid' : 'trial'}
       >
-        {billing.readOnly ? (
+        {billing.overLimit ? (
           <>
             <h2>{t('expiredTitle')}</h2>
             <p role={planRequired ? 'status' : undefined}>
               {t(planRequired ? 'planRequiredBody' : 'expiredBody')}
             </p>
+            <Link href="/app/trips" className={styles.secondary}>
+              {t('passTrips')}
+            </Link>
           </>
         ) : onPlan ? (
           <>
@@ -103,6 +121,11 @@ export function PlanView({
               {t('manage')}
             </button>
           </>
+        ) : billing.access === 'free' ? (
+          <>
+            <h2>{t('freeTitle')}</h2>
+            <p>{t('freeBody', { credits: billing.credits.monthly })}</p>
+          </>
         ) : (
           <>
             <h2>{t('trialTitle', { days: billing.trialDaysLeft })}</h2>
@@ -111,62 +134,62 @@ export function PlanView({
         )}
       </div>
 
-      {/* Credits and trip counts mean nothing without a plan: the read-only account sees the plans next. */}
-      {billing.readOnly ? null : (
-        <div className={styles.facts}>
-          <div className={styles.fact}>
-            <h2>{t('creditsTitle')}</h2>
-            <p className={styles.meterText}>
-              {t('creditsMeter', {
-                left: billing.credits.monthlyLeft,
-                total: billing.credits.monthly,
-              })}
-            </p>
-            <div
-              className={styles.meter}
-              role="meter"
-              aria-label={t('creditsTitle')}
-              aria-valuemin={0}
-              aria-valuemax={billing.credits.monthly}
-              aria-valuenow={billing.credits.monthlyLeft}
-              aria-valuetext={t('creditsMeter', {
-                left: billing.credits.monthlyLeft,
-                total: billing.credits.monthly,
-              })}
-            >
-              <span style={{ width: `${share}%` }} />
-            </div>
-            {onPlan ? (
-              <p className={styles.small}>
-                {t('creditsReset', { date: date(billing.credits.periodEnd) })}
-              </p>
-            ) : null}
-            {billing.credits.topUpLeft > 0 ? (
-              <p className={styles.small}>{t('topUpLeft', { count: billing.credits.topUpLeft })}</p>
-            ) : null}
-            <p className={styles.small}>{p('credit')}</p>
-            {!billing.readOnly ? (
-              <button
-                type="button"
-                className={styles.secondary}
-                disabled={pending}
-                onClick={() => go(() => startCheckout('top-up', 'month'))}
-              >
-                {p('topUp', { credits: TOP_UP.credits, price: price(TOP_UP.priceMinor) })}
-              </button>
-            ) : null}
+      <div className={styles.facts}>
+        <div className={styles.fact}>
+          <h2>{t('creditsTitle')}</h2>
+          <p className={styles.meterText}>
+            {t('creditsMeter', {
+              left: billing.credits.monthlyLeft,
+              total: billing.credits.monthly,
+            })}
+          </p>
+          <div
+            className={styles.meter}
+            role="meter"
+            aria-label={t('creditsTitle')}
+            aria-valuemin={0}
+            aria-valuemax={billing.credits.monthly}
+            aria-valuenow={billing.credits.monthlyLeft}
+            aria-valuetext={t('creditsMeter', {
+              left: billing.credits.monthlyLeft,
+              total: billing.credits.monthly,
+            })}
+          >
+            <span style={{ width: `${share}%` }} />
           </div>
-          <div className={styles.fact}>
-            <h2>{t('tripsTitle')}</h2>
-            <p className={styles.meterText}>
-              {t('trips', {
-                count: billing.activeTrips,
-                max: billing.maxActiveTrips === null ? 'none' : String(billing.maxActiveTrips),
-              })}
+          {billing.access !== 'trial' ? (
+            <p className={styles.small}>
+              {t('creditsReset', { date: date(billing.credits.periodEnd) })}
             </p>
-          </div>
+          ) : null}
+          {billing.credits.topUpLeft > 0 ? (
+            <p className={styles.small}>{t('topUpLeft', { count: billing.credits.topUpLeft })}</p>
+          ) : null}
+          <p className={styles.small}>{p('credit')}</p>
+          <button
+            type="button"
+            className={styles.secondary}
+            disabled={pending}
+            onClick={() => go(() => startCheckout('top-up', 'month'))}
+          >
+            {p('topUp', { credits: TOP_UP.credits, price: price(topUpPrice(currency)) })}
+          </button>
         </div>
-      )}
+        <div className={styles.fact}>
+          <h2>{t('tripsTitle')}</h2>
+          <p className={styles.meterText}>
+            {t('trips', {
+              count: billing.countedTrips,
+              max: billing.maxActiveTrips === null ? 'none' : String(billing.maxActiveTrips),
+            })}
+          </p>
+          {billing.activeTrips > billing.countedTrips ? (
+            <p className={styles.small}>
+              {t('passCounted', { count: billing.activeTrips - billing.countedTrips })}
+            </p>
+          ) : null}
+        </div>
+      </div>
 
       <div className={styles.plansHead} id="plans">
         <h2>{t('choosePlans')}</h2>
@@ -185,54 +208,68 @@ export function PlanView({
       </div>
 
       <ul className={styles.plans}>
-        {PLAN_CARDS.filter((plan) => plan.id !== 'trial').map((plan) => {
-          const current = onPlan && billing.access === plan.id && billing.interval === interval;
-          const yearly = interval === 'year';
-          return (
-            <li
-              key={plan.id}
-              className={styles.plan}
-              data-highlighted={plan.highlighted || undefined}
-            >
-              <div className={styles.planTop}>
-                <h3>{p(`${plan.id}.name`)}</h3>
-                {plan.highlighted ? <span className={styles.badge}>{p('popular')}</span> : null}
-              </div>
-              <p className={styles.price}>
-                <strong>{price(yearly ? plan.annualMinor : plan.monthlyMinor)}</strong>
-                <span>{yearly ? p('perYear') : p('perMonth')}</span>
-              </p>
-              <p className={styles.small}>
-                {yearly
-                  ? p('annualNote', { monthly: price(monthlyOfAnnual(plan.annualMinor)) })
-                  : p(`${plan.id}.tagline`)}
-              </p>
-              <ul className={styles.features}>
-                {(['f1', 'f2', 'f3'] as const).map((feature) => (
-                  <li key={feature}>
-                    <span aria-hidden="true">✓</span>
-                    {p(`${plan.id}.${feature}`, featureValues(plan))}
-                  </li>
-                ))}
-              </ul>
-              {current ? (
-                <p className={styles.current}>{t('current')}</p>
-              ) : (
-                <button
-                  type="button"
-                  className={styles.cta}
-                  disabled={pending}
-                  onClick={() =>
-                    go(() => startCheckout(plan.id as 'explorer' | 'voyager', interval))
-                  }
-                >
-                  {t('choose', { plan: p(`${plan.id}.name`) })}
-                </button>
-              )}
-            </li>
-          );
-        })}
+        {planCards(currency)
+          .filter((plan) => plan.id !== 'free')
+          .map((plan) => {
+            const current = onPlan && billing.access === plan.id && billing.interval === interval;
+            const yearly = interval === 'year';
+            return (
+              <li
+                key={plan.id}
+                className={styles.plan}
+                data-highlighted={plan.highlighted || undefined}
+              >
+                <div className={styles.planTop}>
+                  <h3>{p(`${plan.id}.name`)}</h3>
+                  {plan.highlighted ? <span className={styles.badge}>{p('popular')}</span> : null}
+                </div>
+                <p className={styles.price}>
+                  <strong>{price(yearly ? plan.annualMinor : plan.monthlyMinor)}</strong>
+                  <span>{yearly ? p('perYear') : p('perMonth')}</span>
+                </p>
+                <p className={styles.small}>
+                  {yearly
+                    ? p('annualNote', { monthly: price(monthlyOfAnnual(plan.annualMinor)) })
+                    : p(`${plan.id}.tagline`)}
+                </p>
+                <ul className={styles.features}>
+                  {(['f1', 'f2', 'f3'] as const).map((feature) => (
+                    <li key={feature}>
+                      <span aria-hidden="true">✓</span>
+                      {p(`${plan.id}.${feature}`, featureValues(plan))}
+                    </li>
+                  ))}
+                </ul>
+                {current ? (
+                  <p className={styles.current}>{t('current')}</p>
+                ) : (
+                  <button
+                    type="button"
+                    className={styles.cta}
+                    disabled={pending}
+                    onClick={() =>
+                      go(() => startCheckout(plan.id as 'explorer' | 'voyager', interval))
+                    }
+                  >
+                    {t('choose', { plan: p(`${plan.id}.name`) })}
+                  </button>
+                )}
+              </li>
+            );
+          })}
       </ul>
+
+      {onPlan ? null : (
+        <div className={styles.fact}>
+          <h2>{t('passTitle')}</h2>
+          <p>{t('passBody', { price: price(tripPassPrice(currency)) })}</p>
+          <Link href="/app/trips" className={styles.secondary}>
+            {t('passTrips')}
+          </Link>
+        </div>
+      )}
+
+      {referral ? <ReferralCard referral={referral} /> : null}
 
       <p className={styles.notice} role="status" aria-live="polite">
         {notice}

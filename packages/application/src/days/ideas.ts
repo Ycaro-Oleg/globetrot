@@ -9,7 +9,7 @@ import { z } from 'zod';
 import { RateLimitedError } from '../errors';
 import { defineOperation } from '../operation';
 import type { Ports } from '../ports';
-import { loadOwnedTrip } from '../trips/operations';
+import { loadTripFor } from '../trips/operations';
 import { tripIdSchema } from '../trips/schemas';
 
 /** Stops that get ideas, in route order: enough for a long trip, few enough to keep the provider calls small. */
@@ -54,7 +54,7 @@ export function createSuggestDayPlaces(
     input: z.object({ tripId: tripIdSchema, language: z.enum(['en', 'pt-BR']).default('en') }),
     output: dayIdeasSchema,
     async handler(actor, input) {
-      const trip = await loadOwnedTrip(deps.trips, actor, input.tripId);
+      const trip = await loadTripFor(deps.trips, actor, input.tripId, 'view');
       if (!deps.rateLimiter.consume(`ideas:${actor.userId}`, IDEAS_PER_MINUTE)) {
         throw new RateLimitedError();
       }

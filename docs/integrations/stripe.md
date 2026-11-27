@@ -1,6 +1,6 @@
 # Stripe (commercial architecture)
 
-Status: **built** ([ADR-0019](../architecture/adr/0019-plans-trial-and-pip-credits.md)): plans, credits, Checkout, the Customer Portal and webhooks. It is off until the `STRIPE_*` settings are set. No live payments until the owner sets live keys.
+Status: **built** ([ADR-0019](../architecture/adr/0019-plans-trial-and-pip-credits.md), [ADR-0023](../architecture/adr/0023-free-plan-trip-pass-and-prices-in-reais.md)): plans, credits, trip passes, prices in USD and BRL, Checkout, the Customer Portal and webhooks. It is off until the `STRIPE_*` settings are set. No live payments until the owner sets live keys.
 
 ## Facts and decisions
 
@@ -28,18 +28,18 @@ Status: **built** ([ADR-0019](../architecture/adr/0019-plans-trial-and-pip-credi
 
 ## How it is built
 
-- **Prices:** plans, prices and credits are data in the domain (`PLAN_TERMS`, `TRIAL_TERMS`, `TOP_UP`). The landing and `/app/plan` read them through `apps/web/lib/plan-config.ts`; copy lives in the `plans` catalog. The Stripe Prices must charge the same amounts.
+- **Prices:** plans, prices and credits are data in the domain (`PLAN_PRICES`, `PLAN_TERMS`, `FREE_TERMS`, `TRIAL_TERMS`, `TOP_UP_PRICES`, `TRIP_PASS`), in USD and BRL. The landing and `/app/plan` read them through `apps/web/lib/plan-config.ts`; copy lives in the `plans` catalog. The Stripe Prices must charge the same amounts. The checkout uses the person's price currency (BRL when their chosen currency is BRL, else USD); a BRL Price that is not set falls back to the USD one.
 - **The adapter (`apps/api/src/stripe.ts`)** uses Stripe's HTTP API with `fetch`, with no SDK and a pinned `Stripe-Version`. It implements `PaymentsPort`:
-  - **Checkout** in `subscription` mode for Explorer and Voyager (monthly or yearly Price) and in `payment` mode for the top-up.
+  - **Checkout** in `subscription` mode for Explorer and Voyager (monthly or yearly Price) and in `payment` mode for the top-up and the trip pass (with `metadata.tripId`; the application checks the trip is the buyer's). One-time payments leave the payment methods to the dashboard, so Pix shows for reais once it is switched on there.
   - It sends `client_reference_id` and `metadata.userId`, and reuses the customer once there is one. Otherwise it sends the account's email, which Stripe needs for receipts.
   - Promotion codes are allowed.
-  - Success returns to `/app/plan?paid=…`, which thanks the person while the webhook arrives.
+  - Success returns to `/app/plan?paid=…` (a pass returns to the trip's page), which thanks the person while the webhook arrives.
   - **Customer Portal** to change the card, switch or cancel.
 - **The webhook:** `POST /v1/webhooks/stripe`, through the web origin like every `/v1` route, with no session.
   - It checks the `Stripe-Signature` HMAC over the raw body, with a 5-minute tolerance against replays.
   - For any subscription event it **reads the subscription from Stripe** and stores its current state, so events can repeat or arrive out of order.
   - Events handled:
-    - `checkout.session.completed` and `checkout.session.async_payment_succeeded`: a subscription, or a paid top-up added once per payment intent.
+    - `checkout.session.completed` and `checkout.session.async_payment_succeeded` (Pix clears later): a subscription, a paid top-up added once per payment intent, or a trip pass granted once per payment intent.
     - `customer.subscription.*`
     - `invoice.paid` and `invoice.payment_failed`
   - Everything else answers 200 and is ignored. A failure answers 500, so Stripe retries.
@@ -51,12 +51,14 @@ Status: **built** ([ADR-0019](../architecture/adr/0019-plans-trial-and-pip-credi
 
 ## Switching it on (the owner, in the Stripe dashboard, test mode first)
 
-1. **Products and Prices:**
-   - Explorer: US$4.99 a month and US$39.99 a year.
-   - Voyager: US$9.99 a month and US$79.99 a year.
-   - "200 Pip credits": a one-time US$2.99.
-   - Put the five Price ids in `STRIPE_PRICE_*`.
-2. **Customer Portal:** allow cancel, card updates and switching between the four plan Prices.
+1. **Products and Prices** (USD required, BRL optional):
+   - Explorer: US$4.99 a month and US$39.99 a year; R$14,90 a month and R$119 a year.
+   - Voyager: US$9.99 a month and US$79.99 a year; R$29,90 a month and R$239 a year.
+   - "200 Pip credits": a one-time US$2.99; R$14,90.
+   - "Trip pass": a one-time US$9.99; R$39.
+   - Put the six USD Price ids in `STRIPE_PRICE_*` and the BRL ones in `STRIPE_PRICE_*_BRL`.
+   - To offer Pix on one-time payments in reais, switch Pix on under Payment methods.
+2. **Customer Portal:** allow cancel, card updates and switching between the plan Prices (four per currency).
 3. **Webhook endpoint:**
    - The URL is `https://<web domain>/v1/webhooks/stripe`.
    - Subscribe to `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `customer.subscription.created`, `customer.subscription.updated`, `customer.subscription.deleted`, `invoice.paid` and `invoice.payment_failed`.

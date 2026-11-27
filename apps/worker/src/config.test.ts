@@ -20,6 +20,12 @@ describe('worker settings', () => {
     expect(config.intervalMinutes).toBe(60);
     expect(config.appUrl).toBe('http://localhost:3000');
     expect(config.email).toMatchObject({ host: 'localhost', port: 1025 });
+    expect(config.sentryDsn).toBeNull();
+  });
+
+  it('report errors to Sentry only when a DSN is set', () => {
+    const dsn = 'https://public@o1.ingest.sentry.io/2';
+    expect(loadWorkerConfig({ DATABASE_URL, SENTRY_DSN: dsn }).sentryDsn).toBe(dsn);
   });
 
   it('need a mail server and an https origin in production', () => {

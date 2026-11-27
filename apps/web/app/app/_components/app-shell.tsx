@@ -9,6 +9,11 @@ import { AccountMenu } from './account-menu';
 import { PlanBanner } from './plan-banner';
 import { PipLookProvider } from './pip-look';
 import { BottomBar, GlobalNav, TripTabs } from './nav-links';
+import { PipFab } from './pip-fab';
+import { offlineAllowed } from '../../../lib/offline';
+import { OfflineSupport } from './offline-support';
+import { ReferralClaim } from './referral-claim';
+import { TripRefresh } from './trip-refresh';
 import { TripSwitcher } from './trip-switcher';
 import styles from './shell.module.css';
 
@@ -39,6 +44,7 @@ export function AppShell({
   children: ReactNode;
 }) {
   const t = useTranslations('shell');
+  const activeTrip = trips.find((trip) => trip.id === activeTripId);
 
   return (
     <PipLookProvider look={pipLook ?? DEFAULT_PIP_LOOK} name={pipName}>
@@ -57,18 +63,23 @@ export function AppShell({
             <TripTabs variant="inline" />
             <span className={styles.spacer} />
             <PlanBanner billing={billing} variant="pill" />
-            <GlobalNav pipEnabled={pipEnabled} />
+            <GlobalNav />
             <AccountMenu name={userName} />
           </header>
           <TripTabs variant="row" />
           <PlanBanner billing={billing} />
+          <OfflineSupport enabled={offlineAllowed(billing, activeTripId)} />
         </div>
 
         <main id="main" tabIndex={-1} className={styles.main}>
           {children}
         </main>
 
-        <BottomBar pipEnabled={pipEnabled} />
+        {/* A trip shared with the person refreshes on its own; the owner's when they come back to the tab. */}
+        <TripRefresh shared={activeTrip !== undefined && activeTrip.role !== 'owner'} />
+        <ReferralClaim />
+        {pipEnabled ? <PipFab /> : null}
+        <BottomBar />
       </div>
     </PipLookProvider>
   );

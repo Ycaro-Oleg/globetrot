@@ -1,3 +1,4 @@
+import type { PriceCurrency } from '@globetrot/domain';
 import { loadDatabaseConfig } from '@globetrot/db';
 import { storageConfigFromEnv, StorageConfigError, type StorageConfig } from '@globetrot/storage';
 import { z } from 'zod';
@@ -46,6 +47,20 @@ const envSchema = z.object({
   DEEPSEEK_API_KEY: z.string().optional(),
   DEEPSEEK_BASE_URL: z.url().default('https://api.deepseek.com'),
   DEEPSEEK_MODEL: z.string().default('deepseek-chat'),
+  SENTRY_DSN: z.url().optional(),
+  ADMIN_EMAILS: z.string().optional(),
+  INBOUND_EMAIL_SECRET: z.string().min(24).optional(),
+  INBOUND_EMAIL_DOMAIN: z
+    .string()
+    .regex(/^[a-z0-9.-]+\.[a-z]{2,}$/)
+    .optional(),
+  INBOUND_EMAIL_LOCAL: z
+    .string()
+    .regex(/^[a-z0-9.-]+$/)
+    .default('trips'),
+  ANTHROPIC_API_KEY: z.string().optional(),
+  ANTHROPIC_BASE_URL: z.url().default('https://api.anthropic.com'),
+  ANTHROPIC_MODEL: z.string().default('claude-haiku-5-5'),
   STRIPE_SECRET_KEY: z.string().optional(),
   STRIPE_WEBHOOK_SECRET: z.string().optional(),
   STRIPE_PRICE_EXPLORER_MONTHLY: z.string().optional(),
@@ -53,6 +68,14 @@ const envSchema = z.object({
   STRIPE_PRICE_VOYAGER_MONTHLY: z.string().optional(),
   STRIPE_PRICE_VOYAGER_YEARLY: z.string().optional(),
   STRIPE_PRICE_TOP_UP: z.string().optional(),
+  STRIPE_PRICE_TRIP_PASS: z.string().optional(),
+  // Prices in reais (ADR-0023); each one unset falls back to the USD price above.
+  STRIPE_PRICE_EXPLORER_MONTHLY_BRL: z.string().optional(),
+  STRIPE_PRICE_EXPLORER_YEARLY_BRL: z.string().optional(),
+  STRIPE_PRICE_VOYAGER_MONTHLY_BRL: z.string().optional(),
+  STRIPE_PRICE_VOYAGER_YEARLY_BRL: z.string().optional(),
+  STRIPE_PRICE_TOP_UP_BRL: z.string().optional(),
+  STRIPE_PRICE_TRIP_PASS_BRL: z.string().optional(),
   PORT: number(4000, 1, 65535),
 });
 
@@ -64,16 +87,22 @@ const STRIPE_SETTINGS = [
   'STRIPE_PRICE_VOYAGER_MONTHLY',
   'STRIPE_PRICE_VOYAGER_YEARLY',
   'STRIPE_PRICE_TOP_UP',
+  'STRIPE_PRICE_TRIP_PASS',
 ] as const;
+
+/** The Stripe Price ids of one price currency. */
+export interface StripePriceIds {
+  readonly explorer: { readonly month: string; readonly year: string };
+  readonly voyager: { readonly month: string; readonly year: string };
+  readonly topUp: string;
+  readonly tripPass: string;
+}
 
 export interface StripeConfig {
   readonly secretKey: string;
   readonly webhookSecret: string;
-  readonly prices: {
-    readonly explorer: { readonly month: string; readonly year: string };
-    readonly voyager: { readonly month: string; readonly year: string };
-    readonly topUp: string;
-  };
+  /** Per price currency; a BRL price not set is the USD one (ADR-0023). */
+  readonly prices: Readonly<Record<PriceCurrency, StripePriceIds>>;
   /** The public web origin: where checkout returns the person. */
   readonly returnOrigin: string;
 }
@@ -124,10 +153,26 @@ export interface ApiConfig {
   readonly email: EmailConfig;
   /** Pip's model (DeepSeek); `null` turns Pip off (asking answers 503). */
   readonly ai: { readonly apiKey: string; readonly baseUrl: string; readonly model: string } | null;
+  /** The second model (Anthropic, ADR-0022), asked when the first does not answer; `null` when no key is set. */
+  readonly aiFallback: {
+    readonly apiKey: string;
+    readonly baseUrl: string;
+    readonly model: string;
+  } | null;
   /** S3-compatible storage for uploaded images (SeaweedFS locally). */
   readonly storage: StorageConfig;
   /** Stripe (ADR-0019); `null` keeps payments off (checkout answers 503). */
   readonly stripe: StripeConfig | null;
+  /** Where unexpected errors are reported (Sentry, ADR-0021); `null` keeps them in the logs only. */
+  readonly sentryDsn: string | null;
+  /** Lower-case addresses that may see the internal dashboard (ADR-0031); empty for nobody. */
+  readonly adminEmails: readonly string[];
+  /** Booking emails forwarded to Pip (ADR-0032); `null` keeps the inbound route off. */
+  readonly inboundEmail: {
+    readonly secret: string;
+    readonly domain: string;
+    readonly local: string;
+  } | null;
   /** True when no secret was provided and the public development one is in use (never in production). */
   readonly usingInsecureSecret: boolean;
 }
@@ -253,15 +298,31 @@ export function loadApiConfig(
       secretKey,
       webhookSecret: values.STRIPE_WEBHOOK_SECRET!,
       prices: {
-        explorer: {
-          month: values.STRIPE_PRICE_EXPLORER_MONTHLY!,
-          year: values.STRIPE_PRICE_EXPLORER_YEARLY!,
+        USD: {
+          explorer: {
+            month: values.STRIPE_PRICE_EXPLORER_MONTHLY!,
+            year: values.STRIPE_PRICE_EXPLORER_YEARLY!,
+          },
+          voyager: {
+            month: values.STRIPE_PRICE_VOYAGER_MONTHLY!,
+            year: values.STRIPE_PRICE_VOYAGER_YEARLY!,
+          },
+          topUp: values.STRIPE_PRICE_TOP_UP!,
+          tripPass: values.STRIPE_PRICE_TRIP_PASS!,
         },
-        voyager: {
-          month: values.STRIPE_PRICE_VOYAGER_MONTHLY!,
-          year: values.STRIPE_PRICE_VOYAGER_YEARLY!,
+        BRL: {
+          explorer: {
+            month:
+              values.STRIPE_PRICE_EXPLORER_MONTHLY_BRL ?? values.STRIPE_PRICE_EXPLORER_MONTHLY!,
+            year: values.STRIPE_PRICE_EXPLORER_YEARLY_BRL ?? values.STRIPE_PRICE_EXPLORER_YEARLY!,
+          },
+          voyager: {
+            month: values.STRIPE_PRICE_VOYAGER_MONTHLY_BRL ?? values.STRIPE_PRICE_VOYAGER_MONTHLY!,
+            year: values.STRIPE_PRICE_VOYAGER_YEARLY_BRL ?? values.STRIPE_PRICE_VOYAGER_YEARLY!,
+          },
+          topUp: values.STRIPE_PRICE_TOP_UP_BRL ?? values.STRIPE_PRICE_TOP_UP!,
+          tripPass: values.STRIPE_PRICE_TRIP_PASS_BRL ?? values.STRIPE_PRICE_TRIP_PASS!,
         },
-        topUp: values.STRIPE_PRICE_TOP_UP!,
       },
       returnOrigin: new URL(values.BETTER_AUTH_URL).origin,
     };
@@ -281,8 +342,29 @@ export function loadApiConfig(
             baseUrl: values.DEEPSEEK_BASE_URL,
             model: values.DEEPSEEK_MODEL,
           },
+    aiFallback:
+      values.ANTHROPIC_API_KEY === undefined
+        ? null
+        : {
+            apiKey: values.ANTHROPIC_API_KEY,
+            baseUrl: values.ANTHROPIC_BASE_URL,
+            model: values.ANTHROPIC_MODEL,
+          },
     storage,
     stripe,
+    sentryDsn: values.SENTRY_DSN ?? null,
+    inboundEmail:
+      values.INBOUND_EMAIL_SECRET && values.INBOUND_EMAIL_DOMAIN
+        ? {
+            secret: values.INBOUND_EMAIL_SECRET,
+            domain: values.INBOUND_EMAIL_DOMAIN,
+            local: values.INBOUND_EMAIL_LOCAL,
+          }
+        : null,
+    adminEmails: (values.ADMIN_EMAILS ?? '')
+      .split(',')
+      .map((email) => email.trim().toLowerCase())
+      .filter(Boolean),
     usingInsecureSecret: secret === INSECURE_DEV_SECRET,
     auth: {
       secret,

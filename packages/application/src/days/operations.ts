@@ -10,7 +10,7 @@ import type {
   Ports,
   Transaction,
 } from '../ports';
-import { loadOwnedTrip } from '../trips/operations';
+import { loadTripFor } from '../trips/operations';
 import { tripIdSchema } from '../trips/schemas';
 import {
   addDayPlaceFields,
@@ -56,7 +56,7 @@ export function createListDayPlaces(deps: ReadPorts) {
     input: z.object({ tripId: tripIdSchema }),
     output: dayPlanSchema,
     async handler(actor, input) {
-      const trip = await loadOwnedTrip(deps.trips, actor, input.tripId);
+      const trip = await loadTripFor(deps.trips, actor, input.tripId, 'view');
       const [places, destinations] = await Promise.all([
         deps.dayPlaces.listByTrip(trip.id),
         deps.destinations.listByTrip(trip.id),
@@ -81,7 +81,7 @@ export function createAddDayPlace(deps: WritePorts) {
     async handler(actor, input) {
       const now = deps.clock.now();
       return deps.unitOfWork.run(async (tx) => {
-        const trip = await loadOwnedTrip(tx.trips, actor, input.tripId);
+        const trip = await loadTripFor(tx.trips, actor, input.tripId, 'edit');
         const [places, destinations] = await Promise.all([
           tx.dayPlaces.listByTrip(trip.id),
           tx.destinations.listByTrip(trip.id),
@@ -134,7 +134,7 @@ export function createMoveDayPlace(deps: WritePorts) {
     async handler(actor, input) {
       const now = deps.clock.now();
       return deps.unitOfWork.run(async (tx) => {
-        const trip = await loadOwnedTrip(tx.trips, actor, input.tripId);
+        const trip = await loadTripFor(tx.trips, actor, input.tripId, 'edit');
         const moving = await loadOwnedPlace(tx, trip.id, input.placeId);
         const [places, destinations] = await Promise.all([
           tx.dayPlaces.listByTrip(trip.id),
@@ -194,7 +194,7 @@ export function createRemoveDayPlace(deps: WritePorts) {
     async handler(actor, input) {
       const now = deps.clock.now();
       return deps.unitOfWork.run(async (tx) => {
-        const trip = await loadOwnedTrip(tx.trips, actor, input.tripId);
+        const trip = await loadTripFor(tx.trips, actor, input.tripId, 'edit');
         await loadOwnedPlace(tx, trip.id, input.placeId);
         await tx.dayPlaces.delete(input.placeId);
         await record(tx, deps, actor, now, 'day_place.remove', trip.id, {});

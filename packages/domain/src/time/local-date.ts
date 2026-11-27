@@ -79,3 +79,24 @@ export function fullMonthsBetween(from: LocalDate, to: LocalDate): number {
   const months = (ty - fy) * 12 + (tm - fm) - (td < fd ? 1 : 0);
   return Math.max(0, months);
 }
+
+/**
+ * The calendar day it is at `now` in an IANA time zone (`America/Sao_Paulo`), or in UTC when the zone is missing
+ * or unknown. A person's "this week" follows their own calendar, not the server's.
+ */
+export function localDateIn(now: Date, timeZone: string | null | undefined): LocalDate {
+  if (timeZone) {
+    try {
+      const parts = new Intl.DateTimeFormat('en-CA', {
+        timeZone,
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+      }).format(now);
+      if (isLocalDate(parts)) return parts;
+    } catch {
+      // An unknown zone falls back to UTC below.
+    }
+  }
+  return now.toISOString().slice(0, 10) as LocalDate;
+}

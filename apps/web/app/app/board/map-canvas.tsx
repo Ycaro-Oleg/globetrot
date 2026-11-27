@@ -11,7 +11,6 @@ import type {
 import {
   arcBetween,
   distanceKm,
-  SPOT_ICONS,
   partialLine,
   type KitTab,
   type RouteStop,
@@ -21,6 +20,7 @@ import { PIN, relabel, restyle, styleCountries, type MapStyleName } from './map-
 import styles from './world-map.module.css';
 import { fitPadding } from './fit-padding';
 import { legIconMarkup } from './leg-icon';
+import { spotIconMarkup } from './spot-icon';
 
 export type Inset = { top: number; right: number; bottom: number; left: number };
 export type NearbyPlace = { name: string; kind: string; longitude: number; latitude: number };
@@ -438,7 +438,7 @@ export function MapCanvas(props: Props) {
         const icon = document.createElement('span');
         icon.className = styles.spotPinIcon ?? '';
         icon.setAttribute('aria-hidden', 'true');
-        icon.textContent = SPOT_ICONS[spot.kind];
+        icon.innerHTML = spotIconMarkup(spot.kind);
         const label = document.createElement('span');
         label.className = styles.spotPinLabel ?? '';
         label.setAttribute('aria-hidden', 'true');
@@ -472,7 +472,7 @@ export function MapCanvas(props: Props) {
       el.setAttribute('aria-hidden', 'true');
       const icon = document.createElement('span');
       icon.className = styles.spotPinIcon ?? '';
-      icon.textContent = SPOT_ICONS[spot.kind];
+      icon.innerHTML = spotIconMarkup(spot.kind);
       const label = document.createElement('span');
       label.className = styles.spotPinLabel ?? '';
       label.textContent = spot.name;
