@@ -248,6 +248,22 @@ describe('sessions', () => {
     expect((await signIn(wrong, '198.51.100.91, 10.0.0.5')).status).not.toBe(429);
     expect((await signIn(wrong, '198.51.100.90, 10.0.0.5')).status).toBe(429);
   });
+
+  it('read the client address from CLIENT_IP_HEADER, ignoring a forged X-Forwarded-For', async () => {
+    const { call } = await harness({
+      AUTH_SIGN_IN_ATTEMPTS_PER_MINUTE: '1',
+      CLIENT_IP_HEADER: 'x-real-ip',
+    });
+    const signIn = (forwardedFor: string) =>
+      call('/sign-in/email', {
+        method: 'POST',
+        ip: forwardedFor,
+        headers: { 'x-real-ip': '198.51.100.95' },
+        json: { email: 'nobody@example.com', password: 'wrong-password-123' },
+      });
+    expect((await signIn('203.0.113.201')).status).not.toBe(429);
+    expect((await signIn('203.0.113.202')).status).toBe(429);
+  });
 });
 
 describe('session cookie', () => {

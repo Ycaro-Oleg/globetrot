@@ -24,6 +24,7 @@ Every environment variable the project reads, in one place. [`.env.example`](../
 | `SESSION_EXPIRES_IN_SECONDS` | `2592000` (30 days) | optional | Session lifetime |
 | `SESSION_UPDATE_AGE_SECONDS` | `86400` (1 day) | optional | A session older than this is renewed when used |
 | `AUTH_SIGN_IN_ATTEMPTS_PER_MINUTE` | `5` | optional | Per client address |
+| `CLIENT_IP_HEADER` | `x-forwarded-for` | `x-real-ip` on Railway | The request header the API reads the client address from, for rate limits and the stored session address. Railway's edge always overwrites `X-Real-IP`; its `X-Forwarded-For` keeps a client-sent value ([authentication](../architecture/authentication.md#which-client-address-counts-trust-model)) |
 | `AUTH_SIGN_UP_ATTEMPTS_PER_MINUTE` | `5` | optional | Per client address |
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | unset | set both, in Railway (secret) | Google sign-in. **Both or neither**: with one the API refuses to start (the message names the settings, never a value); with neither the provider is off, `GET /v1/auth/providers` is empty and the button is hidden. The redirect URI to allow in the Google console is `<BETTER_AUTH_URL>/api/auth/callback/google` and the authorized JavaScript origin is `<BETTER_AUTH_URL>` ([authentication](../architecture/authentication.md#google-sign-in-55)) |
 | `DEEPSEEK_API_KEY` | unset | the owner's DeepSeek key, as a secret | Pip's model ([ADR-0016](../architecture/adr/0016-pip-on-deepseek.md)). Unset: asking Pip answers `503` and everything else works |

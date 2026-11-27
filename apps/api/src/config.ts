@@ -31,6 +31,10 @@ const envSchema = z.object({
   SESSION_UPDATE_AGE_SECONDS: number(DAY, 60),
   AUTH_SIGN_IN_ATTEMPTS_PER_MINUTE: number(5, 1, 1000),
   AUTH_SIGN_UP_ATTEMPTS_PER_MINUTE: number(5, 1, 1000),
+  CLIENT_IP_HEADER: z
+    .string()
+    .regex(/^[a-z0-9-]+$/, 'CLIENT_IP_HEADER must be a lowercase header name')
+    .default('x-forwarded-for'),
   REQUIRE_VERIFIED_EMAIL: z.enum(['true', 'false']).default('true'),
   VERIFICATION_EXPIRES_IN_SECONDS: number(DAY, 1),
   RESET_PASSWORD_EXPIRES_IN_SECONDS: number(60 * 60, 1),
@@ -123,6 +127,8 @@ export interface AuthConfig {
   readonly sessionUpdateAge: number;
   readonly signInAttemptsPerMinute: number;
   readonly signUpAttemptsPerMinute: number;
+  /** The request header that holds the client address (`x-real-ip` behind Railway's edge). */
+  readonly clientIpHeader: string;
   readonly secureCookies: boolean;
   /** A password sign-in needs a verified email. Google sign-in counts as verified. */
   readonly requireVerifiedEmail: boolean;
@@ -382,6 +388,7 @@ export function loadApiConfig(
       sessionUpdateAge: values.SESSION_UPDATE_AGE_SECONDS,
       signInAttemptsPerMinute: values.AUTH_SIGN_IN_ATTEMPTS_PER_MINUTE,
       signUpAttemptsPerMinute: values.AUTH_SIGN_UP_ATTEMPTS_PER_MINUTE,
+      clientIpHeader: values.CLIENT_IP_HEADER,
       secureCookies: isProduction,
       requireVerifiedEmail: values.REQUIRE_VERIFIED_EMAIL === 'true',
       verificationExpiresIn: values.VERIFICATION_EXPIRES_IN_SECONDS,
