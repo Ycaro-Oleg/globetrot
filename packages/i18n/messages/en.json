@@ -844,7 +844,12 @@
     "layersClose": "Close",
     "spotPinned": "{name} is on the map.",
     "spotPinHint": "Click the map where {name} is, in {place}. Esc cancels.",
-    "spotAria": "{name}, {kind}, in {place}"
+    "spotAria": "{name}, {kind}, in {place}",
+    "partners": {
+      "tours": "Tours in {place}",
+      "stays": "Stays in {place}",
+      "label": "Partner links: Globetrot may earn a commission; prices are on the partner’s page."
+    }
   },
   "daysPage": {
     "title": "Days",
@@ -1973,7 +1978,8 @@
       "photos": "Add photos to the places you visit",
       "memories": "Mark the places you visited",
       "settle": "Settle up with the people you travelled with"
-    }
+    },
+    "partnerLink": "See options (partner link)"
   },
   "itinerary": {
     "navLabel": "Globetrot",
@@ -2039,5 +2045,37 @@
       "esfera": "Esfera"
     },
     "add": "Add my miles"
+  },
+  "adminMetrics": {
+    "title": "Metrics",
+    "note": "Counts only, straight from the database. Last 30 days unless said otherwise.",
+    "accounts": "Accounts",
+    "total": "Total",
+    "verified": "Verified email",
+    "last7": "New, last 7 days",
+    "last30": "New, last 30 days",
+    "trips": "Trips",
+    "active": "Active",
+    "created30": "Created",
+    "fromPlan": "From the landing’s plan",
+    "fromExample": "From an example",
+    "byHand": "By hand",
+    "saving": "Saving monthly",
+    "retention": "Retention",
+    "cohort": "Signed up 8 to 16 weeks ago",
+    "week1": "Active in week 1",
+    "week4": "Active in week 4",
+    "week8": "Active in week 8",
+    "sharing": "Sharing",
+    "invites": "Invite links made",
+    "joins": "People who joined",
+    "viral": "Joins per inviter",
+    "referrals": "Referrals (all time)",
+    "money": "Paying",
+    "explorer": "Explorer",
+    "voyager": "Voyager",
+    "passes": "Trip passes in force",
+    "checkins": "Check-ins per week",
+    "none": "No check-ins yet."
   }
 }

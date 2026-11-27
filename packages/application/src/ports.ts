@@ -984,6 +984,23 @@ export interface PaymentsPort {
   portalUrl(input: { readonly providerCustomerId: string }): Promise<string | null>;
 }
 
+/** The internal dashboard's numbers (see `adminMetricsSchema`). */
+export interface AdminMetricsView {
+  readonly accounts: { total: number; last7: number; last30: number; verified: number };
+  readonly trips: {
+    active: number;
+    created30: number;
+    fromPlan30: number;
+    fromExample30: number;
+    byHand30: number;
+    savingMonthly: number;
+  };
+  readonly checkinsByWeek: { week: string; count: number }[];
+  readonly sharing: { invites30: number; joins30: number; inviters30: number };
+  readonly retention: { cohort: number; week1: number; week4: number; week8: number };
+  readonly money: { explorer: number; voyager: number; activePasses: number; referrals: number };
+}
+
 // --- Transactions, time and ids ------------------------------------------------------------------------
 
 /** What a mutation may touch. Everything in one `UnitOfWork.run` commits or rolls back together. */
@@ -1044,6 +1061,10 @@ export interface Ports {
   readonly shares: ShareReader;
   readonly ai: AiPort;
   readonly unitOfWork: UnitOfWork;
+  /** Who may see the internal dashboard (ADR-0031). */
+  readonly admins: { isAdmin(userId: string): Promise<boolean> };
+  /** The internal dashboard's counts. */
+  readonly metrics: { snapshot(now: Date): Promise<AdminMetricsView> };
   readonly clock: Clock;
   readonly ids: IdGenerator;
   readonly geocoding: GeocodingPort;

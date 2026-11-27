@@ -48,6 +48,7 @@ const envSchema = z.object({
   DEEPSEEK_BASE_URL: z.url().default('https://api.deepseek.com'),
   DEEPSEEK_MODEL: z.string().default('deepseek-chat'),
   SENTRY_DSN: z.url().optional(),
+  ADMIN_EMAILS: z.string().optional(),
   ANTHROPIC_API_KEY: z.string().optional(),
   ANTHROPIC_BASE_URL: z.url().default('https://api.anthropic.com'),
   ANTHROPIC_MODEL: z.string().default('claude-haiku-5-5'),
@@ -155,6 +156,8 @@ export interface ApiConfig {
   readonly stripe: StripeConfig | null;
   /** Where unexpected errors are reported (Sentry, ADR-0021); `null` keeps them in the logs only. */
   readonly sentryDsn: string | null;
+  /** Lower-case addresses that may see the internal dashboard (ADR-0031); empty for nobody. */
+  readonly adminEmails: readonly string[];
   /** True when no secret was provided and the public development one is in use (never in production). */
   readonly usingInsecureSecret: boolean;
 }
@@ -335,6 +338,10 @@ export function loadApiConfig(
     storage,
     stripe,
     sentryDsn: values.SENTRY_DSN ?? null,
+    adminEmails: (values.ADMIN_EMAILS ?? '')
+      .split(',')
+      .map((email) => email.trim().toLowerCase())
+      .filter(Boolean),
     usingInsecureSecret: secret === INSECURE_DEV_SECRET,
     auth: {
       secret,

@@ -40,3 +40,4 @@ ADRs 0010 to 0012 were written after the work they describe (#53 to #61), which 
 | [0028](0028-public-itineraries-and-story-card.md) | Public, indexable itinerary pages from the catalog in both languages, and a progress card for stories | Accepted |
 | [0029](0029-referrals.md) | Referrals: one code per account, claimed within 7 days, a free trip pass when the friend first pays | Accepted |
 | [0030](0030-miles-in-the-savings.md) | Miles in the savings answer: balances per Brazilian programme, researched value ranges, miles put towards a trip | Accepted |
+| [0031](0031-partner-links-and-metrics.md) | Partner links (labelled, no prices, only when configured) and the internal metrics dashboard for admins | Accepted |

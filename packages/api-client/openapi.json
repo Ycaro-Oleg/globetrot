@@ -26452,6 +26452,296 @@
         }
       }
     },
+    "/v1/admin/metrics": {
+      "get": {
+        "operationId": "getAdminMetrics",
+        "tags": [
+          "Account"
+        ],
+        "summary": "The internal dashboard’s counts (admins only)",
+        "description": "Counts only, never people (ADR-0031). Only verified accounts listed in `ADMIN_EMAILS`; everyone else gets `404`.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The counts.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "accounts": {
+                      "type": "object",
+                      "properties": {
+                        "total": {
+                          "type": "integer"
+                        },
+                        "last7": {
+                          "type": "integer"
+                        },
+                        "last30": {
+                          "type": "integer"
+                        },
+                        "verified": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "total",
+                        "last7",
+                        "last30",
+                        "verified"
+                      ]
+                    },
+                    "trips": {
+                      "type": "object",
+                      "properties": {
+                        "active": {
+                          "type": "integer"
+                        },
+                        "created30": {
+                          "type": "integer"
+                        },
+                        "fromPlan30": {
+                          "type": "integer"
+                        },
+                        "fromExample30": {
+                          "type": "integer"
+                        },
+                        "byHand30": {
+                          "type": "integer"
+                        },
+                        "savingMonthly": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "active",
+                        "created30",
+                        "fromPlan30",
+                        "fromExample30",
+                        "byHand30",
+                        "savingMonthly"
+                      ]
+                    },
+                    "checkinsByWeek": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "week": {
+                            "type": "string"
+                          },
+                          "count": {
+                            "type": "integer"
+                          }
+                        },
+                        "required": [
+                          "week",
+                          "count"
+                        ]
+                      }
+                    },
+                    "sharing": {
+                      "type": "object",
+                      "properties": {
+                        "invites30": {
+                          "type": "integer"
+                        },
+                        "joins30": {
+                          "type": "integer"
+                        },
+                        "inviters30": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "invites30",
+                        "joins30",
+                        "inviters30"
+                      ]
+                    },
+                    "retention": {
+                      "type": "object",
+                      "properties": {
+                        "cohort": {
+                          "type": "integer"
+                        },
+                        "week1": {
+                          "type": "integer"
+                        },
+                        "week4": {
+                          "type": "integer"
+                        },
+                        "week8": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "cohort",
+                        "week1",
+                        "week4",
+                        "week8"
+                      ]
+                    },
+                    "money": {
+                      "type": "object",
+                      "properties": {
+                        "explorer": {
+                          "type": "integer"
+                        },
+                        "voyager": {
+                          "type": "integer"
+                        },
+                        "activePasses": {
+                          "type": "integer"
+                        },
+                        "referrals": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "explorer",
+                        "voyager",
+                        "activePasses",
+                        "referrals"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "accounts",
+                    "trips",
+                    "checkinsByWeek",
+                    "sharing",
+                    "retention",
+                    "money"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid session.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "description": "A URN identifying the kind of problem."
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "integer"
+                    },
+                    "code": {
+                      "type": "string",
+                      "description": "Stable machine-readable code. Clients switch on this."
+                    },
+                    "detail": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "field": {
+                            "type": "string"
+                          },
+                          "code": {
+                            "type": "string"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "field",
+                          "code",
+                          "message"
+                        ]
+                      },
+                      "description": "Per-field problems, present for VALIDATION_FAILED."
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "title",
+                    "status",
+                    "code"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not an admin.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "description": "A URN identifying the kind of problem."
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "integer"
+                    },
+                    "code": {
+                      "type": "string",
+                      "description": "Stable machine-readable code. Clients switch on this."
+                    },
+                    "detail": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "field": {
+                            "type": "string"
+                          },
+                          "code": {
+                            "type": "string"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "field",
+                          "code",
+                          "message"
+                        ]
+                      },
+                      "description": "Per-field problems, present for VALIDATION_FAILED."
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "title",
+                    "status",
+                    "code"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/trips/{id}/share": {
       "get": {
         "operationId": "getTripShare",

@@ -375,3 +375,13 @@ describe('Stripe', () => {
     ).toThrow(/whsec_/);
   });
 });
+
+describe('the internal dashboard', () => {
+  it('lists admin addresses in lower case, and nobody without the setting', () => {
+    expect(loadApiConfig({ DATABASE_URL }).adminEmails).toEqual([]);
+    expect(
+      loadApiConfig({ DATABASE_URL, ADMIN_EMAILS: ' Owner@Example.com, ,b@example.com ' })
+        .adminEmails,
+    ).toEqual(['owner@example.com', 'b@example.com']);
+  });
+});

@@ -1,4 +1,9 @@
-import { billingSchema, referralSchema, type Application } from '@globetrot/application';
+import {
+  adminMetricsSchema,
+  billingSchema,
+  referralSchema,
+  type Application,
+} from '@globetrot/application';
 import { createRoute, z, type OpenAPIHono } from '@hono/zod-openapi';
 import { problemResponse, type Env } from '../http';
 
@@ -147,6 +152,25 @@ const redeemRoute = createRoute({
   },
 });
 
+const adminMetricsRoute = createRoute({
+  method: 'get',
+  path: '/v1/admin/metrics',
+  operationId: 'getAdminMetrics',
+  tags: ['Account'],
+  summary: 'The internal dashboard’s counts (admins only)',
+  description:
+    'Counts only, never people (ADR-0031). Only verified accounts listed in `ADMIN_EMAILS`; everyone else gets `404`.',
+  security,
+  responses: {
+    200: {
+      description: 'The counts.',
+      content: { 'application/json': { schema: adminMetricsSchema } },
+    },
+    401: problemResponse('No valid session.'),
+    404: problemResponse('Not an admin.'),
+  },
+});
+
 export function registerBillingRoutes(app: OpenAPIHono<Env>, application: Application) {
   app.openapi(getBillingRoute, async (c) =>
     c.json(await application.getBilling.execute(c.get('actor'), {}), 200),
@@ -170,5 +194,8 @@ export function registerBillingRoutes(app: OpenAPIHono<Env>, application: Applic
       }),
       200,
     ),
+  );
+  app.openapi(adminMetricsRoute, async (c) =>
+    c.json(await application.getAdminMetrics.execute(c.get('actor'), {}), 200),
   );
 }

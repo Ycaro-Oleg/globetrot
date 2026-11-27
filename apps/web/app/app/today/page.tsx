@@ -3,6 +3,7 @@ import { getTranslations } from 'next-intl/server';
 import { apiInternalUrl } from '../../../lib/api-proxy';
 import { createServerApiClient, sessionCookieHeader } from '../../../lib/stored-preferences';
 import { fetchTrips, SELECTED_TRIP_COOKIE } from '../../../lib/trips';
+import { partnersFromEnv } from '../../../lib/partners';
 import { TodayView } from './today-view';
 
 export async function generateMetadata() {
@@ -32,6 +33,7 @@ export default async function TodayPage() {
     <TodayView
       trip={trip ? { id: trip.id, title: trip.title, canEdit: trip.role !== 'viewer' } : null}
       habit={habit}
+      partners={partnersFromEnv()}
     />
   );
 }
