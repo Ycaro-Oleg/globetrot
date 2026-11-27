@@ -45,6 +45,7 @@ Agents: don't read everything. Use [`agents/context-map.md`](agents/context-map.
 - [`engineering/project-structure.md`](engineering/project-structure.md): monorepo layout, what is in each app and package, commands, Docker images.
 - [`engineering/configuration.md`](engineering/configuration.md): every environment variable, who reads it, what production requires.
 - [`engineering/local-development.md`](engineering/local-development.md): local services, `.env`, running the apps, troubleshooting.
+- [`engineering/analytics.md`](engineering/analytics.md): the product events, keeping the team's traffic out (`?interno=1`, admin accounts), what the visitor count means, and the pre-sales PostHog dashboard.
 - [`engineering/launch-runbook.md`](engineering/launch-runbook.md): putting Globetrot in production (Railway services, required settings, first deploy, smoke test) and the owner's launch decisions.
 - [`engineering/coding-standards.md`](engineering/coding-standards.md): TypeScript, naming, architecture boundaries, money/dates/copy, errors, config, React, dependencies.
 - [`engineering/testing-strategy.md`](engineering/testing-strategy.md): test layers, what each change must test, deterministic tests, coverage, flaky tests.

@@ -2,9 +2,26 @@
 
 import Link from 'next/link';
 import Script from 'next/script';
+import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useEffect, useState, useSyncExternalStore } from 'react';
-import { analyticsConfig, readConsent, writeConsent, type Consent } from '../lib/analytics';
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import {
+  ADMIN_CHECKED_KEY,
+  analyticsConfig,
+  flushPendingEvents,
+  INTERNAL_EVENT,
+  internalParam,
+  isExcluded,
+  isInternal,
+  measurementConfigured,
+  pageLocale,
+  prepareEvent,
+  readConsent,
+  rememberVisitOrigin,
+  setInternal,
+  writeConsent,
+  type Consent,
+} from '../lib/analytics';
 import styles from './analytics.module.css';
 
 const META_LOADER = (
@@ -14,13 +31,26 @@ n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.p
 n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}
 (window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','${id}');fbq('track','PageView');`;
 
+type PostHogModule = typeof import('posthog-js').default;
+
+const subscribeInternal = (notify: () => void) => {
+  window.addEventListener(INTERNAL_EVENT, notify);
+  window.addEventListener('storage', notify);
+  return () => {
+    window.removeEventListener(INTERNAL_EVENT, notify);
+    window.removeEventListener('storage', notify);
+  };
+};
+
 /**
- * Loads the configured measurement (ADR-0018): Plausible always (cookieless), the Meta Pixel only after the
- * visitor accepts. The banner offers Accept and Reject with the same weight, and can be reopened from the
- * footer ("Cookie preferences").
+ * Loads the configured measurement (ADR-0018, ADR-0021): Plausible always (cookieless), PostHog cookieless until
+ * the visitor accepts, the Meta Pixel only after the visitor accepts. The banner offers Accept and Reject with the
+ * same weight, and can be reopened from the footer ("Cookie preferences"). A team device (`?interno=1`, or an
+ * admin account) loads nothing and says so at the bottom of the page.
  */
 export function Analytics() {
   const t = useTranslations('consent');
+  const pathname = usePathname();
   const { plausibleDomain, plausibleSrc, metaPixelId, posthogKey, posthogHost } = analyticsConfig();
   // The cookie is the source of truth; the server knows nothing ('unknown'), so nothing renders there.
   const consent = useSyncExternalStore<Consent | null | 'unknown'>(
@@ -31,40 +61,74 @@ export function Analytics() {
     readConsent,
     () => 'unknown',
   );
+  // Same for the team mark: nothing loads until the page knows the device is not the team's.
+  const excluded = useSyncExternalStore<boolean | 'unknown'>(
+    subscribeInternal,
+    () => isExcluded(window.location.search),
+    () => 'unknown',
+  );
   const [reopened, setReopened] = useState(false);
+  const posthogRef = useRef<PostHogModule | null>(null);
   useEffect(() => {
     const reopen = () => setReopened(true);
     window.addEventListener('globetrot:consent-open', reopen);
     return () => window.removeEventListener('globetrot:consent-open', reopen);
   }, []);
-  const asks = metaPixelId !== null || posthogKey !== null;
-  const open = asks && (consent === null || reopened);
 
-  // PostHog loads only when configured: in memory until the visitor accepts, then remembered across visits.
+  // Each page: honour `?interno=`, keep the visit's origin (first page only), and send what the server left.
   useEffect(() => {
-    if (!posthogKey || consent === 'unknown') return;
+    const asked = internalParam(window.location.search);
+    if (asked !== null && asked !== isInternal()) setInternal(asked);
+    rememberVisitOrigin({
+      search: window.location.search,
+      referrer: document.referrer,
+      host: window.location.hostname,
+      pathname: window.location.pathname,
+    });
+    flushPendingEvents();
+  }, [pathname]);
+
+  // A device marked while the Pixel was already loaded stops it too.
+  useEffect(() => {
+    if (excluded === true) window.fbq?.('consent', 'revoke');
+  }, [excluded]);
+
+  const asks = metaPixelId !== null || posthogKey !== null;
+  const open = asks && excluded === false && (consent === null || reopened);
+
+  // PostHog loads only when configured and not on a team device. Before an answer and after a refusal it counts
+  // without cookies or storage (an anonymous hash on PostHog's side); after Accept it remembers the visitor.
+  useEffect(() => {
+    if (!posthogKey || consent === 'unknown' || excluded !== false) return;
     let cancelled = false;
     void import('posthog-js').then(({ default: posthog }) => {
       if (cancelled) return;
-      const persistence = consent === 'granted' ? 'localStorage+cookie' : 'memory';
-      if (window.posthog) {
-        posthog.set_config({ persistence });
+      const granted = consent === 'granted';
+      if (posthogRef.current) {
+        posthog.set_config({ persistence: granted ? 'localStorage+cookie' : 'memory' });
+        if (granted) posthog.opt_in_capturing();
+        else posthog.opt_out_capturing();
         return;
       }
       posthog.init(posthogKey, {
         api_host: posthogHost,
-        persistence,
+        persistence: granted ? 'localStorage+cookie' : 'memory',
+        cookieless_mode: 'on_reject',
+        opt_out_capturing_by_default: !granted,
         person_profiles: 'identified_only',
         autocapture: false,
         disable_session_recording: true,
         capture_pageview: 'history_change',
+        // Checked on every event, so a device marked later stops at once.
+        before_send: (event) => prepareEvent(event, isInternal(), pageLocale()),
       });
+      posthogRef.current = posthog;
       window.posthog = posthog;
     });
     return () => {
       cancelled = true;
     };
-  }, [posthogKey, posthogHost, consent]);
+  }, [posthogKey, posthogHost, consent, excluded]);
 
   const choose = (value: Consent) => {
     setReopened(false);
@@ -73,15 +137,16 @@ export function Analytics() {
 
   return (
     <>
-      {plausibleDomain ? (
+      {plausibleDomain && excluded === false ? (
         <Script
           defer
           data-domain={plausibleDomain}
+          event-locale={pageLocale()}
           src={plausibleSrc}
           strategy="afterInteractive"
         />
       ) : null}
-      {metaPixelId && consent === 'granted' ? (
+      {metaPixelId && consent === 'granted' && excluded === false ? (
         <Script id="meta-pixel" strategy="afterInteractive">
           {META_LOADER(metaPixelId)}
         </Script>
@@ -104,8 +169,46 @@ export function Analytics() {
           </div>
         </section>
       ) : null}
+      {excluded === true ? (
+        <p className={styles.internalNote} role="note">
+          {t('internalNote')}
+        </p>
+      ) : null}
     </>
   );
+}
+
+/**
+ * Marks the browser of an admin account (`ADMIN_EMAILS`) as the team's, so it stays out of the numbers, also after
+ * signing out. It asks the admin dashboard's endpoint once per visit: it answers only admins, and "not found" to
+ * everyone else. Nothing is asked when no measurement is configured.
+ */
+export function InternalAccountCheck() {
+  useEffect(() => {
+    if (!measurementConfigured() || isInternal()) return;
+    let session: Storage | null = null;
+    try {
+      session = window.sessionStorage;
+      if (session.getItem(ADMIN_CHECKED_KEY)) return;
+    } catch {
+      // No storage: ask on every signed-in page load instead.
+    }
+    const controller = new AbortController();
+    fetch('/v1/admin/metrics', { credentials: 'same-origin', signal: controller.signal })
+      .then((response) => {
+        try {
+          session?.setItem(ADMIN_CHECKED_KEY, '1');
+        } catch {
+          // Nothing to remember it in.
+        }
+        if (response.ok) setInternal(true);
+      })
+      .catch(() => {
+        // Ask again on the next visit.
+      });
+    return () => controller.abort();
+  }, []);
+  return null;
 }
 
 /** Reopens the consent banner (the footer's "Cookie preferences"); shown only when something asks for consent. */

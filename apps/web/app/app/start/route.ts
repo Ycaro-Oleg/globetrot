@@ -3,6 +3,7 @@ import { getLocale, getTranslations } from 'next-intl/server';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { actionApiClient } from '../../../lib/action-client';
+import { queueEvents } from '../../../lib/analytics';
 import { PLAN_DRAFT_COOKIE, readDraft } from '../../../lib/plan-draft';
 import { SELECTED_TRIP_COOKIE } from '../../../lib/trips';
 
@@ -46,6 +47,12 @@ export async function GET() {
     path: '/',
     maxAge: 60 * 60 * 24 * 365,
   });
+  // A second visit finds the same trip (same key), and the id keeps it from counting twice.
+  queueEvents(
+    store,
+    { event: 'trip_created', once: data.id },
+    ...(Number(draft.monthly) > 0 ? [{ event: 'savings_goal_set' as const, once: data.id }] : []),
+  );
   store.delete(PLAN_DRAFT_COOKIE);
   redirect('/app/board');
 }

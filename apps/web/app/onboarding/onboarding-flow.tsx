@@ -5,7 +5,6 @@ import { formatYearMonth, type SupportedLocale } from '@globetrot/i18n';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import { useEffect, useRef, useState, useTransition, type FormEvent } from 'react';
-import { track } from '../../lib/analytics';
 import { confetti } from '../../lib/confetti';
 import { livePlan, parseAmount } from '../app/(trip)/budget/budget-plan';
 import { Logomark } from '../logomark';
@@ -169,7 +168,7 @@ export function OnboardingFlow({
       return;
     }
     if (!destination || !range || !estimateMoney) return;
-    track('first_trip');
+    // `first_trip` and `trip_created` are counted by the server action once the trip exists, not on the click.
     startTransition(async () => {
       const result = await finishOnboarding({
         idempotencyKey,

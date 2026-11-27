@@ -13,7 +13,7 @@ Nothing below can be done by an agent; each blocks the public launch.
 | Email | Resend: a verified sending domain (SPF, DKIM, DMARC), an API key used as `SMTP_PASSWORD`, and `EMAIL_FROM` |
 | Photo storage | A Railway Bucket, private, with its credentials in `S3_*` |
 | Pip | A new DeepSeek key (rotate the one shared in chat). Pip runs on DeepSeek only; `ANTHROPIC_API_KEY` stays unset ([ADR-0022](../architecture/adr/0022-backup-ai-provider.md)) |
-| Measurement | Sentry and PostHog projects ([ADR-0021](../architecture/adr/0021-error-monitoring-and-product-analytics.md)); for ads, Plausible and a Meta Pixel ID ([ADR-0018](../architecture/adr/0018-launch-measurement-and-consent.md)) |
+| Measurement | Sentry and PostHog projects ([ADR-0021](../architecture/adr/0021-error-monitoring-and-product-analytics.md)); for ads, Plausible and a Meta Pixel ID ([ADR-0018](../architecture/adr/0018-launch-measurement-and-consent.md)). The PostHog dashboard, its filters and marking the team's devices with `?interno=1`: [analytics](analytics.md) |
 | Legal | Fill the `[bracketed]` facts in the Terms and Privacy drafts (`legal.*` in the catalogs) and have them reviewed; then drop the draft banner |
 | Payments | Stripe account (Brazil), test keys first; the Price ids, the webhook endpoint and the coupons; live keys only when ready to charge ([steps](../integrations/stripe.md#switching-it-on-the-owner-in-the-stripe-dashboard-test-mode-first)) |
 

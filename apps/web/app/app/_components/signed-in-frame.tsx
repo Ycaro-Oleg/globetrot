@@ -8,6 +8,7 @@ import { fetchCurrentUser } from '../../../lib/current-user';
 import { isPipEnabled } from '../../../lib/flags';
 import { fetchStoredPreferences, sessionCookieHeader } from '../../../lib/stored-preferences';
 import { fetchTrips, SELECTED_TRIP_COOKIE } from '../../../lib/trips';
+import { InternalAccountCheck } from '../../analytics';
 import { AppShell } from './app-shell';
 
 /**
@@ -47,6 +48,7 @@ export async function SignedInFrame({
       billing={billing}
     >
       {children}
+      <InternalAccountCheck />
     </AppShell>
   );
 }

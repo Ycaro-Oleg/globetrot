@@ -21,6 +21,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { useEffect, useId, useRef, useState, useTransition, type FormEvent } from 'react';
+import { track } from '../../../../lib/analytics';
 import type { BudgetData, ExpenseData } from '../../../../lib/trips';
 import type { Option } from '../../../settings/options';
 import { addExpense, removeExpense, saveSavings, type ExpenseInput } from './actions';
@@ -173,6 +174,8 @@ function Board({
       if (!body) return;
       void saveSavings(trip.id, body).then((result) => {
         setSaveState(result.ok ? 'saved' : 'error');
+        // A monthly amount is the savings goal: counted once per trip, however often it is adjusted.
+        if (result.ok && Number(body.monthly ?? 0) > 0) track('savings_goal_set', trip.id);
         if (result.ok) startTransition(() => router.refresh());
       });
     }, 600);

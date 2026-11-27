@@ -124,6 +124,10 @@ describe('createTrip', () => {
     expect(request.headers.get('cookie')).toBe('globetrot.session_token=abc');
     expect(await request.json()).toEqual({ title: 'Japan 2027', currency: 'JPY', startDate: null });
     expect(store.values.get('globetrot.selected_trip')).toBe(ID);
+    // The trip page counts it, once for this trip.
+    expect(decodeURIComponent(store.values.get('globetrot.events') ?? '')).toBe(
+      `trip_created~${ID}`,
+    );
   });
 
   it('sends a chosen start date', async () => {

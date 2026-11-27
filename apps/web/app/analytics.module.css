@@ -62,6 +62,17 @@
   outline-offset: 2px;
 }
 
+/* A team device (`?interno=1`) says so under the page, so whoever uses it can see the mark works. */
+.internalNote {
+  margin: 0;
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+  background: var(--gt-semantic-color-surface-page);
+  color: var(--gt-semantic-color-text);
+  font-size: 13px;
+  line-height: 1.5;
+  text-align: center;
+}
+
 .link {
   min-height: 44px;
   padding: 0;
