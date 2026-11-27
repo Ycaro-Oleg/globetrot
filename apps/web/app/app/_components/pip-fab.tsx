@@ -8,6 +8,7 @@ import type { PipTopic } from './ask-pip-link';
 import styles from './shell.module.css';
 
 const TOPICS: readonly [string, PipTopic][] = [
+  ['/app/trip', 'days'],
   ['/app/days', 'days'],
   ['/app/budget', 'budget'],
   ['/app/lists', 'lists'],

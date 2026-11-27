@@ -39,8 +39,14 @@ export function DaysView({
   pipEnabled = false,
   ideas = null,
   mapSpots = [],
+  layout = 'grid',
 }: {
   pipEnabled?: boolean;
+  /**
+   * `grid` is the Days page; `stacked` is the itinerary inside the trip's document (one column, headings one level
+   * down so the trip's title stays the page's only `h1`).
+   */
+  layout?: 'grid' | 'stacked';
   trip: { readonly id: string; readonly title: string; readonly startDate?: string | null } | null;
   stops: readonly BoardStop[];
   days: readonly TripDay[];
@@ -51,11 +57,13 @@ export function DaysView({
   mapSpots?: readonly MapSpot[];
 }) {
   const t = useTranslations('daysPage');
+  const Title = layout === 'stacked' ? 'h2' : 'h1';
+  const Sub = layout === 'stacked' ? 'h3' : 'h2';
 
   if (trip === null) {
     return (
-      <section className={styles.page}>
-        <h1 className={styles.title}>{t('title')}</h1>
+      <section className={styles.page} data-layout={layout}>
+        <Title className={styles.title}>{t('title')}</Title>
         <p className={styles.sub}>{t('noTrip')}</p>
         <Link className={styles.secondary} href="/app/trips">
           {t('goTrips')}
@@ -65,11 +73,11 @@ export function DaysView({
   }
   if (stops.length === 0) {
     return (
-      <section className={styles.page}>
-        <h1 className={styles.title}>{t('title')}</h1>
+      <section className={styles.page} data-layout={layout}>
+        <Title className={styles.title}>{t('title')}</Title>
         <div className={styles.emptyCard}>
           <PipAvatar size={88} pose="research" />
-          <h2>{t('emptyTitle')}</h2>
+          <Sub>{t('emptyTitle')}</Sub>
           <p>{t('noStops')}</p>
           <div className={styles.emptyActions}>
             <Link className={styles.cta} href="/app/board">
@@ -85,8 +93,8 @@ export function DaysView({
   }
   if (places === null) {
     return (
-      <section className={styles.page}>
-        <h1 className={styles.title}>{t('title')}</h1>
+      <section className={styles.page} data-layout={layout}>
+        <Title className={styles.title}>{t('title')}</Title>
         <Banner tone="error" role="alert">
           {t('loadError')}
         </Banner>
@@ -104,6 +112,7 @@ export function DaysView({
       pipEnabled={pipEnabled}
       ideas={ideas}
       mapSpots={mapSpots}
+      layout={layout}
     />
   );
 }
@@ -118,7 +127,9 @@ function Board({
   pipEnabled,
   ideas: initialIdeas,
   mapSpots,
+  layout,
 }: {
+  layout: 'grid' | 'stacked';
   pipEnabled: boolean;
   ideas: DayIdeas | null;
   mapSpots: readonly MapSpot[];
@@ -131,6 +142,11 @@ function Board({
 }) {
   const t = useTranslations('daysPage');
   const locale = useLocale() as SupportedLocale;
+  const stacked = layout === 'stacked';
+  // One heading level down inside the trip's document, so the trip's title stays the only h1.
+  const Title = stacked ? 'h2' : 'h1';
+  const Column = stacked ? 'h3' : 'h2';
+  const CardTitle = stacked ? 'h4' : 'h3';
   const [places, setPlaces] = useState<readonly BoardPlace[]>(initial);
   const [dragging, setDragging] = useState<string | null>(null);
   const [over, setOver] = useState<string | null>(null);
@@ -343,7 +359,7 @@ function Board({
         }}
       >
         <div className={styles.cardHead}>
-          <h3>{place.name}</h3>
+          <CardTitle>{place.name}</CardTitle>
           <button
             type="button"
             className={styles.remove}
@@ -445,10 +461,10 @@ function Board({
     : null;
 
   return (
-    <section className={styles.page}>
+    <section className={styles.page} data-layout={layout}>
       <header className={styles.header}>
         <div className={styles.heading}>
-          <h1 className={styles.title}>{t('title')}</h1>
+          <Title className={styles.title}>{t('title')}</Title>
           <span className={styles.sub}>
             {t('summary', {
               days: days.length,
@@ -483,7 +499,7 @@ function Board({
       {places.length === 0 ? (
         // One place to begin: the ideas are the first step, and adding your own is right below them.
         <div className={styles.start}>
-          <h2>{t('startTitle', { days: days.length })}</h2>
+          <Column>{t('startTitle', { days: days.length })}</Column>
           <p>{hasIdeas ? t('startPick') : t('startText')}</p>
           {hasIdeas ? (
             <>
@@ -538,7 +554,7 @@ function Board({
         >
           <div className={styles.columnHead}>
             <div className={styles.columnTitle}>
-              <h2 id="day-tray">{t('tray')}</h2>
+              <Column id="day-tray">{t('tray')}</Column>
               <span className={styles.count}>{board.tray.length}</span>
             </div>
             <span className={styles.columnSub}>{t('traySub')}</span>
@@ -560,7 +576,7 @@ function Board({
             >
               <div className={styles.columnHead}>
                 <div className={styles.columnTitle}>
-                  <h2 id={`day-${day.index}`}>{t('dayLabel', { index: day.index })}</h2>
+                  <Column id={`day-${day.index}`}>{t('dayLabel', { index: day.index })}</Column>
                   {day.stop ? <span className={styles.stopChip}>{day.stop.name}</span> : null}
                 </div>
                 <span className={styles.columnSub}>

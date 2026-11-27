@@ -972,3 +972,8 @@
 .milesMore[open] summary {
   margin-bottom: 8px;
 }
+
+/* Beside the trip workspace's map the page is a column of about 600px: the answer and the totals stack. */
+:global([data-workspace-map]) .top {
+  grid-template-columns: minmax(0, 1fr);
+}

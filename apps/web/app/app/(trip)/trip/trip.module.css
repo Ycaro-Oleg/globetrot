@@ -1,0 +1,180 @@
+/* The trip's document: one column of sections, read top to bottom. */
+.document {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  width: 100%;
+  max-width: 46rem;
+  margin: 0 auto;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-block-start: 8px;
+}
+
+.title {
+  margin: 0;
+  font-size: var(--gt-primitive-type-page);
+  font-weight: 800;
+  letter-spacing: var(--gt-primitive-type-page-tracking);
+  line-height: 1.05;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  align-items: center;
+  margin: 0;
+  color: var(--gt-semantic-color-text-secondary);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.muted {
+  color: var(--gt-semantic-color-text-secondary);
+  font-size: 14px;
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--gt-component-hit-target);
+  color: var(--gt-semantic-color-primary);
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.button {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  min-height: var(--gt-component-hit-target);
+  padding: 0 18px;
+  border-radius: var(--gt-primitive-radius-pill);
+  background: var(--gt-semantic-color-primary);
+  color: var(--gt-semantic-color-on-primary);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+/* What it costs so far, with the way into the budget. */
+.summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 4px 16px;
+  align-items: center;
+  padding: 16px 20px;
+  border: var(--gt-primitive-border-1) solid var(--gt-semantic-color-hairline);
+  border-radius: var(--gt-primitive-radius-16);
+  background: var(--gt-semantic-color-surface-card);
+}
+
+.cardTitle {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.amount {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.amountLabel {
+  display: block;
+  color: var(--gt-semantic-color-text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  /* A jump from the sidebar lands below the sticky bars, not under them. */
+  scroll-margin-block-start: 128px;
+}
+
+.sectionHead {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.stops {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.stop {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 14px;
+  border: var(--gt-primitive-border-1) solid var(--gt-semantic-color-hairline);
+  border-radius: var(--gt-primitive-radius-12);
+  background: var(--gt-semantic-color-surface-card);
+  scroll-margin-block: 128px;
+}
+
+.stop:focus {
+  outline: var(--gt-component-focus-width) solid var(--gt-semantic-color-focus);
+  outline-offset: 2px;
+}
+
+.stopNumber {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--gt-semantic-color-primary);
+  color: var(--gt-semantic-color-on-primary);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.stopText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.stopName {
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+.link:focus-visible,
+.button:focus-visible {
+  outline: var(--gt-component-focus-width) solid var(--gt-semantic-color-focus);
+  outline-offset: 2px;
+}
+
+/* The days' headings are jump targets too. */
+.section :global([id^='day-']) {
+  scroll-margin-block-start: 128px;
+}

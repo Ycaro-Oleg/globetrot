@@ -1,7 +1,7 @@
 import type { BillingView } from './billing';
 
 /** The cache the service worker keeps the trip's screens in (`public/sw.js`). */
-export const OFFLINE_CACHE = 'globetrot-trip-v1';
+export const OFFLINE_CACHE = 'globetrot-trip-v2';
 
 /**
  * Whether the current trip may be read offline (ADR-0027): a paid tool, so on a paid plan, during the free week

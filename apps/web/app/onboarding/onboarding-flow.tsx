@@ -7,7 +7,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useEffect, useRef, useState, useTransition, type FormEvent } from 'react';
 import { track } from '../../lib/analytics';
 import { confetti } from '../../lib/confetti';
-import { livePlan, parseAmount } from '../app/budget/budget-plan';
+import { livePlan, parseAmount } from '../app/(trip)/budget/budget-plan';
 import { Logomark } from '../logomark';
 import { SITE_NAME } from '../site';
 import { currencyOptions } from '../settings/options';

@@ -267,8 +267,9 @@
 
 .tabsRow {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  padding: 6px 10px;
+  /* Four equal columns that may be narrower than their word, so 320px never scrolls sideways. */
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  padding: 6px 8px;
   border-radius: 0;
   border-block-end: var(--gt-primitive-border-1) solid var(--gt-semantic-color-hairline);
   background: color-mix(in srgb, var(--gt-semantic-color-surface-card) 94%, transparent);
@@ -291,6 +292,8 @@
 .tabsRow .tab {
   /* A touch target on the phone. */
   min-height: var(--gt-component-hit-target);
+  min-width: 0;
+  padding: 0 2px;
 }
 
 .tab[aria-current='page'] {

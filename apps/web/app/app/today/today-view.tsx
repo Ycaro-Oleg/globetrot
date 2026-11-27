@@ -197,7 +197,7 @@ export function TodayView({
           </ul>
           {phase === 'travelling' ? (
             <div className={styles.links}>
-              <Link className={styles.secondary} href="/app/days">
+              <Link className={styles.secondary} href="/app/trip#itinerary">
                 {t('todayPlan')}
               </Link>
               <Link className={styles.secondary} href="/app/budget">

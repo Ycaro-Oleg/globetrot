@@ -68,6 +68,17 @@ describe.each(SUPPORTED_LOCALES)('days (%s)', (locale) => {
     expect(html.split(copy.departure).length - 1).toBe(1);
   });
 
+  it('stacked in the trip document, keeps the day anchors one heading level down', () => {
+    const html = render(locale, { layout: 'stacked' });
+    expect(html).not.toContain('<h1');
+    expect(html).toMatch(new RegExp(`<h2[^>]*>${copy.title}</h2>`));
+    const headings = [...html.matchAll(/<h3 id="(day-[^"]+)">/g)].map((m) => m[1]);
+    expect(headings).toEqual(['day-tray', 'day-1', 'day-2', 'day-3', 'day-4']);
+    expect(html).toContain('data-layout="stacked"');
+    // The keyboard path stays the same.
+    expect(html.match(/<select aria-label=/g)).toHaveLength(3);
+  });
+
   it('gives every card a "Move to" select (the keyboard and phone path) and a remove button', () => {
     const html = render(locale);
     expect(html.match(/<select aria-label=/g)).toHaveLength(3);

@@ -253,23 +253,23 @@
     "privacy": {
       "s1": {
         "h": "Who we are",
-        "p": "Globetrot is a trip-planning app run by [owner: legal name and country]. Contact: [owner: contact email]."
+        "p": "Globetrot is a trip-planning app operated by [owner: legal name and country]. Contact: [owner: contact email]."
       },
       "s2": {
         "h": "What we keep",
-        "p": "Your account (name, email, a hash of your password, or your Google sign-in), your settings, and what you put in Globetrot: trips, stops, costs, savings amounts, lists, day plans, photos, visas, Pip requests and community posts, comments and likes. We do not collect your live location. Photos have their location and camera data removed before they are stored."
+        "p": "Your account: name and email address (from your sign-up or your Google account), a hash of your password if you set one, your settings, and what you put in Globetrot: trips, stops, costs, savings amounts, lists, day plans, photos, visas, Pip requests, community posts, comments and likes. We also keep the technical records the service needs: sessions, rate-limit counters, an audit log of changes that holds field names but never personal values, and error reports (the error and its stack trace, never request bodies, headers or your account data). We do not collect your live location. Photos have their location and camera data removed before they are stored."
       },
       "s3": {
         "h": "Why",
-        "p": "To run the app you asked for: save and show your plans, compute your savings answer, send account emails (confirmation, password reset and the two emails about your free week), and keep the service safe (rate limits, an audit log of changes without personal values)."
+        "p": "To run the app you asked for: save and show your plans, calculate your savings answer, send account emails (confirmation, password reset and the emails about your free week), process payments, answer Pip, and keep the service secure and working. Under the Brazilian LGPD these uses rest on providing the service you asked for and on our legitimate interest in keeping it secure. Analytics and the Meta Pixel rely on your consent, which you can withdraw at any time."
       },
       "s4": {
-        "h": "Who else handles it",
-        "p": "Hosting and database: [owner: provider and region]. Email: [owner: provider]. Photo storage: [owner: provider]. Pip: when you ask Pip, the plan of that trip (title, dates, stops, nights, places, checklist labels, cost totals and savings amounts) is sent to DeepSeek to draft suggestions; never your name, email or other trips. Sign in with Google, if you use it. Measurement: Plausible (cookieless, aggregate) and, only if you accept, the Meta Pixel. Payments: Stripe, which receives your email and handles your card; we never see card numbers."
+        "h": "Sign in with Google",
+        "p": "If you sign in with Google, we receive your name and email address from Google and use them only to create or find your account. We do not read your Google contacts, calendar, mail or Drive. Globetrot's use and transfer of information received from Google APIs adheres to the Google API Services User Data Policy, including the Limited Use requirements."
       },
       "s5": {
-        "h": "Cookies",
-        "p": "Needed: your session, your language and theme, and, if you used the calculator on the home page, the three numbers you typed (30 days). Optional: the Meta Pixel, only after you accept; change your choice any time from “Cookie preferences” on the home page."
+        "h": "Who else handles it",
+        "p": "Hosting and database: Railway, [owner: region]. Email: Resend. Photo storage: [owner: provider]. Place search: Geoapify receives the text you search for and the map coordinates involved. Pip: when you ask Pip, the plan of that trip (title, dates, stops, nights, places, checklist labels, cost totals and savings amounts) is sent to DeepSeek to draft suggestions; never your name, email or other trips. Payments: Stripe, which receives your email and handles your card; we never see card numbers. Errors: Sentry, with the error and its stack trace only. Measurement: Plausible (cookieless, aggregate counts) and, only after you accept, PostHog (a few named events, no session recordings) and the Meta Pixel. Some of these providers are outside Brazil, so your data may be processed abroad under their data protection terms."
       },
       "s6": {
         "h": "What others see",
@@ -277,11 +277,11 @@
       },
       "s7": {
         "h": "How long",
-        "p": "Until you delete it, or delete your account. Deleting the account removes your trips, photos, posts, comments, likes, follows, settings and sessions at once. The audit log keeps its rows, which hold no personal values. Backups: [owner: retention period]."
+        "p": "Until you delete it, or until you delete your account. Deleting the account removes your trips, photos, posts, comments, likes, follows, settings and sessions. Audit log rows stay, without personal values. Backups and error reports are kept for [owner: retention period]."
       },
       "s8": {
         "h": "Your rights",
-        "p": "Download everything as JSON or delete your account in Settings → Your data. For anything else (correction, objection, questions) write to [owner: contact email]. You can also complain to your data protection authority (in Brazil, the ANPD)."
+        "p": "You can download everything in Settings → Your data (JSON, never passwords or tokens) and delete your account there. For anything else (correction, portability, objection, withdrawing consent, questions) write to [owner: contact email]. You can also complain to the ANPD, the Brazilian data protection authority."
       },
       "s9": {
         "h": "Children",
@@ -330,9 +330,9 @@
   "shell": {
     "skipLink": "Skip to content",
     "nav": {
+      "overview": "Trip",
       "board": "Map",
-      "days": "Days",
-      "budget": "Money",
+      "budget": "Budget",
       "lists": "Checklist",
       "trips": "Trips",
       "passport": "Passport",
@@ -2088,5 +2088,33 @@
     "passes": "Trip passes in force",
     "checkins": "Check-ins per week",
     "none": "No check-ins yet."
+  },
+  "workspace": {
+    "metaTitle": "Trip",
+    "sidebarLabel": "Trip sections",
+    "jumpLabel": "Go to a section of the trip",
+    "sidebarHide": "Hide sections",
+    "sidebarShow": "Show the trip sections",
+    "sidebarResize": "Resize the trip sections",
+    "overview": "Overview",
+    "places": "Places",
+    "itinerary": "Itinerary",
+    "budget": "Budget",
+    "checklist": "Checklist",
+    "expandMap": "Expand map",
+    "openMap": "Map",
+    "day": "Day {index}",
+    "dates": "{start} to {end}",
+    "noDates": "No dates yet",
+    "settings": "Manage this trip",
+    "nights": "{count, plural, =0 {passing through} one {# night} other {# nights}}",
+    "placesEmpty": "No stops yet. Add the first one on the map.",
+    "editOnMap": "Edit on the map",
+    "budgetTotal": "Trip total",
+    "budgetNone": "No costs yet",
+    "budgetSee": "See the budget",
+    "noTrip": "Create a trip to start planning.",
+    "goTrips": "Your trips",
+    "mapRegion": "Map of the trip"
   }
 }

@@ -39,15 +39,15 @@
       },
       "sea": {
         "$type": "color",
-        "$value": "{primitive.color.primary-night}"
+        "$value": "{primitive.color.ocean-night}"
       },
       "sea-deep": {
         "$type": "color",
-        "$value": "{primitive.color.primary}"
+        "$value": "{primitive.color.ocean}"
       },
       "land": {
         "$type": "color",
-        "$value": "{primitive.color.primary-night-tint}"
+        "$value": "{primitive.color.ocean-night-tint}"
       },
       "land-highlight": {
         "$type": "color",
@@ -119,11 +119,11 @@
       },
       "airmail": {
         "$type": "color",
-        "$value": "{primitive.color.primary-night}"
+        "$value": "{primitive.color.ocean-night}"
       },
       "airmail-deep": {
         "$type": "color",
-        "$value": "{primitive.color.primary}"
+        "$value": "{primitive.color.ocean}"
       },
       "sky": {
         "$type": "color",

@@ -636,10 +636,11 @@ try {
    */
   async function go(page, url) {
     await page.goto(url);
-    // `/app` redirects (to the board, or to log-in when signed out); after the shell's loading boundary has
-    // streamed, Next does that redirect in the browser, so wait for it instead of racing it.
-    if (new URL(url).pathname === '/app') {
-      await page.waitForURL((next) => next.pathname !== '/app');
+    // `/app` and `/app/days` redirect (to the trip, or to log-in when signed out); after the shell's loading
+    // boundary has streamed, Next does that redirect in the browser, so wait for it instead of racing it.
+    const from = new URL(url).pathname;
+    if (from === '/app' || from === '/app/days') {
+      await page.waitForURL((next) => next.pathname !== from);
     }
     await page.waitForLoadState('networkidle');
   }
@@ -936,6 +937,9 @@ try {
       entries.push([`shell-home-${layout}`, true, ...at('/app', VIEWPORTS[layout])]);
     }
     entries.push(['shell-days-desktop', true, ...at('/app/days', VIEWPORTS.desktop)]);
+    for (const layout of ['narrow', 'tablet', 'laptop']) {
+      entries.push([`trip-workspace-${layout}`, true, ...at('/app/trip', VIEWPORTS[layout])]);
+    }
     entries.push(['profile-desktop', true, ...at('/app/profile', VIEWPORTS.desktop)]);
     entries.push(['profile-phone', true, ...at('/app/profile', VIEWPORTS.phone)]);
     // My Pip with a changed name: the save button and the "unsaved" mark (the wardrobe is off for now).
@@ -1002,7 +1006,7 @@ try {
       'days-add-place',
       true,
       async (page) => {
-        await go(page, `${base}/app/days`);
+        await go(page, `${base}/app/trip`);
         await page.locator('main button', { hasText: '+' }).first().click();
         await page.locator('#place-name').waitFor();
       },
@@ -1041,7 +1045,7 @@ try {
       },
       VIEWPORTS.desktop,
     ]);
-    for (const section of ['board', 'days', 'budget', 'lists', 'trips', 'passport']) {
+    for (const section of ['trip', 'board', 'budget', 'lists', 'trips', 'passport']) {
       entries.push([`shell-${section}-phone`, true, ...at(`/app/${section}`, VIEWPORTS.phone)]);
     }
     entries.push(['shell-budget-desktop', true, ...at('/app/budget', VIEWPORTS.desktop)]);
@@ -1197,10 +1201,10 @@ try {
     await page.keyboard.type(PASSWORD);
     await page.keyboard.press('Enter');
     // /app is the entry point and sends a signed-in visitor to the board.
-    await page.waitForURL(`${base}/app/board`, { timeout: 10_000 }).catch(() => {});
+    await page.waitForURL(`${base}/app/trip`, { timeout: 10_000 }).catch(() => {});
     check(
-      page.url() === `${base}/app/board`,
-      `keyboard-only login did not land on the board (at ${page.url()})`,
+      page.url() === `${base}/app/trip`,
+      `keyboard-only login did not land on the trip (at ${page.url()})`,
     );
     // The board's route panel is headed by the current trip.
     const boardHeading = page.getByRole('heading', { name: TRIPS[0].title, level: 1 });
@@ -1387,17 +1391,23 @@ try {
   {
     const shell = CATALOGS.en.shell;
     const accountLabel = shell.account.menu.replace('{name}', USER.name);
-    const tools = (nav) => [nav.board, nav.days, nav.budget, nav.lists];
+    const tools = (nav) => [nav.overview, nav.board, nav.budget, nav.lists];
     const tripNav = (page, locale = 'en') =>
       page.getByRole('navigation', { name: CATALOGS[locale].shell.nav.tripLabel });
+    // Inside the trip workspace the trip's own sections replace the bar's trip tools.
+    const sidebarNav = (page, locale = 'en') =>
+      page.getByRole('navigation', { name: CATALOGS[locale].workspace.sidebarLabel });
+    const jumpNav = (page, locale = 'en') =>
+      page.getByRole('navigation', { name: CATALOGS[locale].workspace.jumpLabel });
     const placesNav = (page, locale = 'en') =>
       page.getByRole('navigation', { name: CATALOGS[locale].shell.nav.globalLabel });
     const names = async (nav) => (await nav.getByRole('link').allInnerTexts()).map((n) => n.trim());
 
     {
       // Desktop: one bar of 60px with the trip tools inline and the account places on the right; no bottom bar.
+      // (Off the trip workspace: inside it the sidebar takes the trip tools' place.)
       const { context, page } = await open('en', { signedIn: true, viewport: VIEWPORTS.desktop });
-      await go(page, `${base}/app/budget`);
+      await go(page, `${base}/app/discover`);
       const trip = tripNav(page);
       check((await trip.count()) === 1, 'desktop: expected exactly one visible trip navigation');
       check(
@@ -1430,24 +1440,37 @@ try {
     }
 
     for (const locale of ['en', 'pt-BR']) {
-      // Phone, down to 320px wide: the trip tools as a second row on trip pages, the account places in a bottom
-      // bar (not on the map), every link at least 44px, nothing wider than the screen.
+      // Phone, down to 320px wide: the trip tools as a second row on the map, the workspace's jump bar on its
+      // pages, the account places in a bottom bar (not on the map), every link at least 44px, nothing wider than
+      // the screen.
       const nav = CATALOGS[locale].shell.nav;
       for (const viewport of [VIEWPORTS.narrow, VIEWPORTS.phone]) {
         for (const path of ['/app/budget', '/app/passport', '/app/board']) {
           const { context, page } = await open(locale, { signedIn: true, viewport });
           await go(page, `${base}${path}`);
           const where = `phone ${viewport.width}px ${locale} ${path}`;
-          const onTrip = path !== '/app/passport';
+          const onTrip = path === '/app/board';
+          const inWorkspace = path === '/app/budget';
           const trip = tripNav(page, locale);
           check(
             (await trip.count()) === (onTrip ? 1 : 0),
-            `${where}: the trip row is ${onTrip ? 'missing' : 'shown off a trip page'}`,
+            `${where}: the trip row is ${onTrip ? 'missing' : 'shown off the map'}`,
           );
           if (onTrip) {
             check(
               JSON.stringify(await names(trip)) === JSON.stringify(tools(nav)),
               `${where}: the trip row is ${JSON.stringify(await names(trip))}`,
+            );
+          }
+          const jump = jumpNav(page, locale);
+          check(
+            (await jump.count()) === (inWorkspace ? 1 : 0),
+            `${where}: the workspace's jump bar is ${inWorkspace ? 'missing' : 'shown off the workspace'}`,
+          );
+          if (inWorkspace) {
+            check(
+              !(await sidebarNav(page, locale).isVisible()),
+              `${where}: the workspace's sidebar is drawn on a phone`,
             );
           }
           const bottom = placesNav(page, locale);
@@ -1474,6 +1497,16 @@ try {
               check(
                 box !== null && box.x >= 0 && box.x + box.width <= viewport.width,
                 `${where}: a link sticks out of the screen`,
+              );
+            }
+          }
+          if (inWorkspace) {
+            // The jump bar scrolls sideways inside itself on the narrowest phones; its links stay touch targets.
+            for (const link of await jump.getByRole('link').all()) {
+              const box = await link.boundingBox();
+              check(
+                box !== null && box.height >= 44,
+                `${where}: a jump bar link is shorter than 44px`,
               );
             }
           }
@@ -1505,9 +1538,10 @@ try {
         signedIn: true,
         viewport: { width: 719, height: 800 },
       });
-      await go(page, `${base}/app/budget`);
+      await go(page, `${base}/app/discover`);
       const bottom = await placesNav(page).boundingBox();
       check(bottom !== null && bottom.y > 600, '719px: the bottom bar is not at the bottom');
+      await go(page, `${base}/app/board`);
       const row = await tripNav(page).boundingBox();
       check(
         row !== null && row.y >= 59 && row.width >= 700,
@@ -1521,6 +1555,68 @@ try {
       );
       const places = await placesNav(page).boundingBox();
       check(places !== null && places.y < 20, '720px: the account places are not in the bar');
+      await context.close();
+    }
+
+    {
+      // The trip workspace: the jump bar below 720, the sidebar from 720, the map beside the page from 1100
+      // (below it, a button that opens the full map).
+      const { context, page } = await open('en', {
+        signedIn: true,
+        viewport: { width: 719, height: 800 },
+      });
+      await go(page, `${base}/app/trip`);
+      const mapRegion = page.getByRole('region', { name: CATALOGS.en.workspace.mapRegion });
+      const mapButton = page.getByRole('link', {
+        name: CATALOGS.en.workspace.openMap,
+        exact: true,
+      });
+      check(await jumpNav(page).isVisible(), '719px: the workspace has no jump bar');
+      check(!(await sidebarNav(page).isVisible()), '719px: the workspace sidebar is drawn');
+      check(await mapButton.isVisible(), '719px: there is no button to open the map');
+      await page.setViewportSize({ width: 720, height: 800 });
+      check(await sidebarNav(page).isVisible(), '720px: the workspace sidebar is missing');
+      check(!(await jumpNav(page).isVisible()), '720px: the jump bar is still drawn');
+      await page.setViewportSize({ width: 1099, height: 800 });
+      check((await mapRegion.count()) === 0, '1099px: the map is drawn beside the page');
+      check(await mapButton.isVisible(), '1099px: there is no button to open the map');
+      await page.setViewportSize({ width: 1100, height: 800 });
+      await mapRegion.waitFor();
+      check(!(await mapButton.isVisible()), '1100px: the map button stays beside the map');
+      // The sidebar is a drawer: it folds to a rail and opens again, and its edge resizes with the keyboard.
+      const ws = CATALOGS.en.workspace;
+      const edge = page.getByRole('separator', { name: ws.sidebarResize });
+      const before = Number(await edge.getAttribute('aria-valuenow'));
+      await edge.focus();
+      await page.keyboard.press('ArrowRight');
+      const after = Number(await edge.getAttribute('aria-valuenow'));
+      check(
+        after === before + 16,
+        `the sidebar edge moved from ${before} to ${after} with ArrowRight`,
+      );
+      await page.keyboard.press('End');
+      check(
+        (await edge.getAttribute('aria-valuenow')) === '360',
+        'End does not take the sidebar to its widest',
+      );
+      const nav = sidebarNav(page);
+      const navBox = await nav.boundingBox();
+      check(navBox !== null && navBox.width > 300, 'the wider sidebar did not grow on screen');
+      await page.getByRole('button', { name: ws.sidebarHide }).click();
+      check(!(await nav.isVisible()), 'the folded drawer still shows the sections');
+      const show = page.getByRole('button', { name: ws.sidebarShow });
+      check(
+        (await show.getAttribute('aria-expanded')) === 'false',
+        'the folded toggle is not collapsed',
+      );
+      await page.reload();
+      await page.waitForLoadState('networkidle');
+      check(
+        !(await sidebarNav(page).isVisible()),
+        'the folded drawer did not stay folded on reload',
+      );
+      await page.getByRole('button', { name: ws.sidebarShow }).click();
+      check(await sidebarNav(page).isVisible(), 'the drawer did not open again');
       await context.close();
     }
 
@@ -1564,20 +1660,23 @@ try {
     }
 
     {
-      // Navigation: the current tool is marked, and following a link changes the page and the mark.
+      // Navigation: /app opens the trip's workspace with Overview marked; the sidebar leads to the budget and
+      // moves the mark; Discover marks the account place.
+      const workspace = CATALOGS.en.workspace;
       const { context, page } = await open('en', { signedIn: true, viewport: VIEWPORTS.desktop });
       await go(page, `${base}/app`);
-      const nav = tripNav(page);
+      check(new URL(page.url()).pathname === '/app/trip', `/app went to ${page.url()}`);
+      const nav = sidebarNav(page);
       check(
-        (await nav.locator('[aria-current="page"]').allInnerTexts()).join() === shell.nav.board,
-        'Map is not the marked tool after /app redirects to it',
+        (await nav.locator('[aria-current="page"]').allInnerTexts()).join() === workspace.overview,
+        'Overview is not the marked section after /app redirects to the trip',
       );
-      await nav.getByRole('link', { name: shell.nav.budget, exact: true }).click();
+      await nav.getByRole('link', { name: workspace.budget, exact: true }).click();
       await page.waitForURL(`${base}/app/budget`);
       await page.getByRole('heading', { name: CATALOGS.en.budgetPage.title, level: 1 }).waitFor();
       check(
-        (await nav.locator('[aria-current="page"]').allInnerTexts()).join() === shell.nav.budget,
-        'Budget is not the marked tool on /app/budget',
+        (await nav.locator('[aria-current="page"]').allInnerTexts()).join() === workspace.budget,
+        'Budget is not the marked section on /app/budget',
       );
       check(
         await page.getByText(CATALOGS.en.budgetPage.answerKicker).isVisible(),

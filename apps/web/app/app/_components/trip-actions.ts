@@ -50,12 +50,19 @@ export async function selectTrip(tripId: string): Promise<boolean> {
 }
 
 /** The trip tools a hub link may open. */
-const PLACES = ['/app/board', '/app/days', '/app/budget', '/app/lists', '/app/pip'] as const;
+const PLACES = [
+  '/app/trip',
+  '/app/board',
+  '/app/days',
+  '/app/budget',
+  '/app/lists',
+  '/app/pip',
+] as const;
 
 /** Makes a trip the current one and opens one of its tools (the tools always show the current trip). */
 export async function openTripAt(formData: FormData): Promise<void> {
   const id = formData.get('tripId');
-  const to = PLACES.find((place) => place === formData.get('to')) ?? '/app/board';
+  const to = PLACES.find((place) => place === formData.get('to')) ?? '/app/trip';
   const { store, api } = await client();
   if (!api || typeof id !== 'string') redirect('/app/trips');
   const { data } = await api.GET('/v1/trips/{id}', { params: { path: { id } } });

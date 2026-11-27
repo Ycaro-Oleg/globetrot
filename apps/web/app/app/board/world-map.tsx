@@ -1527,7 +1527,7 @@ export function WorldMapBoard({
         )}
 
         <div className={styles.panelFoot}>
-          <Link href={demo ? '/signup' : '/app/days'} className={styles.cta}>
+          <Link href={demo ? '/signup' : '/app/trip#itinerary'} className={styles.cta}>
             {demo ? t('demoCta') : t('cta')} <span aria-hidden="true">→</span>
           </Link>
           <span className={styles.saveStatus} role="status" aria-live="polite">

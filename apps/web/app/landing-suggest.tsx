@@ -24,7 +24,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useEffect, useId, useRef, useState, type CSSProperties, type Ref } from 'react';
 import { LazyPipAvatar as PipAvatar } from './app/_components/lazy-pip-avatar';
 import type { PipPose } from './app/_components/pip-pose';
-import { livePlan } from './app/budget/budget-plan';
+import { livePlan } from './app/(trip)/budget/budget-plan';
 import styles from './landing.module.css';
 import { track } from '../lib/analytics';
 import { saveDraft } from '../lib/plan-draft';

@@ -91,6 +91,8 @@ type Props = {
   onPin: (longitude: number, latitude: number, name: string | null) => void;
   onZoom: (zoom: number) => void;
   onMove: () => void;
+  /** The map has loaded and made its first fit: a move asked for now is not undone by it. */
+  onReady?: () => void;
 };
 
 type PinMarker = {
@@ -745,6 +747,7 @@ export function MapCanvas(props: Props) {
             { duration: 0 },
           );
           if (latest.current.stops.length) controller.fitStops(false);
+          latest.current.onReady?.();
           frame = requestAnimationFrame(tick);
         };
 

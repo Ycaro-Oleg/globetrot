@@ -4,8 +4,8 @@
  * static files, so a trip can be read without a connection. Only these pages are touched; everything else
  * (the API, sign-in, other pages) goes straight to the network. Signing out empties the cache.
  */
-const CACHE = 'globetrot-trip-v1';
-const TRIP_PAGES = ['/app/today', '/app/board', '/app/days', '/app/budget', '/app/lists'];
+const CACHE = 'globetrot-trip-v2';
+const TRIP_PAGES = ['/app/today', '/app/trip', '/app/board', '/app/budget', '/app/lists'];
 const NETWORK_TIMEOUT_MS = 6000;
 /** Set on sign-out: from then on this worker saves nothing and steps aside. */
 let stopped = false;

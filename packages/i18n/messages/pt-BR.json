@@ -257,19 +257,19 @@
       },
       "s2": {
         "h": "O que guardamos",
-        "p": "Sua conta (nome, e-mail, um hash da sua senha, ou seu login Google), suas configurações e o que você coloca no Globetrot: viagens, paradas, custos, valores de poupança, listas, roteiros por dia, fotos, vistos, pedidos ao Pip e posts, comentários e curtidas da comunidade. Não coletamos sua localização ao vivo. As fotos têm os dados de localização e câmera removidos antes de serem guardadas."
+        "p": "Sua conta: nome e e-mail (do cadastro ou da sua conta Google), um hash da senha, se você definir uma, suas configurações e o que você coloca no Globetrot: viagens, paradas, custos, valores de poupança, listas, roteiros por dia, fotos, vistos, pedidos ao Pip, posts, comentários e curtidas da comunidade. Também guardamos os registros técnicos que o serviço precisa: sessões, contadores de limite de uso, um registro de alterações que guarda nomes de campos, nunca valores pessoais, e relatórios de erro (o erro e a pilha de execução, nunca o conteúdo das requisições, cabeçalhos ou dados da sua conta). Não coletamos sua localização ao vivo. As fotos têm os dados de localização e câmera removidos antes de serem guardadas."
       },
       "s3": {
         "h": "Para quê",
-        "p": "Para fazer o app funcionar: salvar e mostrar seus planos, calcular sua resposta de poupança, enviar e-mails da conta (confirmação, troca de senha e os dois e-mails sobre sua semana grátis) e manter o serviço seguro (limites de uso e um registro de alterações sem valores pessoais)."
+        "p": "Para fazer o app que você pediu funcionar: salvar e mostrar seus planos, calcular sua resposta de poupança, enviar e-mails da conta (confirmação, troca de senha e os e-mails sobre sua semana grátis), processar pagamentos, responder ao Pip e manter o serviço seguro e funcionando. Pela LGPD, esses usos se baseiam em prestar o serviço que você pediu e no nosso interesse legítimo em manter o serviço seguro. Medição e Meta Pixel dependem do seu consentimento, que você pode retirar a qualquer momento."
       },
       "s4": {
-        "h": "Quem mais trata os dados",
-        "p": "Hospedagem e banco de dados: [dono: provedor e região]. E-mail: [dono: provedor]. Armazenamento de fotos: [dono: provedor]. Pip: quando você pergunta ao Pip, o plano daquela viagem (título, datas, paradas, noites, lugares, itens da checklist, totais de custos e valores de poupança) vai para a DeepSeek para rascunhar sugestões; nunca seu nome, e-mail ou outras viagens. Login com Google, se você usar. Medição: Plausible (sem cookies, agregada) e, só se você aceitar, o Meta Pixel. Pagamentos: Stripe, que recebe seu e-mail e cuida do cartão; nunca vemos números de cartão."
+        "h": "Login com Google",
+        "p": "Se você entrar com Google, recebemos seu nome e e-mail do Google e usamos apenas para criar ou encontrar sua conta. Não lemos seus contatos, agenda, e-mails ou Drive do Google. O uso e a transferência, pelo Globetrot, de informações recebidas das APIs do Google seguem a Política de Dados do Usuário dos Serviços de API do Google, inclusive os requisitos de Uso Limitado."
       },
       "s5": {
-        "h": "Cookies",
-        "p": "Necessários: sua sessão, seu idioma e tema e, se você usou a calculadora da página inicial, os três números que digitou (30 dias). Opcional: o Meta Pixel, só depois que você aceitar; mude sua escolha quando quiser em “Preferências de cookies” na página inicial."
+        "h": "Quem mais trata os dados",
+        "p": "Hospedagem e banco de dados: Railway, [dono: região]. E-mail: Resend. Armazenamento de fotos: [dono: provedor]. Busca de lugares: a Geoapify recebe o texto que você pesquisa e as coordenadas do mapa envolvidas. Pip: quando você pergunta ao Pip, o plano daquela viagem (título, datas, paradas, noites, lugares, itens da checklist, totais de custos e valores de poupança) vai para a DeepSeek para rascunhar sugestões; nunca seu nome, e-mail ou outras viagens. Pagamentos: Stripe, que recebe seu e-mail e cuida do seu cartão; nunca vemos o número do cartão. Erros: Sentry, apenas com o erro e a pilha de execução. Medição: Plausible (sem cookies, contagens agregadas) e, só depois que você aceitar, PostHog (poucos eventos nomeados, sem gravação de sessão) e Meta Pixel. Alguns desses provedores ficam fora do Brasil, então seus dados podem ser tratados no exterior, sob os termos de proteção de dados deles."
       },
       "s6": {
         "h": "O que os outros veem",
@@ -277,19 +277,19 @@
       },
       "s7": {
         "h": "Por quanto tempo",
-        "p": "Até você apagar, ou excluir sua conta. Excluir a conta remove na hora suas viagens, fotos, posts, comentários, curtidas, quem você segue, configurações e sessões. O registro de alterações mantém suas linhas, que não guardam valores pessoais. Backups: [dono: prazo de retenção]."
+        "p": "Até você apagar, ou até apagar sua conta. Ao apagar a conta, somem suas viagens, fotos, posts, comentários, curtidas, seguidores, configurações e sessões. As linhas do registro de alterações ficam, sem valores pessoais. Backups e relatórios de erro são guardados por [dono: prazo de retenção]."
       },
       "s8": {
         "h": "Seus direitos",
-        "p": "Baixe tudo em JSON ou exclua sua conta em Configurações → Seus dados. Para o resto (correção, oposição, dúvidas) escreva para [dono: e-mail de contato]. Você também pode reclamar à ANPD."
+        "p": "Você pode baixar tudo em Configurações → Seus dados (em JSON, nunca senhas ou tokens) e apagar sua conta por lá. Para qualquer outra coisa (correção, portabilidade, oposição, retirada de consentimento, dúvidas), escreva para [dono: e-mail de contato]. Você também pode reclamar à ANPD, a autoridade brasileira de proteção de dados."
       },
       "s9": {
         "h": "Crianças",
-        "p": "O Globetrot não é feito para menores de [dono: idade mínima] anos."
+        "p": "O Globetrot não é feito para crianças menores de [dono: idade mínima]."
       },
       "s10": {
         "h": "Mudanças",
-        "p": "Avisaremos aqui, com data, quando esta política mudar. Última mudança: [dono: data]."
+        "p": "Vamos avisar aqui, com data, quando esta política mudar. Última alteração: [dono: data]."
       }
     },
     "terms": {
@@ -330,9 +330,9 @@
   "shell": {
     "skipLink": "Pular para o conteúdo",
     "nav": {
+      "overview": "Viagem",
       "board": "Mapa",
-      "days": "Dias",
-      "budget": "Dinheiro",
+      "budget": "Orçamento",
       "lists": "Checklist",
       "trips": "Viagens",
       "passport": "Passaporte",
@@ -2088,5 +2088,33 @@
     "passes": "Passes da viagem válidos",
     "checkins": "Check-ins por semana",
     "none": "Nenhum check-in ainda."
+  },
+  "workspace": {
+    "metaTitle": "Viagem",
+    "sidebarLabel": "Seções da viagem",
+    "jumpLabel": "Ir para uma seção da viagem",
+    "sidebarHide": "Recolher seções",
+    "sidebarShow": "Mostrar as seções da viagem",
+    "sidebarResize": "Redimensionar as seções da viagem",
+    "overview": "Visão geral",
+    "places": "Lugares",
+    "itinerary": "Itinerário",
+    "budget": "Orçamento",
+    "checklist": "Checklist",
+    "expandMap": "Expandir mapa",
+    "openMap": "Mapa",
+    "day": "Dia {index}",
+    "dates": "{start} a {end}",
+    "noDates": "Sem datas ainda",
+    "settings": "Gerenciar esta viagem",
+    "nights": "{count, plural, =0 {só de passagem} one {# noite} other {# noites}}",
+    "placesEmpty": "Nenhuma parada ainda. Adicione a primeira no mapa.",
+    "editOnMap": "Editar no mapa",
+    "budgetTotal": "Total da viagem",
+    "budgetNone": "Nenhum custo ainda",
+    "budgetSee": "Ver o orçamento",
+    "noTrip": "Crie uma viagem para começar a planejar.",
+    "goTrips": "Suas viagens",
+    "mapRegion": "Mapa da viagem"
   }
 }

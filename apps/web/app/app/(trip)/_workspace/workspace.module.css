@@ -1,0 +1,317 @@
+/*
+ * The trip workspace: the trip's sections, the page, and the map on the right.
+ *   < 720       one column: a row of sections on top, the page, a floating "Map" button
+ *   720–1099    sidebar + page, the floating "Map" button
+ *   ≥ 1100      sidebar + page + the map, sticky under the bar
+ */
+.workspace {
+  --workspace-top: 60px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  min-height: calc(100vh - var(--workspace-top));
+}
+
+/* The workspace is full-bleed: the shell's side and top padding go away (each column brings its own); the bottom
+   padding stays, so the page never ends under the phone's bottom bar. */
+:global(#main):has(> .workspace) {
+  padding-inline: 0;
+  padding-block-start: 0;
+}
+
+.content {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+  /* Room under the page for the floating "Map" button (the shell's padding already clears the bottom bar). */
+  padding: 0 14px 72px;
+}
+
+/* --- Sidebar drawer (from 720 px): folds to a rail, its edge drags between 200 and 360 px --- */
+.drawer {
+  display: none;
+}
+
+.sidebar {
+  padding: 4px 10px 32px;
+}
+
+.drawerToggle {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  min-height: var(--gt-component-hit-target);
+  min-width: var(--gt-component-hit-target);
+  margin: 12px 6px 4px;
+  padding: 0 12px;
+  border: var(--gt-primitive-border-1) solid var(--gt-semantic-color-input-border);
+  border-radius: var(--gt-primitive-radius-pill);
+  background: var(--gt-semantic-color-surface-card);
+  color: var(--gt-semantic-color-text);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.drawer:not([data-open]) .drawerToggle {
+  justify-content: center;
+  padding: 0;
+}
+
+/* The edge: a wide, invisible grip with a thin line that shows on hover, focus and while dragging. */
+.resizer {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-end: -5px;
+  z-index: 4;
+  width: 10px;
+  cursor: col-resize;
+  touch-action: none;
+}
+
+.resizer::after {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 4px;
+  width: 2px;
+  background: transparent;
+  content: '';
+}
+
+.resizer:hover::after,
+.resizer:focus-visible::after,
+.drawer[data-dragging] .resizer::after {
+  background: var(--gt-semantic-color-primary);
+}
+
+.resizer:focus-visible {
+  outline: var(--gt-component-focus-width) solid var(--gt-semantic-color-focus);
+  outline-offset: 0;
+}
+
+/* No text selection while the edge is dragged. */
+.drawer[data-dragging] {
+  user-select: none;
+}
+
+.sidebarTrip {
+  margin: 0 0 8px;
+  padding: 0 12px;
+  color: var(--gt-semantic-color-text-secondary);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+}
+
+.sections,
+.sub {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sections {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sub {
+  display: flex;
+  flex-direction: column;
+  margin: 2px 0 6px;
+}
+
+.section,
+.subLink {
+  display: flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 12px;
+  border-radius: var(--gt-primitive-radius-12);
+  color: var(--gt-semantic-color-text);
+  text-decoration: none;
+}
+
+.section {
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.subLink {
+  min-height: 36px;
+  padding-inline-start: 24px;
+  color: var(--gt-semantic-color-text-secondary);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.section:hover,
+.subLink:hover {
+  background: var(--gt-semantic-color-track);
+}
+
+/* The page you are on: a filled pill, never colour alone (the weight and the fill change together). */
+.section[aria-current='page'] {
+  background: var(--gt-semantic-color-primary);
+  color: var(--gt-semantic-color-on-primary);
+}
+
+/* The day being read: a bar on its edge and bolder text. */
+.subLink[aria-current='location'] {
+  box-shadow: inset 3px 0 0 var(--gt-semantic-color-primary);
+  color: var(--gt-semantic-color-text);
+  font-weight: 800;
+}
+
+/* --- Jump bar (below 720 px) --- */
+.jumpBar {
+  position: sticky;
+  inset-block-start: var(--workspace-top);
+  z-index: 5;
+  display: flex;
+  gap: 6px;
+  margin: 0 -14px;
+  padding: 8px 14px;
+  overflow-x: auto;
+  border-block-end: var(--gt-primitive-border-1) solid var(--gt-semantic-color-hairline);
+  background: var(--gt-semantic-color-surface-page);
+  scrollbar-width: none;
+}
+
+.jump {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  min-height: var(--gt-component-hit-target);
+  padding: 0 16px;
+  border: var(--gt-primitive-border-1) solid var(--gt-semantic-color-input-border);
+  border-radius: var(--gt-primitive-radius-pill);
+  color: var(--gt-semantic-color-text);
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.jump[aria-current='page'] {
+  border-color: var(--gt-semantic-color-primary);
+  background: var(--gt-semantic-color-primary);
+  color: var(--gt-semantic-color-on-primary);
+}
+
+/* --- Map --- */
+/* Two classes: the board's `.stage` (its palette and pins) sets `position: relative`, and this must win. */
+.workspace .mapPane {
+  position: sticky;
+  align-self: start;
+  inset-block-start: var(--workspace-top);
+  height: calc(100vh - var(--workspace-top));
+  min-height: 0;
+  border-inline-start: var(--gt-primitive-border-1) solid var(--gt-semantic-color-hairline);
+}
+
+.expand {
+  position: absolute;
+  inset-block-start: 16px;
+  inset-inline-end: 16px;
+  z-index: 3;
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  min-height: var(--gt-component-hit-target);
+  padding: 0 16px;
+  border-radius: var(--gt-primitive-radius-pill);
+  /* The map is always light, so this button uses the board's own light pair in both themes. */
+  background: var(--surface);
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 800;
+  text-decoration: none;
+  box-shadow: var(--gt-primitive-shadow-small);
+}
+
+/* Below 1100 px: the map is one tap away, centred so it never sits under Pip's button. */
+.mapButton {
+  position: fixed;
+  inset-block-end: calc(96px + env(safe-area-inset-bottom, 0px));
+  inset-inline-start: 50%;
+  z-index: 20;
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  min-height: var(--gt-component-hit-target);
+  padding: 0 22px;
+  border-radius: var(--gt-primitive-radius-pill);
+  background: var(--gt-semantic-color-text);
+  color: var(--gt-semantic-color-surface-page);
+  font-size: 15px;
+  font-weight: 800;
+  text-decoration: none;
+  box-shadow: var(--gt-primitive-shadow-modal);
+  transform: translateX(-50%);
+}
+
+.section:focus-visible,
+.subLink:focus-visible,
+.drawerToggle:focus-visible,
+.jump:focus-visible,
+.expand:focus-visible,
+.mapButton:focus-visible {
+  outline: var(--gt-component-focus-width) solid var(--gt-semantic-color-focus);
+  outline-offset: 2px;
+}
+
+@media (min-width: 720px) {
+  .workspace {
+    grid-template-columns: var(--sidebar-width, 232px) minmax(0, 1fr);
+  }
+
+  .drawer {
+    position: sticky;
+    inset-block-start: var(--workspace-top);
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-self: start;
+    height: calc(100vh - var(--workspace-top));
+    border-inline-end: var(--gt-primitive-border-1) solid var(--gt-semantic-color-hairline);
+    /* A white drawer beside the grey page: the trip's sections read as one panel. */
+    background: var(--gt-semantic-color-surface-card);
+  }
+
+  .drawerPanel {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+  }
+
+  .drawerPanel[hidden] {
+    display: none;
+  }
+
+  .jumpBar {
+    display: none;
+  }
+
+  .content {
+    padding: 24px 28px 72px;
+  }
+
+  .mapButton {
+    inset-block-end: 24px;
+  }
+}
+
+@media (min-width: 1100px) {
+  .workspace[data-workspace-map] {
+    grid-template-columns: var(--sidebar-width, 232px) minmax(0, 1fr) minmax(360px, 42%);
+  }
+
+  .workspace[data-workspace-map] .content {
+    padding-block-end: 0;
+  }
+}
