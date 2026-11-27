@@ -20,6 +20,7 @@ import {
   expense,
   idempotencyKey,
   rateLimit,
+  savingsCheckin,
   trip,
   tripMember,
   tripPlace,
@@ -179,6 +180,7 @@ export interface PreferencesRow {
   readonly homeCity: string | null;
   readonly homePoint: { readonly latitude: number; readonly longitude: number } | null;
   readonly pipOptIn: boolean;
+  readonly weeklyReminder: boolean;
   readonly pipLook: { hat: string; outfit: string; bag: string; bagColor: string };
   readonly pipName: string | null;
 }
@@ -198,6 +200,7 @@ const asPreferencesRow = (row: typeof userPreference.$inferSelect): PreferencesR
       ? null
       : { latitude: row.homeLatitude, longitude: row.homeLongitude },
   pipOptIn: row.pipOptIn,
+  weeklyReminder: row.weeklyReminder,
   pipLook: { hat: row.pipHat, outfit: row.pipOutfit, bag: row.pipBag, bagColor: row.pipBagColor },
   pipName: row.pipName,
 });
@@ -233,6 +236,7 @@ export function createPreferencesRepository(executor: Executor) {
         readonly homePoint?:
           { readonly latitude: number; readonly longitude: number } | null | undefined;
         readonly pipOptIn?: boolean | undefined;
+        readonly weeklyReminder?: boolean | undefined;
         readonly pipLook?:
           { hat: string; outfit: string; bag: string; bagColor: string } | undefined;
         readonly pipName?: string | null | undefined;
@@ -256,6 +260,7 @@ export function createPreferencesRepository(executor: Executor) {
               homeLongitude: patch.homePoint?.longitude ?? null,
             }),
         ...(patch.pipOptIn === undefined ? {} : { pipOptIn: patch.pipOptIn }),
+        ...(patch.weeklyReminder === undefined ? {} : { weeklyReminder: patch.weeklyReminder }),
         ...(patch.pipLook === undefined
           ? {}
           : {
@@ -742,6 +747,41 @@ export function createSavingsRepository(executor: Executor) {
         .where(eq(tripSavings.tripId, tripId))
         .limit(1);
       return row ?? null;
+    },
+    async listCheckins(tripId: string, userId: string) {
+      return executor
+        .select({ week: savingsCheckin.week, amountMinor: savingsCheckin.amountMinor })
+        .from(savingsCheckin)
+        .where(and(eq(savingsCheckin.tripId, tripId), eq(savingsCheckin.userId, userId)))
+        .orderBy(desc(savingsCheckin.week))
+        .limit(60);
+    },
+    async upsertCheckin(row: {
+      readonly tripId: string;
+      readonly userId: string;
+      readonly week: string;
+      readonly amountMinor: bigint;
+      readonly createdAt: Date;
+    }): Promise<bigint | null> {
+      const [before] = await executor
+        .select({ amountMinor: savingsCheckin.amountMinor })
+        .from(savingsCheckin)
+        .where(
+          and(
+            eq(savingsCheckin.tripId, row.tripId),
+            eq(savingsCheckin.userId, row.userId),
+            eq(savingsCheckin.week, row.week),
+          ),
+        )
+        .limit(1);
+      await executor
+        .insert(savingsCheckin)
+        .values(row)
+        .onConflictDoUpdate({
+          target: [savingsCheckin.tripId, savingsCheckin.userId, savingsCheckin.week],
+          set: { amountMinor: row.amountMinor },
+        });
+      return before?.amountMinor ?? null;
     },
     /** Creates the row (zero for what the patch leaves out) or changes only the fields in the patch. */
     async upsert(

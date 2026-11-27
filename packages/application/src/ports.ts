@@ -114,6 +114,7 @@ export interface PreferencesRecord {
   /** Where that city is, when it was picked from the city list; null when typed or unknown. */
   readonly homePoint: { readonly latitude: number; readonly longitude: number } | null;
   readonly pipOptIn: boolean;
+  readonly weeklyReminder: boolean;
   /** The person's Pip: hat, outfit, bag and bag colour (values from the domain's lists). */
   readonly pipLook: { hat: string; outfit: string; bag: string; bagColor: string };
   /** Pip's name as the person chose it, or null for "Pip". */
@@ -133,6 +134,7 @@ export interface PreferencesPatch {
   readonly homeCity?: string | null | undefined;
   readonly homePoint?: { readonly latitude: number; readonly longitude: number } | null | undefined;
   readonly pipOptIn?: boolean | undefined;
+  readonly weeklyReminder?: boolean | undefined;
   readonly pipLook?: { hat: string; outfit: string; bag: string; bagColor: string } | undefined;
   readonly pipName?: string | null | undefined;
 }
@@ -308,9 +310,25 @@ export interface SavingsRecord {
 export interface SavingsReader {
   /** `null` until the trip's savings were set. */
   find(tripId: string): Promise<SavingsRecord | null>;
+  /** The person's check-ins on the trip, newest week first (at most a year's worth). */
+  listCheckins(tripId: string, userId: string): Promise<CheckinRecord[]>;
+}
+
+/** One weekly check-in (ADR-0026). */
+export interface CheckinRecord {
+  readonly week: string;
+  readonly amountMinor: bigint;
 }
 
 export interface SavingsWriter extends SavingsReader {
+  /** Records the week's check-in; answers the amount it replaced (null for a first check-in that week). */
+  upsertCheckin(row: {
+    readonly tripId: string;
+    readonly userId: string;
+    readonly week: string;
+    readonly amountMinor: bigint;
+    readonly createdAt: Date;
+  }): Promise<bigint | null>;
   upsert(
     tripId: string,
     patch: {

@@ -138,6 +138,15 @@
       "action": "Ver as opções",
       "expiry": "Enviamos este e-mail uma vez só. Nada é cobrado a menos que você escolha um plano.",
       "ignore": "Você pode excluir sua conta em Configurações quando quiser."
+    },
+    "weeklyCheckin": {
+      "subject": "Você guardou alguma coisa esta semana?",
+      "subjectTrip": "“{trip}”: você guardou alguma coisa esta semana?",
+      "body": "Um check-in rápido mantém sua viagem andando: diga ao Globetrot quanto você guardou esta semana e veja a data chegar mais perto.",
+      "trip": "Sua viagem “{trip}” está esperando o check-in desta semana.",
+      "action": "Fazer check-in",
+      "expiry": "Enviamos aos domingos quando a semana ainda não tem check-in.",
+      "ignore": "Para parar estes e-mails, desligue o lembrete semanal em Configurações."
     }
   },
   "auth": {

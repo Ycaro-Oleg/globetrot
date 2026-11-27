@@ -72,6 +72,14 @@ export interface FakeState {
   members: { tripId: string; userId: string; role: MemberRole; joinedAt: Date }[];
   /** Each person's part and savings on a shared trip (ADR-0025). */
   money: PersonMoneyRecord[];
+  /** Weekly check-ins (ADR-0026). */
+  checkins: {
+    tripId: string;
+    userId: string;
+    week: string;
+    amountMinor: bigint;
+    createdAt: Date;
+  }[];
   invites: InviteRecord[];
   passes: {
     id: string;
@@ -134,6 +142,7 @@ export function createFakePorts(options: FakeOptions = {}) {
     credits: [],
     members: [],
     money: [],
+    checkins: [],
     invites: [],
     passes: [],
     audit: [],
@@ -220,6 +229,7 @@ export function createFakePorts(options: FakeOptions = {}) {
         homeCity: null,
         homePoint: null,
         pipOptIn: false,
+        weeklyReminder: true,
         pipLook: { hat: 'straw', outfit: 'none', bag: 'trolley', bagColor: 'amber' },
         pipName: null,
       };
@@ -235,6 +245,7 @@ export function createFakePorts(options: FakeOptions = {}) {
         homeCity: patch.homeCity === undefined ? current.homeCity : patch.homeCity,
         homePoint: patch.homePoint === undefined ? current.homePoint : patch.homePoint,
         pipOptIn: patch.pipOptIn ?? current.pipOptIn,
+        weeklyReminder: patch.weeklyReminder ?? current.weeklyReminder,
         pipLook: patch.pipLook ?? current.pipLook,
         pipName: patch.pipName === undefined ? current.pipName : patch.pipName,
       };
@@ -387,6 +398,19 @@ export function createFakePorts(options: FakeOptions = {}) {
   const savingsWriter: SavingsWriter = {
     async find(tripId) {
       return state.savings.get(tripId) ?? null;
+    },
+    async listCheckins(tripId, userId) {
+      return state.checkins
+        .filter((c) => c.tripId === tripId && c.userId === userId)
+        .sort((a, b) => (a.week < b.week ? 1 : -1))
+        .map(({ week, amountMinor }) => ({ week, amountMinor }));
+    },
+    async upsertCheckin(row) {
+      const before = state.checkins.find(
+        (c) => c.tripId === row.tripId && c.userId === row.userId && c.week === row.week,
+      );
+      state.checkins = [...state.checkins.filter((c) => c !== before), { ...row }];
+      return before?.amountMinor ?? null;
     },
     async upsert(tripId, patch) {
       const current = state.savings.get(tripId) ?? {
@@ -783,6 +807,7 @@ export function createFakePorts(options: FakeOptions = {}) {
           credits: [...state.credits],
           members: [...state.members],
           money: [...state.money],
+          checkins: [...state.checkins],
           invites: [...state.invites],
           passes: [...state.passes],
           audit: [...state.audit],

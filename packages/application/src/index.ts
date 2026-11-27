@@ -15,6 +15,7 @@ import {
   createRevokeInvite,
 } from './members/operations';
 import { createGetGroupMoney, createSetShares, createUpdateMyMoney } from './members/money';
+import { createCheckIn, createGetHabit } from './habit/operations';
 import {
   createGetBilling,
   createOpenBillingPortal,
@@ -37,6 +38,13 @@ export type { Actor } from './actor';
 export { assertOwner } from './authorization';
 export { billingSchema } from './billing/operations';
 export { groupMoneySchema } from './members/money';
+export { habitSchema } from './habit/operations';
+export {
+  createWeeklyReminders,
+  type WeeklyNoticeStore,
+  type WeeklyReminders,
+  type WeeklyTarget,
+} from './habit/weekly-reminders';
 export {
   inviteCreatedSchema,
   invitePreviewSchema,
@@ -453,6 +461,8 @@ export function createApplication(ports: Ports) {
     getGroupMoney: createGetGroupMoney(ports),
     updateMyMoney: createUpdateMyMoney(ports),
     setShares: createSetShares(ports),
+    getHabit: createGetHabit(ports),
+    checkIn: createCheckIn(ports),
     shareTrip: createShareTrip(ports),
     unshareTrip: createUnshareTrip(ports),
     suggestDayPlaces: createSuggestDayPlaces(ports),

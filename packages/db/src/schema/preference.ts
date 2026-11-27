@@ -61,6 +61,10 @@ export const userPreference = pgTable(
     pipOptIn: boolean('pip_opt_in')
       .notNull()
       .default(sql`false`),
+    /** The weekly saving reminder email (ADR-0026); on until the person turns it off. */
+    weeklyReminder: boolean('weekly_reminder')
+      .notNull()
+      .default(sql`true`),
     /** The person's own Pip (handoff v2, "Meu Pip"): its look and an optional name. */
     pipHat: text('pip_hat').notNull().default(DEFAULT_PIP_LOOK.hat),
     pipOutfit: text('pip_outfit').notNull().default(DEFAULT_PIP_LOOK.outfit),

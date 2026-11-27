@@ -2,11 +2,13 @@ import {
   createErrorReporter,
   createMaintenance,
   createTrialReminders,
+  createWeeklyReminders,
 } from '@globetrot/application';
 import {
   connectDatabase,
   createMaintenanceRepository,
   createNoticeRepository,
+  createWeeklyNoticeRepository,
 } from '@globetrot/db';
 import { createSmtpEmail } from '@globetrot/mailer';
 import { createS3Storage } from '@globetrot/storage';
@@ -38,6 +40,13 @@ const reminders = createTrialReminders({
   appUrl: config.appUrl,
 });
 
+const weekly = createWeeklyReminders({
+  store: createWeeklyNoticeRepository(database.db),
+  email: createSmtpEmail(config.email),
+  clock: { now: () => new Date() },
+  appUrl: config.appUrl,
+});
+
 const worker = startWorker({
   onError: (error) => monitoring.report(error),
   firstDelayMs: 60_000,
@@ -57,6 +66,8 @@ const worker = startWorker({
         );
         const notices = await reminders.run();
         console.log(`trial emails: ${notices.ending} ending soon, ${notices.ended} ended`);
+        const checkins = await weekly.run();
+        console.log(`weekly reminders: ${checkins.sent} sent`);
       } finally {
         await client.query('select pg_advisory_unlock($1)', [MAINTENANCE_LOCK]);
       }

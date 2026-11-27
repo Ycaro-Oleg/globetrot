@@ -57,6 +57,7 @@ export function createUpdatePreferences(deps: Pick<Ports, 'unitOfWork' | 'clock'
               ? null
               : undefined,
         pipOptIn: input.pipOptIn,
+        weeklyReminder: input.weeklyReminder,
         pipLook: input.pipLook,
         pipName: input.pipName,
       };
