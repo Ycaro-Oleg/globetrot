@@ -37,7 +37,11 @@ export default async function PlanPage({
       referral={referral}
       planRequired={status === 'plan-required'}
       paid={
-        paid === 'top-up' ? 'top-up' : paid === 'explorer' || paid === 'voyager' ? 'plan' : null
+        paid === 'top-up' || paid === 'top-up-small'
+          ? 'top-up'
+          : paid === 'explorer' || paid === 'voyager'
+            ? 'plan'
+            : null
       }
     />
   );

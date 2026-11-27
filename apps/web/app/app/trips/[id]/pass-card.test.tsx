@@ -19,7 +19,8 @@ describe.each(SUPPORTED_LOCALES)('trip pass card (%s)', (locale) => {
   it('offers the pass at its price in the person’s price currency', () => {
     expect(render()).toContain(copy.title);
     expect(render()).toMatch(locale === 'en' ? /\$9\.99/ : /US\$\s?9,99/);
-    expect(render({ currency: 'BRL' })).toMatch(/R\$\s?39[,.]00/);
+    expect(render({ currency: 'BRL' })).toMatch(/R\$\s?49[,.]00/);
+    expect(render()).toMatch(locale === 'en' ? /50 Pip credits/ : /50 créditos do Pip/);
   });
 
   it('offers a free pass first when the person earned one', () => {

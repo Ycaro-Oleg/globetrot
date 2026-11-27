@@ -82,24 +82,35 @@ export function createStripePayments(
         cancel_url: back,
       };
       // One-time payments (credits, a trip pass) leave the payment methods to the dashboard, so Pix shows in
-      // reais once it is switched on there.
-      const session =
-        item === 'top-up' || item === 'trip-pass'
-          ? await stripe.post('/checkout/sessions', {
-              ...common,
-              mode: 'payment',
-              'line_items[0][price]': item === 'top-up' ? prices.topUp : prices.tripPass,
-              'payment_intent_data[metadata][userId]': userId,
-              'payment_intent_data[metadata][tripId]': tripId,
-              ...(customer ? {} : { customer_creation: 'always' }),
-            })
-          : await stripe.post('/checkout/sessions', {
-              ...common,
-              mode: 'subscription',
-              'line_items[0][price]': prices[item][interval],
-              'subscription_data[metadata][userId]': userId,
-              allow_promotion_codes: 'true',
-            });
+      // reais once it is switched on there. They take promotion codes too (the launch and founder coupons,
+      // ADR-0033).
+      if (item !== 'explorer' && item !== 'voyager') {
+        const price =
+          item === 'top-up'
+            ? prices.topUp
+            : item === 'top-up-small'
+              ? prices.topUpSmall
+              : prices.tripPass;
+        // The small pack is offered only once its Price is set.
+        if (!price) return null;
+        const payment = await stripe.post('/checkout/sessions', {
+          ...common,
+          mode: 'payment',
+          'line_items[0][price]': price,
+          'payment_intent_data[metadata][userId]': userId,
+          'payment_intent_data[metadata][tripId]': tripId,
+          allow_promotion_codes: 'true',
+          ...(customer ? {} : { customer_creation: 'always' }),
+        });
+        return typeof payment.url === 'string' ? payment.url : null;
+      }
+      const session = await stripe.post('/checkout/sessions', {
+        ...common,
+        mode: 'subscription',
+        'line_items[0][price]': prices[item][interval],
+        'subscription_data[metadata][userId]': userId,
+        allow_promotion_codes: 'true',
+      });
       return typeof session.url === 'string' ? session.url : null;
     },
     async portalUrl({ providerCustomerId }) {
@@ -228,7 +239,9 @@ export function createStripeWebhook(
             const paymentId = idOf(data.payment_intent) ?? text(data.id) ?? '';
             const tripId = text(metadata.tripId);
             if (metadata.item === 'top-up') payment = { kind: 'top-up', userId, paymentId };
-            else if (metadata.item === 'trip-pass' && tripId) {
+            else if (metadata.item === 'top-up-small') {
+              payment = { kind: 'top-up', userId, paymentId, pack: 'small' };
+            } else if (metadata.item === 'trip-pass' && tripId) {
               payment = { kind: 'trip-pass', userId, tripId, paymentId };
             }
           }

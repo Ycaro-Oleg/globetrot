@@ -18,12 +18,14 @@ const config: StripeConfig = {
       explorer: { month: 'price_em', year: 'price_ey' },
       voyager: { month: 'price_vm', year: 'price_vy' },
       topUp: 'price_top',
+      topUpSmall: null,
       tripPass: 'price_pass',
     },
     BRL: {
       explorer: { month: 'price_em_brl', year: 'price_ey_brl' },
       voyager: { month: 'price_vm_brl', year: 'price_vy_brl' },
       topUp: 'price_top_brl',
+      topUpSmall: 'price_small_brl',
       tripPass: 'price_pass_brl',
     },
   },
@@ -216,8 +218,33 @@ describe('checkout and the portal', () => {
     expect(sent.get('success_url')).toBe(
       'https://globetrot.example/app/trips/trip-1?paid=trip-pass',
     );
-    // Payment methods (Pix included) are left to the dashboard.
+    // Payment methods (Pix included) are left to the dashboard; the launch and founder coupons apply here too.
     expect(sent.has('payment_method_types[0]')).toBe(false);
+    expect(sent.get('allow_promotion_codes')).toBe('true');
+  });
+
+  it('sells the small credit pack only once its Price is set', async () => {
+    const api = stripeApi();
+    const payments = createStripePayments(
+      config,
+      { findProviderCustomer: async () => null },
+      { fetch: api.call },
+    );
+    const ask = (currency: 'USD' | 'BRL') =>
+      payments.checkoutUrl({
+        userId: 'u-ana',
+        email: 'ana@example.com',
+        item: 'top-up-small',
+        interval: 'month',
+        currency,
+      });
+    expect(await ask('USD')).toBeNull();
+    expect(api.calls).toHaveLength(0);
+    await ask('BRL');
+    const sent = new URLSearchParams(api.calls[0]!.body);
+    expect(sent.get('mode')).toBe('payment');
+    expect(sent.get('line_items[0][price]')).toBe('price_small_brl');
+    expect(sent.get('metadata[item]')).toBe('top-up-small');
   });
 });
 
@@ -291,6 +318,26 @@ describe('the webhook', () => {
     expect(state.credits).toEqual([{ userId: 'u-ana', delta: 200, reason: 'top-up', ref: 'pi_1' }]);
   });
 
+  it('adds the small pack’s 50 credits', async () => {
+    const { send, state } = setup();
+    await send({
+      type: 'checkout.session.completed',
+      data: {
+        object: {
+          id: 'cs_3',
+          mode: 'payment',
+          payment_status: 'paid',
+          payment_intent: 'pi_small',
+          client_reference_id: 'u-ana',
+          metadata: { item: 'top-up-small', userId: 'u-ana' },
+        },
+      },
+    });
+    expect(state.credits).toEqual([
+      { userId: 'u-ana', delta: 50, reason: 'top-up', ref: 'pi_small' },
+    ]);
+  });
+
   it('grants a trip pass when a Pix payment clears later, once', async () => {
     const { send, state, app } = setup();
     const trip = await app.createTrip.execute(
@@ -314,6 +361,10 @@ describe('the webhook', () => {
     expect(await send(cleared)).toBe(200);
     expect(state.passes.map((pass) => [pass.tripId, pass.providerRef])).toEqual([
       [trip.id, 'pi_pix'],
+    ]);
+    // The pass brings 50 Pip credits, once per payment.
+    expect(state.credits).toEqual([
+      { userId: 'u-ana', delta: 50, reason: 'grant', ref: 'trip-pass:pi_pix' },
     ]);
   });
 

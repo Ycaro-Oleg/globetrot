@@ -63,13 +63,20 @@ export const FREE_TERMS = { credits: 5, maxActiveTrips: 1, guests: 1 } as const;
 export const TOP_UP = { credits: 200, priceMinor: 299n } as const;
 export const TOP_UP_PRICES: Readonly<Record<PriceCurrency, bigint>> = { USD: 299n, BRL: 1490n };
 
+/** The small pack (ADR-0033): a few credits for an impulse buy, same rules as the large one. */
+export const TOP_UP_SMALL = {
+  credits: 50,
+  prices: { USD: 99n, BRL: 490n } as Readonly<Record<PriceCurrency, bigint>>,
+} as const;
+
 /**
  * A one-time payment that unlocks the paid tools on one trip (ADR-0023): it does not count towards the free
  * plan's one trip, takes any number of people, and lasts until 30 days after the trip ends, or 12 months from
- * the purchase when the trip has no dates yet.
+ * the purchase when the trip has no dates yet. Since ADR-0033 it also adds Pip credits that never expire.
  */
 export const TRIP_PASS = {
-  prices: { USD: 999n, BRL: 3900n } as Readonly<Record<PriceCurrency, bigint>>,
+  prices: { USD: 999n, BRL: 4900n } as Readonly<Record<PriceCurrency, bigint>>,
+  credits: 50,
   daysAfterTrip: 30,
   monthsWithoutDates: 12,
 } as const;

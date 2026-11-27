@@ -4,6 +4,7 @@ import {
   monthlyOfAnnual,
   planCards,
   topUpPrice,
+  topUpSmallPrice,
   tripPassPrice,
 } from './plan-config';
 
@@ -22,7 +23,8 @@ describe('plan cards', () => {
       [2990n, 23900n],
     ]);
     expect(usd.filter((plan) => plan.highlighted)).toHaveLength(1);
-    expect([tripPassPrice('USD'), tripPassPrice('BRL')]).toEqual([999n, 3900n]);
+    expect([tripPassPrice('USD'), tripPassPrice('BRL')]).toEqual([999n, 4900n]);
+    expect([topUpSmallPrice('USD'), topUpSmallPrice('BRL')]).toEqual([99n, 490n]);
     expect([topUpPrice('USD'), topUpPrice('BRL')]).toEqual([299n, 1490n]);
   });
 

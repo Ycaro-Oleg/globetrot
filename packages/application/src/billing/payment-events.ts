@@ -1,4 +1,11 @@
-import { addDays, TOP_UP, toLocalDate, tripPassValidUntil } from '@globetrot/domain';
+import {
+  addDays,
+  TOP_UP,
+  TOP_UP_SMALL,
+  TRIP_PASS,
+  toLocalDate,
+  tripPassValidUntil,
+} from '@globetrot/domain';
 import type { Ports, SubscriptionRecord, Transaction } from '../ports';
 
 /**
@@ -16,6 +23,8 @@ export type PaymentEvent =
   | {
       readonly kind: 'top-up';
       readonly userId: string;
+      /** Which pack was bought (ADR-0033); the large one when absent. */
+      readonly pack?: 'small' | 'large';
       /** The provider's payment id: a top-up is applied once per payment. */
       readonly paymentId: string;
     }
@@ -110,6 +119,15 @@ export function createPaymentEvents(
             providerRef: event.paymentId,
           });
           if (!granted) return 'duplicate';
+          // The pass also brings Pip credits (ADR-0033), tied to the same payment so a retry adds nothing twice.
+          await tx.billing.addCredits({
+            id: deps.ids.newId(),
+            userId,
+            delta: TRIP_PASS.credits,
+            reason: 'grant',
+            ref: `trip-pass:${event.paymentId}`,
+            createdAt: now,
+          });
           await tx.audit.record({
             id: deps.ids.newId(),
             occurredAt: now,
@@ -117,15 +135,19 @@ export function createPaymentEvents(
             action: 'billing.trip-pass',
             entityType: 'trip',
             entityId: trip.id,
-            metadata: { validUntil: validUntil.toISOString().slice(0, 10) },
+            metadata: {
+              validUntil: validUntil.toISOString().slice(0, 10),
+              credits: TRIP_PASS.credits,
+            },
           });
           await rewardReferrer(tx, userId, now);
           return 'applied';
         }
+        const credits = event.pack === 'small' ? TOP_UP_SMALL.credits : TOP_UP.credits;
         const added = await tx.billing.addCredits({
           id: deps.ids.newId(),
           userId,
-          delta: TOP_UP.credits,
+          delta: credits,
           reason: 'top-up',
           ref: event.paymentId,
           createdAt: now,
@@ -138,7 +160,7 @@ export function createPaymentEvents(
           action: 'billing.top-up',
           entityType: 'account',
           entityId: userId,
-          metadata: { credits: TOP_UP.credits },
+          metadata: { credits },
         });
         return 'applied';
       });

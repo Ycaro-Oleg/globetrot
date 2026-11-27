@@ -969,7 +969,7 @@ export interface BillingWriter extends BillingReader {
   }): Promise<boolean>;
 }
 
-export type CheckoutItem = 'explorer' | 'voyager' | 'top-up' | 'trip-pass';
+export type CheckoutItem = 'explorer' | 'voyager' | 'top-up' | 'top-up-small' | 'trip-pass';
 
 /** The payment provider (Stripe, ADR-0019). `null` from a method means payments are not configured. */
 export interface PaymentsPort {
