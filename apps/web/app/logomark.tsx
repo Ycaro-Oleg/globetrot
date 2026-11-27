@@ -2,7 +2,7 @@ import { BRAND_MARK_ON_DARK_SRC, BRAND_MARK_SRC } from './brand-mark-svg';
 
 /**
  * Globetrot's mark beside the wordmark (TopBar, landing, sign-in, onboarding, shared trips). Decorative: the link's
- * text names it. `onDark` adds a cream halo so the ink outline still reads on a dark background.
+ * text names it. `onDark` adds a white halo so the ink outline still reads on a dark background.
  */
 export function Logomark({
   className,

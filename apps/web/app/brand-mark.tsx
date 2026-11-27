@@ -2,7 +2,7 @@ import { BRAND_MARK_ON_DARK_SRC, BRAND_MARK_SRC } from './brand-mark-svg';
 import { SITE_NAME } from './site';
 
 /**
- * Globetrot's mark on a cream tile, drawn for `ImageResponse`: the favicon, the Apple touch icon and the installable
+ * Globetrot's mark on a white tile, drawn for `ImageResponse`: the favicon, the Apple touch icon and the installable
  * app's icons. `padding` leaves room for maskable icons, whose edges a launcher may crop. `tile: false` drops the
  * background, for the browser tab where the mark should sit on the tab's own colour.
  */
@@ -24,7 +24,7 @@ export function BrandMark({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: tile ? '#FFF5E1' : 'transparent',
+        background: tile ? '#FFFFFF' : 'transparent',
       }}
     >
       {/* eslint-disable-next-line @next/next/no-img-element -- ImageResponse renders plain elements, not next/image */}
