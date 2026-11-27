@@ -151,7 +151,9 @@ describe('settings view', () => {
       const selected = [
         ...html.matchAll(/<label[^>]*data-selected="true"[^>]*>([\s\S]*?)<\/label>/g),
       ].map((m) => m[1]?.replace(/<[^>]+>/g, '').trim());
-      expect(selected).toEqual([copy.themeRedEye, copy.motionReduced]);
+      // The weekly reminder is on until the person turns it off.
+      expect(selected).toEqual([copy.themeRedEye, copy.motionReduced, copy.weeklyReminder.on]);
+      expect(text).toContain(copy.weeklyReminder.label);
     },
   );
 });

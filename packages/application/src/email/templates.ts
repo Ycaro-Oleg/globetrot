@@ -2,7 +2,8 @@ import { formatMoney, money, PLAN_PRICES, type PriceCurrency } from '@globetrot/
 import { formatMessage, type SupportedLocale } from '@globetrot/i18n';
 
 /** The transactional emails the product sends. A new template needs its strings in every catalog. */
-export type EmailTemplate = 'verifyEmail' | 'resetPassword' | 'trialEnding' | 'trialEnded';
+export type EmailTemplate =
+  'verifyEmail' | 'resetPassword' | 'trialEnding' | 'trialEnded' | 'weeklyCheckin';
 
 export interface EmailData {
   /** The single-use link the email exists for. Must be an http(s) URL. */
@@ -47,8 +48,9 @@ const escapeHtml = (value: string) =>
     .replaceAll('"', '&quot;')
     .replaceAll("'", '&#39;');
 
+/** Emails about a person's own trip, which name it when there is one. */
 const trialTemplate = (template: EmailTemplate) =>
-  template === 'trialEnding' || template === 'trialEnded';
+  template === 'trialEnding' || template === 'trialEnded' || template === 'weeklyCheckin';
 
 /** A trip title on one line, without control characters, so a subject header cannot be split. */
 const oneLine = (value: string) =>

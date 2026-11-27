@@ -108,3 +108,54 @@ describe('account notices', () => {
     expect(target?.tripTitle).toBe('Japan in two weeks');
   });
 });
+
+describe('weekly reminders', () => {
+  it('finds people saving monthly with the reminder on and no check-in this week, once per week', async () => {
+    const { createWeeklyNoticeRepository } = await import('./notice-repository');
+    const database = await createTestDatabase();
+    databases.push(database);
+    const { db } = database;
+    for (const id of ['u-saver', 'u-off', 'u-done', 'u-idle']) {
+      await db.insert(schema.user).values({
+        id,
+        name: id,
+        email: `${id}@example.com`,
+        emailVerified: true,
+      });
+    }
+    await db.insert(schema.userPreference).values({ userId: 'u-off', weeklyReminder: false });
+    const trips: string[] = [];
+    for (const [index, owner] of ['u-saver', 'u-off', 'u-done', 'u-idle'].entries()) {
+      const id = `01a1c28d-afc9-7767-af40-c937c80d00${index}0`;
+      trips.push(id);
+      await db.insert(schema.trip).values({
+        id,
+        ownerId: owner,
+        title: `Trip ${owner}`,
+        currency: 'BRL',
+        status: 'active',
+        visibility: 'private',
+      });
+      if (owner !== 'u-idle') {
+        await db.insert(schema.tripSavings).values({ tripId: id, monthlyMinor: 50_000n });
+      }
+    }
+    await db.insert(schema.savingsCheckin).values({
+      tripId: trips[2]!,
+      userId: 'u-done',
+      week: '2026-W48',
+      amountMinor: 10_000n,
+    });
+    const notices = createWeeklyNoticeRepository(db);
+    const due = await notices.due('2026-W48', 10);
+    expect(due.map((target) => [target.userId, target.tripTitle])).toEqual([
+      ['u-saver', 'Trip u-saver'],
+    ]);
+    expect(await notices.claim('u-saver', '2026-W48', NOW)).toBe(true);
+    expect(await notices.claim('u-saver', '2026-W48', NOW)).toBe(false);
+    expect(await notices.due('2026-W48', 10)).toEqual([]);
+    await notices.release('u-saver', '2026-W48');
+    expect(await notices.due('2026-W48', 10)).toHaveLength(1);
+    expect(await notices.due('2026-W49', 10)).toHaveLength(2);
+  });
+});

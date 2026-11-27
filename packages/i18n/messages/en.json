@@ -101,6 +101,12 @@
       "cancel": "Keep my account",
       "deleteConfirm": "Delete my account forever",
       "deleting": "Deleting…"
+    },
+    "weeklyReminder": {
+      "label": "Weekly saving reminder",
+      "hint": "A short email on Sundays when the week has no check-in yet.",
+      "on": "On",
+      "off": "Off"
     }
   },
   "email": {
@@ -138,6 +144,15 @@
       "action": "See the options",
       "expiry": "We send this once. Nothing is charged unless you choose a plan.",
       "ignore": "You can delete your account from Settings whenever you like."
+    },
+    "weeklyCheckin": {
+      "subject": "Did you set something aside this week?",
+      "subjectTrip": "“{trip}”: did you set something aside this week?",
+      "body": "A quick check-in keeps your trip moving: tell Globetrot what you set aside this week and see the date get closer.",
+      "trip": "Your trip “{trip}” is waiting for this week’s check-in.",
+      "action": "Check in",
+      "expiry": "We send this on Sundays when the week has no check-in yet.",
+      "ignore": "To stop these emails, turn off the weekly reminder in Settings."
     }
   },
   "auth": {
@@ -422,7 +437,8 @@
       "manage": "Manage trips",
       "aria": "Change current trip. Selected: {title}",
       "ariaEmpty": "Choose a trip or create one",
-      "details": "Trip details and progress"
+      "details": "Trip details and progress",
+      "today": "Today"
     },
     "boardAvailable": "Your world map is ready. Pin places to start building this trip route.",
     "openMap": "Open the world map",
@@ -1891,5 +1907,57 @@
     "even": "Everyone has paid their part of what was paid so far.",
     "nothingPaid": "Nothing paid yet. Mark costs as paid and say who paid to see who owes whom.",
     "unassigned": "{amount} of paid costs has nobody named on it and is left out."
+  },
+  "todayPage": {
+    "title": "Today",
+    "noTrip": "Create a trip to see what to do today.",
+    "loadError": "Today could not be loaded. Try again in a moment.",
+    "goTrips": "Go to my trips",
+    "noDate": "Set the date to start the countdown",
+    "setDate": "Set the start date",
+    "daysLeft": "{count, plural, one {# day to go} other {# days to go}}",
+    "travelling": "You are travelling",
+    "back": "Welcome back",
+    "weekTitle": "This week’s saving",
+    "streak": "{count, plural, one {# week in a row} other {# weeks in a row}}",
+    "streakStart": "Start a streak: check in what you set aside this week.",
+    "doneThisWeek": "You set aside {amount} this week.",
+    "amountLabel": "I set aside",
+    "checkIn": "I set this aside this week",
+    "changeCheckIn": "Change this week’s amount",
+    "checkInHint": "It adds to your savings for this trip. Checking in again this week changes the amount.",
+    "checkedIn": "Checked in. Your savings went up.",
+    "checkInError": "That did not work. Try again in a moment.",
+    "addToChecklist": "Add to checklist",
+    "added": "Added",
+    "taskAdded": "Added to the checklist: {task}",
+    "todayPlan": "Today’s plan",
+    "todayCost": "Add today’s costs",
+    "phase": {
+      "six-months": "More than three months to go",
+      "three-months": "One to three months to go",
+      "one-month": "Less than a month to go",
+      "one-week": "The last week",
+      "travelling": "While you travel",
+      "back": "After the trip"
+    },
+    "tasks": {
+      "passport": "Check your passport is valid for the whole trip",
+      "entryRules": "Look up the entry rules for each country on official sites",
+      "flights": "Watch flight prices for your dates",
+      "insurance": "Choose travel insurance",
+      "stays": "Book where you will sleep",
+      "vaccines": "Ask a doctor about vaccines",
+      "esim": "Get an eSIM or a local SIM",
+      "cards": "Tell your bank and plan cards and cash",
+      "transfers": "Plan the airport transfers",
+      "documents": "Print or save your documents offline",
+      "packing": "Pack with the packing list",
+      "offline": "Download maps for offline use",
+      "dailyCosts": "Note each day’s costs",
+      "photos": "Add photos to the places you visit",
+      "memories": "Mark the places you visited",
+      "settle": "Settle up with the people you travelled with"
+    }
   }
 }

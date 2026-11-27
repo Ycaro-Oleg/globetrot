@@ -144,3 +144,41 @@ export const tripPersonMoney = pgTable(
     ),
   ],
 );
+
+/**
+ * The weekly saving check-in (ADR-0026): what a person set aside in an ISO week (`2027-W05`) for a trip. One per
+ * person, trip and week; checking in again that week changes the amount.
+ */
+export const savingsCheckin = pgTable(
+  'savings_checkin',
+  {
+    tripId: uuid('trip_id')
+      .notNull()
+      .references(() => trip.id, { onDelete: 'cascade' }),
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    week: text('week').notNull(),
+    amountMinor: minor('amount_minor').notNull(),
+    createdAt: instant('created_at').defaultNow().notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.tripId, table.userId, table.week] }),
+    index('savings_checkin_user_idx').on(table.userId, table.week),
+    check('savings_checkin_week_format', sql`${table.week} ~ '^[0-9]{4}-W[0-9]{2}$'`),
+    check('savings_checkin_amount', sql`${table.amountMinor} >= 0`),
+  ],
+);
+
+/** Weekly reminder emails already sent, one per person and ISO week, so the worker never sends one twice. */
+export const weeklyNotice = pgTable(
+  'weekly_notice',
+  {
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    week: text('week').notNull(),
+    sentAt: instant('sent_at').defaultNow().notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.userId, table.week] })],
+);

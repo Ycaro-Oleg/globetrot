@@ -1249,6 +1249,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/trips/{id}/habit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * This week’s check-in, the streak and the countdown
+         * @description The ISO week in the person’s time zone, whether they checked in, weeks in a row, a suggested amount (a week of their monthly amount) and the trip’s countdown phase with checklist suggestions (ADR-0026).
+         */
+        get: operations["getHabit"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/trips/{id}/checkin": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * “I set this aside this week”
+         * @description Adds the amount to the person’s savings (their own on a shared trip, the trip’s otherwise). Checking in again the same week changes the amount instead of adding to it.
+         */
+        post: operations["checkIn"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1562,6 +1602,7 @@ export interface operations {
                             longitude: number;
                         } | null;
                         pipOptIn: boolean;
+                        weeklyReminder: boolean;
                         pipLook: {
                             /** @enum {string} */
                             hat: "straw" | "helmet" | "cap" | "none";
@@ -1662,6 +1703,8 @@ export interface operations {
                     } | null;
                     /** @description Whether the person wants Pip’s suggestions. */
                     pipOptIn?: boolean;
+                    /** @description Whether to get the weekly saving reminder email (on by default). */
+                    weeklyReminder?: boolean;
                     /** @description The person’s Pip: hat, outfit, bag and bag colour. */
                     pipLook?: {
                         /** @enum {string} */
@@ -1714,6 +1757,7 @@ export interface operations {
                             longitude: number;
                         } | null;
                         pipOptIn: boolean;
+                        weeklyReminder: boolean;
                         pipLook: {
                             /** @enum {string} */
                             hat: "straw" | "helmet" | "cap" | "none";
@@ -11853,6 +11897,202 @@ export interface operations {
                 };
             };
             /** @description The parts do not cover everyone or do not add up to the whole trip. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    getHabit: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The habit. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        week: string;
+                        checkedIn: {
+                            /**
+                             * @description Major units, exact.
+                             * @example 1250.00
+                             */
+                            amount: string;
+                            currency: string;
+                        } | null;
+                        streak: number;
+                        suggested: {
+                            /**
+                             * @description Major units, exact.
+                             * @example 1250.00
+                             */
+                            amount: string;
+                            currency: string;
+                        };
+                        countdown: {
+                            daysLeft: number | null;
+                            /** @enum {string|null} */
+                            phase: "six-months" | "three-months" | "one-month" | "one-week" | "travelling" | "back" | null;
+                            tasks: string[];
+                        };
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description No such trip, or not one the caller plans. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    checkIn: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    amount: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Recorded. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        week: string;
+                        amount: {
+                            amount: string;
+                            currency: string;
+                        };
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description No such trip, or not one the caller plans. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description The amount is not valid. */
             422: {
                 headers: {
                     [name: string]: unknown;

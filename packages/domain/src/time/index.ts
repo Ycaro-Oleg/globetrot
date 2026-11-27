@@ -5,6 +5,7 @@ export {
   fullMonthsBetween,
   InvalidDateError,
   isLocalDate,
+  localDateIn,
   toLocalDate,
   yearMonthOf,
   type LocalDate,

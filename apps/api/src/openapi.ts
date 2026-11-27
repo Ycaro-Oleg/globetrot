@@ -32,7 +32,7 @@ export function buildOpenApiDocument() {
       checklist: { listByTrip: unreachable, findById: unreachable, stamps: unreachable },
       dayPlaces: { listByTrip: unreachable, findById: unreachable },
       visas: { listByUser: unreachable },
-      savings: { find: unreachable },
+      savings: { find: unreachable, listCheckins: unreachable },
       preferences: { find: unreachable },
       community: {
         findProfile: unreachable,

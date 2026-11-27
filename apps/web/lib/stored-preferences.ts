@@ -23,6 +23,7 @@ export interface StoredPreferences {
   /** Where the home city is, when it was picked from the city list. */
   readonly homePoint: { readonly latitude: number; readonly longitude: number } | null;
   readonly pipOptIn: boolean;
+  readonly weeklyReminder?: boolean;
   readonly pipLook: {
     readonly hat: 'straw' | 'helmet' | 'cap' | 'none';
     readonly outfit: 'none' | 'scarf' | 'aloha' | 'vest';

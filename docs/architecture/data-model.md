@@ -237,6 +237,8 @@ Migration `0018_billing`. Rules: [business rules](../product/business-rules.md#p
 | `trip_member` | People who plan someone else's trip (migration `0026_trip_members`, [ADR-0024](adr/0024-trip-members.md)) | `trip_id` and `user_id` (both cascade) as the primary key, `role` (`editor`, `viewer`), `joined_at`. The owner is never a row: they stay in `trip.owner_id` |
 | `trip_invite` | Invite links to join a trip | `id`, `trip_id` (cascade), `token_hash` (unique SHA-256 of the link's token; the token is never stored), `role`, `created_by` (cascade), `created_at`, `expires_at` (7 days), `revoked_at` |
 | `trip_person_money` | Each person's part and savings on a shared trip (migration `0027_group_money`, [ADR-0025](adr/0025-money-between-members.md)) | `trip_id` and `user_id` (both cascade) as the primary key, `share_bp` (0 to 10 000, null for an equal split), `saved_minor`, `monthly_minor` (in the trip's currency, never negative), `updated_at`. `expense.paid_by` (user, set null on delete) says who paid a cost |
+| `savings_checkin` | Weekly saving check-ins (migration `0028_weekly_checkin`, [ADR-0026](adr/0026-saving-habit-and-countdown.md)) | `trip_id`, `user_id` (both cascade) and `week` (`YYYY-Www`) as the primary key, `amount_minor` (never negative), `created_at` |
+| `weekly_notice` | Weekly reminder emails already sent | `user_id` (cascade) and `week` as the primary key, `sent_at`. Claimed before sending, removed if sending failed. `user_preference.weekly_reminder` (default true) turns the email off |
 
 ## Extensions
 

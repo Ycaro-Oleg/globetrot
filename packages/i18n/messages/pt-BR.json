@@ -101,6 +101,12 @@
       "cancel": "Manter minha conta",
       "deleteConfirm": "Excluir minha conta para sempre",
       "deleting": "Excluindo…"
+    },
+    "weeklyReminder": {
+      "label": "Lembrete semanal de poupança",
+      "hint": "Um e-mail curto aos domingos quando a semana ainda não tem check-in.",
+      "on": "Ligado",
+      "off": "Desligado"
     }
   },
   "email": {
@@ -138,6 +144,15 @@
       "action": "Ver as opções",
       "expiry": "Enviamos este e-mail uma vez só. Nada é cobrado a menos que você escolha um plano.",
       "ignore": "Você pode excluir sua conta em Configurações quando quiser."
+    },
+    "weeklyCheckin": {
+      "subject": "Você guardou alguma coisa esta semana?",
+      "subjectTrip": "“{trip}”: você guardou alguma coisa esta semana?",
+      "body": "Um check-in rápido mantém sua viagem andando: diga ao Globetrot quanto você guardou esta semana e veja a data chegar mais perto.",
+      "trip": "Sua viagem “{trip}” está esperando o check-in desta semana.",
+      "action": "Fazer check-in",
+      "expiry": "Enviamos aos domingos quando a semana ainda não tem check-in.",
+      "ignore": "Para parar estes e-mails, desligue o lembrete semanal em Configurações."
     }
   },
   "auth": {
@@ -422,7 +437,8 @@
       "manage": "Gerenciar viagens",
       "aria": "Trocar a viagem atual. Selecionada: {title}",
       "ariaEmpty": "Escolha ou crie uma viagem",
-      "details": "Detalhes e progresso da viagem"
+      "details": "Detalhes e progresso da viagem",
+      "today": "Hoje"
     },
     "boardAvailable": "Seu mapa-múndi está pronto. Marque lugares para começar a montar a rota desta viagem.",
     "openMap": "Abrir o mapa-múndi",
@@ -1891,5 +1907,57 @@
     "even": "Todo mundo já pagou a sua parte do que foi pago até agora.",
     "nothingPaid": "Nada pago ainda. Marque os custos como pagos e diga quem pagou para ver quem deve para quem.",
     "unassigned": "{amount} em custos pagos não têm ninguém indicado e ficam de fora."
+  },
+  "todayPage": {
+    "title": "Hoje",
+    "noTrip": "Crie uma viagem para ver o que fazer hoje.",
+    "loadError": "Não deu para carregar o Hoje. Tente de novo em instantes.",
+    "goTrips": "Ir para minhas viagens",
+    "noDate": "Defina a data para começar a contagem",
+    "setDate": "Definir a data de ida",
+    "daysLeft": "{count, plural, one {Falta # dia} other {Faltam # dias}}",
+    "travelling": "Você está viajando",
+    "back": "Bem-vindo de volta",
+    "weekTitle": "A poupança da semana",
+    "streak": "{count, plural, one {# semana seguida} other {# semanas seguidas}}",
+    "streakStart": "Comece uma sequência: registre quanto você guardou esta semana.",
+    "doneThisWeek": "Você guardou {amount} esta semana.",
+    "amountLabel": "Guardei",
+    "checkIn": "Guardei esta semana",
+    "changeCheckIn": "Mudar o valor desta semana",
+    "checkInHint": "Soma na sua poupança desta viagem. Registrar de novo esta semana muda o valor.",
+    "checkedIn": "Registrado. Sua poupança subiu.",
+    "checkInError": "Não deu certo. Tente de novo em instantes.",
+    "addToChecklist": "Adicionar ao checklist",
+    "added": "Adicionado",
+    "taskAdded": "Adicionado ao checklist: {task}",
+    "todayPlan": "O plano de hoje",
+    "todayCost": "Lançar os gastos de hoje",
+    "phase": {
+      "six-months": "Mais de três meses antes",
+      "three-months": "Entre um e três meses antes",
+      "one-month": "Menos de um mês",
+      "one-week": "A última semana",
+      "travelling": "Durante a viagem",
+      "back": "Depois da viagem"
+    },
+    "tasks": {
+      "passport": "Confira se o passaporte vale para a viagem toda",
+      "entryRules": "Veja as regras de entrada de cada país em sites oficiais",
+      "flights": "Acompanhe os preços das passagens nas suas datas",
+      "insurance": "Escolha o seguro viagem",
+      "stays": "Reserve onde vai dormir",
+      "vaccines": "Pergunte a um médico sobre vacinas",
+      "esim": "Providencie um eSIM ou chip local",
+      "cards": "Avise o banco e planeje cartões e dinheiro",
+      "transfers": "Planeje o transfer do aeroporto",
+      "documents": "Imprima ou salve seus documentos offline",
+      "packing": "Faça a mala com o checklist",
+      "offline": "Baixe os mapas para usar offline",
+      "dailyCosts": "Anote os gastos de cada dia",
+      "photos": "Adicione fotos aos lugares que visitar",
+      "memories": "Marque os lugares que visitou",
+      "settle": "Acerte as contas com quem viajou com você"
+    }
   }
 }

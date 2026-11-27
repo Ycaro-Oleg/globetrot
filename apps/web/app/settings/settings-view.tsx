@@ -16,6 +16,7 @@ export interface SettingsViewProps {
     readonly timeZone: string | null;
     readonly homeCity?: string | null;
     readonly pipOptIn?: boolean;
+    readonly weeklyReminder?: boolean;
     readonly pipLook?: unknown;
     readonly pipName?: string | null;
     readonly units: string;
@@ -150,6 +151,16 @@ export function SettingsView({
             defaultValue={values.motion}
           />
           <p className={styles.description}>{t('appearanceHelp')}</p>
+          <SegmentedControl
+            name="weeklyReminder"
+            label={t('weeklyReminder.label')}
+            options={[
+              { id: 'on', label: t('weeklyReminder.on') },
+              { id: 'off', label: t('weeklyReminder.off') },
+            ]}
+            defaultValue={values.weeklyReminder === false ? 'off' : 'on'}
+          />
+          <p className={styles.description}>{t('weeklyReminder.hint')}</p>
           <div className={styles.actions}>
             <Button type="submit" variant="cta">
               {t('save')}
