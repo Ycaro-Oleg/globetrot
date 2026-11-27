@@ -1,6 +1,6 @@
 # Suggested plans: where the ranges come from
 
-Researched on **2026-11-26** from public listings. Every figure is a typical range for one person and an estimate, never a quote. Amounts in the catalog are in whole US dollars, converted at the ECB reference rate of 2026-11-26 (1 USD = 159.26 JPY, 0.91116 EUR). Check this note and `SUGGEST_RESEARCHED_ON` together whenever the catalog changes ([ADR-0020](../../architecture/adr/0020-suggested-plans-and-curated-cost-ranges.md)).
+Researched on **2026-11-26** (Italy, Chile, Mexico, Paris and New York on 2026-11-27) from public listings. Every figure is a typical range for one person and an estimate, never a quote. Amounts in the catalog are in whole US dollars, converted at the ECB reference rate of 2026-11-26 (1 USD = 159.26 JPY, 0.91116 EUR). Check this note and `SUGGEST_RESEARCHED_ON` together whenever the catalog changes ([ADR-0020](../../architecture/adr/0020-suggested-plans-and-curated-cost-ranges.md)).
 
 Items marked **approximate** had no single current listing. The range is a conservative judgement from similar listings; the owner reviews these first.
 
@@ -42,3 +42,44 @@ Items marked **approximate** had no single current listing. The range is a conse
 - **Ferry Buenos Aires to Colonia:** from about US$41, average about US$76 ([Openferry](https://openferry.com/en/routes/buenos-aires-colonia-del-sacramento)).
 - **Tandem skydive near Buenos Aires:** about US$239 to US$338 ([Dicas de Viagem](https://www.dicasdeviagem.com/passeios/salto-de-paraquedas-em-chascomus/)).
 - **Approximate:** the Colonia to Montevideo bus, Colonia and Montevideo daily costs, the milonga, Recoleta, San Telmo, the Tigre kayak, the Colonia bike ride and winery, Mercado del Puerto and the Rambla.
+
+## Italy
+
+- **Daily costs:**
+  - Budget: dorm about €20 to €35 in Rome and Florence, €38 to €55 in Venice; budget days €60 to €100, more in Venice.
+  - Comfort: €120 to €220 a day, Venice about 20% higher.
+  - Sources: [Italyplanner](https://italyplanner.com/italy-trip-cost), [Bootsnall](https://www.bootsnall.com/data/cost-of-living/cost-of-living-italy), [Hello Travel](https://www.travelwithhello.com/blog/italy-travel-budget-guide).
+- **Legs:** Rome to Florence about €15 regional to €45 high-speed ([Bootsnall](https://www.bootsnall.com/data/cost-of-living/cost-of-living-italy)); Florence to Venice similar (approximate).
+- **Venice access fee:** €5 to €10 for day visitors on peak days ([Tourlane](https://www.tourlane.com/europe/italy/travel-cost/)); overnight guests do not pay it.
+- **Approximate:** every experience price, the Chianti Vespa tour and the rowing lesson first.
+
+## Chile
+
+- **Daily costs:**
+  - Santiago: hostel bed about US$13, backpacker day about US$60 to US$72, mid-range about US$120 ([Hostelz](https://www.hostelz.com/de/backpacker-budget/chile), [Latam Travellers](https://latamtravellers.com/blogs/news/chile-trip-cost-2026-daily-budget-santiago-atacama-patagonia)).
+  - San Pedro de Atacama costs more: budget about US$60, mid-range US$130 to US$250 ([Gotripzi](https://www.gotripzi.com/destinations/san-pedro-atacama-cl/cost), [machupicchu.org](https://www.machupicchu.org/atacama-desert-budget-guide-2026-complete-cost-breakdown.htm)).
+- **Legs:** the Santiago to Calama flight is a judgement (approximate); the bus to San Pedro is about CLP 36,900 to 48,900 ([Globetrotter Girls](https://globetrottergirls.com/how-much-does-it-cost-to-travel-in-chile-and-chile-on-a-shoestring/)).
+- **Approximate:** every tour price (Valle de la Luna, stargazing, El Tatio, the lagoons, sandboarding, the Cajón del Maipo hike).
+
+## Mexico
+
+- **Daily costs:** budget about US$40 to US$60 inland, beach towns 30% to 50% more; dorms US$10 to US$20 inland, US$18 to US$35 on the coast; mid-range US$80 to US$150 ([Mexico Travel and Leisure](https://www.mexicotravelandleisure.com/blog/mexico-travel-cost/), [Simbye](https://simbye.com/blogs/blog/how-much-does-trip-to-mexico-cost-2026-budget-breakdown), [Travel Value Finder](https://travelvaluefinder.com/mexico-travel-budget/)).
+- **Visitor permit:** about MXN 983, plus some state levies ([Simbye](https://simbye.com/blogs/blog/how-much-does-trip-to-mexico-cost-2026-budget-breakdown)). Not in the daily ranges.
+- **Approximate:** the Mexico City to Tulum flight and every experience price.
+
+## Paris
+
+- **Daily costs:** budget €80 to €145 with hostels at €35 to €50; mid-range €150 to €250; a metro ticket about €1.69, a weekly Navigo about €31 to €32 ([World in Paris](https://worldinparis.com/trip-to-paris-cost), [Civitatis](https://www.civitatis.com/blog/en/paris-week-budget-guide/), [Bootsnall](https://www.bootsnall.com/data/cost-of-living/cost-of-living-france)).
+- **Approximate:** every experience price.
+
+## New York
+
+- **Daily costs:** sources disagree widely; the most consistent budget range is about US$120 to US$260 a day, mid-range from about US$325 ([Lonely Planet](https://www.lonelyplanet.com/articles/how-to-see-new-york-city-on-a-budget), [Visa travel guide](https://zh.review.visa.com/travel-with-visa/destinations/new-york-city.html)). The catalog's split is a judgement (approximate).
+- **Free:** the Staten Island Ferry and the summer kayaking on the Hudson.
+- **Approximate:** everything except the free items; the owner reviews this destination first.
+
+## Adding a destination
+
+1. Draft it from open data: `node infra/scripts/draft-destination.mjs "City"` prints the stop's coordinates and the Wikivoyage listings with coordinates (CC BY-SA), shaped like the catalog's tuples, with every price, translation and "few people know it" flag left as TODO.
+2. Research the daily ranges and each kept experience's price, with sources, and write them here; mark what has no single current listing as approximate.
+3. Add the destination (with its `slug` and `slugPt`) to `packages/domain/src/suggest/catalog.ts`. It then appears in the landing's planner, Discover and as two public itinerary pages (ADR-0028).
