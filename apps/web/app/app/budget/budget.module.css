@@ -919,3 +919,56 @@
   border-radius: 14px;
   font-weight: 700;
 }
+
+/* Miles per programme (ADR-0030). */
+.milesTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.milesTable th,
+.milesTable td {
+  padding: 8px 6px;
+  border-bottom: 1px solid var(--gt-semantic-color-hairline);
+  text-align: left;
+  vertical-align: middle;
+}
+
+.milesTable thead th {
+  color: var(--gt-semantic-color-text-secondary);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.milesTable tbody th span {
+  display: block;
+  color: var(--gt-semantic-color-text-secondary);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.milesTable input {
+  width: 100%;
+  min-width: 80px;
+  min-height: 40px;
+  padding: 0 10px;
+  border: 1px solid var(--gt-semantic-color-input-border);
+  border-radius: 10px;
+  background: var(--gt-semantic-color-input-surface);
+  color: var(--gt-semantic-color-text);
+  font: inherit;
+}
+
+.milesMore summary {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  color: var(--gt-semantic-color-primary);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.milesMore[open] summary {
+  margin-bottom: 8px;
+}

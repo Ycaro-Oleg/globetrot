@@ -2014,5 +2014,30 @@
     "copied": "Link copiado.",
     "copyFailed": "Não deu para copiar: selecione o link e copie.",
     "counts": "{joined, plural, one {# amigo entrou} other {# amigos entraram}} · {credits, plural, =0 {nenhum passe grátis para usar} one {# passe grátis para usar} other {# passes grátis para usar}}"
+  },
+  "miles": {
+    "title": "Minhas milhas",
+    "intro": "Coloque suas milhas e escolha quantas vão para esta viagem: a resposta conta o valor típico delas.",
+    "program": "Programa",
+    "balance": "Saldo",
+    "onTrip": "Nesta viagem",
+    "balanceOf": "Saldo {program}",
+    "onTripOf": "Milhas {program} nesta viagem",
+    "worth": "Valem uns {low}–{high}",
+    "save": "Salvar minhas milhas",
+    "saved": "Salvo.",
+    "error": "Não deu certo. Tente de novo em instantes.",
+    "answerReady": "Com {miles, number} milhas (uns {value}), você já tem o suficiente.",
+    "answerBy": "Contando {miles, number} milhas (uns {value}), faltam {left}: você tem tudo em {month}.",
+    "answerLeft": "Contando {miles, number} milhas (uns {value}), faltam {left}. Coloque um valor mensal para ver quando.",
+    "note": "Estimativas: valor típico do milheiro pesquisado em {date} ({sources}). O que as milhas compram depende da rota, da data e do programa.",
+    "programs": {
+      "smiles": "Smiles",
+      "latam-pass": "LATAM Pass",
+      "azul": "Azul Fidelidade",
+      "livelo": "Livelo",
+      "esfera": "Esfera"
+    },
+    "add": "Adicionar minhas milhas"
   }
 }

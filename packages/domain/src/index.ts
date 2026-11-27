@@ -15,3 +15,4 @@ export * from './media';
 export * from './assistant';
 export * from './billing';
 export * from './suggest';
+export * from './miles';

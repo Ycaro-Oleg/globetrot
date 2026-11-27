@@ -226,3 +226,33 @@ describe('referrals against a real database', () => {
     });
   });
 });
+
+describe('miles against a real database', () => {
+  it('stores balances, puts miles towards a trip, and removing a balance removes it from trips', async () => {
+    const { signUp, call } = await harness();
+    const ana = await signUp('Ana');
+    const trip = (await call(ana.cookie, 'POST', '/v1/trips', { title: 'Japão', currency: 'BRL' }))
+      .json;
+    expect((await call(ana.cookie, 'PUT', '/v1/me/miles/smiles', { balance: 100000 })).status).toBe(
+      200,
+    );
+    expect(
+      (await call(ana.cookie, 'PUT', `/v1/trips/${trip.id}/miles/smiles`, { miles: 200000 }))
+        .status,
+    ).toBe(422);
+    expect(
+      (await call(ana.cookie, 'PUT', `/v1/trips/${trip.id}/miles/smiles`, { miles: 60000 })).status,
+    ).toBe(200);
+    const miles = (await call(ana.cookie, 'GET', `/v1/trips/${trip.id}/miles`)).json as {
+      programs: { program: string; onTrip: number }[];
+      applied: { middle: { amount: string } } | null;
+    };
+    expect(miles.programs).toMatchObject([{ program: 'smiles', onTrip: 60000 }]);
+    expect(miles.applied?.middle.amount).toBe('1140.00');
+    await call(ana.cookie, 'PUT', '/v1/me/miles/smiles', { balance: 0 });
+    expect((await call(ana.cookie, 'GET', `/v1/trips/${trip.id}/miles`)).json).toMatchObject({
+      programs: [],
+      applied: null,
+    });
+  });
+});

@@ -38,6 +38,7 @@ import type {
   MemberWriter,
   PersonMoneyRecord,
 } from '../ports';
+import type { MilesProgram } from '@globetrot/domain';
 import {
   createFakeCommunity,
   emptyCommunityState,
@@ -72,6 +73,9 @@ export interface FakeState {
   members: { tripId: string; userId: string; role: MemberRole; joinedAt: Date }[];
   /** Each person's part and savings on a shared trip (ADR-0025). */
   money: PersonMoneyRecord[];
+  /** Miles balances and the miles put towards trips (ADR-0030). */
+  miles: { userId: string; program: MilesProgram; balance: number }[];
+  tripMiles: { tripId: string; userId: string; program: MilesProgram; miles: number }[];
   /** Weekly check-ins (ADR-0026). */
   checkins: {
     tripId: string;
@@ -146,6 +150,8 @@ export function createFakePorts(options: FakeOptions = {}) {
     members: [],
     money: [],
     checkins: [],
+    miles: [],
+    tripMiles: [],
     invites: [],
     referralCodes: new Map(),
     referrals: [],
@@ -404,6 +410,30 @@ export function createFakePorts(options: FakeOptions = {}) {
   const savingsWriter: SavingsWriter = {
     async find(tripId) {
       return state.savings.get(tripId) ?? null;
+    },
+    async listMiles(userId) {
+      return state.miles
+        .filter((m) => m.userId === userId)
+        .map(({ program, balance }) => ({ program, balance }));
+    },
+    async listTripMiles(tripId, userId) {
+      return state.tripMiles
+        .filter((m) => m.tripId === tripId && m.userId === userId)
+        .map(({ program, miles }) => ({ program, miles }));
+    },
+    async setMiles(userId, program, balance) {
+      state.miles = state.miles.filter((m) => !(m.userId === userId && m.program === program));
+      if (balance > 0) state.miles.push({ userId, program, balance });
+      else
+        state.tripMiles = state.tripMiles.filter(
+          (m) => !(m.userId === userId && m.program === program),
+        );
+    },
+    async setTripMiles(tripId, userId, program, miles) {
+      state.tripMiles = state.tripMiles.filter(
+        (m) => !(m.tripId === tripId && m.userId === userId && m.program === program),
+      );
+      if (miles > 0) state.tripMiles.push({ tripId, userId, program, miles });
     },
     async listCheckins(tripId, userId) {
       return state.checkins
@@ -849,6 +879,8 @@ export function createFakePorts(options: FakeOptions = {}) {
           members: [...state.members],
           money: [...state.money],
           checkins: [...state.checkins],
+          miles: [...state.miles],
+          tripMiles: [...state.tripMiles],
           invites: [...state.invites],
           passes: [...state.passes],
           referralCodes: new Map(state.referralCodes),

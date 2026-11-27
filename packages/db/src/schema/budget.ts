@@ -1,5 +1,5 @@
 // A trip's money: its expenses and its savings. Conventions: docs/architecture/data-model.md and money.md.
-import { EXPENSE_CATEGORIES, EXPENSE_STATUSES } from '@globetrot/domain';
+import { EXPENSE_CATEGORIES, EXPENSE_STATUSES, MILES_PROGRAMS } from '@globetrot/domain';
 import { sql, type AnyColumn, type SQL } from 'drizzle-orm';
 import {
   bigint,
@@ -181,4 +181,43 @@ export const weeklyNotice = pgTable(
     sentAt: instant('sent_at').defaultNow().notNull(),
   },
   (table) => [primaryKey({ columns: [table.userId, table.week] })],
+);
+
+/** A person's miles in each Brazilian loyalty programme (ADR-0030); a zero balance is not kept. */
+export const milesBalance = pgTable(
+  'miles_balance',
+  {
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    program: text('program').notNull(),
+    balance: integer('balance').notNull(),
+    updatedAt: instant('updated_at').defaultNow().notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.userId, table.program] }),
+    check('miles_balance_program_valid', oneOf(table.program, MILES_PROGRAMS)),
+    check('miles_balance_positive', sql`${table.balance} > 0`),
+  ],
+);
+
+/** How many of their miles a person chose to put towards a trip, per programme. */
+export const tripMiles = pgTable(
+  'trip_miles',
+  {
+    tripId: uuid('trip_id')
+      .notNull()
+      .references(() => trip.id, { onDelete: 'cascade' }),
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    program: text('program').notNull(),
+    miles: integer('miles').notNull(),
+    updatedAt: instant('updated_at').defaultNow().notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.tripId, table.userId, table.program] }),
+    check('trip_miles_program_valid', oneOf(table.program, MILES_PROGRAMS)),
+    check('trip_miles_positive', sql`${table.miles} > 0`),
+  ],
 );

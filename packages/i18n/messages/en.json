@@ -2014,5 +2014,30 @@
     "copied": "Link copied.",
     "copyFailed": "Could not copy: select the link and copy it.",
     "counts": "{joined, plural, one {# friend joined} other {# friends joined}} · {credits, plural, =0 {no free pass to use} one {# free pass to use} other {# free passes to use}}"
+  },
+  "miles": {
+    "title": "My miles",
+    "intro": "Add your miles and choose how many go towards this trip: the answer counts their typical value.",
+    "program": "Programme",
+    "balance": "Balance",
+    "onTrip": "For this trip",
+    "balanceOf": "{program} balance",
+    "onTripOf": "{program} miles for this trip",
+    "worth": "Worth about {low}–{high}",
+    "save": "Save my miles",
+    "saved": "Saved.",
+    "error": "That did not work. Try again in a moment.",
+    "answerReady": "With {miles, number} miles (about {value}), you have enough.",
+    "answerBy": "Counting {miles, number} miles (about {value}), {left} is left: you have it by {month}.",
+    "answerLeft": "Counting {miles, number} miles (about {value}), {left} is left. Add a monthly amount to see when.",
+    "note": "Estimates: typical value per thousand miles researched on {date} ({sources}). What miles buy depends on the route, the date and the programme.",
+    "programs": {
+      "smiles": "Smiles",
+      "latam-pass": "LATAM Pass",
+      "azul": "Azul Fidelidade",
+      "livelo": "Livelo",
+      "esfera": "Esfera"
+    },
+    "add": "Add my miles"
   }
 }

@@ -1,4 +1,5 @@
 import type {
+  MilesProgram,
   MotionChoice,
   ThemeChoice,
   TripStatus,
@@ -19,8 +20,10 @@ import {
   destination,
   expense,
   idempotencyKey,
+  milesBalance,
   rateLimit,
   savingsCheckin,
+  tripMiles,
   trip,
   tripMember,
   tripPlace,
@@ -747,6 +750,67 @@ export function createSavingsRepository(executor: Executor) {
         .where(eq(tripSavings.tripId, tripId))
         .limit(1);
       return row ?? null;
+    },
+    async listMiles(userId: string) {
+      const rows = await executor
+        .select({ program: milesBalance.program, balance: milesBalance.balance })
+        .from(milesBalance)
+        .where(eq(milesBalance.userId, userId))
+        .orderBy(milesBalance.program);
+      return rows.map((row) => ({ ...row, program: row.program as MilesProgram }));
+    },
+    async listTripMiles(tripId: string, userId: string) {
+      const rows = await executor
+        .select({ program: tripMiles.program, miles: tripMiles.miles })
+        .from(tripMiles)
+        .where(and(eq(tripMiles.tripId, tripId), eq(tripMiles.userId, userId)))
+        .orderBy(tripMiles.program);
+      return rows.map((row) => ({ ...row, program: row.program as MilesProgram }));
+    },
+    async setMiles(userId: string, program: MilesProgram, balance: number, at: Date) {
+      if (balance <= 0) {
+        await executor
+          .delete(milesBalance)
+          .where(and(eq(milesBalance.userId, userId), eq(milesBalance.program, program)));
+        await executor
+          .delete(tripMiles)
+          .where(and(eq(tripMiles.userId, userId), eq(tripMiles.program, program)));
+        return;
+      }
+      await executor
+        .insert(milesBalance)
+        .values({ userId, program, balance, updatedAt: at })
+        .onConflictDoUpdate({
+          target: [milesBalance.userId, milesBalance.program],
+          set: { balance, updatedAt: at },
+        });
+    },
+    async setTripMiles(
+      tripId: string,
+      userId: string,
+      program: MilesProgram,
+      miles: number,
+      at: Date,
+    ) {
+      if (miles <= 0) {
+        await executor
+          .delete(tripMiles)
+          .where(
+            and(
+              eq(tripMiles.tripId, tripId),
+              eq(tripMiles.userId, userId),
+              eq(tripMiles.program, program),
+            ),
+          );
+        return;
+      }
+      await executor
+        .insert(tripMiles)
+        .values({ tripId, userId, program, miles, updatedAt: at })
+        .onConflictDoUpdate({
+          target: [tripMiles.tripId, tripMiles.userId, tripMiles.program],
+          set: { miles, updatedAt: at },
+        });
     },
     async listCheckins(tripId: string, userId: string) {
       return executor
