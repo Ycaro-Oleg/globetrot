@@ -241,13 +241,32 @@ describe('email and verification settings', () => {
       return env;
     };
     expect(() => loadApiConfig(without('SMTP_HOST'))).toThrow(
-      /SMTP_HOST is required in production/,
+      /SMTP_HOST or RESEND_API_KEY is required in production/,
     );
     expect(() => loadApiConfig(without('EMAIL_FROM'))).toThrow(
       /EMAIL_FROM is required in production/,
     );
     expect(() => loadApiConfig({ ...production(), SMTP_HOST: '' })).toThrow(/SMTP_HOST/);
     expect(loadApiConfig(production()).email.host).toBe('smtp.example.test');
+    expect(loadApiConfig(production()).email.resendApiKey).toBeUndefined();
+  });
+
+  it('accepts Resend’s API key instead of an SMTP server in production, and never names the key', () => {
+    const key = 're_test_not_a_real_key_0000';
+    const env: Record<string, string | undefined> = production({ RESEND_API_KEY: key });
+    delete env.SMTP_HOST;
+    const config = loadApiConfig(env);
+    expect(config.email.resendApiKey).toBe(key);
+    // EMAIL_FROM is still required, and the error does not quote the key.
+    delete env.EMAIL_FROM;
+    let message = '';
+    try {
+      loadApiConfig(env);
+    } catch (error) {
+      message = (error as Error).message;
+    }
+    expect(message).toMatch(/EMAIL_FROM is required in production/);
+    expect(message).not.toContain(key);
   });
 
   it('requires CLIENT_IP_HEADER in production, so the rate limits never fall back to a header the edge passes through', () => {

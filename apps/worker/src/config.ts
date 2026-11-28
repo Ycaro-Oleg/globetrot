@@ -7,7 +7,7 @@ export interface WorkerConfig {
   readonly storage: StorageConfig;
   /** Minutes between rounds (housekeeping and the trial emails). */
   readonly intervalMinutes: number;
-  /** The same SMTP settings as the API, for the trial emails. */
+  /** The same email settings as the API (Resend's API or SMTP), for the trial and reminder emails. */
   readonly email: EmailConfig;
   /** The public web origin (`BETTER_AUTH_URL`), for links in emails. */
   readonly appUrl: string;
@@ -39,7 +39,9 @@ export function loadWorkerConfig(
   if (isProduction) {
     if (origin.protocol !== 'https:')
       throw new Error('BETTER_AUTH_URL must use https in production');
-    if (value('SMTP_HOST') === undefined) throw new Error('SMTP_HOST is required in production');
+    // Email goes through Resend's HTTPS API when its key is set, else through SMTP: one of them is needed.
+    if (value('SMTP_HOST') === undefined && value('RESEND_API_KEY') === undefined)
+      throw new Error('SMTP_HOST or RESEND_API_KEY is required in production');
     if (value('EMAIL_FROM') === undefined) throw new Error('EMAIL_FROM is required in production');
   }
   const port = Number(value('SMTP_PORT') ?? 1025);
@@ -58,6 +60,7 @@ export function loadWorkerConfig(
       from: value('EMAIL_FROM') ?? 'Globetrot <hello@globetrot.local>',
       user: value('SMTP_USER'),
       password: value('SMTP_PASSWORD'),
+      resendApiKey: value('RESEND_API_KEY'),
     },
   };
 }

@@ -23,3 +23,5 @@ Accounts must be tied to a real inbox and people forget passwords (#54). The pro
 
 ## Consequences
 Local development needs Mailpit (it is in `compose.yaml`, and CI runs it as a service). The integration tests read the mail the API really sent. When the provider is chosen, only configuration and a deliverability check (SPF, DKIM, DMARC) are left. If the owner rejects the policy, change one default and one sentence of the screens' copy.
+
+**Note (2026-11-28, hotfix after the first deploy):** Railway's trial plan blocks outgoing SMTP, so the chosen provider (Resend) is also reached over its HTTPS API. `packages/mailer` sends through `POST https://api.resend.com/emails` when `RESEND_API_KEY` is set, and through SMTP otherwise (development, Mailpit). Production then needs `SMTP_HOST` **or** `RESEND_API_KEY`, and `EMAIL_FROM`. This is a second adapter behind the same `EmailPort`, not a change of the decision: rendering, background sending and code-only failures are unchanged (Resend failures read `RESEND_<status>`, `RESEND_TIMEOUT` or `RESEND_NETWORK`; Resend's answer is never read).

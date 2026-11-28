@@ -45,6 +45,7 @@ const envSchema = z.object({
   SMTP_USER: z.string().optional(),
   SMTP_PASSWORD: z.string().optional(),
   EMAIL_FROM: z.string().default('Globetrot <hello@globetrot.local>'),
+  RESEND_API_KEY: z.string().optional(),
   GOOGLE_CLIENT_ID: z.string().optional(),
   GOOGLE_CLIENT_SECRET: z.string().optional(),
   GEOAPIFY_API_KEY: z.string().optional(),
@@ -151,6 +152,8 @@ export interface EmailConfig {
   readonly from: string;
   readonly user: string | undefined;
   readonly password: string | undefined;
+  /** Resend's API key (a secret): when set, email goes through Resend's HTTPS API instead of SMTP. */
+  readonly resendApiKey: string | undefined;
 }
 
 export interface ApiConfig {
@@ -259,8 +262,9 @@ export function loadApiConfig(
     }
     // Accounts cannot be verified or recovered without a mail server, and the local defaults (Mailpit, a
     // `.local` sender) never reach a real inbox.
-    if (present.SMTP_HOST === undefined)
-      throw new ApiConfigError('SMTP_HOST is required in production');
+    // Email goes through Resend's HTTPS API when its key is set, else through SMTP: one of them is needed.
+    if (present.SMTP_HOST === undefined && present.RESEND_API_KEY === undefined)
+      throw new ApiConfigError('SMTP_HOST or RESEND_API_KEY is required in production');
     if (present.EMAIL_FROM === undefined)
       throw new ApiConfigError('EMAIL_FROM is required in production');
     // The sign-in rate limits are only as good as the client address. Which header the edge overwrites
@@ -408,6 +412,7 @@ export function loadApiConfig(
       from: values.EMAIL_FROM,
       user: values.SMTP_USER,
       password: values.SMTP_PASSWORD,
+      resendApiKey: values.RESEND_API_KEY,
     },
   };
 }
