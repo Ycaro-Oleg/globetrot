@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import Script from 'next/script';
 import { usePathname } from 'next/navigation';
+import type { PostHog } from 'posthog-js';
 import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import {
@@ -30,8 +31,6 @@ const META_LOADER = (
 n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
 n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}
 (window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','${id}');fbq('track','PageView');`;
-
-type PostHogModule = typeof import('posthog-js').default;
 
 const subscribeInternal = (notify: () => void) => {
   window.addEventListener(INTERNAL_EVENT, notify);
@@ -68,7 +67,7 @@ export function Analytics() {
     () => 'unknown',
   );
   const [reopened, setReopened] = useState(false);
-  const posthogRef = useRef<PostHogModule | null>(null);
+  const posthogRef = useRef<PostHog | null>(null);
   useEffect(() => {
     const reopen = () => setReopened(true);
     window.addEventListener('globetrot:consent-open', reopen);

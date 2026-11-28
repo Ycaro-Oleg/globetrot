@@ -247,7 +247,7 @@ export interface PendingEvent {
 
 export function parsePendingEvents(raw: string | undefined | null): PendingEvent[] {
   if (!raw) return [];
-  let text = raw;
+  let text: string;
   try {
     text = decodeURIComponent(raw);
   } catch {
