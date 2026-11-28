@@ -11,10 +11,13 @@ import {
   type Money,
   type SuggestedDestination,
 } from '@globetrot/domain';
+import { catalogs } from '@globetrot/i18n';
 import type { Metadata } from 'next';
+import { NextIntlClientProvider } from 'next-intl';
 import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 import { siteOrigin } from '../../lib/site-url';
+import { InterestListForm } from '../_interest-list/interest-list-form';
 import { SITE_NAME } from '../site';
 import styles from './itinerary.module.css';
 
@@ -194,6 +197,14 @@ export async function Itinerary({
           </li>
         ))}
       </ol>
+
+      {/* The page speaks its own language, which can differ from the app's: the form gets that language's copy. */}
+      <NextIntlClientProvider
+        locale={locale}
+        messages={{ interestList: catalogs[locale].interestList }}
+      >
+        <InterestListForm source="itinerary" locale={locale} />
+      </NextIntlClientProvider>
 
       <section className={styles.more} aria-labelledby="more-title">
         <h2 id="more-title">{t('moreTitle')}</h2>
