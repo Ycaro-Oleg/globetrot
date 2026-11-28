@@ -78,12 +78,7 @@ export async function switchAppearance<T>(
   save: (choice: T) => Promise<boolean>,
 ): Promise<boolean> {
   apply(next);
-  let kept = false;
-  try {
-    kept = await save(next);
-  } catch {
-    kept = false;
-  }
+  const kept = await save(next).catch(() => false);
   if (!kept) apply(previous);
   return kept;
 }

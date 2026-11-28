@@ -1,4 +1,4 @@
-/* global document */
+/* global document, getComputedStyle */
 // The first real journey, end to end: a real browser against the real web app, the real API, PostgreSQL and
 // Mailpit (no stand-ins). Four runs at once, one per width x language:
 //
@@ -363,7 +363,8 @@ async function journey(browser, { width, height, locale }) {
       // The panel button folds the whole drawer to the 56px rail and opens it again, remembered on the device.
       const collapse = page.getByRole('button', { name: workspaceCopy.sidebarHide, exact: true });
       const reopen = page.getByRole('button', { name: workspaceCopy.sidebarShow, exact: true });
-      const drawer = collapse.locator('..');
+      // The drawer holds the panel that holds the nav (the nav stays in the DOM, hidden, when folded).
+      const drawer = sidebar.locator('xpath=../..');
       const firstColumn = () =>
         drawer.evaluate(
           (element) => getComputedStyle(element.parentElement).gridTemplateColumns.split(' ')[0],
