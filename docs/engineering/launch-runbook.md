@@ -10,7 +10,7 @@ Nothing below can be done by an agent; each blocks the public launch.
 |---|---|
 | Hosting and domain | A Railway account (Hobby to start), the domain with its DNS on a provider that allows a CNAME at the root (Cloudflare), TLS (Railway issues it) |
 | Database | Railway PostgreSQL 17 with PostGIS on a volume, daily backups switched on and a restore tested |
-| Email | Resend: a verified sending domain (SPF, DKIM, DMARC), an API key used as `SMTP_PASSWORD`, and `EMAIL_FROM` |
+| Email | Resend: a verified sending domain (SPF, DKIM, DMARC), an API key with sending access as `RESEND_API_KEY` (api and worker), and `EMAIL_FROM` |
 | Photo storage | A Railway Bucket, private, with its credentials in `S3_*` |
 | Pip | A new DeepSeek key (rotate the one shared in chat). Pip runs on DeepSeek only; `ANTHROPIC_API_KEY` stays unset ([ADR-0022](../architecture/adr/0022-backup-ai-provider.md)) |
 | Measurement | Sentry and PostHog projects ([ADR-0021](../architecture/adr/0021-error-monitoring-and-product-analytics.md)); for ads, Plausible and a Meta Pixel ID ([ADR-0018](../architecture/adr/0018-launch-measurement-and-consent.md)) |
@@ -29,15 +29,15 @@ One project, region US East. The three app services are created from the GitHub 
 | `worker` | `apps/worker/Dockerfile` | — | none | Hourly housekeeping and the weekly reminders ([ADR-0017](../architecture/adr/0017-worker-housekeeping.md)); one instance |
 | `web` | `apps/web/Dockerfile` | 3000 | `/` | The only public service, on the custom domain. `API_INTERNAL_URL=http://${{api.RAILWAY_PRIVATE_DOMAIN}}:4000`. `NEXT_PUBLIC_*` values are **build arguments**: change one, redeploy |
 
-The browser reaches `/api/auth/*` and `/v1/*` through the web service ([ADR-0010](../architecture/adr/0010-web-proxies-the-api.md)). The worker can reuse the API's values with references such as `${{api.SMTP_PASSWORD}}`.
+The browser reaches `/api/auth/*` and `/v1/*` through the web service ([ADR-0010](../architecture/adr/0010-web-proxies-the-api.md)). The worker can reuse the API's values with references such as `${{api.RESEND_API_KEY}}`.
 
 ## 3. Settings that production refuses to start without
 
-- **API:** `DATABASE_URL`, `BETTER_AUTH_SECRET` (32+ characters, not the dev one), `BETTER_AUTH_URL` (https, the public web origin), `SMTP_HOST`, `EMAIL_FROM`, `S3_ENDPOINT`, `S3_BUCKET`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY` (not the dev pair), `CLIENT_IP_HEADER` (`x-real-ip` on Railway).
-- **Worker:** `DATABASE_URL`, the same `S3_*`, `SMTP_HOST`, `EMAIL_FROM` and an https `BETTER_AUTH_URL` (the trial emails).
+- **API:** `DATABASE_URL`, `BETTER_AUTH_SECRET` (32+ characters, not the dev one), `BETTER_AUTH_URL` (https, the public web origin), `RESEND_API_KEY` (or `SMTP_HOST`), `EMAIL_FROM`, `S3_ENDPOINT`, `S3_BUCKET`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY` (not the dev pair), `CLIENT_IP_HEADER` (`x-real-ip` on Railway).
+- **Worker:** `DATABASE_URL`, the same `S3_*`, `RESEND_API_KEY` (or `SMTP_HOST`), `EMAIL_FROM` and an https `BETTER_AUTH_URL` (the trial emails and the weekly reminders).
 - **Web:** `API_INTERNAL_URL`.
 - Optional: `GEOAPIFY_API_KEY` (place search; without it search says it is unavailable) and `NEXT_PUBLIC_GEOAPIFY_API_KEY` (map tiles, restricted to the domain), `DEEPSEEK_API_KEY` with `DEEPSEEK_MODEL=deepseek-flash`, the `STRIPE_*` group, `GOOGLE_CLIENT_ID` + `GOOGLE_CLIENT_SECRET`, `ADMIN_EMAILS`, `SENTRY_DSN` and `NEXT_PUBLIC_SENTRY_DSN`, `NEXT_PUBLIC_POSTHOG_KEY`, `NEXT_PUBLIC_PLAUSIBLE_DOMAIN`, `NEXT_PUBLIC_META_PIXEL_ID`.
-- Resend over SMTP: `SMTP_HOST=smtp.resend.com`, `SMTP_PORT=465`, `SMTP_USER=resend`, `SMTP_PASSWORD=<the re_ key>`. The free plan sends 100 emails a day; move to a paid plan before the weekly reminders reach about 80 people, since they go out on the same day.
+- Resend API: `RESEND_API_KEY=<the re_ key>` on the api, and `${{api.RESEND_API_KEY}}` on the worker. Railway's trial plan blocks outgoing SMTP, so email goes over Resend's HTTPS API; `SMTP_*` stays only as the development fallback. The free plan sends 100 emails a day; move to a paid plan before the weekly reminders reach about 80 people, since they go out on the same day.
 
 ## 4. First deploy, in order
 

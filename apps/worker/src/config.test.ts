@@ -36,6 +36,18 @@ describe('worker settings', () => {
     );
   });
 
+  it('accept Resend’s API key instead of an SMTP server in production, but need one of them', () => {
+    const key = 're_test_not_a_real_key_0000';
+    const withoutSmtp = Object.fromEntries(
+      Object.entries(production).filter(([name]) => name !== 'SMTP_HOST'),
+    );
+    expect(loadWorkerConfig({ ...withoutSmtp, RESEND_API_KEY: key }).email.resendApiKey).toBe(key);
+    expect(() => loadWorkerConfig(withoutSmtp)).toThrow(
+      /SMTP_HOST or RESEND_API_KEY is required in production/,
+    );
+    expect(loadWorkerConfig(production).email.resendApiKey).toBeUndefined();
+  });
+
   it('refuse a bad interval', () => {
     expect(() => loadWorkerConfig({ DATABASE_URL, MAINTENANCE_INTERVAL_MINUTES: '0' })).toThrow();
   });

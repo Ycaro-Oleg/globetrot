@@ -36,7 +36,7 @@ import { eq, sql } from 'drizzle-orm';
 import { createApp, type AuthService } from './app';
 import { createAuth, type Auth } from './auth';
 import type { ApiConfig } from './config';
-import { createSmtpEmail } from '@globetrot/mailer';
+import { createEmail } from '@globetrot/mailer';
 import { createCityIndex } from './cities';
 import { createGeoapifyGeocoder, createMemoryRateLimiter } from './places';
 import { createS3Storage } from '@globetrot/storage';
@@ -91,7 +91,7 @@ export function createServices(
     readonly stripeFetch?: typeof fetch;
   } = {},
 ) {
-  const email = overrides.email ?? createSmtpEmail(config.email);
+  const email = overrides.email ?? createEmail(config.email);
   const billing = createBillingRepository(db);
   const payments =
     overrides.payments ??

@@ -48,10 +48,11 @@ Every environment variable the project reads, in one place. [`.env.example`](../
 | `RESET_PASSWORD_EXPIRES_IN_SECONDS` | `3600` (1 hour) | optional | Lifetime of a reset link. Minimum 1 |
 | `EMAIL_COOLDOWN_SECONDS` | `30` | optional | Between two emails of the same kind to the same address (`429` with `Retry-After`) |
 | `AUTH_EMAIL_REQUESTS_PER_MINUTE` | `5` | optional | Resend and reset requests per client address |
-| `SMTP_HOST` | `localhost` | **required** | Mail server. Mailpit locally |
+| `SMTP_HOST` | `localhost` | **required** unless `RESEND_API_KEY` is set | Mail server. Mailpit locally |
 | `SMTP_PORT` | `1025` | optional | Port 465 uses implicit TLS; others upgrade with STARTTLS when offered |
 | `SMTP_USER`, `SMTP_PASSWORD` | none | if the provider asks | Both must be set to enable authentication |
 | `EMAIL_FROM` | `Globetrot <hello@globetrot.local>` | **required** | `Name <address>` shown as the sender. The local default never reaches an inbox |
+| `RESEND_API_KEY` | unset | a Resend API key with sending access, as a secret | When set, email goes through Resend's HTTPS API (`POST https://api.resend.com/emails`, 10-second timeout) instead of SMTP, which some hosts block (Railway's trial plan). `SMTP_HOST` is then not required in production; `EMAIL_FROM` still is. A failed send carries a code only (`RESEND_<status>`, `RESEND_TIMEOUT`, `RESEND_NETWORK`), never Resend's answer, the address or the key. Unset: SMTP |
 
 Semantics, error codes and the trust model for the client address: [`authentication.md`](../architecture/authentication.md).
 
@@ -82,7 +83,7 @@ Semantics, error codes and the trust model for the client address: [`authenticat
 | `DATABASE_URL` | local compose database | **required** | Same database as the API |
 | `S3_*` | as for the API | **required**, as for the API | Where stored images are swept ([ADR-0017](../architecture/adr/0017-worker-housekeeping.md)) |
 | `MAINTENANCE_INTERVAL_MINUTES` | `60` | optional | Minutes between rounds: housekeeping and the trial emails (1 to 1440) |
-| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `EMAIL_FROM` | as for the API | **`SMTP_HOST` and `EMAIL_FROM` required**, as for the API | Sends the two trial emails ([ADR-0019](../architecture/adr/0019-plans-trial-and-pip-credits.md)) |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `EMAIL_FROM`, `RESEND_API_KEY` | as for the API | **`EMAIL_FROM`, and `SMTP_HOST` or `RESEND_API_KEY`, required**, as for the API | The same mailer as the API (Resend's API when its key is set). Sends the two trial emails and the weekly reminders ([ADR-0019](../architecture/adr/0019-plans-trial-and-pip-credits.md)) |
 | `BETTER_AUTH_URL` | `http://localhost:3000` | **required**, `https` | The public web origin, for the plans link in those emails |
 | `SENTRY_DSN` | unset | optional, as for the API | A failed round is reported to Sentry ([ADR-0021](../architecture/adr/0021-error-monitoring-and-product-analytics.md)) |
 

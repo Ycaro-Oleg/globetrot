@@ -10,7 +10,7 @@ import {
   createNoticeRepository,
   createWeeklyNoticeRepository,
 } from '@globetrot/db';
-import { createSmtpEmail } from '@globetrot/mailer';
+import { createEmail } from '@globetrot/mailer';
 import { createS3Storage } from '@globetrot/storage';
 import { loadWorkerConfig } from './config';
 import { startWorker } from './worker';
@@ -35,14 +35,14 @@ const maintenance = createMaintenance({
 
 const reminders = createTrialReminders({
   store: createNoticeRepository(database.db),
-  email: createSmtpEmail(config.email),
+  email: createEmail(config.email),
   clock: { now: () => new Date() },
   appUrl: config.appUrl,
 });
 
 const weekly = createWeeklyReminders({
   store: createWeeklyNoticeRepository(database.db),
-  email: createSmtpEmail(config.email),
+  email: createEmail(config.email),
   clock: { now: () => new Date() },
   appUrl: config.appUrl,
 });

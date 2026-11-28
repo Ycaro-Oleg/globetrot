@@ -2,7 +2,7 @@
   "name": "@globetrot/mailer",
   "version": "0.0.0",
   "private": true,
-  "description": "SMTP adapter for the application's EmailPort (API and worker)",
+  "description": "Email adapters (Resend HTTPS API, SMTP) for the application's EmailPort (API and worker)",
   "type": "module",
   "exports": {
     ".": "./src/index.ts"
