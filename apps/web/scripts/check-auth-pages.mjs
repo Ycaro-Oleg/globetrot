@@ -151,6 +151,17 @@ const BUDGET = {
     ceilingSlack: usd('775.00'),
   },
 };
+/** The savings history behind the money chart: what was typed in, then three weeks of check-ins. */
+const SAVINGS_HISTORY = {
+  currency: 'USD',
+  saved: usd('500.00'),
+  start: usd('200.00'),
+  weeks: [
+    { week: '2026-W44', amount: usd('100.00'), saved: usd('300.00') },
+    { week: '2026-W46', amount: usd('100.00'), saved: usd('400.00') },
+    { week: '2026-W48', amount: usd('100.00'), saved: usd('500.00') },
+  ],
+};
 const EXPENSES = [
   {
     id: '0193c0a8-7b1e-7c4a-9e2f-3d5a6b7c8d01',
@@ -480,6 +491,10 @@ const stub = createServer(async (request, response) => {
   if (/^\/v1\/trips\/[^/]+\/members$/.test(url.pathname) && request.method === 'GET') {
     if (!signedIn) return reply(response, 401, { code: 'UNAUTHENTICATED' });
     return reply(response, 200, MEMBERS);
+  }
+  if (/^\/v1\/trips\/[^/]+\/savings\/history$/.test(url.pathname) && request.method === 'GET') {
+    if (!signedIn) return reply(response, 401, { code: 'UNAUTHENTICATED' });
+    return reply(response, 200, SAVINGS_HISTORY);
   }
   if (/^\/v1\/trips\/[^/]+\/habit$/.test(url.pathname) && request.method === 'GET') {
     if (!signedIn) return reply(response, 401, { code: 'UNAUTHENTICATED' });

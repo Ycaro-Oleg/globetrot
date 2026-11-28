@@ -84,6 +84,7 @@ Today:
 | `setShares` | `PUT /v1/trips/{id}/shares` | Owner only. Everyone's `shareBp` adding up to 10 000, or `shares: null` to split equally |
 | `getHabit` | `GET /v1/trips/{id}/habit` | The ISO `week` in the caller's time zone, `checkedIn` (or null), `streak`, `suggested` and the `countdown` (`daysLeft`, `phase`, `tasks`) ([ADR-0026](adr/0026-saving-habit-and-countdown.md)) |
 | `checkIn` | `POST /v1/trips/{id}/checkin` | `amount` set aside this week; adds to the caller's savings, replacing this week's earlier check-in. Anyone on the trip |
+| `getSavingsHistory` | `GET /v1/trips/{id}/savings/history` | Everyone's weekly check-ins added up per week (oldest first, at most two years) with the running total; `start` is the savings typed in rather than checked in, `saved` what is set aside now. Feeds the money charts. Another person's trip is 404 |
 | `getMiles` | `GET /v1/trips/{id}/miles` | The caller's `programs` (balance, miles on this trip, typical value in reais), `researchedOn`, `sources`, the `applied` value in the trip's currency and the answer `withMiles` (`left`, `readyMonth`) ([ADR-0030](adr/0030-miles-in-the-savings.md)) |
 | `setMiles` | `PUT /v1/me/miles/{program}` | `balance`; zero removes it and what went towards trips |
 | `setTripMiles` | `PUT /v1/trips/{id}/miles/{program}` | `miles` towards the trip; never more than the balance (`422`) |

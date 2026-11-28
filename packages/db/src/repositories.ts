@@ -820,6 +820,18 @@ export function createSavingsRepository(executor: Executor) {
         .orderBy(desc(savingsCheckin.week))
         .limit(60);
     },
+    async listTripCheckins(tripId: string) {
+      const total = sql<string>`sum(${savingsCheckin.amountMinor})`;
+      const rows = await executor
+        .select({ week: savingsCheckin.week, total })
+        .from(savingsCheckin)
+        .where(eq(savingsCheckin.tripId, tripId))
+        .groupBy(savingsCheckin.week)
+        .orderBy(desc(savingsCheckin.week))
+        .limit(104);
+      // Newest first to keep the last two years, then oldest first for a time series.
+      return rows.reverse().map((row) => ({ week: row.week, amountMinor: BigInt(row.total) }));
+    },
     async upsertCheckin(row: {
       readonly tripId: string;
       readonly userId: string;

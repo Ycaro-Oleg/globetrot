@@ -313,6 +313,8 @@ export interface SavingsReader {
   find(tripId: string): Promise<SavingsRecord | null>;
   /** The person's check-ins on the trip, newest week first (at most a year's worth). */
   listCheckins(tripId: string, userId: string): Promise<CheckinRecord[]>;
+  /** Everyone's check-ins on the trip added up per week, oldest week first (at most two years' worth). */
+  listTripCheckins(tripId: string): Promise<CheckinRecord[]>;
   /** The person's miles per programme (ADR-0030). */
   listMiles(
     userId: string,

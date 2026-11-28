@@ -447,6 +447,15 @@ export function createFakePorts(options: FakeOptions = {}) {
         .sort((a, b) => (a.week < b.week ? 1 : -1))
         .map(({ week, amountMinor }) => ({ week, amountMinor }));
     },
+    async listTripCheckins(tripId) {
+      const byWeek = new Map<string, bigint>();
+      for (const c of state.checkins.filter((entry) => entry.tripId === tripId))
+        byWeek.set(c.week, (byWeek.get(c.week) ?? 0n) + c.amountMinor);
+      return [...byWeek.entries()]
+        .sort(([a], [b]) => (a < b ? -1 : 1))
+        .slice(-104)
+        .map(([week, amountMinor]) => ({ week, amountMinor }));
+    },
     async upsertCheckin(row) {
       const before = state.checkins.find(
         (c) => c.tripId === row.tripId && c.userId === row.userId && c.week === row.week,
