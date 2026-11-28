@@ -11,6 +11,8 @@
   --chart-axis: var(--gt-semantic-color-text-secondary);
   --chart-bar: var(--gt-semantic-color-text);
   --chart-label: var(--gt-semantic-color-text);
+  /* The figures go to four columns only when the panel itself is wide enough (beside the map it is not). */
+  container-type: inline-size;
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -322,13 +324,11 @@
   .amount {
     font-size: var(--gt-primitive-type-app-money);
   }
+}
 
-  .figures {
+@container (min-width: 46rem) {
+  .panel:not([data-variant='summary']) .figures {
     grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-
-  .panel[data-variant='summary'] .figures {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
