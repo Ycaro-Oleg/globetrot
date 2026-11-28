@@ -14,18 +14,17 @@
 .eyebrow {
   margin: 0;
   color: var(--gt-semantic-color-text-secondary);
-  font: 700 var(--gt-primitive-type-eyebrow) / 1.3 var(--gt-primitive-font-mono);
+  font: 700 0.72rem/1.3 var(--gt-primitive-font-mono);
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 
-/* One step down the scale (owner, November 2026): a settings page is a form, not a headline. */
 .header h1 {
   margin: 0;
-  font-size: var(--gt-primitive-type-section);
-  font-weight: var(--gt-primitive-type-display-weight);
-  letter-spacing: var(--gt-primitive-type-section-tracking);
-  line-height: var(--gt-primitive-type-section-line-height);
+  font-size: var(--gt-primitive-type-page);
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  line-height: 1;
 }
 
 .description {
@@ -59,7 +58,7 @@
 
 .form :global(.gt-field__label) {
   font-size: 0.9rem;
-  font-weight: var(--gt-primitive-type-weight-500);
+  font-weight: 750;
 }
 
 .form :global(.gt-field__description) {
@@ -72,7 +71,7 @@
 .form :global(.gt-select__trigger),
 .form :global(.gt-field__control) {
   box-sizing: border-box;
-  min-height: var(--gt-component-hit-target);
+  min-height: 3rem;
   border-width: 2px;
   border-radius: 0.8rem;
   font-size: 0.94rem;
@@ -94,6 +93,10 @@
 @media (max-width: 640px) {
   .page {
     gap: 1rem;
+  }
+
+  .header h1 {
+    font-size: 2.45rem;
   }
 
   .form {
@@ -121,8 +124,8 @@
 /* "Your data": export and account deletion. */
 .sectionTitle {
   margin: 0;
-  font-size: var(--gt-primitive-type-body-max);
-  font-weight: var(--gt-primitive-type-weight-bold);
+  font-size: 1.15rem;
+  font-weight: 800;
 }
 
 .dataRow {
