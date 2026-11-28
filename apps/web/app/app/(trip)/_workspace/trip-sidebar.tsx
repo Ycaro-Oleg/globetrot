@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
+import { useId } from 'react';
 import { TRIP_HOME } from '../../_components/nav-model';
 import styles from './workspace.module.css';
 
@@ -14,25 +15,34 @@ export type WorkspaceDay = {
 };
 
 /**
- * The trip's table of contents (from 720 px): the overview, its places and every day of the itinerary (links into
- * the trip's document), then the budget, the checklists and the full map. Plain links in a `nav`, so the keyboard
- * and screen readers get the same path as a pointer.
+ * The trip's table of contents (from 720 px): five rows (overview, places, itinerary, budget, checklist), plain
+ * links in a `nav`, so the keyboard and screen readers get the same path as a pointer. Only the itinerary has
+ * children (a link into every day): they fold behind a chevron button beside its link, folded by default, and the
+ * folded row still says which day is being read. "Expand map" is not a section: it sits in the drawer's footer.
  */
 export function TripSidebar({
   tripTitle,
   days,
   pathname,
   activeDay,
+  itineraryOpen,
+  onItineraryOpen,
 }: {
   tripTitle: string | null;
   days: readonly WorkspaceDay[];
   pathname: string;
   /** The day being read in the document, marked as the current location. */
   activeDay: number | null;
+  /** Whether the itinerary's days are shown (remembered on the device by the workspace). */
+  itineraryOpen: boolean;
+  onItineraryOpen: (open: boolean) => void;
 }) {
   const t = useTranslations('workspace');
   const onHome = pathname === TRIP_HOME;
   const page = (href: string) => (pathname === href ? 'page' : undefined);
+  const daysId = useId();
+  const reading = onHome ? (days.find((day) => day.index === activeDay) ?? null) : null;
+  const foldedOnReading = !itineraryOpen && reading !== null;
 
   return (
     <nav className={styles.sidebar} aria-label={t('sidebarLabel')}>
@@ -42,20 +52,41 @@ export function TripSidebar({
           <Link href={TRIP_HOME} className={styles.section} aria-current={page(TRIP_HOME)}>
             {t('overview')}
           </Link>
-          <ul className={styles.sub}>
-            <li>
-              <Link href={`${TRIP_HOME}#places`} className={styles.subLink}>
-                {t('places')}
-              </Link>
-            </li>
-          </ul>
         </li>
         <li>
-          <Link href={`${TRIP_HOME}#itinerary`} className={styles.section}>
-            {t('itinerary')}
+          <Link href={`${TRIP_HOME}#places`} className={styles.section}>
+            {t('places')}
           </Link>
+        </li>
+        <li>
+          <div className={styles.sectionRow} data-reading={foldedOnReading ? '' : undefined}>
+            <Link
+              href={`${TRIP_HOME}#itinerary`}
+              className={styles.section}
+              aria-current={foldedOnReading ? 'location' : undefined}
+              // Going to the itinerary opens its days too.
+              onClick={() => onItineraryOpen(true)}
+            >
+              <span>{t('itinerary')}</span>
+              {foldedOnReading ? <span className={styles.readingDay}>{reading.label}</span> : null}
+            </Link>
+            {days.length > 0 ? (
+              <button
+                type="button"
+                className={styles.disclosure}
+                aria-expanded={itineraryOpen}
+                aria-controls={daysId}
+                aria-label={itineraryOpen ? t('daysHide') : t('daysShow')}
+                onClick={() => onItineraryOpen(!itineraryOpen)}
+              >
+                <span aria-hidden="true" className={styles.chevron}>
+                  ›
+                </span>
+              </button>
+            ) : null}
+          </div>
           {days.length > 0 ? (
-            <ul className={styles.sub}>
+            <ul id={daysId} className={styles.sub} hidden={!itineraryOpen}>
               {days.map((day) => (
                 <li key={day.index}>
                   <Link
@@ -80,13 +111,18 @@ export function TripSidebar({
             {t('checklist')}
           </Link>
         </li>
-        <li>
-          <Link href="/app/board" className={styles.section}>
-            {t('expandMap')}
-          </Link>
-        </li>
       </ul>
     </nav>
+  );
+}
+
+/** The drawer's footer: the full map, an action that leaves the workspace. */
+export function ExpandMapLink() {
+  const t = useTranslations('workspace');
+  return (
+    <Link href="/app/board" className={styles.mapAction}>
+      <span aria-hidden="true">◎</span> {t('expandMap')}
+    </Link>
   );
 }
 

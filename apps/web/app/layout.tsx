@@ -12,6 +12,7 @@ import { Analytics } from './analytics';
 import { ReferralCapture } from './referral-capture';
 import { LanguageSuggestion } from './language-suggestion';
 import { SITE_NAME } from './site';
+import { ThemeSync } from './theme-sync';
 import '@globetrot/tokens/tokens.css';
 import '@globetrot/ui/styles.css';
 import './globals.css';
@@ -69,6 +70,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
         />
       </head>
       <body>
+        <ThemeSync choice={theme} />
         <NextIntlClientProvider>
           {offer ? (
             <LanguageSuggestion suggested={offer} current={locale as SupportedLocale} />

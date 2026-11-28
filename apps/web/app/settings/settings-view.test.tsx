@@ -4,7 +4,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 
 // The server action only matters on submit; keep `next/headers` out of the render test.
-vi.mock('../actions', () => ({ savePreferences: vi.fn() }));
+vi.mock('../actions', () => ({ savePreferences: vi.fn(), saveAppearance: vi.fn() }));
 vi.mock('./data-actions', () => ({ deleteAccount: vi.fn() }));
 vi.mock('next/navigation', () => ({ useRouter: () => ({ replace: vi.fn(), refresh: vi.fn() }) }));
 

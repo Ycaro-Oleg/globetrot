@@ -1,4 +1,4 @@
-/* global document */
+/* global document, getComputedStyle */
 // The first real journey, end to end: a real browser against the real web app, the real API, PostgreSQL and
 // Mailpit (no stand-ins). Four runs at once, one per width x language:
 //
@@ -332,14 +332,83 @@ async function journey(browser, { width, height, locale }) {
     await axe('trip workspace');
     if (width >= 720) {
       const sidebar = page.getByRole('navigation', { name: workspaceCopy.sidebarLabel });
-      await sidebar.locator('a[href="/app/trip#day-2"]').click();
+      const showDays = sidebar.getByRole('button', { name: workspaceCopy.daysShow, exact: true });
+      const hideDays = sidebar.getByRole('button', { name: workspaceCopy.daysHide, exact: true });
+      const dayLink = sidebar.locator('a[href="/app/trip#day-2"]');
+      // The itinerary's days start folded behind the chevron beside "Itinerary", for every trip.
+      expect(
+        (await showDays.getAttribute('aria-expanded')) === 'false',
+        'the itinerary does not start folded',
+      );
+      expect(!(await dayLink.isVisible()), 'the folded itinerary shows its days');
+      await showDays.click();
+      await dayLink.click();
       await page.waitForURL((url) => url.hash === '#day-2');
+      // Folded by pointer, opened again from the keyboard, and the choice survives a reload.
+      await hideDays.click();
+      expect(!(await dayLink.isVisible()), 'folding the itinerary leaves its days on screen');
+      await showDays.focus();
+      await page.keyboard.press('Enter');
+      expect(await dayLink.isVisible(), 'the itinerary’s days do not open again from the keyboard');
+      await page.reload();
+      await page.waitForLoadState('networkidle');
+      // The saved state is read after hydration (the server renders the default), so give it a moment.
+      const shown = (locator) =>
+        locator
+          .waitFor({ state: 'visible', timeout: 5_000 })
+          .then(() => true)
+          .catch(() => false);
+      expect(await shown(dayLink), 'the open itinerary is not remembered after a reload');
+
+      // The panel button folds the whole drawer to the 56px rail and opens it again, remembered on the device.
+      const collapse = page.getByRole('button', { name: workspaceCopy.sidebarHide, exact: true });
+      const reopen = page.getByRole('button', { name: workspaceCopy.sidebarShow, exact: true });
+      // The drawer holds the panel that holds the nav. Folded, the nav stays in the DOM but hidden, and role
+      // queries skip hidden elements, so the drawer is found through the nav including hidden ones.
+      const drawer = page
+        .getByRole('navigation', { name: workspaceCopy.sidebarLabel, includeHidden: true })
+        .locator('xpath=../..');
+      const firstColumn = () =>
+        drawer.evaluate(
+          (element) => getComputedStyle(element.parentElement).gridTemplateColumns.split(' ')[0],
+        );
+      // "Expand map" is in the drawer's footer, not among the sections.
+      expect(
+        (await drawer.getByRole('link', { name: workspaceCopy.expandMap, exact: true }).count()) ===
+          1,
+        'the drawer has no "Expand map" in its footer',
+      );
       expect(
         (await sidebar
           .getByRole('link', { name: workspaceCopy.expandMap, exact: true })
-          .count()) === 1,
-        'the trip sidebar has no way to the full map',
+          .count()) === 0,
+        '"Expand map" is still one of the sections',
       );
+      const openColumn = await firstColumn();
+      await collapse.click();
+      await reopen.waitFor({ timeout: 5_000 });
+      expect(
+        (await firstColumn()) === '56px',
+        `the folded panel is ${await firstColumn()} wide, not 56px`,
+      );
+      expect(!(await sidebar.isVisible()), 'the folded panel still shows the sections');
+      expect(
+        await reopen.evaluate((element) => element === document.activeElement),
+        'focus left the panel button after folding',
+      );
+      await page.reload();
+      await page.waitForLoadState('networkidle');
+      expect(
+        (await shown(reopen)) && (await firstColumn()) === '56px' && !(await sidebar.isVisible()),
+        'the folded panel did not stay folded after a reload',
+      );
+      await reopen.click();
+      await collapse.waitFor({ timeout: 5_000 });
+      expect(
+        (await firstColumn()) === openColumn,
+        `the panel did not open back to ${openColumn} (${await firstColumn()})`,
+      );
+      expect(await sidebar.isVisible(), 'the reopened panel does not show the sections');
     } else {
       // A phone has the sections as a jump bar and the map one tap away.
       expect(
@@ -555,6 +624,109 @@ async function journey(browser, { width, height, locale }) {
       total,
       { timeout: 15_000 },
     );
+
+    // ---- theme and motion: they apply at once, save themselves, survive a reload, go back when the save fails,
+    // and "Match my device" follows the device
+    const drawn = (name) => page.evaluate((key) => document.documentElement.dataset[key], name);
+    const pageBackground = () =>
+      page.evaluate(() => getComputedStyle(document.body).backgroundColor);
+    const radio = (group, name) =>
+      page.getByRole('radiogroup', { name: group }).getByRole('radio', { name, exact: true });
+    // Picking saves at once: a server action, so a POST to the settings page.
+    let appearanceSave = Promise.resolve();
+    const pick = async (group, name) => {
+      appearanceSave = page.waitForResponse(
+        (response) =>
+          response.request().method() === 'POST' &&
+          new URL(response.url()).pathname === '/settings',
+        { timeout: 15_000 },
+      );
+      await radio(group, name).check({ force: true });
+    };
+    const saved = async (message) => {
+      await appearanceSave;
+      await page.getByRole('status').filter({ hasText: message }).waitFor({ timeout: 15_000 });
+    };
+    const reload = async () => {
+      await page.reload();
+      await page.waitForLoadState('networkidle');
+    };
+    const s = copy.settings;
+    await page.emulateMedia({ colorScheme: 'dark' });
+    await go('/settings');
+    if (!(await radio(s.theme, s.themeSystem).isChecked())) {
+      await pick(s.theme, s.themeSystem);
+      await saved(s.themeSaved);
+    }
+    // The state the owner hit: "Match my device" on a dark device, freshly loaded, so the head script drew red-eye.
+    await reload();
+    expect((await drawn('theme')) === 'red-eye', '"Match my device" is not dark on a dark device');
+    await axe('settings (red-eye, from the device)');
+    await pick(s.theme, s.themeDay);
+    expect(
+      (await drawn('theme')) === 'day',
+      'picking Day does not switch to the light theme at once',
+    );
+    expect(
+      (await pageBackground()) === 'rgb(243, 244, 245)',
+      `the page is not the light grey after picking Day (${await pageBackground()})`,
+    );
+    await saved(s.themeSaved);
+    await axe('settings (day)');
+    await reload();
+    expect((await drawn('theme')) === 'day', 'Day is not kept after a reload');
+    expect(
+      await radio(s.theme, s.themeDay).isChecked(),
+      'the control does not show Day after a reload',
+    );
+    await pick(s.theme, s.themeRedEye);
+    expect((await drawn('theme')) === 'red-eye', 'picking Red-eye does not switch at once');
+    await saved(s.themeSaved);
+    await reload();
+    expect((await drawn('theme')) === 'red-eye', 'Red-eye is not kept after a reload');
+
+    // A save that cannot reach the server: the page and the control go back to Red-eye.
+    const refuse = (route) =>
+      route.request().method() === 'POST' ? route.abort() : route.continue();
+    await page.route('**/settings', refuse);
+    await radio(s.theme, s.themeDay).check({ force: true });
+    await page
+      .getByRole('status')
+      .filter({ hasText: s.themeSaveFailed })
+      .waitFor({ timeout: 15_000 });
+    await page.unroute('**/settings', refuse);
+    expect((await drawn('theme')) === 'red-eye', 'a failed save left the page in the new theme');
+    expect(
+      await radio(s.theme, s.themeRedEye).isChecked(),
+      'a failed save left the control on the new theme',
+    );
+
+    await pick(s.theme, s.themeSystem);
+    expect(
+      (await drawn('theme')) === 'red-eye',
+      '"Match my device" does not follow a dark device at once',
+    );
+    await saved(s.themeSaved);
+    await page.emulateMedia({ colorScheme: 'light' });
+    await page
+      .waitForFunction(() => document.documentElement.dataset.theme === 'day', null, {
+        timeout: 5_000,
+      })
+      .catch(() => undefined);
+    expect(
+      (await drawn('theme')) === 'day',
+      '"Match my device" does not follow the device back to light',
+    );
+    await page.emulateMedia({ colorScheme: null });
+
+    // Motion saves itself the same way.
+    await pick(s.motion, s.motionReduced);
+    expect((await drawn('motion')) === 'reduced', 'picking Reduced motion does not apply at once');
+    await saved(s.motionSaved);
+    await reload();
+    expect((await drawn('motion')) === 'reduced', 'Reduced motion is not kept after a reload');
+    await pick(s.motion, s.motionFull);
+    await saved(s.motionSaved);
 
     // ---- theme on the first paint: choose red-eye, then load with JavaScript off
     await go('/settings');

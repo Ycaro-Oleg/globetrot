@@ -1,6 +1,12 @@
 'use server';
 
-import { isMotionChoice, isThemeChoice, UNIT_SYSTEMS } from '@globetrot/domain';
+import {
+  isMotionChoice,
+  isThemeChoice,
+  UNIT_SYSTEMS,
+  type MotionChoice,
+  type ThemeChoice,
+} from '@globetrot/domain';
 import { isSupportedLocale } from '@globetrot/i18n';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
@@ -29,6 +35,34 @@ export async function setScaffoldLocale(formData: FormData): Promise<void> {
   } catch {
     // The cookie is set; the stored language catches up the next time the person saves it.
   }
+}
+
+/**
+ * The theme and motion switches in Settings: the page changes as soon as one is picked, so the choice is saved at
+ * once too, without the rest of the form. Only a choice the account accepted reaches the device's cookie, so a
+ * failed save leaves both as they were (the page goes back to the previous choice). Answers whether it was saved.
+ */
+export async function saveAppearance(field: 'theme' | 'motion', value: string): Promise<boolean> {
+  let body: { theme: ThemeChoice } | { motion: MotionChoice };
+  if (field === 'theme') {
+    if (!isThemeChoice(value)) return false;
+    body = { theme: value };
+  } else {
+    if (!isMotionChoice(value)) return false;
+    body = { motion: value };
+  }
+  const store = await cookies();
+  const cookieHeader = sessionCookieHeader(store.getAll());
+  if (!cookieHeader) return false;
+  try {
+    const client = createServerApiClient({ cookieHeader, apiUrl: apiInternalUrl() });
+    const { error } = await client.PATCH('/v1/me/preferences', { body });
+    if (error) return false;
+  } catch {
+    return false;
+  }
+  store.set(field === 'theme' ? THEME_COOKIE : MOTION_COOKIE, value, localeCookieOptions());
+  return true;
 }
 
 const text = (formData: FormData, name: string) => {

@@ -97,10 +97,13 @@ export function SidebarDrawer({
   state,
   onChange,
   children,
+  footer = null,
 }: {
   state: DrawerState;
   onChange: (next: DrawerState) => void;
   children: ReactNode;
+  /** Pinned under the sections while the drawer is open (the full map). */
+  footer?: ReactNode;
 }) {
   const t = useTranslations('workspace');
   const panelId = useId();
@@ -142,12 +145,11 @@ export function SidebarDrawer({
         className={styles.drawerToggle}
         aria-expanded={state.open}
         aria-controls={panelId}
+        aria-label={state.open ? t('sidebarHide') : t('sidebarShow')}
+        title={state.open ? t('sidebarHide') : t('sidebarShow')}
         onClick={() => onChange({ ...state, open: !state.open })}
       >
         <span aria-hidden="true">{state.open ? '«' : '»'}</span>
-        <span className={state.open ? undefined : 'sr-only'}>
-          {state.open ? t('sidebarHide') : t('sidebarShow')}
-        </span>
       </button>
       <div id={panelId} className={styles.drawerPanel} hidden={!state.open}>
         {children}
@@ -171,6 +173,8 @@ export function SidebarDrawer({
           onDoubleClick={() => onChange({ open: true, width: SIDEBAR_DEFAULT })}
         />
       ) : null}
+      {/* After the edge in the DOM, so the keyboard reaches it last (the edge is drawn over the border). */}
+      {footer && state.open ? <div className={styles.drawerFooter}>{footer}</div> : null}
     </div>
   );
 }

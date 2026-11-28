@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { chooseAppearance, THEME_SCRIPT } from './appearance';
+import {
+  applyMotion,
+  applyTheme,
+  chooseAppearance,
+  switchAppearance,
+  THEME_SCRIPT,
+} from './appearance';
 
 describe('chooseAppearance', () => {
   it('falls back to the system theme and full motion', () => {
@@ -63,5 +69,92 @@ describe('the head script', () => {
   it('leaves an explicit choice alone', () => {
     expect(run('day', true).attributes['data-theme']).toBe('day');
     expect(run('red-eye', false).attributes['data-theme']).toBe('day'); // the server renders it; the script does nothing
+  });
+});
+
+describe('applyTheme', () => {
+  function page(dark: boolean) {
+    const attributes: Record<string, string> = {};
+    const documentElement = {
+      setAttribute: (name: string, value: string) => void (attributes[name] = value),
+    };
+    return { attributes, target: { documentElement, prefersDark: dark } };
+  }
+
+  // The bug it fixes: with `system` on a dark device the head script draws red-eye while React still holds
+  // `day`; picking Day kept React's value, so nothing changed until a reload.
+  it('switches a dark system page to day at once', () => {
+    const { attributes, target } = page(true);
+    applyTheme('system', target);
+    expect(attributes).toEqual({ 'data-theme-choice': 'system', 'data-theme': 'red-eye' });
+    applyTheme('day', target);
+    expect(attributes).toEqual({ 'data-theme-choice': 'day', 'data-theme': 'day' });
+  });
+
+  it('draws red-eye, and system from the device', () => {
+    const light = page(false);
+    applyTheme('red-eye', light.target);
+    expect(light.attributes['data-theme']).toBe('red-eye');
+    applyTheme('system', light.target);
+    expect(light.attributes['data-theme']).toBe('day');
+  });
+
+  it('leaves the head script following the device only for system', () => {
+    const attributes: Record<string, string> = {
+      'data-theme-choice': 'system',
+      'data-theme': 'day',
+    };
+    const listeners: (() => void)[] = [];
+    const query = {
+      matches: false,
+      addEventListener: (_: string, listener: () => void) => listeners.push(listener),
+    };
+    const documentElement = {
+      getAttribute: (name: string) => attributes[name] ?? null,
+      setAttribute: (name: string, value: string) => void (attributes[name] = value),
+    };
+    new Function('document', 'matchMedia', THEME_SCRIPT)({ documentElement }, () => query);
+    applyTheme('day', { documentElement, prefersDark: false });
+    query.matches = true;
+    for (const listener of listeners) listener();
+    expect(attributes['data-theme']).toBe('day');
+  });
+});
+
+describe('switchAppearance', () => {
+  function recorder() {
+    const drawn: string[] = [];
+    return { drawn, apply: (choice: string) => void drawn.push(choice) };
+  }
+
+  it('draws the new choice and keeps it when the save succeeds', async () => {
+    const { drawn, apply } = recorder();
+    const kept = await switchAppearance('day', 'red-eye', apply, async () => true);
+    expect(kept).toBe(true);
+    expect(drawn).toEqual(['day']);
+  });
+
+  it('goes back to the previous choice when the account refuses it', async () => {
+    const { drawn, apply } = recorder();
+    const kept = await switchAppearance('day', 'red-eye', apply, async () => false);
+    expect(kept).toBe(false);
+    expect(drawn).toEqual(['day', 'red-eye']);
+  });
+
+  it('goes back to the previous choice when the save cannot reach the server', async () => {
+    const { drawn, apply } = recorder();
+    const kept = await switchAppearance('system', 'day', apply, () =>
+      Promise.reject(new Error('offline')),
+    );
+    expect(kept).toBe(false);
+    expect(drawn).toEqual(['system', 'day']);
+  });
+});
+
+describe('applyMotion', () => {
+  it('sets data-motion on the page', () => {
+    const attributes: Record<string, string> = {};
+    applyMotion('reduced', { setAttribute: (name, value) => void (attributes[name] = value) });
+    expect(attributes).toEqual({ 'data-motion': 'reduced' });
   });
 });

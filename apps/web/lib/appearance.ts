@@ -3,6 +3,7 @@ import {
   DEFAULT_THEME_CHOICE,
   isMotionChoice,
   isThemeChoice,
+  resolveTheme,
   type MotionChoice,
   type ThemeChoice,
 } from '@globetrot/domain';
@@ -38,3 +39,46 @@ export function chooseAppearance(
  * server, so this does nothing for it. Kept tiny and dependency-free on purpose.
  */
 export const THEME_SCRIPT = `(function(){var d=document.documentElement,q=matchMedia('(prefers-color-scheme: dark)');function a(){if(d.getAttribute('data-theme-choice')==='system')d.setAttribute('data-theme',q.matches?'red-eye':'day')}a();if(q.addEventListener)q.addEventListener('change',a)})()`;
+
+/** The parts of the page that `applyTheme` touches, so it can run against a stand-in in tests. */
+export interface ThemeTarget {
+  readonly documentElement: { setAttribute(name: string, value: string): void };
+  readonly prefersDark: boolean;
+}
+
+/**
+ * Draws a theme choice on the page now, without a reload. The head script switches `data-theme` behind React's
+ * back for `system`, so React's own value can be stale (it renders `system` as `day`): a change of choice that
+ * keeps React's value the same would otherwise leave the page in the old theme. Setting the choice as well keeps
+ * the head script following the operating system only while the choice is `system`.
+ */
+export function applyTheme(choice: ThemeChoice, target?: ThemeTarget): void {
+  const page = target ?? {
+    documentElement: document.documentElement,
+    prefersDark: window.matchMedia('(prefers-color-scheme: dark)').matches,
+  };
+  page.documentElement.setAttribute('data-theme-choice', choice);
+  page.documentElement.setAttribute('data-theme', resolveTheme(choice, page.prefersDark));
+}
+
+/** Draws a motion choice on the page now (the CSS reads `data-motion`; the OS asking for less always wins). */
+export function applyMotion(choice: MotionChoice, root?: ThemeTarget['documentElement']): void {
+  (root ?? document.documentElement).setAttribute('data-motion', choice);
+}
+
+/**
+ * Picking a look in Settings: it shows at once, is saved right away, and goes back to the previous choice when the
+ * save fails (an error, a refusal or no network), so the control and the page never disagree with the account.
+ * Answers whether the choice was kept.
+ */
+export async function switchAppearance<T>(
+  next: T,
+  previous: T,
+  apply: (choice: T) => void,
+  save: (choice: T) => Promise<boolean>,
+): Promise<boolean> {
+  apply(next);
+  const kept = await save(next).catch(() => false);
+  if (!kept) apply(previous);
+  return kept;
+}
