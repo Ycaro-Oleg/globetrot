@@ -60,7 +60,7 @@ export interface paths {
         post?: never;
         /**
          * Delete the account for good
-         * @description Type the account’s email again in `confirmEmail`. Deletes trips and everything in them, visas, the community profile and posts, uploads (and their stored bytes), sessions and sign-in methods. The audit log keeps its rows, which hold no personal data. Cannot be undone.
+         * @description Type the account’s email again in `confirmEmail`. Deletes trips and everything in them, visas, the community profile and posts, uploads (and their stored bytes), sessions and sign-in methods. The audit log keeps its rows, which hold no personal data. Cannot be undone. A subscription that still renews is canceled at the payment provider first, at once and with no refund; if the provider does not confirm, nothing is deleted (`503`) and the request can be repeated.
          */
         delete: operations["deleteAccount"];
         options?: never;
@@ -1689,6 +1689,29 @@ export interface operations {
             };
             /** @description The email does not match (`confirmation_mismatch`). */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description The subscription could not be canceled, so nothing was deleted. */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };

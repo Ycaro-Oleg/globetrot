@@ -114,8 +114,17 @@ export function createFakePorts(options: FakeOptions = {}) {
   let time = options.now ?? new Date('2026-11-07T12:00:00.000Z');
   let counter = 0;
   const faults = { auditFails: false };
-  /** Whether the fake payment provider is configured. */
-  const payments = { enabled: false };
+  /**
+   * The fake payment provider: whether it is configured, the subscriptions it was asked to cancel, and whether
+   * the next cancellation fails (the provider down).
+   */
+  const payments = {
+    enabled: false,
+    canceled: [] as string[],
+    cancelFails: false,
+    /** The provider no longer has the subscription (Stripe's 404). */
+    missing: false,
+  };
   const places = {
     offline: false,
     hits: new Map<string, number>(),
@@ -537,6 +546,8 @@ export function createFakePorts(options: FakeOptions = {}) {
       c.profiles.delete(userId);
       for (const [id, p] of c.posts) if (p.authorId === userId) c.posts.delete(id);
       for (const [id, cm] of c.comments) if (cm.authorId === userId) c.comments.delete(id);
+      // The plan row goes with the account (a cascade in the database).
+      state.subscriptions.delete(userId);
       const index = users.findIndex((u) => u.id === userId);
       if (index >= 0) users.splice(index, 1);
     },
@@ -618,6 +629,12 @@ export function createFakePorts(options: FakeOptions = {}) {
         if (record.providerSubscriptionId === id) return userId;
       }
       return null;
+    },
+    async findRenewingSubscription(userId) {
+      const record = state.subscriptions.get(userId);
+      return record && (record.status === 'active' || record.status === 'past_due')
+        ? record.providerSubscriptionId
+        : null;
     },
     async addCredits(row) {
       if (row.ref !== null && state.credits.some((line) => line.ref === row.ref)) return false;
@@ -878,6 +895,13 @@ export function createFakePorts(options: FakeOptions = {}) {
         return payments.enabled
           ? `https://pay.example.test/portal/${input.providerCustomerId}`
           : null;
+      },
+      async cancelSubscription(input) {
+        if (!payments.enabled) return 'off';
+        if (payments.cancelFails) throw new Error('the payment provider did not answer');
+        if (payments.missing) return 'missing';
+        payments.canceled.push(input.providerSubscriptionId);
+        return 'canceled';
       },
     },
     ai: {

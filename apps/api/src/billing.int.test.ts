@@ -293,4 +293,188 @@ describe('billing against a real database', () => {
     await call(ana.cookie, 'DELETE', `/v1/trips/${tripId}/share`);
     expect((await call('', 'GET', `/v1/shared/${slug}`)).status).toBe(404);
   });
+
+  it('cancels a renewing subscription in Stripe before deleting the account, and deletes nothing when Stripe fails (#201)', async () => {
+    const stripeEnv = {
+      STRIPE_SECRET_KEY: 'sk_test_integration',
+      STRIPE_WEBHOOK_SECRET: 'whsec_integration',
+      STRIPE_PRICE_EXPLORER_MONTHLY: 'price_em',
+      STRIPE_PRICE_EXPLORER_YEARLY: 'price_ey',
+      STRIPE_PRICE_VOYAGER_MONTHLY: 'price_vm',
+      STRIPE_PRICE_VOYAGER_YEARLY: 'price_vy',
+      STRIPE_PRICE_TOP_UP: 'price_top',
+      STRIPE_PRICE_TRIP_PASS: 'price_pass',
+    };
+    const now = Math.floor(Date.now() / 1000);
+    const stripe = { down: true, calls: [] as string[] };
+    const stripeFetch: typeof fetch = async (input, init) => {
+      const method = init?.method ?? 'GET';
+      stripe.calls.push(`${method} ${new URL(String(input)).pathname}`);
+      if (stripe.down) return new Response('{"error":{}}', { status: 500 });
+      return new Response(
+        JSON.stringify({
+          id: 'sub_del',
+          status: 'canceled',
+          customer: 'cus_del',
+          start_date: now,
+          current_period_end: now + 30 * 86_400,
+          items: { data: [{ price: { id: 'price_em' } }] },
+          metadata: {},
+        }),
+        { status: 200 },
+      );
+    };
+    const { db, signUp, call, webhook } = await harness(stripeEnv, stripeFetch);
+    const ana = await signUp('ana-deletes@example.com');
+    await db.insert(schema.subscription).values({
+      userId: ana.id,
+      plan: 'explorer',
+      interval: 'month',
+      status: 'active',
+      startedAt: new Date(),
+      currentPeriodEnd: new Date(Date.now() + 30 * 86_400_000),
+      providerCustomerId: 'cus_del',
+      providerSubscriptionId: 'sub_del',
+    });
+
+    // Stripe down: the deletion stops and nothing is gone.
+    const refused = await call(ana.cookie, 'DELETE', '/v1/me', {
+      confirmEmail: 'ana-deletes@example.com',
+    });
+    expect(refused.status).toBe(503);
+    expect(refused.json).toMatchObject({ code: 'SERVICE_UNAVAILABLE' });
+    expect(await db.select().from(schema.user).where(eq(schema.user.id, ana.id))).toHaveLength(1);
+    expect(await db.select().from(schema.subscription)).toHaveLength(1);
+
+    // Stripe back: canceled at once, then the account and its plan row are deleted.
+    stripe.down = false;
+    stripe.calls.length = 0;
+    const deleted = await call(ana.cookie, 'DELETE', '/v1/me', {
+      confirmEmail: 'ana-deletes@example.com',
+    });
+    expect(deleted).toEqual({ status: 200, json: { ok: true } });
+    expect(stripe.calls).toEqual(['DELETE /v1/subscriptions/sub_del']);
+    expect(await db.select().from(schema.user).where(eq(schema.user.id, ana.id))).toEqual([]);
+    expect(await db.select().from(schema.subscription)).toEqual([]);
+
+    // Stripe's later event about that subscription finds no account and records nothing.
+    const body = JSON.stringify({
+      type: 'customer.subscription.deleted',
+      data: { object: { id: 'sub_del', metadata: { userId: ana.id } } },
+    });
+    const signature = `t=${now},v1=${createHmac('sha256', 'whsec_integration').update(`${now}.${body}`).digest('hex')}`;
+    expect((await webhook(body, signature)).status).toBe(200);
+    expect(await db.select().from(schema.subscription)).toEqual([]);
+  });
+
+  it.each(['trialing', 'unpaid'])(
+    'cancels a Stripe %s subscription, stored from the webhook, before deleting the account',
+    async (stripeStatus) => {
+      const stripeEnv = {
+        STRIPE_SECRET_KEY: 'sk_test_integration',
+        STRIPE_WEBHOOK_SECRET: 'whsec_integration',
+        STRIPE_PRICE_EXPLORER_MONTHLY: 'price_em',
+        STRIPE_PRICE_EXPLORER_YEARLY: 'price_ey',
+        STRIPE_PRICE_VOYAGER_MONTHLY: 'price_vm',
+        STRIPE_PRICE_VOYAGER_YEARLY: 'price_vy',
+        STRIPE_PRICE_TOP_UP: 'price_top',
+        STRIPE_PRICE_TRIP_PASS: 'price_pass',
+      };
+      const now = Math.floor(Date.now() / 1000);
+      const calls: string[] = [];
+      let userId = '';
+      const stripeFetch: typeof fetch = async (input, init) => {
+        const method = init?.method ?? 'GET';
+        calls.push(`${method} ${new URL(String(input)).pathname}`);
+        return new Response(
+          JSON.stringify({
+            id: 'sub_state',
+            status: method === 'DELETE' ? 'canceled' : stripeStatus,
+            customer: 'cus_state',
+            start_date: now,
+            current_period_end: now + 30 * 86_400,
+            items: { data: [{ price: { id: 'price_em' } }] },
+            metadata: { userId },
+          }),
+          { status: 200 },
+        );
+      };
+      const { db, signUp, call, webhook } = await harness(stripeEnv, stripeFetch);
+      const email = `ana-${stripeStatus}@example.com`;
+      const ana = await signUp(email);
+      userId = ana.id;
+      const body = JSON.stringify({
+        type: 'customer.subscription.updated',
+        data: { object: { id: 'sub_state', metadata: { userId } } },
+      });
+      const signature = `t=${now},v1=${createHmac('sha256', 'whsec_integration').update(`${now}.${body}`).digest('hex')}`;
+      expect((await webhook(body, signature)).status).toBe(200);
+      expect(await db.select().from(schema.subscription)).toHaveLength(1);
+
+      calls.length = 0;
+      expect(await call(ana.cookie, 'DELETE', '/v1/me', { confirmEmail: email })).toEqual({
+        status: 200,
+        json: { ok: true },
+      });
+      expect(calls).toEqual(['DELETE /v1/subscriptions/sub_state']);
+    },
+  );
+
+  it('deletes the account when Stripe no longer has the subscription (404), and records it', async () => {
+    const stripeEnv = {
+      STRIPE_SECRET_KEY: 'sk_test_integration',
+      STRIPE_WEBHOOK_SECRET: 'whsec_integration',
+      STRIPE_PRICE_EXPLORER_MONTHLY: 'price_em',
+      STRIPE_PRICE_EXPLORER_YEARLY: 'price_ey',
+      STRIPE_PRICE_VOYAGER_MONTHLY: 'price_vm',
+      STRIPE_PRICE_VOYAGER_YEARLY: 'price_vy',
+      STRIPE_PRICE_TOP_UP: 'price_top',
+      STRIPE_PRICE_TRIP_PASS: 'price_pass',
+    };
+    const stripeFetch: typeof fetch = async () =>
+      new Response(
+        JSON.stringify({ error: { type: 'invalid_request_error', code: 'resource_missing' } }),
+        { status: 404 },
+      );
+    const { db, signUp, call } = await harness(stripeEnv, stripeFetch);
+    const ana = await signUp('ana-missing@example.com');
+    await db.insert(schema.subscription).values({
+      userId: ana.id,
+      plan: 'explorer',
+      interval: 'month',
+      status: 'active',
+      startedAt: new Date(),
+      currentPeriodEnd: new Date(Date.now() + 30 * 86_400_000),
+      providerCustomerId: 'cus_gone',
+      providerSubscriptionId: 'sub_gone',
+    });
+    expect(
+      await call(ana.cookie, 'DELETE', '/v1/me', { confirmEmail: 'ana-missing@example.com' }),
+    ).toEqual({ status: 200, json: { ok: true } });
+    expect(await db.select().from(schema.user).where(eq(schema.user.id, ana.id))).toEqual([]);
+    const [event] = await db
+      .select()
+      .from(schema.auditEvent)
+      .where(eq(schema.auditEvent.action, 'account.delete'));
+    expect(event?.metadata).toEqual({ uploads: 0, subscription: 'missing' });
+  });
+
+  it('deletes an account with a plan as before while payments are off', async () => {
+    const { db, signUp, call } = await harness();
+    const ana = await signUp('ana-off@example.com');
+    await db.insert(schema.subscription).values({
+      userId: ana.id,
+      plan: 'explorer',
+      interval: 'month',
+      status: 'active',
+      startedAt: new Date(),
+      currentPeriodEnd: new Date(Date.now() + 30 * 86_400_000),
+      providerCustomerId: 'cus_off',
+      providerSubscriptionId: 'sub_off',
+    });
+    expect(
+      await call(ana.cookie, 'DELETE', '/v1/me', { confirmEmail: 'ana-off@example.com' }),
+    ).toEqual({ status: 200, json: { ok: true } });
+    expect(await db.select().from(schema.user).where(eq(schema.user.id, ana.id))).toEqual([]);
+  });
 });
