@@ -96,8 +96,10 @@
       "deleteList1": "Your trips, with their stops, costs, savings, lists and day plans.",
       "deleteList2": "Your visas, your community profile, posts, comments, likes and follows.",
       "deleteList3": "Your photos, your settings and every signed-in device.",
+      "deletePlan": "If you pay for a plan, it is canceled right away and nothing more is charged.",
       "confirmLabel": "To confirm, type your email: {email}",
       "mismatch": "That is not your account’s email.",
+      "planNotCanceled": "We could not cancel your plan, so nothing was deleted. Try again in a few minutes.",
       "cancel": "Keep my account",
       "deleteConfirm": "Delete my account forever",
       "deleting": "Deleting…"

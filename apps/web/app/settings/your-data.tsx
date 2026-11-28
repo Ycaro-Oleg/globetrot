@@ -3,12 +3,13 @@
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useId, useState, useTransition, type FormEvent } from 'react';
-import { deleteAccount } from './data-actions';
+import { deleteAccount, type DeleteAccountResult } from './data-actions';
 import styles from './settings.module.css';
 
 /**
  * "Your data": download everything (LGPD/GDPR access and portability) and delete the account for good, after
- * typing the email again. Deleting signs the person out and leads to the log-in page.
+ * typing the email again. Deleting signs the person out and leads to the log-in page. A paid plan is canceled
+ * with it (#201); when that cancellation fails, nothing is deleted and the message says so.
  */
 export function YourData({ email }: { email: string }) {
   const t = useTranslations('settings.data');
@@ -16,15 +17,15 @@ export function YourData({ email }: { email: string }) {
   const id = useId();
   const [open, setOpen] = useState(false);
   const [typed, setTyped] = useState('');
-  const [error, setError] = useState(false);
+  const [error, setError] = useState<Exclude<DeleteAccountResult, 'ok'> | null>(null);
   const [pending, startTransition] = useTransition();
 
   function submit(event: FormEvent) {
     event.preventDefault();
-    setError(false);
+    setError(null);
     startTransition(async () => {
-      const ok = await deleteAccount(typed);
-      if (!ok) return setError(true);
+      const result = await deleteAccount(typed);
+      if (result !== 'ok') return setError(result);
       router.replace('/login?deleted=1');
       router.refresh();
     });
@@ -61,6 +62,7 @@ export function YourData({ email }: { email: string }) {
             <li>{t('deleteList1')}</li>
             <li>{t('deleteList2')}</li>
             <li>{t('deleteList3')}</li>
+            <li>{t('deletePlan')}</li>
           </ul>
           <label htmlFor={`${id}-email`}>{t('confirmLabel', { email })}</label>
           <input
@@ -68,13 +70,13 @@ export function YourData({ email }: { email: string }) {
             type="email"
             autoComplete="off"
             value={typed}
-            aria-invalid={error || undefined}
+            aria-invalid={error === 'mismatch' || undefined}
             aria-describedby={error ? `${id}-error` : undefined}
             onChange={(event) => setTyped(event.target.value)}
           />
           {error ? (
             <p id={`${id}-error`} role="alert" className={styles.error}>
-              {t('mismatch')}
+              {t(error === 'unavailable' ? 'planNotCanceled' : 'mismatch')}
             </p>
           ) : null}
           <div className={styles.actions}>

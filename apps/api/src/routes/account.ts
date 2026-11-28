@@ -42,7 +42,9 @@ const deleteAccountRoute = createRoute({
   description:
     'Type the account’s email again in `confirmEmail`. Deletes trips and everything in them, visas, the ' +
     'community profile and posts, uploads (and their stored bytes), sessions and sign-in methods. The audit ' +
-    'log keeps its rows, which hold no personal data. Cannot be undone.',
+    'log keeps its rows, which hold no personal data. Cannot be undone. A subscription that still renews is ' +
+    'canceled at the payment provider first, at once and with no refund; if the provider does not confirm, ' +
+    'nothing is deleted (`503`) and the request can be repeated.',
   security,
   request: {
     body: { required: true, content: { 'application/json': { schema: deleteAccountFields } } },
@@ -51,6 +53,7 @@ const deleteAccountRoute = createRoute({
     200: ok,
     401: problemResponse('No valid session.'),
     422: problemResponse('The email does not match (`confirmation_mismatch`).'),
+    503: problemResponse('The subscription could not be canceled, so nothing was deleted.'),
   },
 });
 

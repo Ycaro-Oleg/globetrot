@@ -98,7 +98,7 @@ These cannot be finished by an agent. Do not work around them, and do not mark t
 
 Honest list of what is missing or deliberately simple, so nobody assumes otherwise.
 
-- **Account export and deletion** exist (ADR-0015). Open points: legal review of keeping the audit log, a fresh-session check before deleting.
+- **Account export and deletion** exist (ADR-0015). Deleting an account cancels a renewing Stripe subscription first, at once and with no refund, and deletes nothing if Stripe does not confirm (#201). Open points: legal review of keeping the audit log, a fresh-session check before deleting, whether to refund the unused period (owner, when Stripe resumes).
 - **Photos:** no thumbnails; no production storage provider chosen (owner). Unplaced uploads and stray objects are swept by the worker.
 - **Community:** no staff review queue for `post_report` (three reports hide a post until then), no blocking, no notifications or unread badge, no search. Handles are created on first action; nobody is listed before that.
 - **Terms acceptance is not stored** (needs the final legal text and a version).

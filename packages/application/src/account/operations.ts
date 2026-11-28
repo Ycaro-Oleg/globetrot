@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { NotFoundError, ValidationError } from '../errors';
+import { NotFoundError, UnavailableError, ValidationError } from '../errors';
 import { mediaKey } from '../media/operations';
 import { defineOperation } from '../operation';
 import type { Ports } from '../ports';
@@ -52,9 +52,13 @@ export function createExportAccount(deps: Pick<Ports, 'account' | 'clock'>) {
  * likes, follows, uploads (rows and stored bytes), sessions and sign-in methods. The person types their email
  * again to confirm. The audit log keeps its rows: they name an id that no longer belongs to anyone and never
  * held personal data.
+ *
+ * A subscription that still renews is canceled at the payment provider first, at once and with no refund
+ * (#201): otherwise it would keep charging someone who can no longer sign in to stop it. If the provider does
+ * not confirm, nothing is deleted and the person can try again.
  */
 export function createDeleteAccount(
-  deps: Pick<Ports, 'unitOfWork' | 'clock' | 'ids' | 'users' | 'storage'>,
+  deps: Pick<Ports, 'unitOfWork' | 'clock' | 'ids' | 'users' | 'storage' | 'billing' | 'payments'>,
 ) {
   return defineOperation({
     name: 'deleteAccount',
@@ -73,6 +77,19 @@ export function createDeleteAccount(
           },
         ]);
       }
+      const renewing = await deps.billing.findRenewingSubscription(actor.userId);
+      let subscriptionCanceled = false;
+      if (renewing) {
+        try {
+          subscriptionCanceled = await deps.payments.cancelSubscription({
+            providerSubscriptionId: renewing,
+          });
+        } catch {
+          throw new UnavailableError(
+            'The subscription could not be canceled, so nothing was deleted. Try again in a moment.',
+          );
+        }
+      }
       const now = deps.clock.now();
       const mediaIds = await deps.unitOfWork.run(async (tx) => {
         const ids = await tx.account.mediaIdsOf(actor.userId);
@@ -83,7 +100,7 @@ export function createDeleteAccount(
           action: 'account.delete',
           entityType: 'user',
           entityId: actor.userId,
-          metadata: { uploads: ids.length },
+          metadata: { uploads: ids.length, subscriptionCanceled },
         });
         await tx.account.deleteAccount(actor.userId);
         return ids;

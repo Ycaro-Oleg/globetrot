@@ -248,6 +248,54 @@ describe('checkout and the portal', () => {
   });
 });
 
+describe('canceling a subscription (#201)', () => {
+  /** A Stripe stand-in: answers DELETE and GET with the given statuses and keeps every call. */
+  function stripeFor(deleteStatus: number, current: string) {
+    const calls: string[] = [];
+    const call: typeof fetch = async (input, init) => {
+      const method = init?.method ?? 'GET';
+      calls.push(`${method} ${new URL(String(input)).pathname}`);
+      const status = method === 'DELETE' ? deleteStatus : 200;
+      return new Response(JSON.stringify({ id: 'sub_1', status: current }), { status });
+    };
+    return { calls, call };
+  }
+  const billing = { findProviderCustomer: async () => null };
+
+  it('cancels at once with DELETE, with no proration or refund parameters', async () => {
+    const api = stripeFor(200, 'canceled');
+    const payments = createStripePayments(config, billing, { fetch: api.call });
+    await expect(payments.cancelSubscription({ providerSubscriptionId: 'sub_1' })).resolves.toBe(
+      true,
+    );
+    expect(api.calls).toEqual(['DELETE /v1/subscriptions/sub_1']);
+  });
+
+  it('counts a subscription already canceled as done (a retry)', async () => {
+    const api = stripeFor(400, 'canceled');
+    const payments = createStripePayments(config, billing, { fetch: api.call });
+    await expect(payments.cancelSubscription({ providerSubscriptionId: 'sub_1' })).resolves.toBe(
+      true,
+    );
+    expect(api.calls).toEqual(['DELETE /v1/subscriptions/sub_1', 'GET /v1/subscriptions/sub_1']);
+  });
+
+  it('throws when Stripe does not confirm, so nothing gets deleted', async () => {
+    const api = stripeFor(500, 'active');
+    const payments = createStripePayments(config, billing, { fetch: api.call });
+    await expect(
+      payments.cancelSubscription({ providerSubscriptionId: 'sub_1' }),
+    ).rejects.toThrow();
+  });
+
+  it('does nothing while payments are off', async () => {
+    const payments = createStripePayments(null, billing);
+    await expect(payments.cancelSubscription({ providerSubscriptionId: 'sub_1' })).resolves.toBe(
+      false,
+    );
+  });
+});
+
 describe('the webhook', () => {
   const ana: UserRecord = {
     id: 'u-ana',

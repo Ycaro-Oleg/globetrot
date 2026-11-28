@@ -35,6 +35,7 @@ Status: **built** ([ADR-0019](../architecture/adr/0019-plans-trial-and-pip-credi
   - Promotion codes are allowed on every checkout, one-time payments included ([ADR-0033](../architecture/adr/0033-pricing-adjustments-before-launch.md)).
   - Success returns to `/app/plan?paid=…` (a pass returns to the trip's page), which thanks the person while the webhook arrives.
   - **Customer Portal** to change the card, switch or cancel.
+  - **Canceling when the account is deleted** (#201): before `DELETE /v1/me` removes anything, a subscription that still renews (`active` or `past_due` in our table) is canceled at once with `DELETE /v1/subscriptions/{id}`, Stripe's defaults: no proration and **no refund of the unused period** (refunds wait for the owner's decision). If Stripe does not confirm, nothing is deleted and the person sees "we could not cancel your plan, try again" (`503`). A subscription Stripe already shows as canceled counts as done, so a retry works. One-time payments (passes, credits) do not renew and are untouched. The Stripe customer and its payment history stay at Stripe.
 - **The webhook:** `POST /v1/webhooks/stripe`, through the web origin like every `/v1` route, with no session.
   - It checks the `Stripe-Signature` HMAC over the raw body, with a 5-minute tolerance against replays.
   - For any subscription event it **reads the subscription from Stripe** and stores its current state, so events can repeat or arrive out of order.
@@ -43,6 +44,7 @@ Status: **built** ([ADR-0019](../architecture/adr/0019-plans-trial-and-pip-credi
     - `customer.subscription.*`
     - `invoice.paid` and `invoice.payment_failed`
   - Everything else answers 200 and is ignored. A failure answers 500, so Stripe retries.
+  - An event for an account that no longer exists (deleted, its subscription canceled first) answers 200 and records nothing (`unknown-account`).
 - **Status mapping:**
   - `active` and `trialing` grant the plan.
   - `past_due` and `unpaid` keep it for 3 days.

@@ -96,8 +96,10 @@
       "deleteList1": "Suas viagens, com paradas, custos, poupança, listas e roteiros por dia.",
       "deleteList2": "Seus vistos, seu perfil na comunidade, posts, comentários, curtidas e quem você segue.",
       "deleteList3": "Suas fotos, suas configurações e todos os aparelhos conectados.",
+      "deletePlan": "Se você paga um plano, ele é cancelado na hora e nada mais é cobrado.",
       "confirmLabel": "Para confirmar, digite seu e-mail: {email}",
       "mismatch": "Esse não é o e-mail da sua conta.",
+      "planNotCanceled": "Não conseguimos cancelar seu plano, então nada foi excluído. Tente de novo em alguns minutos.",
       "cancel": "Manter minha conta",
       "deleteConfirm": "Excluir minha conta para sempre",
       "deleting": "Excluindo…"

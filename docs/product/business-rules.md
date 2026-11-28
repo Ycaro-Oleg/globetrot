@@ -276,7 +276,7 @@ Decided in [ADR-0019](../architecture/adr/0019-plans-trial-and-pip-credits.md), 
 - Future public content must support delayed location publication, and never shows live location.
 - EXIF location data is stripped from uploaded media unless the user explicitly keeps it.
 - **Export:** Settings → "Your data" downloads everything the account holds as JSON (never passwords or tokens).
-- **Account deletion:** after typing their email again, the person's account and everything in it go for good: trips, visas, community profile, posts and comments (also on others' posts), likes, follows, photos (with their stored files), settings and sessions. It cannot be undone.
+- **Account deletion:** after typing their email again, the person's account and everything in it go for good: trips, visas, community profile, posts and comments (also on others' posts), likes, follows, photos (with their stored files), settings and sessions. It cannot be undone. A paid plan that still renews is canceled at once, before anything is deleted, so nothing more is charged; the unused period is not refunded. If the cancellation fails, nothing is deleted and the person is told to try again. The screen says this before they confirm.
 
 - **Measurement:** cookieless counts (Plausible) when configured; the Meta Pixel only after the visitor accepts marketing cookies, with Accept and Reject equally easy and the choice changeable; conversion events never carry personal data ([ADR-0018](../architecture/adr/0018-launch-measurement-and-consent.md)).
 

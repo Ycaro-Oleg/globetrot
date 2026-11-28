@@ -52,6 +52,15 @@ function client(config: StripeConfig, call: Fetch) {
       if (!response.ok) throw new Error(`stripe ${path.split('/')[1]} ${response.status}`);
       return (await response.json()) as Record<string, unknown>;
     },
+    async delete(path: string) {
+      const response = await call(`${API}${path}`, {
+        method: 'DELETE',
+        headers,
+        signal: AbortSignal.timeout(15_000),
+      });
+      if (!response.ok) throw new Error(`stripe ${path.split('/')[1]} ${response.status}`);
+      return (await response.json()) as Record<string, unknown>;
+    },
   };
 }
 
@@ -60,7 +69,13 @@ export function createStripePayments(
   billing: Pick<BillingReader, 'findProviderCustomer'>,
   options: { readonly fetch?: Fetch | undefined } = {},
 ): PaymentsPort {
-  if (!config) return { checkoutUrl: async () => null, portalUrl: async () => null };
+  if (!config) {
+    return {
+      checkoutUrl: async () => null,
+      portalUrl: async () => null,
+      cancelSubscription: async () => false,
+    };
+  }
   const stripe = client(config, options.fetch ?? fetch);
   const back = `${config.returnOrigin}/app/plan`;
   return {
@@ -119,6 +134,20 @@ export function createStripePayments(
         return_url: back,
       });
       return typeof session.url === 'string' ? session.url : null;
+    },
+    /**
+     * Cancels at once (`DELETE /v1/subscriptions/{id}`): no proration and no refund, Stripe's defaults (#201).
+     * A subscription already canceled (a retry after the deletion failed later on) counts as done.
+     */
+    async cancelSubscription({ providerSubscriptionId }) {
+      const path = `/subscriptions/${encodeURIComponent(providerSubscriptionId)}`;
+      try {
+        await stripe.delete(path);
+      } catch (error) {
+        const current = await stripe.get(path).catch(() => null);
+        if (current?.status !== 'canceled') throw error;
+      }
+      return true;
     },
   };
 }

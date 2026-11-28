@@ -1,5 +1,5 @@
 import type { BillingInterval, PaidPlan, SubscriptionStatus } from '@globetrot/domain';
-import { and, eq, isNull, sql } from 'drizzle-orm';
+import { and, eq, inArray, isNull, sql } from 'drizzle-orm';
 import type { Database } from './client';
 import {
   creditLedger,
@@ -64,6 +64,19 @@ export function createBillingRepository(executor: Executor) {
         .from(subscription)
         .where(eq(subscription.userId, userId));
       return row?.customer ?? null;
+    },
+    /** The provider's subscription id while it still renews: `active`, or `past_due` (Stripe still retries). */
+    async findRenewingSubscription(userId: string) {
+      const [row] = await executor
+        .select({ id: subscription.providerSubscriptionId })
+        .from(subscription)
+        .where(
+          and(
+            eq(subscription.userId, userId),
+            inArray(subscription.status, ['active', 'past_due']),
+          ),
+        );
+      return row?.id ?? null;
     },
     async findUserByProviderSubscription(providerSubscriptionId: string) {
       const [row] = await executor

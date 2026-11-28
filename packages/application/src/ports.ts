@@ -930,6 +930,8 @@ export interface BillingReader {
   findUserByProviderSubscription(providerSubscriptionId: string): Promise<string | null>;
   /** The provider's customer id for the account, once it has paid for anything. */
   findProviderCustomer(userId: string): Promise<string | null>;
+  /** The provider's id of the account's subscription while it still renews (`active` or `past_due`). */
+  findRenewingSubscription(userId: string): Promise<string | null>;
 }
 
 export interface BillingWriter extends BillingReader {
@@ -986,6 +988,11 @@ export interface PaymentsPort {
   }): Promise<string | null>;
   /** The provider's page to change the card, switch or cancel the plan. */
   portalUrl(input: { readonly providerCustomerId: string }): Promise<string | null>;
+  /**
+   * Ends a subscription at once, with no refund (#201: deleting the account). `false` while payments are off.
+   * Throws when the provider does not confirm, so the caller stops before deleting anything. Safe to repeat.
+   */
+  cancelSubscription(input: { readonly providerSubscriptionId: string }): Promise<boolean>;
 }
 
 /** The internal dashboard's numbers (see `adminMetricsSchema`). */

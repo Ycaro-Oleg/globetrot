@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
   createApplication,
+  createPaymentEvents,
   NotFoundError,
+  UnavailableError,
   ValidationError,
   type Actor,
   type UserRecord,
@@ -49,9 +51,98 @@ describe('account deletion', () => {
     expect([...state.trips.values()].some((t) => t.ownerId === ana.id)).toBe(false);
     expect([...state.community.posts.values()]).toEqual([]);
     const event = state.audit.find((e) => e.action === 'account.delete');
-    expect(event?.metadata).toEqual({ uploads: 0 });
+    expect(event?.metadata).toEqual({ uploads: 0, subscriptionCanceled: false });
     expect(JSON.stringify(event)).not.toContain('example.com');
     await expect(app.exportAccount.execute(as(ana), {})).rejects.toThrow(NotFoundError);
+  });
+});
+
+describe('account deletion with a subscription (#201)', () => {
+  const subscribe = (
+    state: ReturnType<typeof setup>['state'],
+    status: 'active' | 'past_due' | 'canceled',
+  ) =>
+    state.subscriptions.set(ana.id, {
+      plan: 'explorer',
+      interval: 'month',
+      status,
+      startedAt: new Date('2026-11-01T00:00:00Z'),
+      currentPeriodEnd: new Date('2026-12-01T00:00:00Z'),
+      providerCustomerId: 'cus_ana',
+      providerSubscriptionId: 'sub_ana',
+    });
+
+  it.each(['active', 'past_due'] as const)(
+    'cancels a %s subscription once, before anything is deleted',
+    async (status) => {
+      const { app, state, payments } = setup();
+      payments.enabled = true;
+      subscribe(state, status);
+      await app.deleteAccount.execute(as(ana), { confirmEmail: 'ana@example.com' });
+      expect(payments.canceled).toEqual(['sub_ana']);
+      const event = state.audit.find((e) => e.action === 'account.delete');
+      expect(event?.metadata).toEqual({ uploads: 0, subscriptionCanceled: true });
+    },
+  );
+
+  it('deletes nothing when the provider fails, and works on a retry', async () => {
+    const { app, state, payments } = setup();
+    payments.enabled = true;
+    payments.cancelFails = true;
+    subscribe(state, 'active');
+    await app.createTrip.execute(as(ana), { title: 'Japan', startDate: null });
+    await expect(
+      app.deleteAccount.execute(as(ana), { confirmEmail: 'ana@example.com' }),
+    ).rejects.toThrow(UnavailableError);
+    expect([...state.trips.values()].some((t) => t.ownerId === ana.id)).toBe(true);
+    expect(state.audit.some((e) => e.action === 'account.delete')).toBe(false);
+    await expect(app.exportAccount.execute(as(ana), {})).resolves.toMatchObject({ version: 1 });
+
+    payments.cancelFails = false;
+    await expect(
+      app.deleteAccount.execute(as(ana), { confirmEmail: 'ana@example.com' }),
+    ).resolves.toEqual({ ok: true });
+    expect(payments.canceled).toEqual(['sub_ana']);
+  });
+
+  it('does not call the provider for a canceled subscription, nor while payments are off', async () => {
+    const off = setup();
+    subscribe(off.state, 'active');
+    await off.app.deleteAccount.execute(as(ana), { confirmEmail: 'ana@example.com' });
+    expect(off.payments.canceled).toEqual([]);
+    expect(off.state.audit.find((e) => e.action === 'account.delete')?.metadata).toEqual({
+      uploads: 0,
+      subscriptionCanceled: false,
+    });
+
+    const done = setup();
+    done.payments.enabled = true;
+    subscribe(done.state, 'canceled');
+    await done.app.deleteAccount.execute(as(ana), { confirmEmail: 'ana@example.com' });
+    expect(done.payments.canceled).toEqual([]);
+  });
+
+  it('ignores a later webhook for the deleted account', async () => {
+    const { app, state, ports, payments } = setup();
+    payments.enabled = true;
+    subscribe(state, 'active');
+    await app.deleteAccount.execute(as(ana), { confirmEmail: 'ana@example.com' });
+    const events = createPaymentEvents(ports);
+    await expect(
+      events.apply({
+        kind: 'subscription',
+        userId: ana.id,
+        record: {
+          plan: 'explorer',
+          interval: 'month',
+          status: 'canceled',
+          startedAt: new Date('2026-11-01T00:00:00Z'),
+          currentPeriodEnd: new Date('2026-12-01T00:00:00Z'),
+          providerCustomerId: 'cus_ana',
+          providerSubscriptionId: 'sub_ana',
+        },
+      }),
+    ).resolves.toBe('unknown-account');
   });
 });
 
