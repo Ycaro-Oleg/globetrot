@@ -363,8 +363,11 @@ async function journey(browser, { width, height, locale }) {
       // The panel button folds the whole drawer to the 56px rail and opens it again, remembered on the device.
       const collapse = page.getByRole('button', { name: workspaceCopy.sidebarHide, exact: true });
       const reopen = page.getByRole('button', { name: workspaceCopy.sidebarShow, exact: true });
-      // The drawer holds the panel that holds the nav (the nav stays in the DOM, hidden, when folded).
-      const drawer = sidebar.locator('xpath=../..');
+      // The drawer holds the panel that holds the nav. Folded, the nav stays in the DOM but hidden, and role
+      // queries skip hidden elements, so the drawer is found through the nav including hidden ones.
+      const drawer = page
+        .getByRole('navigation', { name: workspaceCopy.sidebarLabel, includeHidden: true })
+        .locator('xpath=../..');
       const firstColumn = () =>
         drawer.evaluate(
           (element) => getComputedStyle(element.parentElement).gridTemplateColumns.split(' ')[0],
