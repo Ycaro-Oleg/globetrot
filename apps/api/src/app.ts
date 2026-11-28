@@ -21,6 +21,7 @@ import { registerBillingRoutes } from './routes/billing';
 import { registerShareRoutes, registerSharedTripRoute } from './routes/shares';
 import { registerMemberRoutes } from './routes/members';
 import { registerHabitRoutes } from './routes/habit';
+import { registerLeadRoutes, type LeadRoutesDependencies } from './routes/leads';
 import { registerMilesRoutes } from './routes/miles';
 import { registerPipRoutes } from './routes/pip';
 import { registerDayPlaceRoutes } from './routes/day-places';
@@ -52,6 +53,8 @@ export interface AppDependencies {
   /** Stripe's webhook: raw body and signature in, the HTTP status out (ADR-0019). Absent: the route is 404. */
   /** The public view of shared trips; absent, the route answers 404. */
   readonly sharedTrips?: { view(slug: string): Promise<SharedTripView | null> } | undefined;
+  /** The interest list for visitors without an account (ADR-0037); absent, its routes answer 404. */
+  readonly leads?: LeadRoutesDependencies | undefined;
   /** Called with each unexpected error (a bug), after it is logged: error monitoring, when on. */
   readonly onUnexpectedError?: ((error: Error) => void) | undefined;
   readonly paymentWebhook?:
@@ -135,6 +138,7 @@ export function createApp({
   paymentWebhook,
   inboundEmail,
   sharedTrips = { view: async () => null },
+  leads,
   onUnexpectedError = () => {},
 }: AppDependencies) {
   const app = new OpenAPIHono<Env>({
@@ -211,6 +215,9 @@ export function createApp({
 
   // A shared trip is public: anyone with the link may read it, so it is registered before the session middleware.
   registerSharedTripRoute(app, sharedTrips);
+
+  // The interest list is for visitors without an account: no session, before the session middleware.
+  registerLeadRoutes(app, leads);
 
   // Stripe calls this with no session: it is trusted only through the signature over the raw body, so it is
   // registered before the session middleware and reads the body as text, untouched.

@@ -246,6 +246,18 @@ Migration `0018_billing`. Rules: [business rules](../product/business-rules.md#p
 | `miles_balance` | A person's miles per programme (migration `0030_miles`, [ADR-0030](adr/0030-miles-in-the-savings.md)) | `user_id` (cascade) and `program` (`smiles`, `latam-pass`, `azul`, `livelo`, `esfera`) as the primary key, `balance` (above zero), `updated_at` |
 | `trip_miles` | Miles a person puts towards a trip | `trip_id`, `user_id` (both cascade) and `program` as the primary key, `miles` (above zero), `updated_at` |
 
+## Interest list
+
+Migration `0032_interest_list`. Rules: [business rules](../product/business-rules.md#interest-list), [ADR-0037](adr/0037-interest-list.md). Visitors without an account; nothing references `user`. An entry is matched to an account by its **verified** email only when the account is exported (included) or deleted (deleted with it).
+
+| Table | What | Rules |
+|---|---|---|
+| `interest_list_entry` | One address that asked to join | `id`, `email` (unique, trimmed and lower case: a check enforces it), `locale` (`en`, `pt-BR`), `source` (`landing`, `itinerary`), the first visit's `utm_source`, `utm_medium`, `utm_campaign`, `referrer_domain` (host name only) and `landing_path` (no query), `internal`, `consent_at`, `consent_version`, `confirmed_at` (null until confirmed: only confirmed entries are on the list), `confirm_hash` (SHA-256 of the latest link's secret, never the secret) and `confirm_expires_at` (48 hours), `sends_window_start` and `sends_in_window` (at most 3 confirmation emails in 24 hours), `created_at`. **No IP address.** Unconfirmed entries are deleted by the worker 7 days after `created_at` (partial index on `created_at` where `confirmed_at` is null) |
+| `interest_list_suppression` | Addresses that unsubscribed | `email_hash` (primary key: HMAC-SHA256 of the address with a key derived from `BETTER_AUTH_SECRET`, not reversible), `unsubscribed_at`. A join whose hash is here sends nothing |
+| `interest_email_day` | Confirmation emails per UTC day, for the daily ceiling (`INTEREST_LIST_DAILY_EMAILS`) | `day` (primary key), `sent` |
+
+- Audit (`audit_event`, `actor_kind` `visitor`, `entity_type` `interest_list_entry`): `interest.join` and `interest.rejoin` (`source`, whether an email went out), `interest.confirm`, `interest.unsubscribe`. Never the address.
+
 ## Extensions
 
 The first migration (`0000_extensions.sql`) enables `postgis`, `pg_trgm` and `unaccent`, using `IF NOT EXISTS`. The local Docker init script (`infra/postgres/init/`) enables the same ones as a convenience, and production relies on the migration.

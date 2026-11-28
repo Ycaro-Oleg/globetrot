@@ -62,7 +62,7 @@ const worker = startWorker({
         const report = await maintenance.run();
         // Counts only: never ids, keys or names.
         console.log(
-          `maintenance: ${report.unplacedMedia} unplaced uploads, ${report.strayObjects} stray objects, ${report.idempotencyKeys} idempotency records removed`,
+          `maintenance: ${report.unplacedMedia} unplaced uploads, ${report.strayObjects} stray objects, ${report.idempotencyKeys} idempotency records, ${report.unconfirmedInterest} unconfirmed interest-list entries removed`,
         );
         const notices = await reminders.run();
         console.log(`trial emails: ${notices.ending} ending soon, ${notices.ended} ended`);

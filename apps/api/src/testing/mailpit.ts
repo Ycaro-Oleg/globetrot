@@ -91,6 +91,11 @@ export async function mailsAfterWaiting(address: string, waitMs = 1500): Promise
   return mailsFor(address);
 }
 
+/** A message's headers, as Mailpit reports them (each name with its values). */
+export async function headersOf(id: string): Promise<Record<string, string[]>> {
+  return api<Record<string, string[]>>(`/api/v1/message/${id}/headers`);
+}
+
 /** The first http(s) link in a plain-text email. */
 export function linkIn(text: string): string {
   const match = /https?:\/\/[^\s"<>]+/.exec(text);

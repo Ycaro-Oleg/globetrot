@@ -109,6 +109,7 @@ describe('maintenance (PostgreSQL)', () => {
       unplacedMedia: 1,
       strayObjects: 1,
       idempotencyKeys: 1,
+      unconfirmedInterest: 0,
     });
     const left = await database.db.select({ id: schema.mediaAsset.id }).from(schema.mediaAsset);
     expect(left.map((row) => row.id)).toEqual([onPost]);
@@ -125,6 +126,7 @@ describe('maintenance (PostgreSQL)', () => {
       unplacedMedia: 0,
       strayObjects: 0,
       idempotencyKeys: 0,
+      unconfirmedInterest: 0,
     });
   });
 });

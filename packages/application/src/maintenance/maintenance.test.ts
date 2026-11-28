@@ -8,10 +8,16 @@ const HOUR = 3600_000;
 const idAt = (msAgo: number) =>
   uuidV7(NOW.getTime() - msAgo, crypto.getRandomValues(new Uint8Array(10)));
 
-function setup(rows: { id: string; createdAt: Date; placed: boolean }[], objects: string[]) {
+function setup(
+  rows: { id: string; createdAt: Date; placed: boolean }[],
+  objects: string[],
+  interest: { createdAt: Date; confirmed: boolean }[] = [],
+) {
   const stored = new Set(objects.map((id) => `media/${id}`));
   const media = new Map(rows.map((row) => [row.id, row]));
   let keys = 3;
+  let entries = [...interest];
+  const sweptBefore: Date[] = [];
   const store: MaintenanceStore = {
     async unplacedMedia(before, limit) {
       return [...media.values()]
@@ -30,6 +36,13 @@ function setup(rows: { id: string; createdAt: Date; placed: boolean }[], objects
       keys = 0;
       return removed;
     },
+    async deleteUnconfirmedInterestBefore(before) {
+      sweptBefore.push(before);
+      const keep = entries.filter((entry) => entry.confirmed || entry.createdAt >= before);
+      const removed = entries.length - keep.length;
+      entries = keep;
+      return removed;
+    },
   };
   const storage: StoragePort = {
     async put() {},
@@ -44,7 +57,7 @@ function setup(rows: { id: string; createdAt: Date; placed: boolean }[], objects
     },
   };
   const maintenance = createMaintenance({ store, storage, clock: { now: () => NOW } });
-  return { maintenance, media, stored };
+  return { maintenance, media, stored, sweptBefore, entries: () => entries };
 }
 
 describe('maintenance', () => {
@@ -83,6 +96,23 @@ describe('maintenance', () => {
       unplacedMedia: 0,
       strayObjects: 0,
       idempotencyKeys: 0,
+      unconfirmedInterest: 0,
     });
+  });
+
+  it('deletes interest-list entries never confirmed within 7 days, keeping confirmed and recent ones', async () => {
+    const day = 24 * HOUR;
+    const { maintenance, sweptBefore, entries } = setup(
+      [],
+      [],
+      [
+        { createdAt: new Date(NOW.getTime() - 8 * day), confirmed: false },
+        { createdAt: new Date(NOW.getTime() - 8 * day), confirmed: true },
+        { createdAt: new Date(NOW.getTime() - 6 * day), confirmed: false },
+      ],
+    );
+    expect((await maintenance.run()).unconfirmedInterest).toBe(1);
+    expect(sweptBefore[0]).toEqual(new Date(NOW.getTime() - 7 * day));
+    expect(entries()).toHaveLength(2);
   });
 });

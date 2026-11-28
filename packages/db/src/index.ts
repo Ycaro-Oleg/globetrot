@@ -79,3 +79,4 @@ export {
   withDatabase,
 } from './admin';
 export { createMetricsRepository, type MetricsRepository } from './metrics-repository';
+export { createInterestListStore, type InterestListStoreRepository } from './interest-repository';

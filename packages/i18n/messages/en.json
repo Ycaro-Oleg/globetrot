@@ -111,8 +111,10 @@
   },
   "email": {
     "greeting": "Hi {name},",
+    "greetingNoName": "Hi,",
     "linkHint": "If the button does not work, paste this link into your browser:",
     "footer": "You are receiving this email because this address was used on Globetrot.",
+    "unsubscribe": "To leave the list now, open this link:",
     "verifyEmail": {
       "subject": "Confirm your email address",
       "body": "Confirm your email address to finish setting up your Globetrot account.",
@@ -153,6 +155,13 @@
       "action": "Check in",
       "expiry": "We send this on Sundays when the week has no check-in yet.",
       "ignore": "To stop these emails, turn off the weekly reminder in Settings."
+    },
+    "interestConfirm": {
+      "subject": "Confirm your email for the Globetrot list",
+      "body": "Someone, hopefully you, asked to join the Globetrot list with this address: news about Globetrot and trip-planning tips, at most 2 emails a month, unsubscribe in one click. Confirm it to stay on the list.",
+      "action": "Confirm my email",
+      "expiry": "This link expires in {hours, plural, one {# hour} other {# hours}}.",
+      "ignore": "If it was not you, ignore this email: the address is deleted in 7 days."
     }
   },
   "auth": {

@@ -53,6 +53,7 @@ const envSchema = z.object({
   DEEPSEEK_MODEL: z.string().default('deepseek-flash'),
   SENTRY_DSN: z.url().optional(),
   ADMIN_EMAILS: z.string().optional(),
+  INTEREST_LIST_DAILY_EMAILS: number(50, 0, 10_000),
   INBOUND_EMAIL_SECRET: z.string().min(24).optional(),
   INBOUND_EMAIL_DOMAIN: z
     .string()
@@ -178,6 +179,8 @@ export interface ApiConfig {
   readonly sentryDsn: string | null;
   /** Lower-case addresses that may see the internal dashboard (ADR-0031); empty for nobody. */
   readonly adminEmails: readonly string[];
+  /** The interest list (ADR-0037): confirmation emails it may send in one UTC day, for the whole list. */
+  readonly interestList: { readonly dailyEmails: number };
   /** Booking emails forwarded to Pip (ADR-0032); `null` keeps the inbound route off. */
   readonly inboundEmail: {
     readonly secret: string;
@@ -372,6 +375,7 @@ export function loadApiConfig(
     storage,
     stripe,
     sentryDsn: values.SENTRY_DSN ?? null,
+    interestList: { dailyEmails: values.INTEREST_LIST_DAILY_EMAILS },
     inboundEmail:
       values.INBOUND_EMAIL_SECRET && values.INBOUND_EMAIL_DOMAIN
         ? {
