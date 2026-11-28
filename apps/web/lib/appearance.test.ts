@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { applyTheme, chooseAppearance, THEME_SCRIPT } from './appearance';
+import {
+  applyMotion,
+  applyTheme,
+  chooseAppearance,
+  switchAppearance,
+  THEME_SCRIPT,
+} from './appearance';
 
 describe('chooseAppearance', () => {
   it('falls back to the system theme and full motion', () => {
@@ -112,5 +118,43 @@ describe('applyTheme', () => {
     query.matches = true;
     for (const listener of listeners) listener();
     expect(attributes['data-theme']).toBe('day');
+  });
+});
+
+describe('switchAppearance', () => {
+  function recorder() {
+    const drawn: string[] = [];
+    return { drawn, apply: (choice: string) => void drawn.push(choice) };
+  }
+
+  it('draws the new choice and keeps it when the save succeeds', async () => {
+    const { drawn, apply } = recorder();
+    const kept = await switchAppearance('day', 'red-eye', apply, async () => true);
+    expect(kept).toBe(true);
+    expect(drawn).toEqual(['day']);
+  });
+
+  it('goes back to the previous choice when the account refuses it', async () => {
+    const { drawn, apply } = recorder();
+    const kept = await switchAppearance('day', 'red-eye', apply, async () => false);
+    expect(kept).toBe(false);
+    expect(drawn).toEqual(['day', 'red-eye']);
+  });
+
+  it('goes back to the previous choice when the save cannot reach the server', async () => {
+    const { drawn, apply } = recorder();
+    const kept = await switchAppearance('system', 'day', apply, () =>
+      Promise.reject(new Error('offline')),
+    );
+    expect(kept).toBe(false);
+    expect(drawn).toEqual(['system', 'day']);
+  });
+});
+
+describe('applyMotion', () => {
+  it('sets data-motion on the page', () => {
+    const attributes: Record<string, string> = {};
+    applyMotion('reduced', { setAttribute: (name, value) => void (attributes[name] = value) });
+    expect(attributes).toEqual({ 'data-motion': 'reduced' });
   });
 });

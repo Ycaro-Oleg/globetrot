@@ -54,12 +54,22 @@ describe.each(SUPPORTED_LOCALES)('sidebar drawer (%s)', (locale) => {
   it('open: a toggle that says it hides the sections, and a keyboard-operable resize edge', () => {
     const html = render(
       locale,
-      <SidebarDrawer state={{ width: 260, open: true }} onChange={() => undefined}>
+      <SidebarDrawer
+        state={{ width: 260, open: true }}
+        onChange={() => undefined}
+        footer={<a href="/app/board">map</a>}
+      >
         <nav>sections</nav>
       </SidebarDrawer>,
     );
-    expect(html).toMatch(/<button[^>]*aria-expanded="true"/);
-    expect(html).toContain(copy.sidebarHide);
+    // An icon button: its name and tooltip carry the label.
+    expect(html).toMatch(
+      new RegExp(
+        `<button[^>]*aria-expanded="true"[^>]*aria-label="${copy.sidebarHide}"[^>]*title="${copy.sidebarHide}"`,
+      ),
+    );
+    // The footer comes after the resize edge, so the keyboard reaches it last.
+    expect(html.indexOf('role="separator"')).toBeLessThan(html.indexOf('href="/app/board"'));
     expect(html).toMatch(/role="separator"/);
     expect(html).toMatch(/tabindex="0"/);
     expect(html).toContain(`aria-label="${copy.sidebarResize}"`);
@@ -72,12 +82,17 @@ describe.each(SUPPORTED_LOCALES)('sidebar drawer (%s)', (locale) => {
   it('folded: the sections are hidden, no resize edge, the button says it shows them', () => {
     const html = render(
       locale,
-      <SidebarDrawer state={{ width: 260, open: false }} onChange={() => undefined}>
+      <SidebarDrawer
+        state={{ width: 260, open: false }}
+        onChange={() => undefined}
+        footer={<a href="/app/board">map</a>}
+      >
         <nav>sections</nav>
       </SidebarDrawer>,
     );
     expect(html).toMatch(/<button[^>]*aria-expanded="false"/);
-    expect(html).toContain(copy.sidebarShow);
+    expect(html).toContain(`aria-label="${copy.sidebarShow}"`);
+    expect(html).not.toContain('href="/app/board"');
     expect(html).toMatch(/<div[^>]*hidden=""[^>]*>/);
     expect(html).not.toContain('role="separator"');
   });

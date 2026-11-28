@@ -3,7 +3,8 @@ import { NextIntlClientProvider } from 'next-intl';
 import type { ReactElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
-import { TripJumpBar, TripSidebar, type WorkspaceDay } from './trip-sidebar';
+import { readSections, SECTIONS_DEFAULT } from './sections-state';
+import { ExpandMapLink, TripJumpBar, TripSidebar, type WorkspaceDay } from './trip-sidebar';
 
 function render(locale: SupportedLocale, element: ReactElement): string {
   return renderToStaticMarkup(
@@ -17,85 +18,90 @@ const DAYS: WorkspaceDay[] = [
   { index: 1, label: 'Mon 30/11', stopId: 'bishkek' },
   { index: 2, label: 'Tue 1/12', stopId: 'karakol' },
 ];
+const noop = () => undefined;
+
+describe('the sidebar groups saved on the device', () => {
+  it('start folded, and a broken value falls back to folded', () => {
+    expect(SECTIONS_DEFAULT).toEqual({ itinerary: false });
+    expect(readSections(null)).toEqual({ itinerary: false });
+    expect(readSections('{"itinerary":true}')).toEqual({ itinerary: true });
+    expect(readSections('{"itinerary":"yes"}')).toEqual({ itinerary: false });
+    expect(readSections('not json')).toEqual({ itinerary: false });
+  });
+});
 
 describe.each(SUPPORTED_LOCALES)('trip sidebar (%s)', (locale) => {
   const copy = catalogs[locale].workspace;
-
-  it('is a labelled nav with the sections in order and a link into every day', () => {
-    const html = render(
+  const sidebar = (props: Partial<Parameters<typeof TripSidebar>[0]> = {}) =>
+    render(
       locale,
-      <TripSidebar tripTitle="Kyrgyzstan" days={DAYS} pathname="/app/trip" activeDay={null} />,
+      <TripSidebar
+        tripTitle="Kyrgyzstan"
+        days={DAYS}
+        pathname="/app/trip"
+        activeDay={null}
+        itineraryOpen={false}
+        onItineraryOpen={noop}
+        {...props}
+      />,
     );
+
+  it('is a labelled nav with five rows in order, Places among them', () => {
+    const html = sidebar();
     expect(html).toMatch(new RegExp(`<nav[^>]*aria-label="${copy.sidebarLabel}"`));
-    const links = [...html.matchAll(/<a[^>]*href="([^"]+)"[^>]*>([^<]*)<\/a>/g)].map((match) => [
-      match[1],
-      match[2],
+    const rows = [...html.matchAll(/<a[^>]*href="(\/app\/[^"#]*(?:#(?:places|itinerary))?)"/g)].map(
+      (match) => match[1],
+    );
+    expect(rows).toEqual([
+      '/app/trip',
+      '/app/trip#places',
+      '/app/trip#itinerary',
+      '/app/budget',
+      '/app/lists',
     ]);
-    expect(links).toEqual([
-      ['/app/trip', copy.overview],
-      ['/app/trip#places', copy.places],
-      ['/app/trip#itinerary', copy.itinerary],
-      ['/app/trip#day-1', 'Mon 30/11'],
-      ['/app/trip#day-2', 'Tue 1/12'],
-      ['/app/budget', copy.budget],
-      ['/app/lists', copy.checklist],
-    ]);
-    // "Expand map" is an action under the list, not one of its sections.
-    expect(html).toMatch(
-      new RegExp(`</ul><a[^>]*href="/app/board"[^>]*>.*${copy.expandMap}</a></nav>`),
+    // "Expand map" is not a row: it lives in the drawer's footer.
+    expect(html).not.toContain('/app/board');
+    expect(render(locale, <ExpandMapLink />)).toMatch(
+      new RegExp(`href="/app/board"[^>]*>.*${copy.expandMap}</a>`),
     );
   });
 
-  it('shows a short trip’s days and folds a long trip’s behind a button', () => {
-    const short = render(
-      locale,
-      <TripSidebar tripTitle="Kyrgyzstan" days={DAYS} pathname="/app/trip" activeDay={null} />,
-    );
-    expect(short).toMatch(/<button[^>]*aria-expanded="true"/);
-    expect(short).toContain(`aria-label="${copy.daysHide}"`);
-    expect(short).not.toMatch(/<ul[^>]*hidden/);
-
-    const fortnight: WorkspaceDay[] = Array.from({ length: 15 }, (_, i) => ({
-      index: i + 1,
-      label: `Day ${i + 1}`,
-      stopId: null,
-    }));
-    const long = render(
-      locale,
-      <TripSidebar tripTitle="Japan" days={fortnight} pathname="/app/trip" activeDay={null} />,
-    );
-    const button = long.match(/<button[^>]*aria-controls="([^"]+)"[^>]*>/);
+  it('folds the days behind a chevron beside the Itinerary link, folded by default', () => {
+    const html = sidebar();
+    const button = html.match(/<button[^>]*aria-controls="([^"]+)"[^>]*>/);
     expect(button?.[0]).toContain('aria-expanded="false"');
-    expect(button?.[0]).toContain(`aria-label="${copy.daysShow.replace('{count}', '15')}"`);
-    // The folded list stays in the page but hidden, so the keyboard skips it until it is opened.
-    expect(long).toMatch(new RegExp(`<ul id="${button?.[1]}"[^>]*hidden`));
-    expect(long).toContain('#day-15');
+    expect(button?.[0]).toContain(`aria-label="${copy.daysShow}"`);
+    // The days stay in the page but hidden, so the keyboard and screen readers skip them.
+    expect(html).toMatch(new RegExp(`<ul id="${button?.[1]}"[^>]*hidden=""`));
+    expect(html).toContain('#day-2');
+
+    const open = sidebar({ itineraryOpen: true });
+    expect(open).toMatch(/<button[^>]*aria-expanded="true"/);
+    expect(open).toContain(`aria-label="${copy.daysHide}"`);
+    expect(open).not.toMatch(/<ul[^>]*hidden/);
   });
 
-  it('marks the page you are on and the day being read', () => {
-    const home = render(
-      locale,
-      <TripSidebar tripTitle="Kyrgyzstan" days={DAYS} pathname="/app/trip" activeDay={2} />,
+  it('names the day being read on the folded Itinerary row', () => {
+    const folded = sidebar({ activeDay: 2 });
+    expect(folded).toMatch(
+      /aria-current="location" href="\/app\/trip#itinerary"[^>]*><span>[^<]+<\/span><span[^>]*>Tue 1\/12<\/span>/,
     );
-    expect(home).toMatch(/aria-current="page"[^>]*>[^<]*<\/a>/);
-    expect(home).toMatch(/aria-current="location" href="\/app\/trip#day-2"/);
-    expect(home.match(/aria-current="location"/g)).toHaveLength(1);
+    // Open, the mark moves back to the day's own row.
+    const open = sidebar({ activeDay: 2, itineraryOpen: true });
+    expect(open).toMatch(/aria-current="location" href="\/app\/trip#day-2"/);
+    expect(open.match(/aria-current="location"/g)).toHaveLength(1);
+  });
 
-    // On the budget the day is not marked: the document is not on screen.
-    const budget = render(
-      locale,
-      <TripSidebar tripTitle="Kyrgyzstan" days={DAYS} pathname="/app/budget" activeDay={2} />,
-    );
+  it('marks the page you are on, and no day off the trip document', () => {
+    const budget = sidebar({ pathname: '/app/budget', activeDay: 2 });
     expect(budget).not.toContain('aria-current="location"');
     expect(budget).toMatch(new RegExp(`aria-current="page" href="/app/budget">${copy.budget}`));
   });
 
-  it('lists no days when the trip has no stops yet', () => {
-    const html = render(
-      locale,
-      <TripSidebar tripTitle={null} days={[]} pathname="/app/trip" activeDay={null} />,
-    );
+  it('has no chevron when the trip has no days yet', () => {
+    const html = sidebar({ tripTitle: null, days: [] });
     expect(html).not.toContain('#day-');
+    expect(html).not.toContain('<button');
     expect(html).toContain(copy.itinerary);
   });
 

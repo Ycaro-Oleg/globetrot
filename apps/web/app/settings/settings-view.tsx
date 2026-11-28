@@ -1,11 +1,11 @@
 'use client';
 
-import { isThemeChoice } from '@globetrot/domain';
+import { isMotionChoice, isThemeChoice } from '@globetrot/domain';
 import { Banner, Button, SegmentedControl, SelectField, TextField } from '@globetrot/ui';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
-import { applyTheme } from '../../lib/appearance';
-import { savePreferences, saveTheme } from '../actions';
+import { applyMotion, applyTheme, switchAppearance } from '../../lib/appearance';
+import { saveAppearance, savePreferences } from '../actions';
 import { NOT_SET, type Option } from './options';
 import styles from './settings.module.css';
 import { YourData } from './your-data';
@@ -72,13 +72,39 @@ export function SettingsView({
   ];
   const failed = status?.startsWith('error:') ? status.slice('error:'.length) : null;
 
-  // A theme applies as soon as it is picked and is kept at once; the live line says whether the account has it.
-  const [themeNote, setThemeNote] = useState<'saved' | 'failed' | null>(null);
+  // Theme and motion apply as soon as they are picked and are saved at once, without "Save". A failed save puts the
+  // previous choice back on the page and in the control; the live line says which happened.
+  const [theme, setTheme] = useState(values.theme);
+  const [motion, setMotion] = useState(values.motion);
+  const [note, setNote] = useState<
+    'themeSaved' | 'themeSaveFailed' | 'motionSaved' | 'motionSaveFailed' | null
+  >(null);
   const pickTheme = (value: string) => {
-    if (!isThemeChoice(value)) return;
-    applyTheme(value);
-    setThemeNote(null);
-    void saveTheme(value).then((kept) => setThemeNote(kept ? 'saved' : 'failed'));
+    if (!isThemeChoice(value) || value === theme) return;
+    const previous = isThemeChoice(theme) ? theme : 'system';
+    setTheme(value);
+    setNote(null);
+    void switchAppearance(value, previous, applyTheme, (choice) =>
+      saveAppearance('theme', choice),
+    ).then((kept) => {
+      if (!kept) setTheme(previous);
+      setNote(kept ? 'themeSaved' : 'themeSaveFailed');
+    });
+  };
+  const pickMotion = (value: string) => {
+    if (!isMotionChoice(value) || value === motion) return;
+    const previous = isMotionChoice(motion) ? motion : 'full';
+    setMotion(value);
+    setNote(null);
+    void switchAppearance(
+      value,
+      previous,
+      (choice) => applyMotion(choice),
+      (choice) => saveAppearance('motion', choice),
+    ).then((kept) => {
+      if (!kept) setMotion(previous);
+      setNote(kept ? 'motionSaved' : 'motionSaveFailed');
+    });
   };
 
   return (
@@ -154,19 +180,19 @@ export function SettingsView({
             name="theme"
             label={t('theme')}
             options={themes}
-            defaultValue={values.theme}
+            value={theme}
             onChange={pickTheme}
           />
           <SegmentedControl
             name="motion"
             label={t('motion')}
             options={motions}
-            defaultValue={values.motion}
+            value={motion}
+            onChange={pickMotion}
           />
           <p className={styles.description}>{t('appearanceHelp')}</p>
           <p className={styles.description} role="status">
-            {themeNote === 'saved' ? t('themeSaved') : null}
-            {themeNote === 'failed' ? t('themeSaveFailed') : null}
+            {note ? t(note) : null}
           </p>
           <SegmentedControl
             name="weeklyReminder"

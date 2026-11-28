@@ -37,27 +37,26 @@
   padding: 4px 10px 32px;
 }
 
+/* An icon button (its name and tooltip say "Collapse panel" / "Open panel"); it folds the whole drawer. */
 .drawerToggle {
   display: inline-flex;
-  gap: 8px;
+  flex: none;
   align-items: center;
-  min-height: var(--gt-component-hit-target);
-  min-width: var(--gt-component-hit-target);
-  margin: 12px 6px 4px;
-  padding: 0 12px;
-  border: var(--gt-primitive-border-1) solid var(--gt-semantic-color-input-border);
-  border-radius: var(--gt-primitive-radius-pill);
+  justify-content: center;
+  width: var(--gt-primitive-size-button-small);
+  height: var(--gt-primitive-size-button-small);
+  margin: 12px 10px 4px;
+  padding: 0;
+  border: var(--gt-primitive-border-1) solid var(--gt-semantic-color-hairline);
+  border-radius: var(--gt-primitive-radius-12);
   background: var(--gt-semantic-color-surface-card);
   color: var(--gt-semantic-color-text);
   font: inherit;
-  font-size: 13px;
-  font-weight: 700;
   cursor: pointer;
 }
 
-.drawer:not([data-open]) .drawerToggle {
-  justify-content: center;
-  padding: 0;
+.drawerToggle:hover {
+  background: var(--gt-semantic-color-track);
 }
 
 /* The edge: a wide, invisible grip with a thin line that shows on hover, focus and while dragging. */
@@ -100,9 +99,9 @@
   margin: 0 0 8px;
   padding: 0 12px;
   color: var(--gt-semantic-color-text-secondary);
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
+  font-size: var(--gt-primitive-type-status);
+  font-weight: var(--gt-primitive-type-weight-600);
+  letter-spacing: 0.07em;
   text-transform: uppercase;
   overflow-wrap: anywhere;
 }
@@ -138,16 +137,17 @@
 }
 
 .section {
-  font-size: 15px;
-  font-weight: 800;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: var(--gt-primitive-type-weight-500);
 }
 
 .subLink {
-  min-height: 36px;
-  padding-inline-start: 24px;
+  min-height: 32px;
+  padding-inline-start: var(--gt-primitive-space-24);
   color: var(--gt-semantic-color-text-secondary);
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: var(--gt-primitive-type-weight-regular);
 }
 
 .section:hover,
@@ -159,13 +159,33 @@
 .section[aria-current='page'] {
   background: var(--gt-semantic-color-primary);
   color: var(--gt-semantic-color-on-primary);
+  font-weight: var(--gt-primitive-type-weight-bold);
 }
 
 /* The day being read: a bar on its edge and bolder text. */
-.subLink[aria-current='location'] {
+.subLink[aria-current='location'],
+.section[aria-current='location'] {
   box-shadow: inset 3px 0 0 var(--gt-semantic-color-primary);
   color: var(--gt-semantic-color-text);
-  font-weight: 800;
+  font-weight: var(--gt-primitive-type-weight-600);
+}
+
+/* The folded itinerary names the day being read after its label. */
+.readingDay {
+  overflow: hidden;
+  color: var(--gt-semantic-color-text-secondary);
+  font-size: 12px;
+  font-weight: var(--gt-primitive-type-weight-regular);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Tablets: every row is a full touch target. */
+@media (pointer: coarse) {
+  .section,
+  .subLink {
+    min-height: var(--gt-component-hit-target);
+  }
 }
 
 /* --- Jump bar (below 720 px) --- */
@@ -272,8 +292,9 @@
   flex: none;
   align-items: center;
   justify-content: center;
-  width: var(--gt-component-hit-target);
-  height: var(--gt-component-hit-target);
+  align-self: stretch;
+  width: 40px;
+  min-height: 40px;
   padding: 0;
   border: 0;
   border-radius: var(--gt-primitive-radius-12);
@@ -281,6 +302,16 @@
   color: var(--gt-semantic-color-text-secondary);
   font: inherit;
   cursor: pointer;
+}
+
+/* Points right when folded, down when open; reduced motion drops the turn (globals.css). */
+.chevron {
+  display: inline-block;
+  transition: transform var(--gt-primitive-duration-button) ease;
+}
+
+.disclosure[aria-expanded='true'] .chevron {
+  transform: rotate(90deg);
 }
 
 .disclosure:hover {
@@ -292,19 +323,22 @@
   display: none;
 }
 
-/* "Expand map" is an action, not a section of the trip: a button under the list. */
+/* "Expand map" leaves the workspace: an action in the drawer's footer, pinned to the bottom, not a section. */
+.drawerFooter {
+  padding: 8px 10px 12px;
+  border-block-start: var(--gt-primitive-border-1) solid var(--gt-semantic-color-hairline);
+}
+
 .mapAction {
-  display: inline-flex;
+  display: flex;
   gap: 8px;
   align-items: center;
-  min-height: var(--gt-component-hit-target);
-  margin: 16px 2px 0;
-  padding: 0 16px;
-  border: var(--gt-primitive-border-1) solid var(--gt-semantic-color-input-border);
-  border-radius: var(--gt-primitive-radius-pill);
-  background: var(--gt-semantic-color-surface-card);
+  min-height: 40px;
+  padding: 0 12px;
+  border-radius: var(--gt-primitive-radius-12);
   color: var(--gt-semantic-color-text);
-  font-weight: 700;
+  font-size: 14px;
+  font-weight: var(--gt-primitive-type-weight-500);
   text-decoration: none;
 }
 

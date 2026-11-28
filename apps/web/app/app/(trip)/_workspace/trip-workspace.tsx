@@ -8,7 +8,8 @@ import { useEffect, useState, type CSSProperties, type ReactNode } from 'react';
 import type { RouteStop } from '../../board/board-route';
 import { TRIP_HOME } from '../../_components/nav-model';
 import { SidebarDrawer, useDrawer } from './sidebar-drawer';
-import { TripJumpBar, TripSidebar, type WorkspaceDay } from './trip-sidebar';
+import { useSections } from './sections-state';
+import { ExpandMapLink, TripJumpBar, TripSidebar, type WorkspaceDay } from './trip-sidebar';
 import styles from './workspace.module.css';
 
 /** The map and MapLibre load only on a screen wide enough to show them beside the document. */
@@ -84,6 +85,7 @@ export function TripWorkspace({
   const activeDay = useActiveDay(onHome);
   const [selected, setSelected] = useState<string | null>(null);
   const [drawer, setDrawer] = useDrawer();
+  const [sections, setSection] = useSections();
   const focusStopId = days.find((day) => day.index === activeDay)?.stopId ?? null;
 
   /** A pin was chosen: show that stop in the document's places. */
@@ -105,12 +107,14 @@ export function TripWorkspace({
       // The drawer's width drives the first column; folded, it is a thin rail with the button to open it.
       style={{ '--sidebar-width': drawer.open ? `${drawer.width}px` : '56px' } as CSSProperties}
     >
-      <SidebarDrawer state={drawer} onChange={setDrawer}>
+      <SidebarDrawer state={drawer} onChange={setDrawer} footer={<ExpandMapLink />}>
         <TripSidebar
           tripTitle={trip?.title ?? null}
           days={days}
           pathname={pathname}
           activeDay={activeDay}
+          itineraryOpen={sections.itinerary}
+          onItineraryOpen={(open) => setSection('itinerary', open)}
         />
       </SidebarDrawer>
       <div className={styles.content}>

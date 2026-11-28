@@ -60,3 +60,30 @@ export function applyTheme(choice: ThemeChoice, target?: ThemeTarget): void {
   page.documentElement.setAttribute('data-theme-choice', choice);
   page.documentElement.setAttribute('data-theme', resolveTheme(choice, page.prefersDark));
 }
+
+/** Draws a motion choice on the page now (the CSS reads `data-motion`; the OS asking for less always wins). */
+export function applyMotion(choice: MotionChoice, root?: ThemeTarget['documentElement']): void {
+  (root ?? document.documentElement).setAttribute('data-motion', choice);
+}
+
+/**
+ * Picking a look in Settings: it shows at once, is saved right away, and goes back to the previous choice when the
+ * save fails (an error, a refusal or no network), so the control and the page never disagree with the account.
+ * Answers whether the choice was kept.
+ */
+export async function switchAppearance<T>(
+  next: T,
+  previous: T,
+  apply: (choice: T) => void,
+  save: (choice: T) => Promise<boolean>,
+): Promise<boolean> {
+  apply(next);
+  let kept = false;
+  try {
+    kept = await save(next);
+  } catch {
+    kept = false;
+  }
+  if (!kept) apply(previous);
+  return kept;
+}
