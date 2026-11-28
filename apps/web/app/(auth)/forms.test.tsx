@@ -5,9 +5,14 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 
 // Only needed on submit or navigation; keep Next's runtime out of the render tests.
-vi.mock('next/navigation', () => ({ useRouter: () => ({ replace: vi.fn(), refresh: vi.fn() }) }));
+const route = vi.hoisted(() => ({ pathname: '/login' }));
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ replace: vi.fn(), refresh: vi.fn() }),
+  usePathname: () => route.pathname,
+}));
 vi.mock('../actions', () => ({ setScaffoldLocale: vi.fn() }));
 
+import { BrandSupporting } from './_components/brand-supporting';
 import { LanguageSwitcher } from './_components/language-switcher';
 import { LoginForm } from './_components/login-form';
 import { RecoverForm } from './_components/recover-form';
@@ -88,6 +93,20 @@ describe.each(SUPPORTED_LOCALES)('auth screens in %s', (locale) => {
     expect(html).toMatch(/autocomplete="new-password"/i);
     // No checkbox to tick: creating the account is the acceptance, said next to the button.
     expect(html).not.toMatch(/type="checkbox"/);
+  });
+
+  it('the frame speaks to someone new on sign-up and to someone coming back elsewhere', () => {
+    route.pathname = '/signup';
+    expect(visible(render(locale, <BrandSupporting />))).toBe(copy.brand.supportingNew);
+    for (const path of ['/login', '/recover', '/reset-password']) {
+      route.pathname = path;
+      expect(visible(render(locale, <BrandSupporting />))).toBe(copy.brand.supporting);
+    }
+    route.pathname = '/login';
+  });
+
+  it('sign up: the saved plan’s trip cost is marked as an estimate', () => {
+    expect(copy.signup.planSaved).toMatch(/≈ \{cost\}/);
   });
 
   it('sign up: repeats the plan saved on the landing, only when there is one', () => {

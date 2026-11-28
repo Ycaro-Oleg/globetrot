@@ -158,7 +158,8 @@
   "auth": {
     "brand": {
       "headline": "Seu primeiro <accent>carimbo</accent> está mais perto do que você imagina.",
-      "supporting": "Seu mapa, seus sonhos e cada carimbo conquistado, sempre à mão."
+      "supporting": "Seu mapa, seus sonhos e cada carimbo conquistado, sempre à mão.",
+      "supportingNew": "Planeje sua primeira viagem, veja quanto ela custa e quanto guardar por mês para chegar lá."
     },
     "language": "Idioma",
     "or": "ou com e-mail",
@@ -186,7 +187,7 @@
       "passwordHint": "No mínimo {min, number} caracteres. Algumas palavras aleatórias fazem uma senha forte.",
       "sentTitle": "Confira sua caixa de entrada",
       "sentBody": "Enviamos um link de confirmação para {email}. Abra-o para concluir a criação da sua conta.",
-      "planSaved": "Seu plano está salvo: viagem de {cost}, {saved} guardados, {monthly} por mês. Crie sua conta para não perdê-lo."
+      "planSaved": "Seu plano está salvo: viagem de ≈ {cost} (estimativa), {saved} guardados, {monthly} por mês. Crie sua conta para não perdê-lo."
     },
     "strength": {
       "label": "Força da senha",
