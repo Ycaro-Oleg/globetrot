@@ -77,6 +77,15 @@ export default async function AdminMetricsPage() {
         [t('passes'), data.money.activePasses],
       ],
     },
+    {
+      title: t('emailFailures'),
+      rows: [
+        [t('failedVerify7'), data.emailFailures.verifyEmail.last7],
+        [t('failedVerify30'), data.emailFailures.verifyEmail.last30],
+        [t('failedReset7'), data.emailFailures.resetPassword.last7],
+        [t('failedReset30'), data.emailFailures.resetPassword.last30],
+      ],
+    },
   ];
   return (
     <section className={styles.page}>
