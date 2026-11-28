@@ -212,7 +212,11 @@ describe('events finished on the server', () => {
       { event: 'trip_created', once: 'a1' },
       { event: 'savings_goal_set', once: 'a1' },
     ]);
-    expect(set.mock.calls[0]?.[2]).toMatchObject({ httpOnly: false, maxAge: 120, path: '/' });
+    expect(set).toHaveBeenCalledWith(
+      EVENTS_COOKIE,
+      expect.any(String),
+      expect.objectContaining({ httpOnly: false, maxAge: 120, path: '/' }),
+    );
   });
 
   it('ignores unknown events and odd ids', () => {
