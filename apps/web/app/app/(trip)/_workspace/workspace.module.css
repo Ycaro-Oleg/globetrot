@@ -255,8 +255,67 @@
   transform: translateX(-50%);
 }
 
+/* "Itinerary" and the button that folds its days, on one row. */
+.sectionRow {
+  display: flex;
+  gap: 2px;
+  align-items: center;
+}
+
+.sectionRow .section {
+  flex: 1;
+  min-width: 0;
+}
+
+.disclosure {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: var(--gt-component-hit-target);
+  height: var(--gt-component-hit-target);
+  padding: 0;
+  border: 0;
+  border-radius: var(--gt-primitive-radius-12);
+  background: transparent;
+  color: var(--gt-semantic-color-text-secondary);
+  font: inherit;
+  cursor: pointer;
+}
+
+.disclosure:hover {
+  background: var(--gt-semantic-color-track);
+  color: var(--gt-semantic-color-text);
+}
+
+.sub[hidden] {
+  display: none;
+}
+
+/* "Expand map" is an action, not a section of the trip: a button under the list. */
+.mapAction {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  min-height: var(--gt-component-hit-target);
+  margin: 16px 2px 0;
+  padding: 0 16px;
+  border: var(--gt-primitive-border-1) solid var(--gt-semantic-color-input-border);
+  border-radius: var(--gt-primitive-radius-pill);
+  background: var(--gt-semantic-color-surface-card);
+  color: var(--gt-semantic-color-text);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.mapAction:hover {
+  background: var(--gt-semantic-color-track);
+}
+
 .section:focus-visible,
 .subLink:focus-visible,
+.disclosure:focus-visible,
+.mapAction:focus-visible,
 .drawerToggle:focus-visible,
 .jump:focus-visible,
 .expand:focus-visible,

@@ -332,6 +332,11 @@ async function journey(browser, { width, height, locale }) {
     await axe('trip workspace');
     if (width >= 720) {
       const sidebar = page.getByRole('navigation', { name: workspaceCopy.sidebarLabel });
+      // A long trip's days start folded behind a button next to "Itinerary"; open them first.
+      const showDays = sidebar.getByRole('button', {
+        name: new RegExp(`^${workspaceCopy.daysShow.replace('{count}', '\\d+')}$`),
+      });
+      if ((await showDays.count()) === 1) await showDays.click();
       await sidebar.locator('a[href="/app/trip#day-2"]').click();
       await page.waitForURL((url) => url.hash === '#day-2');
       expect(
@@ -340,6 +345,12 @@ async function journey(browser, { width, height, locale }) {
           .count()) === 1,
         'the trip sidebar has no way to the full map',
       );
+      // The itinerary's days fold behind a button (by pointer here, by keyboard to open them again).
+      const dayLink = sidebar.locator('a[href="/app/trip#day-2"]');
+      await sidebar.getByRole('button', { name: workspaceCopy.daysHide, exact: true }).click();
+      expect(!(await dayLink.isVisible()), 'folding the itinerary leaves its days on screen');
+      await showDays.press('Enter');
+      expect(await dayLink.isVisible(), 'the itinerary’s days do not open again from the keyboard');
     } else {
       // A phone has the sections as a jump bar and the map one tap away.
       expect(
@@ -555,6 +566,66 @@ async function journey(browser, { width, height, locale }) {
       total,
       { timeout: 15_000 },
     );
+
+    // ---- the theme switch applies at once, survives a reload, and "Match my device" follows the device
+    const drawnTheme = () => page.evaluate(() => document.documentElement.dataset.theme);
+    // Picking a theme saves it at once (a server action: a POST to the settings page).
+    let themeSave = Promise.resolve();
+    const pickTheme = async (name) => {
+      themeSave = page.waitForResponse(
+        (response) =>
+          response.request().method() === 'POST' &&
+          new URL(response.url()).pathname === '/settings',
+        { timeout: 15_000 },
+      );
+      await page
+        .getByRole('radiogroup', { name: copy.settings.theme })
+        .getByRole('radio', { name })
+        .check({ force: true });
+    };
+    const themeKept = async () => {
+      await themeSave;
+      await page
+        .getByRole('status')
+        .filter({ hasText: copy.settings.themeSaved })
+        .waitFor({ timeout: 15_000 });
+    };
+    await page.emulateMedia({ colorScheme: 'dark' });
+    await go('/settings');
+    await pickTheme(copy.settings.themeSystem);
+    await themeKept();
+    // The state the owner hit: "Match my device" on a dark device, freshly loaded, so the head script drew red-eye.
+    await page.reload();
+    await page.waitForLoadState('networkidle');
+    expect((await drawnTheme()) === 'red-eye', '"Match my device" is not dark on a dark device');
+    await axe('settings (red-eye, from the device)');
+    await pickTheme(copy.settings.themeDay);
+    expect(
+      (await drawnTheme()) === 'day',
+      'picking Day does not switch to the light theme at once',
+    );
+    await themeKept();
+    await axe('settings (day)');
+    await page.reload();
+    await page.waitForLoadState('networkidle');
+    expect((await drawnTheme()) === 'day', 'Day is not kept after a reload');
+    await pickTheme(copy.settings.themeSystem);
+    expect(
+      (await drawnTheme()) === 'red-eye',
+      '"Match my device" does not follow a dark device at once',
+    );
+    await themeKept();
+    await page.emulateMedia({ colorScheme: 'light' });
+    await page
+      .waitForFunction(() => document.documentElement.dataset.theme === 'day', null, {
+        timeout: 5_000,
+      })
+      .catch(() => undefined);
+    expect(
+      (await drawnTheme()) === 'day',
+      '"Match my device" does not follow the device back to light',
+    );
+    await page.emulateMedia({ colorScheme: null });
 
     // ---- theme on the first paint: choose red-eye, then load with JavaScript off
     await go('/settings');

@@ -31,6 +31,26 @@ export async function setScaffoldLocale(formData: FormData): Promise<void> {
   }
 }
 
+/**
+ * The theme switch in Settings: the page changes as soon as a theme is picked, so the choice is kept at once too,
+ * without the rest of the form. The cookie keeps it on this device even if the account cannot be reached. Answers
+ * whether the account has it as well.
+ */
+export async function saveTheme(value: string): Promise<boolean> {
+  if (!isThemeChoice(value)) return false;
+  const store = await cookies();
+  store.set(THEME_COOKIE, value, localeCookieOptions());
+  const cookieHeader = sessionCookieHeader(store.getAll());
+  if (!cookieHeader) return false;
+  try {
+    const client = createServerApiClient({ cookieHeader, apiUrl: apiInternalUrl() });
+    const { error } = await client.PATCH('/v1/me/preferences', { body: { theme: value } });
+    return !error;
+  } catch {
+    return false;
+  }
+}
+
 const text = (formData: FormData, name: string) => {
   const value = formData.get(name);
   return typeof value === 'string' ? value : undefined;

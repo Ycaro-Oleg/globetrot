@@ -39,8 +39,37 @@ describe.each(SUPPORTED_LOCALES)('trip sidebar (%s)', (locale) => {
       ['/app/trip#day-2', 'Tue 1/12'],
       ['/app/budget', copy.budget],
       ['/app/lists', copy.checklist],
-      ['/app/board', copy.expandMap],
     ]);
+    // "Expand map" is an action under the list, not one of its sections.
+    expect(html).toMatch(
+      new RegExp(`</ul><a[^>]*href="/app/board"[^>]*>.*${copy.expandMap}</a></nav>`),
+    );
+  });
+
+  it('shows a short trip’s days and folds a long trip’s behind a button', () => {
+    const short = render(
+      locale,
+      <TripSidebar tripTitle="Kyrgyzstan" days={DAYS} pathname="/app/trip" activeDay={null} />,
+    );
+    expect(short).toMatch(/<button[^>]*aria-expanded="true"/);
+    expect(short).toContain(`aria-label="${copy.daysHide}"`);
+    expect(short).not.toMatch(/<ul[^>]*hidden/);
+
+    const fortnight: WorkspaceDay[] = Array.from({ length: 15 }, (_, i) => ({
+      index: i + 1,
+      label: `Day ${i + 1}`,
+      stopId: null,
+    }));
+    const long = render(
+      locale,
+      <TripSidebar tripTitle="Japan" days={fortnight} pathname="/app/trip" activeDay={null} />,
+    );
+    const button = long.match(/<button[^>]*aria-controls="([^"]+)"[^>]*>/);
+    expect(button?.[0]).toContain('aria-expanded="false"');
+    expect(button?.[0]).toContain(`aria-label="${copy.daysShow.replace('{count}', '15')}"`);
+    // The folded list stays in the page but hidden, so the keyboard skips it until it is opened.
+    expect(long).toMatch(new RegExp(`<ul id="${button?.[1]}"[^>]*hidden`));
+    expect(long).toContain('#day-15');
   });
 
   it('marks the page you are on and the day being read', () => {

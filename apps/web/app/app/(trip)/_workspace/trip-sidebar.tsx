@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
+import { useId, useState } from 'react';
 import { TRIP_HOME } from '../../_components/nav-model';
 import styles from './workspace.module.css';
 
@@ -13,10 +14,14 @@ export type WorkspaceDay = {
   readonly stopId: string | null;
 };
 
+/** From this many days on, the itinerary's days start folded, so the budget and the checklist stay in view. */
+export const LONG_TRIP_DAYS = 8;
+
 /**
  * The trip's table of contents (from 720 px): the overview, its places and every day of the itinerary (links into
- * the trip's document), then the budget, the checklists and the full map. Plain links in a `nav`, so the keyboard
- * and screen readers get the same path as a pointer.
+ * the trip's document), then the budget and the checklists, with the full map as a button under them. Plain links
+ * in a `nav`, so the keyboard and screen readers get the same path as a pointer. A long trip's days fold behind a
+ * disclosure button next to "Itinerary".
  */
 export function TripSidebar({
   tripTitle,
@@ -33,6 +38,8 @@ export function TripSidebar({
   const t = useTranslations('workspace');
   const onHome = pathname === TRIP_HOME;
   const page = (href: string) => (pathname === href ? 'page' : undefined);
+  const daysId = useId();
+  const [daysOpen, setDaysOpen] = useState(days.length < LONG_TRIP_DAYS);
 
   return (
     <nav className={styles.sidebar} aria-label={t('sidebarLabel')}>
@@ -51,11 +58,25 @@ export function TripSidebar({
           </ul>
         </li>
         <li>
-          <Link href={`${TRIP_HOME}#itinerary`} className={styles.section}>
-            {t('itinerary')}
-          </Link>
+          <div className={styles.sectionRow}>
+            <Link href={`${TRIP_HOME}#itinerary`} className={styles.section}>
+              {t('itinerary')}
+            </Link>
+            {days.length > 0 ? (
+              <button
+                type="button"
+                className={styles.disclosure}
+                aria-expanded={daysOpen}
+                aria-controls={daysId}
+                aria-label={daysOpen ? t('daysHide') : t('daysShow', { count: days.length })}
+                onClick={() => setDaysOpen((open) => !open)}
+              >
+                <span aria-hidden="true">{daysOpen ? '▾' : '▸'}</span>
+              </button>
+            ) : null}
+          </div>
           {days.length > 0 ? (
-            <ul className={styles.sub}>
+            <ul id={daysId} className={styles.sub} hidden={!daysOpen}>
               {days.map((day) => (
                 <li key={day.index}>
                   <Link
@@ -80,12 +101,10 @@ export function TripSidebar({
             {t('checklist')}
           </Link>
         </li>
-        <li>
-          <Link href="/app/board" className={styles.section}>
-            {t('expandMap')}
-          </Link>
-        </li>
       </ul>
+      <Link href="/app/board" className={styles.mapAction}>
+        <span aria-hidden="true">⤢</span> {t('expandMap')}
+      </Link>
     </nav>
   );
 }

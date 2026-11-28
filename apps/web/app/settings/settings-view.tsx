@@ -1,8 +1,11 @@
 'use client';
 
+import { isThemeChoice } from '@globetrot/domain';
 import { Banner, Button, SegmentedControl, SelectField, TextField } from '@globetrot/ui';
 import { useTranslations } from 'next-intl';
-import { savePreferences } from '../actions';
+import { useState } from 'react';
+import { applyTheme } from '../../lib/appearance';
+import { savePreferences, saveTheme } from '../actions';
 import { NOT_SET, type Option } from './options';
 import styles from './settings.module.css';
 import { YourData } from './your-data';
@@ -68,6 +71,15 @@ export function SettingsView({
     { id: 'reduced', label: t('motionReduced') },
   ];
   const failed = status?.startsWith('error:') ? status.slice('error:'.length) : null;
+
+  // A theme applies as soon as it is picked and is kept at once; the live line says whether the account has it.
+  const [themeNote, setThemeNote] = useState<'saved' | 'failed' | null>(null);
+  const pickTheme = (value: string) => {
+    if (!isThemeChoice(value)) return;
+    applyTheme(value);
+    setThemeNote(null);
+    void saveTheme(value).then((kept) => setThemeNote(kept ? 'saved' : 'failed'));
+  };
 
   return (
     <div className={styles.page}>
@@ -143,6 +155,7 @@ export function SettingsView({
             label={t('theme')}
             options={themes}
             defaultValue={values.theme}
+            onChange={pickTheme}
           />
           <SegmentedControl
             name="motion"
@@ -151,6 +164,10 @@ export function SettingsView({
             defaultValue={values.motion}
           />
           <p className={styles.description}>{t('appearanceHelp')}</p>
+          <p className={styles.description} role="status">
+            {themeNote === 'saved' ? t('themeSaved') : null}
+            {themeNote === 'failed' ? t('themeSaveFailed') : null}
+          </p>
           <SegmentedControl
             name="weeklyReminder"
             label={t('weeklyReminder.label')}
