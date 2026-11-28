@@ -1003,6 +1003,11 @@ export interface AdminMetricsView {
   readonly sharing: { invites30: number; joins30: number; inviters30: number };
   readonly retention: { cohort: number; week1: number; week4: number; week8: number };
   readonly money: { explorer: number; voyager: number; activePasses: number; referrals: number };
+  /** Confirmation and reset emails that could not be sent (#204). */
+  readonly emailFailures: {
+    readonly verifyEmail: { last7: number; last30: number };
+    readonly resetPassword: { last7: number; last30: number };
+  };
 }
 
 // --- Transactions, time and ids ------------------------------------------------------------------------

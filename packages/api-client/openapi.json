@@ -27230,6 +27230,45 @@
                         "activePasses",
                         "referrals"
                       ]
+                    },
+                    "emailFailures": {
+                      "type": "object",
+                      "properties": {
+                        "verifyEmail": {
+                          "type": "object",
+                          "properties": {
+                            "last7": {
+                              "type": "integer"
+                            },
+                            "last30": {
+                              "type": "integer"
+                            }
+                          },
+                          "required": [
+                            "last7",
+                            "last30"
+                          ]
+                        },
+                        "resetPassword": {
+                          "type": "object",
+                          "properties": {
+                            "last7": {
+                              "type": "integer"
+                            },
+                            "last30": {
+                              "type": "integer"
+                            }
+                          },
+                          "required": [
+                            "last7",
+                            "last30"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "verifyEmail",
+                        "resetPassword"
+                      ]
                     }
                   },
                   "required": [
@@ -27238,7 +27277,8 @@
                     "checkinsByWeek",
                     "sharing",
                     "retention",
-                    "money"
+                    "money",
+                    "emailFailures"
                   ]
                 }
               }

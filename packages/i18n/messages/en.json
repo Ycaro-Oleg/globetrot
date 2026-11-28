@@ -2095,6 +2095,11 @@
     "explorer": "Explorer",
     "voyager": "Voyager",
     "passes": "Trip passes in force",
+    "emailFailures": "Emails not sent",
+    "failedVerify7": "Confirmation emails, last 7 days",
+    "failedVerify30": "Confirmation emails, last 30 days",
+    "failedReset7": "Password reset emails, last 7 days",
+    "failedReset30": "Password reset emails, last 30 days",
     "checkins": "Check-ins per week",
     "none": "No check-ins yet."
   },
