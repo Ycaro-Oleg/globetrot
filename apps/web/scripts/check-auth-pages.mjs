@@ -35,6 +35,16 @@ const VIEWPORTS = {
   desktop: { width: 1440, height: 900 },
 };
 const PASSWORD = 'correct horse battery';
+// What the landing's "Save this plan" leaves (lib/plan-draft.ts): Portugal, 12 days, USD 300 a month.
+const SAVED_PLAN = encodeURIComponent(
+  JSON.stringify({
+    cost: '1181',
+    saved: '0',
+    monthly: '300',
+    currency: 'USD',
+    suggestion: { destination: 'portugal', likes: ['food'], days: 12, comfort: 'budget' },
+  }),
+);
 const SESSION = 'globetrot.session_token=ok';
 
 // ---------------------------------------------------------------------------------------------------------
@@ -654,7 +664,17 @@ try {
   // -------------------------------------------------------------------------------------------------------
   /** name, whether the visitor is signed in, and how to reach the state. */
   const scenarios = (copy) => [
-    ['login', false, async (page) => go(page, `${base}/login`)],
+    [
+      'login',
+      false,
+      async (page) => {
+        await go(page, `${base}/login`);
+        check(
+          ((await page.locator('aside').textContent()) ?? '').includes(copy.brand.supporting),
+          'log-in no longer speaks to a returning user',
+        );
+      },
+    ],
     [
       'login-empty-submit',
       false,
@@ -728,6 +748,32 @@ try {
         await field(page, copy.password).fill('correct horse battery staple');
         await button(page, copy.signup.submit).click();
         await page.getByRole('heading', { name: copy.signup.sentTitle }).waitFor();
+        check(
+          ((await page.locator('aside').textContent()) ?? '').includes(copy.brand.supportingNew),
+          '"Check your inbox" speaks to a returning user',
+        );
+      },
+    ],
+    [
+      // Arriving from the landing's "Save this plan": the trip's cost is shown as an estimate, and the frame speaks
+      // to someone new.
+      'signup-saved-plan',
+      false,
+      async (page) => {
+        await page
+          .context()
+          .addCookies([{ name: 'globetrot.plan_draft', value: SAVED_PLAN, url: base }]);
+        await go(page, `${base}/signup?next=%2Fapp%2Fstart`);
+        const note = page.locator('p').filter({ hasText: '≈' }).first();
+        await note.waitFor();
+        check(
+          /≈\s?\S/.test((await note.textContent()) ?? ''),
+          'the saved plan on sign-up does not mark the trip cost as an estimate',
+        );
+        check(
+          ((await page.locator('aside').textContent()) ?? '').includes(copy.brand.supportingNew),
+          'sign-up speaks to a returning user',
+        );
       },
     ],
     ['recover', false, async (page) => go(page, `${base}/recover`)],

@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { Logomark } from '../logomark';
 import { SITE_NAME } from '../site';
+import { BrandSupporting } from './_components/brand-supporting';
 import { LanguageSwitcher } from './_components/language-switcher';
 import styles from './auth.module.css';
 
@@ -19,7 +20,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
               accent: (chunks) => <em>{chunks}</em>,
             })}
           </h1>
-          <p>{t('brand.supporting')}</p>
+          <BrandSupporting />
         </div>
       </aside>
       <main className={styles.panel}>

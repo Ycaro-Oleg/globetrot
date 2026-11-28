@@ -5,7 +5,7 @@ import { redirect } from 'next/navigation';
 import { getLocale, getTranslations } from 'next-intl/server';
 import { apiInternalUrl } from '../../../lib/api-proxy';
 import { fetchCurrentUser } from '../../../lib/current-user';
-import { PLAN_DRAFT_COOKIE, readDraft } from '../../../lib/plan-draft';
+import { draftEstimate, PLAN_DRAFT_COOKIE, readDraft } from '../../../lib/plan-draft';
 import { fetchEnabledProviders } from '../../../lib/providers';
 import { safeNext } from '../../../lib/safe-next';
 import { sessionCookieHeader } from '../../../lib/stored-preferences';
@@ -47,9 +47,10 @@ export default async function SignupPage({
         precision: 'whole',
       },
     );
+  // The trip's cost is an estimate, marked as one, and the same amount the trip will start with.
   const planNote = draft
     ? t('planSaved', {
-        cost: amount(draft.cost),
+        cost: formatMoney(draftEstimate(draft), locale, { precision: 'whole' }),
         saved: amount(draft.saved),
         monthly: amount(draft.monthly),
       })

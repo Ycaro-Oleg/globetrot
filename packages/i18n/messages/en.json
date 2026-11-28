@@ -158,7 +158,8 @@
   "auth": {
     "brand": {
       "headline": "Your first <accent>stamp</accent> is closer than you think.",
-      "supporting": "Your board, your dreams and every stamp you’ve earned, right where you left them."
+      "supporting": "Your board, your dreams and every stamp you’ve earned, right where you left them.",
+      "supportingNew": "Plan your first trip, see what it costs and how much to set aside each month to get there."
     },
     "language": "Language",
     "or": "or with email",
@@ -186,7 +187,7 @@
       "passwordHint": "At least {min, number} characters. A few random words make a strong password.",
       "sentTitle": "Check your inbox",
       "sentBody": "We sent a confirmation link to {email}. Open it to finish creating your account.",
-      "planSaved": "Your plan is saved: {cost} trip, {saved} saved, {monthly} a month. Create your account to keep it."
+      "planSaved": "Your plan is saved: a trip of ≈ {cost} (an estimate), {saved} saved, {monthly} a month. Create your account to keep it."
     },
     "strength": {
       "label": "Password strength",

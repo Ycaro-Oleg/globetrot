@@ -1,10 +1,16 @@
 import {
+  convert,
+  DEFAULT_CURRENCY,
+  fromDecimal,
   isCurrencyCode,
   SUGGEST_COMFORTS,
   SUGGEST_LIKES,
   SUGGEST_MAX_DAYS,
   SUGGEST_MIN_DAYS,
   SUGGESTED_DESTINATIONS,
+  suggestPlan,
+  suggestReferenceRate,
+  type Money,
   type SuggestComfort,
   type SuggestLike,
 } from '@globetrot/domain';
@@ -67,6 +73,19 @@ export function readDraft(raw: string | undefined): PlanDraft | null {
   } catch {
     return null;
   }
+}
+
+/**
+ * The trip's estimated cost for a saved plan, the amount `/app/start` stores as the trip's estimate: the plan's
+ * typical cost (the middle of its range) read in the plan's currency at the recorded reference rate, by the same
+ * domain functions. Older drafts without the plan fall back to the amount the landing saved. Always an estimate.
+ */
+export function draftEstimate(draft: PlanDraft): Money {
+  const currency = draft.currency ?? DEFAULT_CURRENCY;
+  const plan = draft.suggestion ? suggestPlan(draft.suggestion) : null;
+  if (!plan) return fromDecimal(draft.cost, currency, { rounding: 'half-even' });
+  const rate = suggestReferenceRate(currency);
+  return rate ? convert(plan.estimate.middle, rate).converted : plan.estimate.middle;
 }
 
 /** Keeps what the landing's plan chose for 30 days, so sign-up and onboarding start from it (browser only). */

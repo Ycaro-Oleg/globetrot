@@ -1,5 +1,40 @@
+import { suggestPlan } from '@globetrot/domain';
 import { describe, expect, it } from 'vitest';
-import { readDraft } from './plan-draft';
+import { draftEstimate, readDraft, type PlanDraft } from './plan-draft';
+
+describe('draftEstimate', () => {
+  const suggestion = {
+    destination: 'portugal',
+    likes: ['food' as const],
+    days: 12,
+    comfort: 'budget' as const,
+  };
+  const draft = (overrides: Partial<PlanDraft>): PlanDraft => ({
+    cost: '1',
+    saved: '0',
+    monthly: '300',
+    currency: 'USD',
+    suggestion,
+    ...overrides,
+  });
+
+  it('is the plan’s typical cost, as /app/start stores it, not the rounded amount the landing saved', () => {
+    expect(draftEstimate(draft({}))).toEqual(suggestPlan(suggestion)?.estimate.middle);
+  });
+
+  it('reads the plan in the chosen currency at the reference rate', () => {
+    const inReais = draftEstimate(draft({ currency: 'BRL' }));
+    expect(inReais.currency).toBe('BRL');
+    expect(inReais.amountMinor).not.toBe(suggestPlan(suggestion)?.estimate.middle.amountMinor);
+  });
+
+  it('falls back to the saved amount for an older draft without the plan', () => {
+    expect(draftEstimate(draft({ suggestion: null, cost: '1181', currency: null }))).toMatchObject({
+      currency: 'USD',
+      amountMinor: 118100n,
+    });
+  });
+});
 
 const cookie = (value: unknown) => encodeURIComponent(JSON.stringify(value));
 
