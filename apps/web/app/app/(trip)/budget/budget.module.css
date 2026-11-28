@@ -23,11 +23,11 @@
 
 .title {
   margin: 0;
-  font-size: var(--gt-primitive-type-page);
+  font-size: var(--gt-primitive-type-section);
   text-wrap: balance;
-  font-weight: 800;
-  letter-spacing: var(--gt-primitive-type-page-tracking);
-  line-height: 1;
+  font-weight: var(--gt-primitive-type-display-weight);
+  letter-spacing: var(--gt-primitive-type-section-tracking);
+  line-height: var(--gt-primitive-type-section-line-height);
 }
 
 .sub {

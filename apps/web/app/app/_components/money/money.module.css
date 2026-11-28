@@ -27,9 +27,9 @@
 
 .title {
   margin: 0;
-  font-size: 22px;
-  font-weight: 800;
-  letter-spacing: -0.015em;
+  font-size: var(--gt-primitive-type-card-title-min);
+  font-weight: var(--gt-primitive-type-card-weight);
+  letter-spacing: var(--gt-primitive-type-card-tracking);
 }
 
 .muted {
@@ -84,8 +84,8 @@
 
 .amount {
   font-family: var(--gt-primitive-font-display);
-  font-size: clamp(20px, 2.2vw, 26px);
-  font-weight: 800;
+  font-size: var(--gt-primitive-type-card-title-min);
+  font-weight: var(--gt-primitive-type-card-weight);
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.02em;
   line-height: 1.1;
@@ -140,8 +140,8 @@
 
 .chartTitle {
   font-family: var(--gt-primitive-font-display);
-  font-size: 16px;
-  font-weight: 800;
+  font-size: var(--gt-primitive-type-body);
+  font-weight: var(--gt-primitive-type-card-weight);
 }
 
 .chart {

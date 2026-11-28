@@ -15,12 +15,13 @@
   padding-block-start: 8px;
 }
 
+/* One step down the scale (owner, November 2026): the trip's name, then its sections, then the numbers. */
 .title {
   margin: 0;
-  font-size: var(--gt-primitive-type-page);
-  font-weight: 800;
-  letter-spacing: var(--gt-primitive-type-page-tracking);
-  line-height: 1.05;
+  font-size: var(--gt-primitive-type-section);
+  font-weight: var(--gt-primitive-type-display-weight);
+  letter-spacing: var(--gt-primitive-type-section-tracking);
+  line-height: var(--gt-primitive-type-section-line-height);
   text-wrap: balance;
 }
 
@@ -101,9 +102,9 @@
 
 .sectionTitle {
   margin: 0;
-  font-size: 22px;
-  font-weight: 800;
-  letter-spacing: -0.015em;
+  font-size: var(--gt-primitive-type-card-title-min);
+  font-weight: var(--gt-primitive-type-card-weight);
+  letter-spacing: var(--gt-primitive-type-card-tracking);
 }
 
 .stops {
