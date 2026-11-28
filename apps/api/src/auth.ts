@@ -40,8 +40,20 @@ export const TRUSTED_PROXY_RANGES = [
   'fe80::/10',
 ];
 
+/** A confirmation or reset email that could not be sent: the type, the error code and whose account. */
+export interface EmailFailure {
+  readonly template: EmailTemplate;
+  readonly code: string;
+  readonly userId: string;
+}
+
 export interface AuthDependencies {
   readonly email: EmailPort;
+  /**
+   * Called after a send failed (reported and counted by the caller). Its own failure is swallowed: the person
+   * still sees "Sent", so the answer never says whether an account exists.
+   */
+  readonly onEmailFailure?: (failure: EmailFailure) => Promise<void> | void;
 }
 
 const errorCode = (error: unknown) => {
@@ -54,7 +66,11 @@ const errorCode = (error: unknown) => {
  * PostgreSQL, e-mail verification and password reset. Passwords are hashed by Better Auth; nothing here
  * touches them. Never log tokens, passwords or e-mail addresses.
  */
-export function createAuth(db: Database, config: AuthConfig, { email }: AuthDependencies) {
+export function createAuth(
+  db: Database,
+  config: AuthConfig,
+  { email, onEmailFailure }: AuthDependencies,
+) {
   const preferences = createPreferencesRepository(db);
   const cooldown = createCooldown(db);
 
@@ -71,7 +87,8 @@ export function createAuth(db: Database, config: AuthConfig, { email }: AuthDepe
   /**
    * Sends in the background and returns at once. If the request waited for the mail server, an address that
    * has an account (a mail is sent) would answer more slowly than one that does not (nothing is sent), and
-   * anyone could tell them apart by timing. Failures are logged with a code only: no address, no link.
+   * anyone could tell them apart by timing. Failures are logged with a code only (no address, no link), then
+   * handed to `onEmailFailure`, which reports them to monitoring and counts them for the dashboard (#204).
    */
   function deliver(
     template: EmailTemplate,
@@ -90,7 +107,13 @@ export function createAuth(db: Database, config: AuthConfig, { email }: AuthDepe
           data: { url, name: user.name, expiresInHours: expiresInSeconds / 3600 },
         });
       } catch (error) {
-        console.error(`could not send the ${template} email (${errorCode(error)})`);
+        const code = errorCode(error);
+        console.error(`could not send the ${template} email (${code})`);
+        try {
+          await onEmailFailure?.({ template, code, userId: user.id });
+        } catch (failure) {
+          console.error(`could not record the failed ${template} email (${errorCode(failure)})`);
+        }
       }
     })();
   }

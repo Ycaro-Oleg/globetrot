@@ -11110,6 +11110,16 @@ export interface operations {
                             activePasses: number;
                             referrals: number;
                         };
+                        emailFailures: {
+                            verifyEmail: {
+                                last7: number;
+                                last30: number;
+                            };
+                            resetPassword: {
+                                last7: number;
+                                last30: number;
+                            };
+                        };
                     };
                 };
             };

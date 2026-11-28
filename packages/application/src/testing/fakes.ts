@@ -828,6 +828,10 @@ export function createFakePorts(options: FakeOptions = {}) {
           sharing: { invites30: 0, joins30: 0, inviters30: 0 },
           retention: { cohort: 0, week1: 0, week4: 0, week8: 0 },
           money: { explorer: 0, voyager: 0, activePasses: 0, referrals: 0 },
+          emailFailures: {
+            verifyEmail: { last7: 0, last30: 0 },
+            resetPassword: { last7: 0, last30: 0 },
+          },
         };
       },
     },

@@ -69,6 +69,14 @@ export function createMetricsRepository(executor: Executor) {
           (select count(*) from subscription where status = 'active' and plan = 'voyager' and current_period_end > ${now}) as voyager,
           (select count(*) from trip_pass where valid_until > ${now}) as passes,
           (select count(*) from referral) as referrals`);
+      // Failed confirmation and reset emails (#204), counted from their audit events: type and code only.
+      const failures = await one(sql`
+        select
+          count(*) filter (where metadata->>'template' = 'verifyEmail' and occurred_at > ${since7}) as verify7,
+          count(*) filter (where metadata->>'template' = 'verifyEmail') as verify30,
+          count(*) filter (where metadata->>'template' = 'resetPassword' and occurred_at > ${since7}) as reset7,
+          count(*) filter (where metadata->>'template' = 'resetPassword') as reset30
+        from audit_event where action = 'email.failed' and occurred_at > ${since30}`);
       return {
         accounts: {
           total: num(accounts.total),
@@ -104,6 +112,10 @@ export function createMetricsRepository(executor: Executor) {
           voyager: num(money.voyager),
           activePasses: num(money.passes),
           referrals: num(money.referrals),
+        },
+        emailFailures: {
+          verifyEmail: { last7: num(failures.verify7), last30: num(failures.verify30) },
+          resetPassword: { last7: num(failures.reset7), last30: num(failures.reset30) },
         },
       };
     },

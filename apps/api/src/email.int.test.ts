@@ -1,6 +1,8 @@
 import { randomBytes } from 'node:crypto';
 import { catalogs } from '@globetrot/i18n';
+import { createMetricsRepository, schema } from '@globetrot/db';
 import { createTestDatabase, type TestDatabase } from '@globetrot/db/testing';
+import { eq } from 'drizzle-orm';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { loadApiConfig } from './config';
 import {
@@ -447,6 +449,69 @@ describe('when the mail server is down', () => {
         /^could not send the verifyEmail email \((ECONNREFUSED|ESOCKET|ETIMEDOUT)\)$/,
       ),
     ]);
+    expectCleanLogs(email);
+    // Without Sentry configured the failure is still counted for the dashboard (#204).
+    const counted = async () =>
+      (await createMetricsRepository(h.database.db).snapshot(new Date())).emailFailures.verifyEmail;
+    const until = Date.now() + 3000;
+    while ((await counted()).last7 === 0 && Date.now() < until) await sleep(50);
+    expect(await counted()).toEqual({ last7: 1, last30: 1 });
+  });
+
+  it('reports the failure with only the email type and code, counts it, and answers as if sent', async () => {
+    const database = await createTestDatabase();
+    databases.push(database);
+    const config = loadApiConfig({
+      NODE_ENV: 'test',
+      DATABASE_URL: database.url,
+      BETTER_AUTH_SECRET: randomBytes(32).toString('hex'),
+    });
+    const reports: Error[] = [];
+    const { app } = createServices(database.db, config, {
+      email: {
+        async send(message) {
+          // A provider error that quotes the address and the link: none of it may leave.
+          throw Object.assign(new Error(`rejected ${message.to} ${message.data.url}`), {
+            code: 'EENVELOPE',
+          });
+        },
+      },
+      reportError: (error) => reports.push(error),
+    });
+    const origin = config.auth.baseURL;
+    const email = randomAddress('down');
+    const response = await app.request(`${origin}/api/auth/sign-up/email`, {
+      method: 'POST',
+      headers: { origin, 'content-type': 'application/json', 'x-forwarded-for': nextIp() },
+      body: JSON.stringify({ name: 'Ana', email, password: PASSWORD }),
+    });
+    // The same answer as a sign-up whose email went out.
+    expect(response.status).toBe(200);
+    expect((await json(response)).token).toBeNull();
+
+    const deadline = Date.now() + 5000;
+    while (reports.length === 0 && Date.now() < deadline) await sleep(50);
+    expect(reports).toHaveLength(1);
+    expect(reports[0]!.name).toBe('EmailDeliveryFailed');
+    expect(reports[0]!.message).toBe('verifyEmail email not sent (EENVELOPE)');
+
+    const until = Date.now() + 3000;
+    let events: (typeof schema.auditEvent.$inferSelect)[] = [];
+    while (events.length === 0 && Date.now() < until) {
+      events = await database.db
+        .select()
+        .from(schema.auditEvent)
+        .where(eq(schema.auditEvent.action, 'email.failed'));
+      if (events.length === 0) await sleep(50);
+    }
+    expect(events).toHaveLength(1);
+    expect(events[0]!.metadata).toEqual({ template: 'verifyEmail', code: 'EENVELOPE' });
+    expect(JSON.stringify(events)).not.toContain(email);
+    const snapshot = await createMetricsRepository(database.db).snapshot(new Date());
+    expect(snapshot.emailFailures).toEqual({
+      verifyEmail: { last7: 1, last30: 1 },
+      resetPassword: { last7: 0, last30: 0 },
+    });
     expectCleanLogs(email);
   });
 });
