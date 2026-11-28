@@ -24,6 +24,14 @@ describe('token build', () => {
     expect(tokens.day['primitive.shadow.modal']).toBe('0px 20px 50px -12px #11111159');
     expect(tokens.day['primitive.type.page']).toBe('clamp(30px, 3.4vw, 38px)');
     expect(tokens.day['primitive.type.page-tracking']).toBe('-0.025em');
+    // The app scale (owner's feedback on #209): added next to the landing's, which keeps its sizes.
+    expect(tokens.day['primitive.type.app-page']).toBe('clamp(24px, 2vw, 28px)');
+    expect(tokens.day['primitive.type.app-money-hero']).toBe('clamp(24px, 2.4vw, 30px)');
+    expect(
+      ['section', 'title', 'body', 'label', 'caption', 'money'].map(
+        (size) => tokens.day[`primitive.type.app-${size}`],
+      ),
+    ).toEqual(['18px', '15px', '14px', '13px', '12px', '22px']);
     expect(tokens.day['primitive.radius.circle']).toBe('50%');
     expect(tokens.day['primitive.font.body']).toBe('"Instrument Sans", system-ui, sans-serif');
     expect(tokens.day['primitive.font.display']).toBe(

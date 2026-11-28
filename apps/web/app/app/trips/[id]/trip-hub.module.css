@@ -32,12 +32,13 @@
   align-items: center;
 }
 
+/* The trip name on the app scale (design spec for #209): 28px from wide screens, 24px on a phone. */
 .title {
   margin: 0;
-  font-size: var(--gt-primitive-type-page);
-  font-weight: 800;
-  letter-spacing: var(--gt-primitive-type-page-tracking);
-  line-height: 1.05;
+  font-size: var(--gt-primitive-type-app-page);
+  font-weight: var(--gt-primitive-type-weight-bold);
+  letter-spacing: var(--gt-primitive-type-section-tracking);
+  line-height: 1.1;
   overflow-wrap: anywhere;
 }
 
@@ -50,8 +51,9 @@
   background: var(--gt-semantic-color-input-surface);
   color: var(--gt-semantic-color-text);
   font: inherit;
-  font-size: 22px;
-  font-weight: 800;
+  font-family: var(--gt-primitive-font-display);
+  font-size: var(--gt-primitive-type-app-page);
+  font-weight: var(--gt-primitive-type-weight-bold);
 }
 
 .meta {

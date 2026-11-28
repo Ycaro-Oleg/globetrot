@@ -1,42 +1,44 @@
 .page {
   display: grid;
   width: min(100%, 58rem);
-  gap: 1.5rem;
+  gap: var(--gt-primitive-space-24);
   margin-inline: auto;
   color: var(--gt-semantic-color-text);
 }
 
 .header {
   display: grid;
-  gap: 0.45rem;
+  gap: var(--gt-primitive-space-8);
 }
 
 .eyebrow {
   margin: 0;
   color: var(--gt-semantic-color-text-secondary);
-  font: 700 0.72rem/1.3 var(--gt-primitive-font-mono);
-  letter-spacing: 0.12em;
+  font: var(--gt-primitive-type-weight-600) var(--gt-primitive-type-status)/1.3
+    var(--gt-primitive-font-mono);
+  letter-spacing: 0.07em;
   text-transform: uppercase;
 }
 
 .header h1 {
   margin: 0;
-  font-size: var(--gt-primitive-type-page);
-  font-weight: 800;
-  letter-spacing: -0.025em;
-  line-height: 1;
+  font-size: var(--gt-primitive-type-app-page);
+  font-weight: var(--gt-primitive-type-weight-bold);
+  letter-spacing: var(--gt-primitive-type-section-tracking);
+  line-height: 1.1;
 }
 
 .description {
   max-width: 50ch;
   margin: 0;
   color: var(--gt-semantic-color-text-secondary);
+  font-size: var(--gt-primitive-type-app-body);
 }
 
 .sheet {
   display: grid;
   gap: 1rem;
-  padding: clamp(1rem, 3vw, 2rem);
+  padding: var(--gt-primitive-space-24);
   border: 1px solid var(--gt-semantic-color-hairline);
   border-radius: 1.35rem;
   background: var(--gt-semantic-color-surface-card);
@@ -46,35 +48,46 @@
 .form {
   display: grid;
   align-items: start;
-  gap: 1.4rem 1.25rem;
+  gap: var(--gt-primitive-space-20) var(--gt-primitive-space-24);
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .form :global(.gt-field) {
   max-width: none;
   min-width: 0;
-  gap: 0.55rem;
+  gap: var(--gt-primitive-space-8);
 }
 
 .form :global(.gt-field__label) {
-  font-size: 0.9rem;
-  font-weight: 750;
+  font-size: var(--gt-primitive-type-app-label);
+  font-weight: var(--gt-primitive-type-weight-600);
 }
 
 .form :global(.gt-field__description) {
   min-height: 2.8em;
   color: var(--gt-semantic-color-text-secondary);
-  font-size: 0.84rem;
+  font-size: var(--gt-primitive-type-app-caption);
   line-height: 1.4;
 }
 
 .form :global(.gt-select__trigger),
 .form :global(.gt-field__control) {
   box-sizing: border-box;
-  min-height: 3rem;
-  border-width: 2px;
-  border-radius: 0.8rem;
-  font-size: 0.94rem;
+  min-height: var(--gt-component-hit-target);
+  border: var(--gt-primitive-border-1) solid var(--gt-semantic-color-input-border);
+  border-radius: var(--gt-component-input-radius);
+  font-size: var(--gt-primitive-type-app-body);
+}
+
+/* Segmented controls (theme, motion, reminder): 44px, labels in the body size, the chosen one a step bolder. */
+.form :global(.gt-segmented__item) {
+  min-height: var(--gt-component-hit-target);
+  font-size: var(--gt-primitive-type-app-body);
+  font-weight: var(--gt-primitive-type-weight-500);
+}
+
+.form :global(.gt-segmented__item[data-selected]) {
+  font-weight: var(--gt-primitive-type-weight-600);
 }
 
 .actions {
@@ -95,8 +108,8 @@
     gap: 1rem;
   }
 
-  .header h1 {
-    font-size: 2.45rem;
+  .sheet {
+    padding: var(--gt-primitive-space-16);
   }
 
   .form {
@@ -124,8 +137,10 @@
 /* "Your data": export and account deletion. */
 .sectionTitle {
   margin: 0;
-  font-size: 1.15rem;
-  font-weight: 800;
+  font-size: var(--gt-primitive-type-app-section);
+  font-weight: var(--gt-primitive-type-weight-bold);
+  letter-spacing: var(--gt-primitive-type-card-tracking);
+  line-height: 1.25;
 }
 
 .dataRow {
@@ -140,7 +155,8 @@
 
 .dataRow h3 {
   margin: 0 0 0.25rem;
-  font-size: 1rem;
+  font-size: var(--gt-primitive-type-app-title);
+  font-weight: var(--gt-primitive-type-weight-600);
 }
 
 .dataRow > div {
@@ -156,7 +172,7 @@
   padding: 0 1.1rem;
   border-radius: 999px;
   font: inherit;
-  font-weight: 700;
+  font-weight: var(--gt-primitive-type-weight-bold);
   text-decoration: none;
   cursor: pointer;
 }
@@ -193,7 +209,7 @@
 }
 
 .deleteForm label {
-  font-weight: 700;
+  font-weight: var(--gt-primitive-type-weight-bold);
   overflow-wrap: anywhere;
 }
 
@@ -206,13 +222,13 @@
   background: var(--gt-semantic-color-input-surface);
   color: var(--gt-semantic-color-text);
   font: inherit;
-  font-size: 16px;
+  font-size: var(--gt-primitive-type-body);
 }
 
 .error {
   margin: 0;
   color: var(--gt-semantic-color-danger);
-  font-weight: 700;
+  font-weight: var(--gt-primitive-type-weight-bold);
 }
 
 .secondaryButton:focus-visible,

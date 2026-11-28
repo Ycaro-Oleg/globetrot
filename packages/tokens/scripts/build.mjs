@@ -63,7 +63,7 @@ export function compileTokens() {
       return value;
     };
     const values = Object.fromEntries(Object.keys(raw).map((key) => [key, resolve(key)]));
-    for (const size of ['hero', 'section', 'page', 'answer']) {
+    for (const size of ['hero', 'section', 'page', 'answer', 'app-page', 'app-money-hero']) {
       const base = 'primitive.type.' + size;
       values[base] =
         'clamp(' +

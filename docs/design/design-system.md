@@ -73,6 +73,24 @@ The inventory covers the handoff's token-level values, not every one-off prototy
 
 The fonts are **Bricolage Grotesque** (200 to 800, variable with optical size: headings `h1` to `h3`, the big answer sentences and the destination band, through `primitive.font.display`), **Instrument Sans** (400 to 700: everything else, through `primitive.font.body`) and **JetBrains Mono** (400 to 600, codes, dates, coordinates and small labels). They replaced the handoff's Plus Jakarta Sans at the owner's request (November 2026), for a face with more character than the one most generated interfaces share. They are **self-hosted** under `apps/web/public/fonts/` as `woff2` subsets (latin and latin-ext; Bricolage also vietnamese) with their OFL licences next to them, and declared with `@font-face` and `font-display: swap` in `apps/web/app/globals.css`. Nothing is loaded from a font CDN (LGPD/GDPR and performance). The token `primitive.font` still names the stack with system fallbacks, so text stays readable while a font loads.
 
+### The app scale (owner's feedback on #209, November 2026)
+
+The trip overview, the money panel, the budget and Settings read as "gigantic" with the landing's scale (Bricolage at 800 on a 30 to 38px fluid title, most text at 700 to 800, 48px fields with 2px borders, ad hoc sizes down to 10px). They use eight `primitive.type.app-*` tokens instead, added next to the existing ones: `type.page`, `type.hero` and the rest keep their values, so the landing, auth and marketing screens do not change. No weight 800 and nothing under 11px (`type.status`) on these screens.
+
+| Level | Before | After |
+|---|---|---|
+| Page title (trip name, budget, "Idioma e região") | `type.page` clamp(30px, 3.4vw, 38px) / 800 | `app-page` clamp(24px, 2vw, 28px) / `weight-bold` / `section-tracking` |
+| Section title ("Dinheiro da viagem", "Lugares", the budget's lists, "Seus dados") | 22px / 800 | `app-section` 18px / `weight-bold` / `card-tracking` |
+| Card title (chart titles, the overview's summary card) | 15 to 16px / 800 | `app-title` 15px / `weight-600`, body face |
+| Uppercase label ("TOTAL DA VIAGEM", "PERSONALIZE SUA CONTA") | 11 to 11.5px / 700 | `type.status` 11px / `weight-600` / 0.07em |
+| Form label | 14.4px / 750 | `app-label` 13px / `weight-600` |
+| Body and control values | 14 to 16px | `app-body` 14px / `weight-regular` |
+| Help and captions | 12 to 13.4px, 10px in the budget | `app-caption` 12px; 10px becomes 11px |
+| Money figures | clamp(20px, 2.2vw, 26px) / 800 | `app-money` 22px / `weight-bold` (18px below 720px) |
+| Money hero (budget total, answer sentence) | up to 40px / 800 | `app-money-hero` clamp(24px, 2.4vw, 30px) / `weight-bold` |
+
+Settings fields are 44px (`component.hit-target`) with a 1px `input-border`; segmented controls are 44px with labels at `weight-500` (the chosen one `weight-600`); spacing uses the space tokens; the help for Theme and for the weekly reminder is the control's `description`, under it and read with it.
+
 ## Surfaces that are light in both themes
 
 Some surfaces are cream or white in the red-eye theme too (the account pages' paper, the board and landing cards, the trip cards, form fields). Inside them the themed text, error and focus tokens would turn light on light, so each such surface must override them with the `always-light` tokens (`--gt-semantic-color-always-light-text`, `-secondary`, `-tertiary`, and the day-theme danger and focus colours) or the `data-always-light` attribute. The axe check in both themes (`pnpm --filter @globetrot/web test:a11y`) fails on any miss.
@@ -91,7 +109,7 @@ Phones get equivalent essential capabilities through patterns that suit the devi
 
 ### The trip workspace (ADR-0035)
 
-The trip lives in one place, the way a document does: `apps/web/app/app/(trip)/layout.tsx` wraps the trip's document (`/app/trip`), its budget and its checklists in `TripWorkspace`. The sidebar is the trip's table of contents, in a drawer: a button folds it to a 56px rail and opens it again, and its edge drags between 200 and 360px (232 by default); the edge is a focusable separator, so the arrow keys (Shift for bigger steps), Home and End do the same, and the width and the folded state are remembered on the device; the page scrolls in the middle; from 1100px the map stays on the right, sticky under the bar, and flies to the stop of the day whose heading is near the top. The document holds the trip's name and dates, the budget total with a link to the budget, the places in order (each row is the target of its pin) and the itinerary (`DaysView` with `layout="stacked"`: "No day" first, then one section per day, headings one level down). The map in the workspace only looks and points; adding stops, nights and legs stays on the full map (`/app/board`, outside the workspace), opened by "Expand map". The map and MapLibre load only when the screen is wide enough to show them.
+The trip lives in one place, the way a document does: `apps/web/app/app/(trip)/layout.tsx` wraps the trip's document (`/app/trip`), its budget and its checklists in `TripWorkspace`. The sidebar is the trip's table of contents, in a drawer: a button folds it to a 56px rail and opens it again, and its edge drags between 200 and 360px (232 by default); the edge is a focusable separator, so the arrow keys (Shift for bigger steps), Home and End do the same, and the width and the folded state are remembered on the device; the page scrolls in the middle; from 1100px the map stays on the right, sticky under the bar, and flies to the stop of the day whose heading is near the top. The document holds the trip's name and dates, the budget total with a link to the budget, the places in order (each row is the target of its pin) and the itinerary (`DaysView` with `layout="stacked"`: "No day" first, then one section per day, headings one level down). The map in the workspace only looks and points; adding stops, nights and legs stays on the full map (`/app/board`, outside the workspace), opened by "Expand map". The map and MapLibre load only when the screen is wide enough to show them. Its type follows the app scale below.
 
 ### Money and charts (ADR-0036)
 
