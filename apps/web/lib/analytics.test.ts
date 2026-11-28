@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
+  adminCheckNeeded,
   EVENTS_COOKIE,
   firstTime,
   flushPendingEvents,
@@ -10,6 +11,7 @@ import {
   prepareEvent,
   queueEvents,
   readVisitOrigin,
+  rememberAdminCheck,
   rememberVisitOrigin,
   setInternal,
   track,
@@ -63,6 +65,36 @@ describe('the internal mark', () => {
       removeItem: () => undefined,
     };
     expect(isInternal(broken)).toBe(false);
+  });
+});
+
+describe('asking whether the account is an admin', () => {
+  it('asks once per account in a tab', () => {
+    const store = memoryStore();
+    expect(adminCheckNeeded('account-a', store)).toBe(true);
+    rememberAdminCheck('account-a', store);
+    expect(adminCheckNeeded('account-a', store)).toBe(false);
+  });
+
+  it('asks again when another account signs in on the same tab (an admin after a regular account)', () => {
+    const store = memoryStore();
+    rememberAdminCheck('regular-account', store);
+    expect(adminCheckNeeded('admin-account', store)).toBe(true);
+  });
+
+  it('asks when there is no storage, or it throws', () => {
+    expect(adminCheckNeeded('account-a', null)).toBe(true);
+    const broken: KeyValueStore = {
+      getItem: () => {
+        throw new Error('denied');
+      },
+      setItem: () => {
+        throw new Error('denied');
+      },
+      removeItem: () => undefined,
+    };
+    expect(adminCheckNeeded('account-a', broken)).toBe(true);
+    expect(() => rememberAdminCheck('account-a', broken)).not.toThrow();
   });
 });
 

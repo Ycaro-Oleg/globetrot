@@ -7,7 +7,7 @@ import type { PostHog } from 'posthog-js';
 import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import {
-  ADMIN_CHECKED_KEY,
+  adminCheckNeeded,
   analyticsConfig,
   flushPendingEvents,
   INTERNAL_EVENT,
@@ -18,6 +18,7 @@ import {
   pageLocale,
   prepareEvent,
   readConsent,
+  rememberAdminCheck,
   rememberVisitOrigin,
   setInternal,
   writeConsent,
@@ -179,34 +180,24 @@ export function Analytics() {
 
 /**
  * Marks the browser of an admin account (`ADMIN_EMAILS`) as the team's, so it stays out of the numbers, also after
- * signing out. It asks the admin dashboard's endpoint once per visit: it answers only admins, and "not found" to
- * everyone else. Nothing is asked when no measurement is configured.
+ * signing out. It asks the admin dashboard's endpoint once per account and visit (another account on the same tab
+ * is asked about again): it answers only admins, and "not found" to everyone else. Nothing is asked when no
+ * measurement is configured. `accountId` stays in the tab; it is never sent to any analytics tool.
  */
-export function InternalAccountCheck() {
+export function InternalAccountCheck({ accountId }: { accountId: string }) {
   useEffect(() => {
-    if (!measurementConfigured() || isInternal()) return;
-    let session: Storage | null = null;
-    try {
-      session = window.sessionStorage;
-      if (session.getItem(ADMIN_CHECKED_KEY)) return;
-    } catch {
-      // No storage: ask on every signed-in page load instead.
-    }
+    if (!measurementConfigured() || isInternal() || !adminCheckNeeded(accountId)) return;
     const controller = new AbortController();
     fetch('/v1/admin/metrics', { credentials: 'same-origin', signal: controller.signal })
       .then((response) => {
-        try {
-          session?.setItem(ADMIN_CHECKED_KEY, '1');
-        } catch {
-          // Nothing to remember it in.
-        }
+        rememberAdminCheck(accountId);
         if (response.ok) setInternal(true);
       })
       .catch(() => {
-        // Ask again on the next visit.
+        // Ask again on the next page.
       });
     return () => controller.abort();
-  }, []);
+  }, [accountId]);
   return null;
 }
 

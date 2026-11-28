@@ -99,7 +99,10 @@ export const INTERNAL_KEY = 'globetrot.internal';
 export const INTERNAL_PARAM = 'interno';
 /** Plausible's own switch: its script skips every pageview and event while this is set. */
 const PLAUSIBLE_IGNORE_KEY = 'plausible_ignore';
-/** Set once a tab has asked whether the signed-in account is an admin, so it asks once per visit. */
+/**
+ * The account a tab last asked about (is it an admin?), so it asks once per account and visit. Keyed by the
+ * account's id: another account signing in on the same tab is asked about again.
+ */
 export const ADMIN_CHECKED_KEY = 'globetrot.admin_checked';
 export const INTERNAL_EVENT = 'globetrot:internal';
 
@@ -156,6 +159,30 @@ export function setInternal(
     // Nothing to remember it in: the page still sends nothing while `?interno=1` is in the address.
   }
   if (typeof window !== 'undefined') window.dispatchEvent(new Event(INTERNAL_EVENT));
+}
+
+/** Whether this tab still has to ask if `accountId` is an admin (never asked, or asked about another account). */
+export function adminCheckNeeded(
+  accountId: string,
+  store: KeyValueStore | null = browserStore('sessionStorage'),
+): boolean {
+  try {
+    return store?.getItem(ADMIN_CHECKED_KEY) !== accountId;
+  } catch {
+    return true;
+  }
+}
+
+/** Remembers that this tab asked about `accountId`. */
+export function rememberAdminCheck(
+  accountId: string,
+  store: KeyValueStore | null = browserStore('sessionStorage'),
+) {
+  try {
+    store?.setItem(ADMIN_CHECKED_KEY, accountId);
+  } catch {
+    // Nothing to remember it in: the next signed-in page asks again.
+  }
 }
 
 // ---------------------------------------------------------------------------------------------------------------

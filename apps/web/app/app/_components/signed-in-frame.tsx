@@ -48,7 +48,7 @@ export async function SignedInFrame({
       billing={billing}
     >
       {children}
-      <InternalAccountCheck />
+      <InternalAccountCheck accountId={user.id} />
     </AppShell>
   );
 }
