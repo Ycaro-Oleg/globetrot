@@ -110,7 +110,7 @@ export function InterestListForm({ source, locale }: { source: LeadSource; local
           onChange={setConsent}
           validationBehavior="aria"
           isInvalid={errors.consent !== undefined}
-          aria-describedby={errors.consent ? consentError : undefined}
+          {...(errors.consent ? { 'aria-describedby': consentError } : {})}
         >
           {t('consent')}
         </Checkbox>
