@@ -1366,6 +1366,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/trips/{id}/savings/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * How the trip’s savings grew, week by week
+         * @description Everyone’s weekly check-ins added up per week (at most two years), with the running total that ends at what is set aside today; savings typed in rather than checked in are the starting balance.
+         */
+        get: operations["getSavingsHistory"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/trips/{id}/checkin": {
         parameters: {
             query?: never;
@@ -12453,6 +12473,111 @@ export interface operations {
                             phase: "six-months" | "three-months" | "one-month" | "one-week" | "travelling" | "back" | null;
                             tasks: string[];
                         };
+                    };
+                };
+            };
+            /** @description No valid session. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description No such trip, or not one the caller plans. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    getSavingsHistory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The history. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        currency: string;
+                        saved: {
+                            /**
+                             * @description Major units, exact.
+                             * @example 1250.00
+                             */
+                            amount: string;
+                            currency: string;
+                        };
+                        start: {
+                            /**
+                             * @description Major units, exact.
+                             * @example 1250.00
+                             */
+                            amount: string;
+                            currency: string;
+                        };
+                        weeks: {
+                            week: string;
+                            amount: {
+                                /**
+                                 * @description Major units, exact.
+                                 * @example 1250.00
+                                 */
+                                amount: string;
+                                currency: string;
+                            };
+                            saved: {
+                                /**
+                                 * @description Major units, exact.
+                                 * @example 1250.00
+                                 */
+                                amount: string;
+                                currency: string;
+                            };
+                        }[];
                     };
                 };
             };

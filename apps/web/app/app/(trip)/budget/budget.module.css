@@ -24,6 +24,7 @@
 .title {
   margin: 0;
   font-size: var(--gt-primitive-type-page);
+  text-wrap: balance;
   font-weight: 800;
   letter-spacing: var(--gt-primitive-type-page-tracking);
   line-height: 1;
@@ -119,7 +120,9 @@
 
 .sentence {
   margin: 0;
-  font-size: var(--gt-primitive-type-answer);
+  /* The answer reads as a headline, not a poster: the money panel above already carries the figures. */
+  font-family: var(--gt-primitive-font-display);
+  font-size: clamp(24px, 2.4vw, 32px);
   font-weight: 800;
   letter-spacing: -0.022em;
   line-height: 1.02;
@@ -369,7 +372,10 @@
 /* --- Totals --- */
 .totalNumber {
   margin: 0;
-  font-size: 40px;
+  font-family: var(--gt-primitive-font-display);
+  /* Fluid, so a long amount in reais still fits a 320px phone. */
+  font-size: clamp(28px, 9vw, 40px);
+  overflow-wrap: anywhere;
   font-weight: 800;
   letter-spacing: -0.022em;
   line-height: 1;

@@ -93,6 +93,10 @@ Phones get equivalent essential capabilities through patterns that suit the devi
 
 The trip lives in one place, the way a document does: `apps/web/app/app/(trip)/layout.tsx` wraps the trip's document (`/app/trip`), its budget and its checklists in `TripWorkspace`. The sidebar is the trip's table of contents, in a drawer: a button folds it to a 56px rail and opens it again, and its edge drags between 200 and 360px (232 by default); the edge is a focusable separator, so the arrow keys (Shift for bigger steps), Home and End do the same, and the width and the folded state are remembered on the device; the page scrolls in the middle; from 1100px the map stays on the right, sticky under the bar, and flies to the stop of the day whose heading is near the top. The document holds the trip's name and dates, the budget total with a link to the budget, the places in order (each row is the target of its pin) and the itinerary (`DaysView` with `layout="stacked"`: "No day" first, then one section per day, headings one level down). The map in the workspace only looks and points; adding stops, nights and legs stays on the full map (`/app/board`, outside the workspace), opened by "Expand map". The map and MapLibre load only when the screen is wide enough to show them.
 
+### Money and charts (ADR-0036)
+
+Money figures use the display face with tabular digits (`font-variant-numeric: tabular-nums`), under small uppercase labels (11px, 0.07em tracking). Charts follow shadcn's look on Recharts, drawn with tokens: the saved area in `savings` green with a soft gradient, the plan as a dashed `text` line, the goal as a dashed `cta` rule, a `hairline` grid, `text-secondary` axes and a card tooltip. Category bars are `text` (near-black). Status splits use the status tints with their glyph inside. Every chart has a caption, a one-line summary and a screen-reader table.
+
 ### The shell as built (design handoff v2, the TopBar)
 
 `apps/web/app/app/_components/` holds the frame of every signed-in page: everything under `/app` and `/settings` renders inside `SignedInFrame`, which reads the person and their trips once and sends a visitor without a session to log in.

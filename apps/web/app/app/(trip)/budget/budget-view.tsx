@@ -20,7 +20,15 @@ import { Banner } from '@globetrot/ui';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
-import { useEffect, useId, useRef, useState, useTransition, type FormEvent } from 'react';
+import {
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  useTransition,
+  type FormEvent,
+  type ReactNode,
+} from 'react';
 import type { BudgetData, ExpenseData } from '../../../../lib/trips';
 import type { Option } from '../../../settings/options';
 import { addExpense, removeExpense, saveSavings, type ExpenseInput } from './actions';
@@ -28,15 +36,10 @@ import { chartBars, livePlan, parseAmount } from './budget-plan';
 import { AskPipLink } from '../../_components/ask-pip-link';
 import { GroupMoney, type GroupMoneyData } from './group-money';
 import { MilesCard, type MilesData } from './miles-card';
+import { STATUS_GLYPH } from '../../_components/money/status-glyph';
 import styles from './budget.module.css';
 
-/** Status glyphs (business rules: a status always shows a glyph and a word, never colour alone). */
-export const STATUS_GLYPH: Record<ExpenseStatus, string> = {
-  paid: '●',
-  confirmed: '✓',
-  estimate: '≈',
-  unknown: '?',
-};
+export { STATUS_GLYPH };
 const STATUS_ORDER: readonly ExpenseStatus[] = ['paid', 'confirmed', 'estimate', 'unknown'];
 const MONTHLY_MIN = 50;
 const MONTHLY_MAX = 2000;
@@ -63,7 +66,10 @@ export function BudgetView({
   pipEnabled = false,
   group = null,
   miles = null,
+  analytics = null,
 }: {
+  /** The trip's money charts (the money panel), shown under the header. */
+  analytics?: ReactNode;
   pipEnabled?: boolean;
   trip: Trip | null;
   budget: BudgetData | null;
@@ -106,6 +112,7 @@ export function BudgetView({
       pipEnabled={pipEnabled}
       group={group}
       miles={miles}
+      analytics={analytics}
     />
   );
 }
@@ -118,7 +125,9 @@ function Board({
   pipEnabled,
   group,
   miles,
+  analytics,
 }: {
+  analytics: ReactNode;
   pipEnabled: boolean;
   group: GroupMoneyData | null;
   miles: MilesData | null;
@@ -234,6 +243,8 @@ function Board({
           + {t('addExpense')}
         </button>
       </header>
+
+      {analytics}
 
       <div className={styles.top}>
         <Answer

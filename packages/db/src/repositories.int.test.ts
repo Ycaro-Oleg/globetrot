@@ -294,3 +294,22 @@ describe('audit log', () => {
     expect(await db.select().from(schema.auditEvent)).toHaveLength(1);
   });
 });
+
+describe('savings check-ins', () => {
+  it('adds up everyone’s check-ins per week for the trip, oldest week first', async () => {
+    const { trips, unitOfWork, newTrip } = await setup();
+    const trip = await trips.insert(newTrip());
+    const history = await unitOfWork.run(async (tx) => {
+      const checkin = (userId: string, week: string, amountMinor: bigint) =>
+        tx.savings.upsertCheckin({ tripId: trip.id, userId, week, amountMinor, createdAt: at(1) });
+      await checkin('u-ana', '2026-W49', 5_000n);
+      await checkin('u-ana', '2026-W48', 2_000n);
+      await checkin('u-bruno', '2026-W49', 3_000n);
+      return tx.savings.listTripCheckins(trip.id);
+    });
+    expect(history).toEqual([
+      { week: '2026-W48', amountMinor: 2_000n },
+      { week: '2026-W49', amountMinor: 8_000n },
+    ]);
+  });
+});

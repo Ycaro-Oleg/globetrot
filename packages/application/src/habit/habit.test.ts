@@ -59,6 +59,50 @@ describe('the weekly check-in (ADR-0026)', () => {
     expect(habit.countdown.tasks).toContain('insurance');
   });
 
+  it('builds the savings history: typed-in savings as the start, then each week’s check-ins', async () => {
+    const { app, trip, setNow } = await setup();
+    await app.updateSavings.execute(as(ana), { tripId: trip.id, saved: '100', monthly: '870' });
+    await app.checkIn.execute(as(ana), { tripId: trip.id, amount: '200' });
+    setNow(new Date('2026-12-04T12:00:00.000Z'));
+    await app.checkIn.execute(as(ana), { tripId: trip.id, amount: '150' });
+    const history = await app.getSavingsHistory.execute(as(ana), { tripId: trip.id });
+    expect(history).toMatchObject({
+      currency: 'BRL',
+      saved: { amount: '450.00' },
+      start: { amount: '100.00' },
+    });
+    expect(history.weeks).toEqual([
+      {
+        week: '2026-W48',
+        amount: { amount: '200.00', currency: 'BRL' },
+        saved: { amount: '300.00', currency: 'BRL' },
+      },
+      {
+        week: '2026-W49',
+        amount: { amount: '150.00', currency: 'BRL' },
+        saved: { amount: '450.00', currency: 'BRL' },
+      },
+    ]);
+  });
+
+  it('adds up everyone’s check-ins on a trip planned together, and hides other people’s trips', async () => {
+    const { app, trip } = await setup();
+    const { token } = await app.createInvite.execute(as(ana), { tripId: trip.id });
+    await app.acceptInvite.execute(as(bruno), { token });
+    await app.checkIn.execute(as(ana), { tripId: trip.id, amount: '40' });
+    await app.checkIn.execute(as(bruno), { tripId: trip.id, amount: '60' });
+    const history = await app.getSavingsHistory.execute(as(bruno), { tripId: trip.id });
+    expect(history.saved.amount).toBe('100.00');
+    expect(history.weeks).toEqual([
+      expect.objectContaining({
+        week: '2026-W48',
+        amount: expect.objectContaining({ amount: '100.00' }),
+      }),
+    ]);
+    const other = await app.createTrip.execute(as(bruno), { title: 'Solo', currency: 'BRL' });
+    await expect(app.getSavingsHistory.execute(as(ana), { tripId: other.id })).rejects.toThrow();
+  });
+
   it('follows the person’s own calendar for the week', async () => {
     const { app, trip, setNow } = await setup();
     await app.updatePreferences.execute(as(ana), { timeZone: 'America/Sao_Paulo' });

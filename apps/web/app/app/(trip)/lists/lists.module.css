@@ -23,6 +23,7 @@
 .title {
   margin: 0;
   font-size: var(--gt-primitive-type-page);
+  text-wrap: balance;
   font-weight: 800;
   letter-spacing: var(--gt-primitive-type-page-tracking);
   line-height: 1;

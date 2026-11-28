@@ -1,4 +1,4 @@
-import { habitSchema, type Application } from '@globetrot/application';
+import { habitSchema, savingsHistorySchema, type Application } from '@globetrot/application';
 import { createRoute, z, type OpenAPIHono } from '@hono/zod-openapi';
 import { problemResponse, type Env } from '../http';
 
@@ -58,10 +58,39 @@ const checkInRoute = createRoute({
   },
 });
 
+const historyRoute = createRoute({
+  method: 'get',
+  path: '/v1/trips/{id}/savings/history',
+  operationId: 'getSavingsHistory',
+  tags: ['Budget'],
+  summary: 'How the trip’s savings grew, week by week',
+  description:
+    'Everyone’s weekly check-ins added up per week (at most two years), with the running total that ends at what ' +
+    'is set aside today; savings typed in rather than checked in are the starting balance.',
+  security,
+  request: { params: tripParams },
+  responses: {
+    200: {
+      description: 'The history.',
+      content: { 'application/json': { schema: savingsHistorySchema } },
+    },
+    401: problemResponse('No valid session.'),
+    404: problemResponse('No such trip, or not one the caller plans.'),
+  },
+});
+
 export function registerHabitRoutes(app: OpenAPIHono<Env>, application: Application) {
   app.openapi(habitRoute, async (c) =>
     c.json(
       await application.getHabit.execute(c.get('actor'), { tripId: c.req.valid('param').id }),
+      200,
+    ),
+  );
+  app.openapi(historyRoute, async (c) =>
+    c.json(
+      await application.getSavingsHistory.execute(c.get('actor'), {
+        tripId: c.req.valid('param').id,
+      }),
       200,
     ),
   );

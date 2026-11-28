@@ -45,3 +45,4 @@ ADRs 0010 to 0012 were written after the work they describe (#53 to #61), which 
 | [0033](0033-pricing-adjustments-before-launch.md) | Pricing before launch: a R$49 trip pass with 50 Pip credits, a 50-credit pack, coupons on one-time payments, the backup model fixed | Accepted |
 | [0034](0034-hosting-on-railway.md) | Production on Railway: web, api and worker from `main`, PostGIS on a volume, a Railway Bucket; replaces the hosting part of 0002 | Accepted |
 | [0035](0035-trip-workspace.md) | The trip workspace: a sidebar of the trip's sections, the trip's document with the itinerary day by day, the map on the right; the full map stays as "Expand map" | Accepted |
+| [0036](0036-money-charts-with-recharts.md) | Money charts with Recharts in shadcn's style: headline figures, the savings chart (check-ins, then the plan) and costs by category and status | Accepted |

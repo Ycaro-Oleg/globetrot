@@ -47,6 +47,7 @@ export { assertOwner } from './authorization';
 export { billingSchema } from './billing/operations';
 export { groupMoneySchema } from './members/money';
 export { habitSchema } from './habit/operations';
+export { savingsHistorySchema } from './budget/history';
 export { referralSchema } from './billing/referrals';
 export { adminMetricsSchema } from './admin/metrics';
 export {
@@ -116,6 +117,7 @@ import {
   createUpdateExpense,
   createUpdateSavings,
 } from './budget/operations';
+import { createGetSavingsHistory } from './budget/history';
 import {
   createAddChecklistItems,
   createDeleteChecklistItem,
@@ -479,6 +481,7 @@ export function createApplication(ports: Ports) {
     updateMyMoney: createUpdateMyMoney(ports),
     setShares: createSetShares(ports),
     getHabit: createGetHabit(ports),
+    getSavingsHistory: createGetSavingsHistory(ports),
     checkIn: createCheckIn(ports),
     getReferral: createGetReferral(ports),
     claimReferral: createClaimReferral(ports),

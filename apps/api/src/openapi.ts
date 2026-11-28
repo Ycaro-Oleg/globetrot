@@ -35,6 +35,7 @@ export function buildOpenApiDocument() {
       savings: {
         find: unreachable,
         listCheckins: unreachable,
+        listTripCheckins: unreachable,
         listMiles: unreachable,
         listTripMiles: unreachable,
       },

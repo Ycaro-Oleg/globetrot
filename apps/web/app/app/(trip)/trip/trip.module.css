@@ -21,6 +21,7 @@
   font-weight: 800;
   letter-spacing: var(--gt-primitive-type-page-tracking);
   line-height: 1.05;
+  text-wrap: balance;
 }
 
 .meta {
@@ -82,19 +83,7 @@
   font-weight: 800;
 }
 
-.amount {
-  margin: 0;
-  font-size: 22px;
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
-}
 
-.amountLabel {
-  display: block;
-  color: var(--gt-semantic-color-text-secondary);
-  font-size: 13px;
-  font-weight: 600;
-}
 
 .section {
   display: flex;
@@ -114,8 +103,9 @@
 
 .sectionTitle {
   margin: 0;
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 800;
+  letter-spacing: -0.015em;
 }
 
 .stops {

@@ -4,6 +4,8 @@ import { getLocale, getTranslations } from 'next-intl/server';
 import { loadCurrentDestinations, loadCurrentTrip } from '../../../../lib/current-trip';
 import { isPipEnabled } from '../../../../lib/flags';
 import { fetchBudget } from '../../../../lib/trips';
+import { loadMoneyExtras } from '../../_components/money/load-money';
+import { MoneyPanel } from '../../_components/money/money-panel';
 import { DaysView } from '../../days/days-view';
 import { loadDays } from '../../days/load-days';
 import { TitleEditor } from '../../trips/[id]/title-editor';
@@ -42,7 +44,9 @@ export default async function TripPage() {
     );
   }
 
-  const budget = options ? await fetchBudget(options, trip.id) : null;
+  const [budget, extras] = options
+    ? await Promise.all([fetchBudget(options, trip.id), loadMoneyExtras(options, trip.id)])
+    : [null, null];
   const canEdit = trip.role !== 'viewer';
   const dated = days.days.filter((day) => day.date !== null);
   const date = (value: string) =>
@@ -51,9 +55,6 @@ export default async function TripPage() {
     dated.length > 0
       ? t('dates', { start: date(dated[0]!.date!), end: date(dated.at(-1)!.date!) })
       : t('noDates');
-  const money = (amount: string, currency: string) =>
-    new Intl.NumberFormat(locale, { style: 'currency', currency }).format(Number(amount));
-  const hasCosts = budget !== null && Number(budget.total.amount) > 0;
   const countryOf = (code: string | null | undefined) => {
     if (!code) return null;
     try {
@@ -81,24 +82,24 @@ export default async function TripPage() {
         </p>
       </header>
 
-      <section className={styles.summary} aria-labelledby="trip-budget">
-        <h2 id="trip-budget" className={styles.cardTitle}>
-          {t('budget')}
-        </h2>
-        <p className={styles.amount}>
-          {hasCosts ? (
-            <>
-              <span className={styles.amountLabel}>{t('budgetTotal')}</span>{' '}
-              {money(budget.total.amount, budget.currency)}
-            </>
-          ) : (
-            <span className={styles.muted}>{t('budgetNone')}</span>
-          )}
-        </p>
-        <Link href="/app/budget" className={styles.link}>
-          {t('budgetSee')}
-        </Link>
-      </section>
+      {budget && extras ? (
+        <MoneyPanel
+          budget={budget}
+          history={extras.history}
+          today={extras.today}
+          variant="summary"
+        />
+      ) : (
+        <section className={styles.summary} aria-labelledby="trip-budget">
+          <h2 id="trip-budget" className={styles.cardTitle}>
+            {t('budget')}
+          </h2>
+          <p className={styles.muted}>{t('budgetNone')}</p>
+          <Link href="/app/budget" className={styles.link}>
+            {t('budgetSee')}
+          </Link>
+        </section>
+      )}
 
       <section id="places" className={styles.section} aria-labelledby="places-title">
         <div className={styles.sectionHead}>

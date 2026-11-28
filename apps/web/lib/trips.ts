@@ -133,3 +133,21 @@ export async function fetchVisas(options: FetchOptions): Promise<VisaData[] | nu
     return null;
   }
 }
+
+export type SavingsHistoryData =
+  paths['/v1/trips/{id}/savings/history']['get']['responses'][200]['content']['application/json'];
+
+/** How the trip's savings grew week by week, or `null` when it cannot be read. */
+export async function fetchSavingsHistory(
+  options: FetchOptions,
+  tripId: string,
+): Promise<SavingsHistoryData | null> {
+  try {
+    const { data } = await createServerApiClient(options).GET('/v1/trips/{id}/savings/history', {
+      params: { path: { id: tripId } },
+    });
+    return data ?? null;
+  } catch {
+    return null;
+  }
+}
