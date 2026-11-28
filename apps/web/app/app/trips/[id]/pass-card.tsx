@@ -33,8 +33,9 @@ export function PassCard({
   const [notice, setNotice] = useState('');
   const [pending, startTransition] = useTransition();
   useEffect(() => {
-    if (justPaid) track('pass_bought');
-  }, [justPaid]);
+    // The return from checkout can render more than once (a reload, a refresh): one pass, one count.
+    if (justPaid) track('pass_bought', tripId);
+  }, [justPaid, tripId]);
   const price = formatMoney(money(tripPassPrice(currency), currency), locale, {
     precision: 'full',
   });

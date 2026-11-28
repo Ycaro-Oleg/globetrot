@@ -1675,7 +1675,8 @@
     "body": "Com o seu ok, carregamos o Meta Pixel para saber quais anúncios trazem pessoas ao Globetrot. Ele usa cookies. Recusar não muda mais nada.",
     "privacy": "Política de privacidade",
     "accept": "Aceitar",
-    "reject": "Recusar"
+    "reject": "Recusar",
+    "internalNote": "Este aparelho não é contado nas estatísticas do Globetrot."
   },
   "statusPages": {
     "notFoundTitle": "Esta página pegou o caminho errado",

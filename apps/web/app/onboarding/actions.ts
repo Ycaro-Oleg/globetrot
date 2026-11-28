@@ -5,6 +5,7 @@ import { getTranslations } from 'next-intl/server';
 import { CHECKLIST_GROUPS } from '@globetrot/domain';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
+import { queueEvents } from '../../lib/analytics';
 import { PLAN_DRAFT_COOKIE } from '../../lib/plan-draft';
 import { apiInternalUrl } from '../../lib/api-proxy';
 import { createServerApiClient, sessionCookieHeader } from '../../lib/stored-preferences';
@@ -132,6 +133,13 @@ export async function finishOnboarding(input: OnboardingInput): Promise<{ error:
     })
     .catch(() => null);
   if (!route.data || !cost.data || !savings.data) return { error: true };
+  // Counted now that the trip exists, once per trip (the next page sends them).
+  queueEvents(
+    store,
+    { event: 'first_trip', once: tripId },
+    { event: 'trip_created', once: tripId },
+    ...(Number(input.monthly) > 0 ? [{ event: 'savings_goal_set' as const, once: tripId }] : []),
+  );
   // The landing's numbers have done their job.
   store.delete(PLAN_DRAFT_COOKIE);
   redirect('/app/board');

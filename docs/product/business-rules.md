@@ -278,7 +278,7 @@ Decided in [ADR-0019](../architecture/adr/0019-plans-trial-and-pip-credits.md), 
 - **Export:** Settings → "Your data" downloads everything the account holds as JSON (never passwords or tokens).
 - **Account deletion:** after typing their email again, the person's account and everything in it go for good: trips, visas, community profile, posts and comments (also on others' posts), likes, follows, photos (with their stored files), settings and sessions. It cannot be undone.
 
-- **Measurement:** cookieless counts (Plausible) when configured; the Meta Pixel only after the visitor accepts marketing cookies, with Accept and Reject equally easy and the choice changeable; conversion events never carry personal data ([ADR-0018](../architecture/adr/0018-launch-measurement-and-consent.md)).
+- **Measurement:** cookieless counts (Plausible) when configured; the Meta Pixel only after the visitor accepts marketing cookies, with Accept and Reject equally easy and the choice changeable; conversion events never carry personal data ([ADR-0018](../architecture/adr/0018-launch-measurement-and-consent.md)). *Amended 2026-11-28 (owner decision, #190):* PostHog, when configured, counts anonymous visitors without any cookie or browser storage before the visitor answers the banner and after Reject, and remembers the browser with a cookie only after Accept; every event carries only the page's language; the team's own browsers (`?interno=1`, admin accounts) send nothing ([ADR-0021](../architecture/adr/0021-error-monitoring-and-product-analytics.md), [`analytics.md`](../engineering/analytics.md)).
 
 ## Progression (planned, M12+)
 

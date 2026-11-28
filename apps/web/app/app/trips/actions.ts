@@ -5,6 +5,7 @@ import { getLocale, getTranslations } from 'next-intl/server';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { actionApiClient } from '../../../lib/action-client';
+import { queueEvents } from '../../../lib/analytics';
 import { SELECTED_TRIP_COOKIE } from '../../../lib/trips';
 
 const cookieOptions = () => ({
@@ -63,6 +64,7 @@ export async function createTrip(formData: FormData): Promise<void> {
   });
   if (!data) redirect(`/app/trips?status=${planLimitStatus(error) ?? 'create-error'}`);
   store.set(SELECTED_TRIP_COOKIE, data.id, cookieOptions());
+  queueEvents(store, { event: 'trip_created', once: data.id });
   redirect(`/app/trips/${data.id}`);
 }
 

@@ -86,7 +86,8 @@ export function SignupForm({
       if (Object.keys(view.fields).length > 0) setAttempt((count) => count + 1);
       return;
     }
-    track('sign_up');
+    // One account per tab: a second submit (back button, a retry after a slow answer) does not count again.
+    track('sign_up', 'account');
     // No session yet while the address is unverified: ask them to open the link. If the server does not require
     // verification it opened a session, so go straight in.
     if (result.data.token) {
