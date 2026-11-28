@@ -19,4 +19,20 @@ describe('SegmentedControl', () => {
     expect(html).toContain('checked');
     expect(html).toContain('Appearance');
   });
+
+  it('puts its help under the control and links it as the description', () => {
+    const html = renderToStaticMarkup(
+      <SegmentedControl
+        label="Theme"
+        description="Match my device follows your device."
+        options={[{ id: 'day', label: 'Day' }]}
+        defaultValue="day"
+      />,
+    );
+    const group = html.match(/<div[^>]*role="radiogroup"[^>]*>/)?.[0] ?? '';
+    const describedBy = group.match(/aria-describedby="([^"]+)"/)?.[1];
+    expect(describedBy).toBeTruthy();
+    expect(html).toContain(`id="${describedBy}"`);
+    expect(html).toContain('Match my device follows your device.');
+  });
 });

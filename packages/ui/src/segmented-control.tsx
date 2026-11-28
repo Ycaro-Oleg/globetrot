@@ -1,7 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { Label, Radio, RadioGroup, type RadioGroupProps } from 'react-aria-components';
+import { Label, Radio, RadioGroup, Text, type RadioGroupProps } from 'react-aria-components';
 
 export interface SegmentOption {
   id: string;
@@ -14,10 +14,12 @@ export interface SegmentedControlProps extends Omit<
 > {
   label: ReactNode;
   options: readonly SegmentOption[];
+  /** Help under the control, read with it (`aria-describedby`). */
+  description?: ReactNode;
 }
 
 /** A single-choice segmented control with radio-group keyboard semantics. */
-export function SegmentedControl({ label, options, ...props }: SegmentedControlProps) {
+export function SegmentedControl({ label, options, description, ...props }: SegmentedControlProps) {
   return (
     <RadioGroup {...props} orientation="horizontal" className="gt-segmented">
       <Label className="gt-field__label">{label}</Label>
@@ -33,6 +35,11 @@ export function SegmentedControl({ label, options, ...props }: SegmentedControlP
           </Radio>
         ))}
       </div>
+      {description ? (
+        <Text slot="description" className="gt-field__description">
+          {description}
+        </Text>
+      ) : null}
     </RadioGroup>
   );
 }

@@ -143,6 +143,7 @@ export function SettingsView({
             label={t('theme')}
             options={themes}
             defaultValue={values.theme}
+            description={t('appearanceHelp')}
           />
           <SegmentedControl
             name="motion"
@@ -150,7 +151,6 @@ export function SettingsView({
             options={motions}
             defaultValue={values.motion}
           />
-          <p className={styles.description}>{t('appearanceHelp')}</p>
           <SegmentedControl
             name="weeklyReminder"
             label={t('weeklyReminder.label')}
@@ -159,8 +159,8 @@ export function SettingsView({
               { id: 'off', label: t('weeklyReminder.off') },
             ]}
             defaultValue={values.weeklyReminder === false ? 'off' : 'on'}
+            description={t('weeklyReminder.hint')}
           />
-          <p className={styles.description}>{t('weeklyReminder.hint')}</p>
           <div className={styles.actions}>
             <Button type="submit" variant="cta">
               {t('save')}

@@ -18,10 +18,10 @@
 /* One step down the scale (owner, November 2026): the trip's name, then its sections, then the numbers. */
 .title {
   margin: 0;
-  font-size: var(--gt-primitive-type-section);
-  font-weight: var(--gt-primitive-type-display-weight);
+  font-size: var(--gt-primitive-type-app-page);
+  font-weight: var(--gt-primitive-type-weight-bold);
   letter-spacing: var(--gt-primitive-type-section-tracking);
-  line-height: var(--gt-primitive-type-section-line-height);
+  line-height: 1.1;
   text-wrap: balance;
 }
 
@@ -32,13 +32,13 @@
   align-items: center;
   margin: 0;
   color: var(--gt-semantic-color-text-secondary);
-  font-size: 14px;
-  font-weight: 600;
+  font-size: var(--gt-primitive-type-app-body);
+  font-weight: var(--gt-primitive-type-weight-600);
 }
 
 .muted {
   color: var(--gt-semantic-color-text-secondary);
-  font-size: 14px;
+  font-size: var(--gt-primitive-type-app-body);
 }
 
 .link {
@@ -46,8 +46,8 @@
   align-items: center;
   min-height: var(--gt-component-hit-target);
   color: var(--gt-semantic-color-primary);
-  font-size: 14px;
-  font-weight: 700;
+  font-size: var(--gt-primitive-type-app-body);
+  font-weight: var(--gt-primitive-type-weight-500);
   text-decoration: underline;
   text-underline-offset: 3px;
 }
@@ -61,7 +61,7 @@
   border-radius: var(--gt-primitive-radius-pill);
   background: var(--gt-semantic-color-primary);
   color: var(--gt-semantic-color-on-primary);
-  font-weight: 700;
+  font-weight: var(--gt-primitive-type-weight-bold);
   text-decoration: none;
 }
 
@@ -80,8 +80,9 @@
 .cardTitle {
   grid-column: 1 / -1;
   margin: 0;
-  font-size: 15px;
-  font-weight: 800;
+  font-size: var(--gt-primitive-type-app-title);
+  font-weight: var(--gt-primitive-type-weight-600);
+  font-family: var(--gt-primitive-font-body);
 }
 
 .section {
@@ -102,9 +103,10 @@
 
 .sectionTitle {
   margin: 0;
-  font-size: var(--gt-primitive-type-card-title-min);
-  font-weight: var(--gt-primitive-type-card-weight);
+  font-size: var(--gt-primitive-type-app-section);
+  font-weight: var(--gt-primitive-type-weight-bold);
   letter-spacing: var(--gt-primitive-type-card-tracking);
+  line-height: 1.25;
 }
 
 .stops {
@@ -141,8 +143,8 @@
   border-radius: 50%;
   background: var(--gt-semantic-color-primary);
   color: var(--gt-semantic-color-on-primary);
-  font-size: 13px;
-  font-weight: 800;
+  font-size: var(--gt-primitive-type-app-label);
+  font-weight: var(--gt-primitive-type-weight-bold);
 }
 
 .stopText {
@@ -153,7 +155,7 @@
 }
 
 .stopName {
-  font-weight: 800;
+  font-weight: var(--gt-primitive-type-weight-600);
   overflow-wrap: anywhere;
 }
 
