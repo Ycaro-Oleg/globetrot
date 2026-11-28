@@ -56,9 +56,13 @@ export interface AuthDependencies {
   readonly onEmailFailure?: (failure: EmailFailure) => Promise<void> | void;
 }
 
-const errorCode = (error: unknown) => {
-  const code = (error as { code?: unknown }).code;
-  return typeof code === 'string' ? code : 'unknown error';
+/**
+ * The error's code when it looks like one (`ECONNREFUSED`, `EAUTH`…), else `unknown error`. It goes to the logs,
+ * the audit table and error monitoring, so free text (which can quote an address or a link) never passes.
+ */
+export const errorCode = (error: unknown) => {
+  const code = (error as { code?: unknown } | null)?.code;
+  return typeof code === 'string' && /^[A-Z0-9_]{1,32}$/.test(code) ? code : 'unknown error';
 };
 
 /**
