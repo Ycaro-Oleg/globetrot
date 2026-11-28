@@ -182,7 +182,10 @@ export function createAuth(db: Database, config: AuthConfig, { email }: AuthDepe
       cookiePrefix: 'globetrot',
       useSecureCookies: config.secureCookies,
       defaultCookieAttributes: { httpOnly: true, sameSite: 'lax', path: '/' },
-      ipAddress: { trustedProxies: TRUSTED_PROXY_RANGES },
+      ipAddress: {
+        ipAddressHeaders: [config.clientIpHeader],
+        trustedProxies: TRUSTED_PROXY_RANGES,
+      },
     },
     databaseHooks: {
       user: {
