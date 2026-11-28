@@ -1677,6 +1677,60 @@
     "accept": "Aceitar",
     "reject": "Recusar"
   },
+  "interestList": {
+    "title": "Ainda não é hora de planejar?",
+    "promise": "Entre na lista: novidades do Globetrot e dicas de planejamento de viagem, no máximo 2 emails por mês, cancele em um clique.",
+    "email": "E-mail",
+    "consent": "Quero receber esses emails",
+    "privacy": "Como guardamos seu e-mail: <link>Política de privacidade</link>.",
+    "submit": "Entrar na lista",
+    "pending": "Enviando…",
+    "successTitle": "Confira sua caixa de entrada",
+    "successBody": "Mandamos um link para confirmar seu e-mail. Você entra na lista quando abrir o link.",
+    "errors": {
+      "requiredEmail": "Digite seu e-mail.",
+      "invalidEmail": "Digite um e-mail válido, como nome@exemplo.com.",
+      "consentRequired": "Marque a caixa para dizer que quer receber esses emails.",
+      "rateLimited": "Muitas tentativas. Tente de novo em alguns minutos.",
+      "server": "Não conseguimos incluir você agora. Tente de novo daqui a pouco."
+    },
+    "confirm": {
+      "pageTitle": "A lista de interesse",
+      "back": "Voltar ao Globetrot",
+      "confirmed": {
+        "title": "Você está na lista",
+        "body": "Obrigado. Vamos escrever no máximo duas vezes por mês, e todo email tem um link para sair com um clique."
+      },
+      "already_confirmed": {
+        "title": "Você já estava na lista",
+        "body": "Nada mudou: seu lugar na lista continua lá."
+      },
+      "expired": {
+        "title": "Este link expirou",
+        "body": "Os links de confirmação valem por 48 horas. Entre de novo pela página inicial e mandamos um novo."
+      },
+      "not_found": {
+        "title": "Não encontramos este link",
+        "body": "Ele pode estar incompleto, ou a inscrição saiu da lista. Você pode entrar de novo pela página inicial."
+      },
+      "unavailable": {
+        "title": "Não conseguimos conferir este link agora",
+        "body": "Abra o link do email de novo daqui a pouco."
+      }
+    },
+    "leave": {
+      "title": "Sair da lista?",
+      "body": "Você não vai mais receber novidades nem dicas do Globetrot.",
+      "submit": "Sair da lista",
+      "pending": "Saindo da lista…",
+      "error": "Não conseguimos fazer isso agora. Tente de novo daqui a pouco.",
+      "doneTitle": "Você saiu da lista",
+      "doneBody": "Não vamos mais mandar emails para você. Pode entrar de novo quando quiser.",
+      "invalidTitle": "Este link está incompleto",
+      "invalidBody": "Abra o link do email de novo, ou copie o endereço inteiro.",
+      "back": "Voltar ao Globetrot"
+    }
+  },
   "statusPages": {
     "notFoundTitle": "Esta página pegou o caminho errado",
     "notFoundBody": "O endereço não existe, ou a página mudou de lugar.",

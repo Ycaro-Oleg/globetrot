@@ -411,6 +411,24 @@ const stub = createServer(async (request, response) => {
   const route = `${request.method} ${url.pathname}`;
 
   if (route === 'GET /v1/auth/providers') return reply(response, 200, { providers: ['google'] });
+  // The interest list (#191's contract), for the form and the email links (#192).
+  if (route === 'POST /v1/leads') {
+    if (body.email === 'limit@example.com') {
+      return reply(response, 429, { code: 'RATE_LIMITED' }, { 'retry-after': '60' });
+    }
+    return body.consent === true
+      ? reply(response, 202, { accepted: true })
+      : reply(response, 422, { code: 'VALIDATION_FAILED', errors: [{ field: 'consent' }] });
+  }
+  if (route === 'POST /v1/leads/confirm') {
+    const result = String(body.token ?? '').split('-token-')[0];
+    return reply(response, 200, {
+      result: ['confirmed', 'already_confirmed', 'expired'].includes(result) ? result : 'not_found',
+      internal: false,
+    });
+  }
+  if (route === 'POST /v1/leads/unsubscribe')
+    return reply(response, 200, { result: 'unsubscribed' });
   if (route === 'GET /v1/me') {
     return signedIn
       ? reply(response, 200, USER)
@@ -1174,6 +1192,114 @@ try {
         }
       }
     });
+  }
+
+  // -------------------------------------------------------------------------------------------------------
+  // The interest list (#192): the form's states on a public itinerary, from the keyboard, and the pages the
+  // emails link to, through axe in both themes and languages, on a phone and a desktop.
+  // -------------------------------------------------------------------------------------------------------
+  for (const locale of ['en', 'pt-BR']) {
+    const list = CATALOGS[locale].interestList;
+    const itinerary = `${base}${locale === 'pt-BR' ? '/roteiros/portugal' : '/itineraries/portugal'}`;
+    for (const viewport of [VIEWPORTS.phone, VIEWPORTS.desktop]) {
+      const where = `${locale}/${viewport.width}px`;
+      const listAxe = async (page, name, selector) => {
+        for (const theme of ['day', 'red-eye']) {
+          await page.evaluate(
+            (value) => document.documentElement.setAttribute('data-theme', value),
+            theme,
+          );
+          const results = await new AxeBuilder({ page })
+            .include(selector)
+            .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'])
+            .analyze();
+          for (const violation of results.violations) {
+            failures.push(
+              `axe ${theme}/${where}/${name}: ${violation.id} (${violation.nodes.map((node) => node.target.join(' ')).join(' | ')})`,
+            );
+          }
+        }
+      };
+      const { context, page } = await open(locale, { viewport });
+      try {
+        const form = page.locator('[data-interest-list]');
+        const submit = form.getByRole('button', { name: list.submit, exact: true });
+        const email = form.getByLabel(list.email, { exact: true });
+        const consent = form.getByRole('checkbox', { name: list.consent });
+
+        await go(page, itinerary);
+        await listAxe(page, 'list-form', '[data-interest-list]');
+        check(!(await consent.isChecked()), `${where}: the consent box starts ticked`);
+
+        // An empty submit names both problems, in text, and moves the focus to the email.
+        await submit.click();
+        await form.getByRole('alert').filter({ hasText: list.errors.requiredEmail }).waitFor();
+        check(
+          (await email.getAttribute('aria-invalid')) === 'true' &&
+            (await email.evaluate((element) => element === document.activeElement)),
+          `${where}: the empty email is not marked invalid and focused`,
+        );
+        check(
+          await form.getByText(list.errors.consentRequired).isVisible(),
+          `${where}: the unticked consent box is not explained`,
+        );
+        await listAxe(page, 'list-errors', '[data-interest-list]');
+
+        // Too many attempts.
+        await email.fill('limit@example.com');
+        // The box is ticked through its visible label, as a person does.
+        await form.getByText(list.consent, { exact: true }).click();
+        check(await consent.isChecked(), `${where}: the consent label does not tick the box`);
+        await submit.click();
+        await form.getByRole('alert').filter({ hasText: list.errors.rateLimited }).waitFor();
+        await listAxe(page, 'list-rate-limited', '[data-interest-list]');
+
+        // The keyboard alone: type, tick with Space, reach the button and press Enter.
+        await go(page, itinerary);
+        await email.focus();
+        await page.keyboard.type('new@example.com');
+        await page.keyboard.press('Tab');
+        await page.keyboard.press('Space');
+        await page.keyboard.press('Tab');
+        await page.keyboard.press('Tab');
+        await page.keyboard.press('Enter');
+        await form.getByRole('heading', { name: list.successTitle }).waitFor();
+        check(
+          await form.getByText(list.successBody).isVisible(),
+          `${where}: the success state does not say to check the inbox`,
+        );
+        await listAxe(page, 'list-sent', '[data-interest-list]');
+
+        // The confirmation link, for each answer.
+        for (const result of ['confirmed', 'already_confirmed', 'expired', 'not_found']) {
+          await go(page, `${base}/list/confirm?token=${result}-token-abcdefghijkl&lang=${locale}`);
+          check(
+            (await page.getByRole('heading', { level: 1 }).textContent()) ===
+              list.confirm[result].title,
+            `${where}: /list/confirm does not show "${result}"`,
+          );
+          check(
+            (await page.getByRole('link', { name: list.confirm.back }).count()) === 1,
+            `${where}: /list/confirm (${result}) has no way back`,
+          );
+          await listAxe(page, `list-confirm-${result}`, 'main');
+        }
+
+        // Leaving: the page alone unsubscribes nobody; the button does.
+        await go(page, `${base}/list/unsubscribe?token=leave-token-abcdefghijkl&lang=${locale}`);
+        await page.getByRole('heading', { name: list.leave.title }).waitFor();
+        await listAxe(page, 'list-leave', 'main');
+        await page.getByRole('button', { name: list.leave.submit, exact: true }).click();
+        await page.getByRole('heading', { name: list.leave.doneTitle }).waitFor();
+        await listAxe(page, 'list-left', 'main');
+      } catch (error) {
+        failures.push(
+          `${where}: the interest list could not be checked (${error.message.split('\n')[0]})`,
+        );
+      } finally {
+        await context.close();
+      }
+    }
   }
 
   if (process.env.AXE_ONLY) {

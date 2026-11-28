@@ -1677,6 +1677,60 @@
     "accept": "Accept",
     "reject": "Reject"
   },
+  "interestList": {
+    "title": "Not ready to plan yet?",
+    "promise": "Join the list: news about Globetrot and trip-planning tips, at most 2 emails a month, unsubscribe in one click.",
+    "email": "Email",
+    "consent": "I want to receive these emails",
+    "privacy": "How we keep your email: <link>Privacy policy</link>.",
+    "submit": "Join the list",
+    "pending": "Sending…",
+    "successTitle": "Check your inbox",
+    "successBody": "We sent you a link to confirm your email. You join the list when you open it.",
+    "errors": {
+      "requiredEmail": "Enter your email.",
+      "invalidEmail": "Enter a valid email, like name@example.com.",
+      "consentRequired": "Tick the box to say you want these emails.",
+      "rateLimited": "Too many attempts. Try again in a few minutes.",
+      "server": "We could not add you right now. Try again in a moment."
+    },
+    "confirm": {
+      "pageTitle": "The interest list",
+      "back": "Back to Globetrot",
+      "confirmed": {
+        "title": "You are on the list",
+        "body": "Thank you. We will write at most twice a month, and every email has a link to leave in one click."
+      },
+      "already_confirmed": {
+        "title": "You were already on the list",
+        "body": "Nothing changed: your place on the list is still there."
+      },
+      "expired": {
+        "title": "This link has expired",
+        "body": "Confirmation links last 48 hours. Join again from the home page and we will send a new one."
+      },
+      "not_found": {
+        "title": "We could not find this link",
+        "body": "It may be incomplete, or the entry has left the list. You can join again from the home page."
+      },
+      "unavailable": {
+        "title": "We could not check this link right now",
+        "body": "Open the link from the email again in a moment."
+      }
+    },
+    "leave": {
+      "title": "Leave the list?",
+      "body": "You will get no more news or tips from Globetrot.",
+      "submit": "Leave the list",
+      "pending": "Leaving the list…",
+      "error": "We could not do that right now. Try again in a moment.",
+      "doneTitle": "You are off the list",
+      "doneBody": "We will not email you again. You can join again whenever you like.",
+      "invalidTitle": "This link is incomplete",
+      "invalidBody": "Open the link from the email again, or copy the whole address.",
+      "back": "Back to Globetrot"
+    }
+  },
   "statusPages": {
     "notFoundTitle": "This page took a wrong turn",
     "notFoundBody": "The address does not exist, or the page moved.",

@@ -1,0 +1,95 @@
+/* The interest list: a quiet card beside the main call to action, and the confirm and unsubscribe pages. */
+.list {
+  max-width: 34rem;
+  margin: 0 auto;
+  padding: 24px;
+  border: 1px solid var(--gt-semantic-color-hairline);
+  border-radius: 20px;
+  background: var(--gt-semantic-color-surface-card);
+  color: var(--gt-semantic-color-text);
+  text-align: left;
+}
+
+.title {
+  margin: 0 0 6px;
+  font-size: 20px;
+  line-height: 1.25;
+}
+
+.promise {
+  margin: 0 0 16px;
+  color: var(--gt-semantic-color-text-secondary);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.form {
+  display: grid;
+  gap: 14px;
+}
+
+.form[hidden] {
+  display: none;
+}
+
+.alert,
+.fieldError {
+  margin: 0;
+  color: var(--gt-semantic-color-danger);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.alert::before,
+.fieldError::before {
+  /* Not colour alone: a mark and words. */
+  content: '! ';
+}
+
+.privacy {
+  margin: 0;
+  color: var(--gt-semantic-color-text-secondary);
+  font-size: 14px;
+}
+
+.privacy a {
+  color: inherit;
+}
+
+.success h3 {
+  margin: 0 0 4px;
+  font-size: 17px;
+}
+
+.success h3::before {
+  content: '✓ ';
+}
+
+.success p {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.page {
+  max-width: 34rem;
+  margin: 0 auto;
+  padding: 3rem 1.25rem;
+  color: var(--gt-semantic-color-text);
+  line-height: 1.6;
+}
+
+.page h1 {
+  margin: 0 0 8px;
+  font-size: 28px;
+  line-height: 1.2;
+}
+
+.page p {
+  margin: 0 0 16px;
+}
+
+.page a {
+  color: inherit;
+  font-weight: 700;
+}

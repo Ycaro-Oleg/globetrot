@@ -23,6 +23,7 @@ import { LandingScroll, Words } from './landing-scroll';
 import { PipDemo, Pricing } from './landing-interactive';
 import { StickyCta } from './landing-sticky-cta';
 import { ConsentLink } from './analytics';
+import { InterestListForm } from './_interest-list/interest-list-form';
 import { TrackedLink } from './tracked-link';
 import { Logomark } from './logomark';
 import { SITE_NAME } from './site';
@@ -401,6 +402,10 @@ export default function HomePage() {
             </Link>
           </div>
         </section>
+        {/* For visitors not ready to sign up: below "Try free", never instead of it. */}
+        <div className={styles.band}>
+          <InterestListForm source="landing" locale={locale === 'pt-BR' ? 'pt-BR' : 'en'} />
+        </div>
         <LandingReveal />
         <LandingScroll />
         <LandingAnchors />

@@ -59,6 +59,7 @@ Where to look, so you can find things without searching. Behaviour is documented
 | `proxy.ts` | Forwards `/api/auth/*` and `/v1/*` to the API, and sends anonymous visitors of `/app` to `/login?next=…` ([ADR-0010](../architecture/adr/0010-web-proxies-the-api.md)) |
 | `app/(auth)/` | Account screens: `login`, `signup`, `recover`, `reset-password`, `email-verified`, with `_components/` (forms, password field, resend control, language switcher) and `auth.module.css` |
 | `app/(legal)/` | Draft `/terms` and `/privacy` |
+| `app/_interest-list/`, `app/list/`, `lib/leads.ts` | The interest list (#192): the form on the landing and the public itineraries, `/list/confirm` and `/list/unsubscribe` (the pages the list emails link to, in the email's `lang`), and the client for the public `/v1/leads` routes |
 | `app/page.tsx`, `app/landing*.tsx`, `app/landing*.module.css` | The public landing page |
 | `app/app/board/` | The starter map board: `world-map.tsx` (state, search, route, `localStorage`), `map-canvas.tsx` (MapLibre), styles |
 | `app/app/trips/` | The trip list and per-trip overview, with `actions.ts` (server actions: open, create, archive, undo) |
