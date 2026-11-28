@@ -33,12 +33,13 @@ A browser that is the team's sends **nothing** to PostHog, Plausible or the Meta
 - **Admin accounts** (`ADMIN_EMAILS`): when a signed-in page opens, the browser asks the admin dashboard's endpoint (`GET /v1/admin/metrics`) once per account and visit (an admin signing in after another account on the same tab is asked about too; the tab keeps only the account id it last asked about, never sent anywhere). It answers only admins (everyone else gets "not found"), and an admin's browser is then marked as above, so it stays out **also after signing out**. Only the very first page of an admin's first sign-in on a new browser can slip through before the answer arrives: mark new devices with `?interno=1` first.
 - **QA and bot test accounts** cannot be filtered by account in PostHog, because no event carries one. Their browsers open `/?interno=1` before testing, and their scripts do the same.
 - Every phone, laptop and browser profile of the team needs the mark once.
+- **The mark is a client-side switch, not a security boundary** (CTO's note). It lives in the browser, anyone who knows `?interno=1` can set it on their own device, and clearing site data removes it. That is acceptable because it only keeps a device out of the counts: it opens nothing and changes no data. Do not use it for anything that needs trust; a number that must be exact (accounts, leads, payments) comes from the database on `/app/admin/metrics`.
 
 ## How visitors are counted
 
 - **Before an answer to the banner, and after Reject**, PostHog runs in **cookieless mode** (`cookieless_mode: 'on_reject'`, `opt_out_capturing_by_default` until the visitor accepts): no cookie and no storage; PostHog makes a privacy-preserving hash on its servers to tell visitors apart. **After Accept** it keeps its id in a cookie and `localStorage` and recognises the visitor on later visits.
 - **The PostHog project must have cookieless mode switched on**, or PostHog drops every cookieless event (`posthog-js` 1.451.2 documents this). That is a step for whoever has PostHog access, below.
-- **What the number means:** "unique visitors" counts people who accepted once each; those who did not are counted by PostHog's hash, which can count one person more than once over a long period (a new device, a new network). Read weekly visitors as close to, and possibly a little above, the real number of people. **The CTO confirms this setting** before it ships (#190).
+- **What the number means:** "unique visitors" counts people who accepted once each; those who did not are counted by PostHog's hash, which can count one person more than once over a long period (a new device, a new network). Read weekly visitors as close to, and possibly a little above, the real number of people. **Decided by the owner on 2026-11-28** (#190; ADR-0021 amended).
 - Ad blockers stop all three tools: every number here is a floor for visits and a ceiling for nothing.
 
 ## Where a visit came from
@@ -70,8 +71,10 @@ Also on the dashboard:
 
 Menu names below are PostHog's at the time of writing; they were not checked against a live project.
 
-1. In the project settings, **switch on cookieless mode** (server-side hash). Without it, visitors who have not accepted are dropped.
-2. In the project settings, set the **internal and test user filter** to keep only events whose `$host` is `globetrot.com.br`. That drops local, preview and staging traffic. Turn the filter on by default for new insights.
-3. The team's devices, admin accounts and QA or bot browsers send nothing (see above), so they need no PostHog filter. Make sure each team device opened `?interno=1` once.
-4. Build metrics 1 to 4 as insights with the filter from step 2 on: 1 as a Trends insight on `$pageview`, unique users, daily and weekly; 2 as the same insight broken down by `utm_source` and by `$referring_domain`; 3 and 4 as formulas over unique users of `lead_captured`, `cta_click`, `plan_saved` and `lead_submitted` against metric 1. Add the funnel and the retention above. Compare with the previous period, and add `locale` as a breakdown.
-5. Put them on one dashboard named for the phase. Metrics 5 to 8 stay on `/app/admin/metrics`.
+1. Create the project on PostHog's **EU** cloud (the app's default host is `https://eu.i.posthog.com`; keep `NEXT_PUBLIC_POSTHOG_HOST` on the EU host).
+2. In the project settings, switch on **"Discard client IP data"**, so PostHog does not store the visitor's IP address.
+3. In the project settings, **switch on cookieless mode** (server-side hash). Without it, visitors who have not accepted are dropped.
+4. In the project settings, set the **internal and test user filter** to keep only events whose `$host` is `globetrot.com.br`. That drops local, preview and staging traffic. Turn the filter on by default for new insights.
+5. The team's devices, admin accounts and QA or bot browsers send nothing (see above), so they need no PostHog filter. Make sure each team device opened `?interno=1` once.
+6. Build metrics 1 to 4 as insights with the filter from step 4 on: 1 as a Trends insight on `$pageview`, unique users, daily and weekly; 2 as the same insight broken down by `utm_source` and by `$referring_domain`; 3 and 4 as formulas over unique users of `lead_captured`, `cta_click`, `plan_saved` and `lead_submitted` against metric 1. Add the funnel and the retention above. Compare with the previous period, and add `locale` as a breakdown.
+7. Put them on one dashboard named for the phase. Metrics 5 to 8 stay on `/app/admin/metrics`.
