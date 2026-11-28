@@ -15,8 +15,9 @@ export const INTEREST_LIST = {
   /** Confirmation emails one address may receive in 24 hours. */
   confirmEmailsPerDay: 3,
   /**
-   * The consent text the person agreed to. Bump it in the same change as the form's consent copy, so every
-   * entry says which wording it accepted.
+   * The consent text the person agreed to: `2026-11-27` is the wording the owner approved that day ("news about
+   * Globetrot and trip-planning tips, at most 2 emails a month, unsubscribe in one click"). Bump it in the same
+   * change as any new consent copy, so every entry says which wording it accepted.
    */
   consentVersion: '2026-11-27',
 } as const;

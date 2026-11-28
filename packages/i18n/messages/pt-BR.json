@@ -158,7 +158,7 @@
     },
     "interestConfirm": {
       "subject": "Confirme seu e-mail para a lista do Globetrot",
-      "body": "Alguém, esperamos que você, pediu para entrar na lista do Globetrot com este endereço. Confirme para ficar na lista.",
+      "body": "Alguém, esperamos que você, pediu para entrar na lista do Globetrot com este endereço: novidades do Globetrot e dicas de planejamento de viagem, no máximo 2 e-mails por mês, cancele em um clique. Confirme para ficar na lista.",
       "action": "Confirmar meu e-mail",
       "expiry": "Este link expira em {hours, plural, one {# hora} other {# horas}}.",
       "ignore": "Se não foi você, ignore este e-mail: o endereço é apagado em 7 dias."
