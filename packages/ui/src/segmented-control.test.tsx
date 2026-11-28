@@ -30,9 +30,12 @@ describe('SegmentedControl', () => {
       />,
     );
     const group = html.match(/<div[^>]*role="radiogroup"[^>]*>/)?.[0] ?? '';
-    const describedBy = group.match(/aria-describedby="([^"]+)"/)?.[1];
-    expect(describedBy).toBeTruthy();
-    expect(html).toContain(`id="${describedBy}"`);
-    expect(html).toContain('Match my device follows your device.');
+    // aria-describedby can list several ids; the help text's own id must be one of them.
+    const describedBy = (group.match(/aria-describedby="([^"]+)"/)?.[1] ?? '').split(' ');
+    const helpId = html.match(
+      /<[a-z]+[^>]*id="([^"]+)"[^>]*>Match my device follows your device\.</,
+    )?.[1];
+    expect(helpId).toBeTruthy();
+    expect(describedBy).toContain(helpId);
   });
 });
