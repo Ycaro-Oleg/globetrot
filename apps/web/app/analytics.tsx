@@ -71,6 +71,9 @@ export function Analytics() {
     writeConsent(value);
   };
 
+  // The banner names exactly what this build would load: the Pixel, PostHog, or both.
+  const tools = metaPixelId && posthogKey ? 'both' : metaPixelId ? 'pixel' : 'posthog';
+
   return (
     <>
       {plausibleDomain ? (
@@ -89,9 +92,9 @@ export function Analytics() {
       {open ? (
         <section className={styles.banner} aria-labelledby="consent-title" role="region">
           <div>
-            <h2 id="consent-title">{t('title')}</h2>
+            <h2 id="consent-title">{t('title', { tools })}</h2>
             <p>
-              {t('body')} <Link href="/privacy">{t('privacy')}</Link>
+              {t('body', { tools })} <Link href="/privacy">{t('privacy')}</Link>
             </p>
           </div>
           <div className={styles.actions}>

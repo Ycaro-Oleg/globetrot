@@ -257,11 +257,11 @@
       },
       "s2": {
         "h": "What we keep",
-        "p": "Your account: name and email address (from your sign-up or your Google account), a hash of your password if you set one, your settings, and what you put in Globetrot: trips, stops, costs, savings amounts, lists, day plans, photos, visas, Pip requests, community posts, comments and likes. We also keep the technical records the service needs: sessions, rate-limit counters, an audit log of changes that holds field names but never personal values, and error reports (the error and its stack trace, never request bodies, headers or your account data). We do not collect your live location. Photos have their location and camera data removed before they are stored."
+        "p": "Your account: name and email address (from your sign-up or your Google account), a hash of your password if you set one, your settings, and what you put in Globetrot: trips, stops, costs, savings amounts, lists, day plans, photos, visas, Pip requests and, when the community is available, posts, comments and likes. We also keep the origin of the visit in which you signed up (below), and the technical records the service needs: sessions, rate-limit counters, an audit log of changes that holds field names but never personal values, and error reports (the error and its stack trace, never request bodies, headers or your account data). We do not collect your live location. Photos have their location and camera data removed before they are stored."
       },
       "s3": {
-        "h": "Why",
-        "p": "To run the app you asked for: save and show your plans, calculate your savings answer, send account emails (confirmation, password reset and the emails about your free week), process payments, answer Pip, and keep the service secure and working. Under the Brazilian LGPD these uses rest on providing the service you asked for and on our legitimate interest in keeping it secure. Analytics and the Meta Pixel rely on your consent, which you can withdraw at any time."
+        "h": "Why, and on what basis",
+        "p": "To run the app you asked for: save and show your plans, calculate your savings answer, send account emails (confirmation, password reset and the emails about your free week), process payments, answer Pip, and keep the service secure and working. Under the Brazilian LGPD these uses rest on providing the service you asked for and on our legitimate interest in keeping it secure and knowing, in aggregate, how it is used. PostHog's cookie, the Meta Pixel and the interest list rely on your consent, which you can withdraw at any time."
       },
       "s4": {
         "h": "Sign in with Google",
@@ -269,25 +269,37 @@
       },
       "s5": {
         "h": "Who else handles it",
-        "p": "Hosting and database: Railway, [owner: region]. Email: Resend. Photo storage: [owner: provider]. Place search: Geoapify receives the text you search for and the map coordinates involved. Pip: when you ask Pip, the plan of that trip (title, dates, stops, nights, places, checklist labels, cost totals and savings amounts) is sent to DeepSeek to draft suggestions; never your name, email or other trips. Payments: Stripe, which receives your email and handles your card; we never see card numbers. Errors: Sentry, with the error and its stack trace only. Measurement: Plausible (cookieless, aggregate counts) and, only after you accept, PostHog (a few named events, no session recordings) and the Meta Pixel. Some of these providers are outside Brazil, so your data may be processed abroad under their data protection terms."
+        "p": "Railway hosts the app, the database and the photo storage (a Railway Bucket), in the United States (US East), for as long as we keep the data. Resend sends the account emails and the interest-list emails: it receives your email address and the email's content ([owner: Resend region and how long it keeps sent emails]). Geoapify, for place search, receives the text you search for and the map coordinates involved. DeepSeek, when you ask Pip (optional): the plan of that trip (title, dates, stops, nights, places, checklist labels, cost totals and savings amounts) is sent to draft suggestions; never your name, email or other trips ([owner: DeepSeek region and retention, from its terms]). Stripe, once payments are switched on, receives your email and handles your card; we never see card numbers ([owner: Stripe region and retention, from its terms]). Sentry receives technical error reports: the error and its stack trace, with no IP address stored, its default filter for sensitive data on, and no user details ([owner: Sentry region and retention]). Some of these providers are outside Brazil, so your data may be processed abroad under their data protection terms."
       },
       "s6": {
-        "h": "What others see",
-        "p": "Trips are private. Community posts are seen by everyone or only your followers, as you choose; your name, handle and Pip are shown with them. A shared route is a copy of the stops and nights at that moment, without amounts unless you chose to show them. A trip you share by link can be opened by anyone with that link: its title, stops, countries, nights, the month you leave and how far your savings are, and amounts only if you choose. Never your name or exact dates. Stopping the share ends the link for good."
+        "h": "Measurement and cookies",
+        "p": "Each tool below runs only when we have set it up. PostHog counts how Globetrot is used: a few named steps (for example a trip created or a savings check-in) and the pages you open, each with the page's language only, never your name, email, trip content or amounts, and no session recordings. After you accept the banner it keeps a cookie (and browser storage) that recognises this browser on later visits. Before you answer or after you reject: [owner: decision pending (#207): PostHog either sends nothing, or counts the visit without any cookie or storage]. PostHog is used on its EU servers ([owner: confirm region and retention]). Plausible gives aggregate page counts without cookies. The Meta Pixel loads only after you accept: Meta then learns that this browser visited and reached a few steps (start planning, a saved plan, sign-up, the first trip, a shared trip), never your name or email from us. Your choice is kept in a cookie for 180 days and can be changed under Cookie preferences at the bottom of the home page."
       },
       "s7": {
-        "h": "How long",
-        "p": "Until you delete it, or until you delete your account. Deleting the account removes your trips, photos, posts, comments, likes, follows, settings and sessions. Audit log rows stay, without personal values. Backups and error reports are kept for [owner: retention period]."
+        "h": "Where a visit came from",
+        "p": "On the first page of a visit, your browser keeps the campaign tags of the address (utm_source, utm_medium, utm_campaign), the referring site's domain (never its full address) and the path of that first page, in the tab's session storage. They are deleted when you close the tab. If you join the interest list or create an account in that tab, they are stored with the entry or the account, so we know which channels bring people. No IP address and no full address are kept. Your account export includes them, and deleting your account removes them."
       },
       "s8": {
+        "h": "The interest list",
+        "p": "If you join the interest list, we keep your email address, the language you chose, the origin of your visit (above) and when you gave your consent. No IP address. The basis is your consent. We first send an email to confirm it is you: an entry not confirmed within 7 days is deleted. A confirmed entry is kept until you unsubscribe or delete your account. Every email has a link to unsubscribe in one click. After you unsubscribe, the entry is deleted and only an irreversible hash of the email is kept, so that nothing more is sent to it."
+      },
+      "s9": {
+        "h": "What others see",
+        "p": "Trips are private. When the community is available, posts are seen by everyone or only your followers, as you choose; your name, handle and Pip are shown with them. A shared route is a copy of the stops and nights at that moment, without amounts unless you chose to show them. A trip you share by link can be opened by anyone with that link: its title, stops, countries, nights, the month you leave and how far your savings are, and amounts only if you choose. Never your name or exact dates. Stopping the share ends the link for good."
+      },
+      "s10": {
+        "h": "How long",
+        "p": "Until you delete it, or until you delete your account. Deleting the account removes your trips, photos, posts, comments, likes, follows, settings, sessions and the origin of your visit. Audit log rows stay, without personal values. Interest-list entries follow the rules above. Backups and error reports are kept for [owner: retention period]."
+      },
+      "s11": {
         "h": "Your rights",
         "p": "You can download everything in Settings → Your data (JSON, never passwords or tokens) and delete your account there. For anything else (correction, portability, objection, withdrawing consent, questions) write to [owner: contact email]. You can also complain to the ANPD, the Brazilian data protection authority."
       },
-      "s9": {
+      "s12": {
         "h": "Children",
         "p": "Globetrot is not meant for children under [owner: minimum age]."
       },
-      "s10": {
+      "s13": {
         "h": "Changes",
         "p": "We will say here, with a date, when this policy changes. Last change: [owner: date]."
       }
@@ -295,15 +307,15 @@
     "terms": {
       "s1": {
         "h": "The service",
-        "p": "Globetrot helps you plan trips: a map, days, a budget with a savings answer, lists, a passport of keepsake visas, an optional AI companion (Pip) and a community. It is offered by [owner: legal name]. Using it means you accept these terms."
+        "p": "Globetrot helps you plan trips: a map, days, a budget with a savings answer, lists, a passport of keepsake visas, an optional AI companion (Pip) and, when it is available, a community. It is offered by [owner: legal name]. Using it means you accept these terms."
       },
       "s2": {
-        "h": "Plans and the free trial",
-        "p": "Every account starts with a 7-day free trial with no card. After it, paid plans (Explorer and Voyager) are billed monthly or yearly by our payment provider; you can cancel at any time and keep your plan until the end of the period paid. Without a plan the account becomes read-only: you can still see, export and delete your data. Extra Pip credits never expire. [owner: refund policy and the payment provider’s terms]"
+        "h": "Plans, the trip pass and Pip credits",
+        "p": "Every account starts with a free week with everything open, then stays on the free plan for good, with one active trip and fewer Pip credits. You can also pay for the Explorer or Voyager plan (monthly or yearly), a trip pass (one payment that opens everything paid on one trip and adds Pip credits to your account) or a pack of Pip credits. Prices are the ones shown on the plans page and at checkout, and promotion codes may apply. You can cancel a plan at any time and keep it until the end of the period paid. Your data is never deleted for lack of a plan: you can always see, export and delete it. Bought Pip credits never expire. If a payment is refunded in full, the trip pass it bought ends and the unspent credits of that purchase are removed. When a refund is granted: [owner: refund policy]. Payments are handled by Stripe under its terms."
       },
       "s3": {
         "h": "Estimates, not bookings",
-        "p": "Globetrot never books, sells or holds money. Costs are what you type; estimates are labelled ≈ and are not quotes. Pip’s suggestions are drafts you review; they can be wrong. Always check prices, availability and entry or visa rules on official sources. Globetrot visas and stamps are keepsakes, not documents."
+        "p": "Globetrot never books, sells or holds money. Costs are what you type; estimates are labelled ≈ and are not quotes. Pip is optional and everything works without it: it only proposes changes, nothing changes until you review and apply them, and you can undo them. Its suggestions can be wrong. Always check prices, availability and entry or visa rules on official sources. The passport, its visas and stamps are decorative keepsakes, never official documents, and a visit you mark is self-declared."
       },
       "s4": {
         "h": "Your account",
@@ -311,7 +323,7 @@
       },
       "s5": {
         "h": "Your content",
-        "p": "What you post stays yours. By posting in the community you let us show it to the audience you chose, and to copy a shared route into someone’s trip when they ask. Do not post what you have no right to share, other people’s private data or live location, hate, harassment, spam or anything illegal. We may hide or remove such content and close accounts that break these rules."
+        "p": "What you post stays yours. By posting in the community, when it is available, you let us show it to the audience you chose, and to copy a shared route into someone’s trip when they ask. Do not post what you have no right to share, other people’s private data or live location, hate, harassment, spam or anything illegal. We may hide or remove such content and close accounts that break these rules."
       },
       "s6": {
         "h": "Availability",
@@ -1671,8 +1683,8 @@
     }
   },
   "consent": {
-    "title": "Help us measure our ads?",
-    "body": "With your OK we load the Meta Pixel to know which ads bring people to Globetrot. It sets cookies. Saying no changes nothing else.",
+    "title": "{tools, select, pixel {Help us measure our ads?} other {Help us improve Globetrot?}}",
+    "body": "{tools, select, pixel {With your OK we load the Meta Pixel to know which ads bring people to Globetrot. It sets cookies. Saying no changes nothing else.} posthog {With your OK, PostHog keeps a cookie so we can see how Globetrot is used from one visit to the next. We never send it your name, your email or what is in your trips. Saying no changes nothing else.} other {With your OK, we load the Meta Pixel to know which ads bring people to Globetrot, and PostHog keeps a cookie so we can see how Globetrot is used from one visit to the next. Both set cookies. We never send them your name, your email or what is in your trips. Saying no changes nothing else.}}",
     "privacy": "Privacy policy",
     "accept": "Accept",
     "reject": "Reject"
