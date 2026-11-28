@@ -576,9 +576,13 @@ if (existsSync(resolve(webRoot, 'public'))) {
   cpSync(resolve(webRoot, 'public'), resolve(standalone, 'public'), { recursive: true });
 }
 let webLog = '';
+// Each copy of the app gets its own port. Two random picks could collide: the second copy then fails to bind and
+// both URLs reach the first one, so the Pip-off and community-on checks run against the wrong flags.
+const firstPort = 3300 + Math.floor(Math.random() * 400);
+let launched = 0;
 /** Starts the built app as the Docker image runs it, with the API pointed at the stand-in. */
 function launch(extraEnv = {}) {
-  const port = 3300 + Math.floor(Math.random() * 400);
+  const port = firstPort + launched++;
   const child = spawn('node', ['server.js'], {
     cwd: standalone,
     env: {

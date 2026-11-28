@@ -414,8 +414,10 @@ async function journey(browser, { width, height, locale }) {
     await page.reload();
     await page.waitForLoadState('networkidle');
     await axe('budget');
+    // The savings chart in the answer card. The money panel above it adds its own chart figures, so count only
+    // this one.
     expect(
-      (await page.locator('figure').count()) === 1,
+      (await page.locator('figure[aria-labelledby="chart-label"]').count()) === 1,
       'the budget has no savings chart once there is a cost',
     );
     expect(
