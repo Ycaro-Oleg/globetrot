@@ -78,10 +78,12 @@ export function createDeleteAccount(
         ]);
       }
       const renewing = await deps.billing.findRenewingSubscription(actor.userId);
-      let subscriptionCanceled = false;
+      // What happened to the plan, for the audit event: none to cancel, canceled, missing at the provider
+      // (nothing left to charge, so it never blocks the deletion), or payments off.
+      let subscription: 'none' | 'canceled' | 'missing' | 'off' = 'none';
       if (renewing) {
         try {
-          subscriptionCanceled = await deps.payments.cancelSubscription({
+          subscription = await deps.payments.cancelSubscription({
             providerSubscriptionId: renewing,
           });
         } catch {
@@ -100,7 +102,7 @@ export function createDeleteAccount(
           action: 'account.delete',
           entityType: 'user',
           entityId: actor.userId,
-          metadata: { uploads: ids.length, subscriptionCanceled },
+          metadata: { uploads: ids.length, subscription },
         });
         await tx.account.deleteAccount(actor.userId);
         return ids;

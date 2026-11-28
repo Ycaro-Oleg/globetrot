@@ -51,7 +51,7 @@ describe('account deletion', () => {
     expect([...state.trips.values()].some((t) => t.ownerId === ana.id)).toBe(false);
     expect([...state.community.posts.values()]).toEqual([]);
     const event = state.audit.find((e) => e.action === 'account.delete');
-    expect(event?.metadata).toEqual({ uploads: 0, subscriptionCanceled: false });
+    expect(event?.metadata).toEqual({ uploads: 0, subscription: 'none' });
     expect(JSON.stringify(event)).not.toContain('example.com');
     await expect(app.exportAccount.execute(as(ana), {})).rejects.toThrow(NotFoundError);
   });
@@ -81,7 +81,7 @@ describe('account deletion with a subscription (#201)', () => {
       await app.deleteAccount.execute(as(ana), { confirmEmail: 'ana@example.com' });
       expect(payments.canceled).toEqual(['sub_ana']);
       const event = state.audit.find((e) => e.action === 'account.delete');
-      expect(event?.metadata).toEqual({ uploads: 0, subscriptionCanceled: true });
+      expect(event?.metadata).toEqual({ uploads: 0, subscription: 'canceled' });
     },
   );
 
@@ -112,7 +112,7 @@ describe('account deletion with a subscription (#201)', () => {
     expect(off.payments.canceled).toEqual([]);
     expect(off.state.audit.find((e) => e.action === 'account.delete')?.metadata).toEqual({
       uploads: 0,
-      subscriptionCanceled: false,
+      subscription: 'off',
     });
 
     const done = setup();
@@ -120,6 +120,25 @@ describe('account deletion with a subscription (#201)', () => {
     subscribe(done.state, 'canceled');
     await done.app.deleteAccount.execute(as(ana), { confirmEmail: 'ana@example.com' });
     expect(done.payments.canceled).toEqual([]);
+    expect(done.state.audit.find((e) => e.action === 'account.delete')?.metadata).toEqual({
+      uploads: 0,
+      subscription: 'none',
+    });
+  });
+
+  it('deletes the account when the provider no longer has the subscription, and records it', async () => {
+    const { app, state, payments } = setup();
+    payments.enabled = true;
+    payments.missing = true;
+    subscribe(state, 'active');
+    await expect(
+      app.deleteAccount.execute(as(ana), { confirmEmail: 'ana@example.com' }),
+    ).resolves.toEqual({ ok: true });
+    expect(state.audit.find((e) => e.action === 'account.delete')?.metadata).toEqual({
+      uploads: 0,
+      subscription: 'missing',
+    });
+    await expect(app.exportAccount.execute(as(ana), {})).rejects.toThrow(NotFoundError);
   });
 
   it('ignores a later webhook for the deleted account', async () => {

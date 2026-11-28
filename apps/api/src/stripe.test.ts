@@ -1,7 +1,7 @@
 import { createHmac } from 'node:crypto';
 import { createApplication, createPaymentEvents, type UserRecord } from '@globetrot/application';
 import { createFakePorts } from '@globetrot/application/testing';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import type { StripeConfig } from './config';
 import {
   createStripePayments,
@@ -250,49 +250,75 @@ describe('checkout and the portal', () => {
 
 describe('canceling a subscription (#201)', () => {
   /** A Stripe stand-in: answers DELETE and GET with the given statuses and keeps every call. */
-  function stripeFor(deleteStatus: number, current: string) {
+  function stripeFor(deleteStatus: number, current: string, getStatus = 200) {
     const calls: string[] = [];
     const call: typeof fetch = async (input, init) => {
       const method = init?.method ?? 'GET';
       calls.push(`${method} ${new URL(String(input)).pathname}`);
-      const status = method === 'DELETE' ? deleteStatus : 200;
-      return new Response(JSON.stringify({ id: 'sub_1', status: current }), { status });
+      const status = method === 'DELETE' ? deleteStatus : getStatus;
+      const body =
+        status === 404
+          ? { error: { type: 'invalid_request_error', code: 'resource_missing' } }
+          : { id: 'sub_1', status: current };
+      return new Response(JSON.stringify(body), { status });
     };
     return { calls, call };
   }
   const billing = { findProviderCustomer: async () => null };
+  const cancel = (api: ReturnType<typeof stripeFor>) =>
+    createStripePayments(config, billing, { fetch: api.call }).cancelSubscription({
+      providerSubscriptionId: 'sub_1',
+    });
 
   it('cancels at once with DELETE, with no proration or refund parameters', async () => {
     const api = stripeFor(200, 'canceled');
-    const payments = createStripePayments(config, billing, { fetch: api.call });
-    await expect(payments.cancelSubscription({ providerSubscriptionId: 'sub_1' })).resolves.toBe(
-      true,
-    );
+    await expect(cancel(api)).resolves.toBe('canceled');
     expect(api.calls).toEqual(['DELETE /v1/subscriptions/sub_1']);
   });
 
   it('counts a subscription already canceled as done (a retry)', async () => {
     const api = stripeFor(400, 'canceled');
-    const payments = createStripePayments(config, billing, { fetch: api.call });
-    await expect(payments.cancelSubscription({ providerSubscriptionId: 'sub_1' })).resolves.toBe(
-      true,
-    );
+    await expect(cancel(api)).resolves.toBe('canceled');
     expect(api.calls).toEqual(['DELETE /v1/subscriptions/sub_1', 'GET /v1/subscriptions/sub_1']);
   });
 
-  it('throws when Stripe does not confirm, so nothing gets deleted', async () => {
-    const api = stripeFor(500, 'active');
-    const payments = createStripePayments(config, billing, { fetch: api.call });
+  it('answers missing when Stripe no longer has the subscription (404 on DELETE)', async () => {
+    const api = stripeFor(404, 'active');
+    await expect(cancel(api)).resolves.toBe('missing');
+    expect(api.calls).toEqual(['DELETE /v1/subscriptions/sub_1']);
+  });
+
+  it('answers missing when the follow-up GET is a 404 too', async () => {
+    const api = stripeFor(400, 'active', 404);
+    await expect(cancel(api)).resolves.toBe('missing');
+  });
+
+  it.each([500, 401, 429])('throws for a %i, so nothing gets deleted', async (status) => {
+    await expect(cancel(stripeFor(status, 'active'))).rejects.toThrow();
+  });
+
+  it('throws when the network fails', async () => {
+    const payments = createStripePayments(config, billing, {
+      fetch: async () => {
+        throw new TypeError('fetch failed');
+      },
+    });
     await expect(
       payments.cancelSubscription({ providerSubscriptionId: 'sub_1' }),
     ).rejects.toThrow();
   });
 
-  it('does nothing while payments are off', async () => {
+  it('does nothing while payments are off, and logs the kind only', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const payments = createStripePayments(null, billing);
     await expect(payments.cancelSubscription({ providerSubscriptionId: 'sub_1' })).resolves.toBe(
-      false,
+      'off',
     );
+    expect(warn).toHaveBeenCalledWith(
+      'stripe off: a renewing subscription was not canceled when its account was deleted',
+    );
+    expect(JSON.stringify(warn.mock.calls)).not.toContain('sub_1');
+    warn.mockRestore();
   });
 });
 

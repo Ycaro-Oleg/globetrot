@@ -118,7 +118,13 @@ export function createFakePorts(options: FakeOptions = {}) {
    * The fake payment provider: whether it is configured, the subscriptions it was asked to cancel, and whether
    * the next cancellation fails (the provider down).
    */
-  const payments = { enabled: false, canceled: [] as string[], cancelFails: false };
+  const payments = {
+    enabled: false,
+    canceled: [] as string[],
+    cancelFails: false,
+    /** The provider no longer has the subscription (Stripe's 404). */
+    missing: false,
+  };
   const places = {
     offline: false,
     hits: new Map<string, number>(),
@@ -891,10 +897,11 @@ export function createFakePorts(options: FakeOptions = {}) {
           : null;
       },
       async cancelSubscription(input) {
-        if (!payments.enabled) return false;
+        if (!payments.enabled) return 'off';
         if (payments.cancelFails) throw new Error('the payment provider did not answer');
+        if (payments.missing) return 'missing';
         payments.canceled.push(input.providerSubscriptionId);
-        return true;
+        return 'canceled';
       },
     },
     ai: {

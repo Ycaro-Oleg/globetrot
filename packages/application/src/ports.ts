@@ -989,10 +989,13 @@ export interface PaymentsPort {
   /** The provider's page to change the card, switch or cancel the plan. */
   portalUrl(input: { readonly providerCustomerId: string }): Promise<string | null>;
   /**
-   * Ends a subscription at once, with no refund (#201: deleting the account). `false` while payments are off.
-   * Throws when the provider does not confirm, so the caller stops before deleting anything. Safe to repeat.
+   * Ends a subscription at once, with no refund (#201: deleting the account): `canceled` (also when it already
+   * was), `missing` (the provider no longer has it: nothing left to charge) or `off` (payments are off). Throws
+   * when the provider does not confirm, so the caller stops before deleting anything. Safe to repeat.
    */
-  cancelSubscription(input: { readonly providerSubscriptionId: string }): Promise<boolean>;
+  cancelSubscription(input: {
+    readonly providerSubscriptionId: string;
+  }): Promise<'canceled' | 'missing' | 'off'>;
 }
 
 /** The internal dashboard's numbers (see `adminMetricsSchema`). */

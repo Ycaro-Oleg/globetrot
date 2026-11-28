@@ -28,6 +28,19 @@ function form(values: Record<string, string | undefined>) {
   return body;
 }
 
+/** Stripe answered with an error status. The message names the resource and the status only. */
+export class StripeHttpError extends Error {
+  constructor(
+    path: string,
+    readonly status: number,
+  ) {
+    super(`stripe ${path.split('/')[1]} ${status}`);
+    this.name = 'StripeHttpError';
+  }
+}
+
+const isMissing = (error: unknown) => error instanceof StripeHttpError && error.status === 404;
+
 function client(config: StripeConfig, call: Fetch) {
   const headers = {
     authorization: `Bearer ${config.secretKey}`,
@@ -41,7 +54,7 @@ function client(config: StripeConfig, call: Fetch) {
         body: form(values),
         signal: AbortSignal.timeout(15_000),
       });
-      if (!response.ok) throw new Error(`stripe ${path.split('/')[1]} ${response.status}`);
+      if (!response.ok) throw new StripeHttpError(path, response.status);
       return (await response.json()) as Record<string, unknown>;
     },
     async get(path: string) {
@@ -49,7 +62,7 @@ function client(config: StripeConfig, call: Fetch) {
         headers,
         signal: AbortSignal.timeout(15_000),
       });
-      if (!response.ok) throw new Error(`stripe ${path.split('/')[1]} ${response.status}`);
+      if (!response.ok) throw new StripeHttpError(path, response.status);
       return (await response.json()) as Record<string, unknown>;
     },
     async delete(path: string) {
@@ -58,7 +71,7 @@ function client(config: StripeConfig, call: Fetch) {
         headers,
         signal: AbortSignal.timeout(15_000),
       });
-      if (!response.ok) throw new Error(`stripe ${path.split('/')[1]} ${response.status}`);
+      if (!response.ok) throw new StripeHttpError(path, response.status);
       return (await response.json()) as Record<string, unknown>;
     },
   };
@@ -73,7 +86,14 @@ export function createStripePayments(
     return {
       checkoutUrl: async () => null,
       portalUrl: async () => null,
-      cancelSubscription: async () => false,
+      // Only reached when our table says a subscription renews: visible in the logs if that ever happens with
+      // payments off (the kind only, never an id).
+      cancelSubscription: async () => {
+        console.warn(
+          'stripe off: a renewing subscription was not canceled when its account was deleted',
+        );
+        return 'off' as const;
+      },
     };
   }
   const stripe = client(config, options.fetch ?? fetch);
@@ -137,17 +157,28 @@ export function createStripePayments(
     },
     /**
      * Cancels at once (`DELETE /v1/subscriptions/{id}`): no proration and no refund, Stripe's defaults (#201).
-     * A subscription already canceled (a retry after the deletion failed later on) counts as done.
+     * A subscription already canceled (a retry after the deletion failed later on) counts as done. One Stripe
+     * no longer has (`404`, `resource_missing`: a test-mode id after switching to live keys, a customer deleted
+     * in the dashboard) has nothing left to charge: `missing`, so it never blocks deleting the account. Any
+     * other error (network, 5xx, 401) is thrown.
      */
     async cancelSubscription({ providerSubscriptionId }) {
       const path = `/subscriptions/${encodeURIComponent(providerSubscriptionId)}`;
       try {
         await stripe.delete(path);
+        return 'canceled';
       } catch (error) {
-        const current = await stripe.get(path).catch(() => null);
-        if (current?.status !== 'canceled') throw error;
+        if (isMissing(error)) return 'missing';
+        let current: Record<string, unknown>;
+        try {
+          current = await stripe.get(path);
+        } catch (lookup) {
+          if (isMissing(lookup)) return 'missing';
+          throw error;
+        }
+        if (current.status === 'canceled') return 'canceled';
+        throw error;
       }
-      return true;
     },
   };
 }
