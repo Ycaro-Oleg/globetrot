@@ -257,11 +257,11 @@
       },
       "s2": {
         "h": "O que guardamos",
-        "p": "Sua conta: nome e e-mail (do cadastro ou da sua conta Google), um hash da senha, se você definir uma, suas configurações e o que você coloca no Globetrot: viagens, paradas, custos, valores de poupança, listas, roteiros por dia, fotos, vistos, pedidos ao Pip, posts, comentários e curtidas da comunidade. Também guardamos os registros técnicos que o serviço precisa: sessões, contadores de limite de uso, um registro de alterações que guarda nomes de campos, nunca valores pessoais, e relatórios de erro (o erro e a pilha de execução, nunca o conteúdo das requisições, cabeçalhos ou dados da sua conta). Não coletamos sua localização ao vivo. As fotos têm os dados de localização e câmera removidos antes de serem guardadas."
+        "p": "Sua conta: nome e e-mail (do cadastro ou da sua conta Google), um hash da senha, se você definir uma, suas configurações e o que você coloca no Globetrot: viagens, paradas, custos, valores de poupança, listas, roteiros por dia, fotos, vistos, pedidos ao Pip e, quando a comunidade estiver disponível, posts, comentários e curtidas. Também guardamos a origem da visita em que você se cadastrou (abaixo) e os registros técnicos que o serviço precisa: sessões, contadores de limite de uso, um registro de alterações que guarda nomes de campos, nunca valores pessoais, e relatórios de erro (o erro e a pilha de execução, nunca o conteúdo das requisições, cabeçalhos ou dados da sua conta). Não coletamos sua localização ao vivo. As fotos têm os dados de localização e câmera removidos antes de serem guardadas."
       },
       "s3": {
-        "h": "Para quê",
-        "p": "Para fazer o app que você pediu funcionar: salvar e mostrar seus planos, calcular sua resposta de poupança, enviar e-mails da conta (confirmação, troca de senha e os e-mails sobre sua semana grátis), processar pagamentos, responder ao Pip e manter o serviço seguro e funcionando. Pela LGPD, esses usos se baseiam em prestar o serviço que você pediu e no nosso interesse legítimo em manter o serviço seguro. Medição e Meta Pixel dependem do seu consentimento, que você pode retirar a qualquer momento."
+        "h": "Para quê, e com que base",
+        "p": "Para fazer o app que você pediu funcionar: salvar e mostrar seus planos, calcular sua resposta de poupança, enviar e-mails da conta (confirmação, troca de senha e os e-mails sobre sua semana grátis), processar pagamentos, responder ao Pip e manter o serviço seguro e funcionando. Pela LGPD, esses usos se baseiam em prestar o serviço que você pediu e no nosso interesse legítimo em manter o serviço seguro e saber, de forma agregada, como ele é usado. O cookie do PostHog, o Meta Pixel e a lista de interesse dependem do seu consentimento, que você pode retirar a qualquer momento."
       },
       "s4": {
         "h": "Login com Google",
@@ -269,25 +269,37 @@
       },
       "s5": {
         "h": "Quem mais trata os dados",
-        "p": "Hospedagem e banco de dados: Railway, [dono: região]. E-mail: Resend. Armazenamento de fotos: [dono: provedor]. Busca de lugares: a Geoapify recebe o texto que você pesquisa e as coordenadas do mapa envolvidas. Pip: quando você pergunta ao Pip, o plano daquela viagem (título, datas, paradas, noites, lugares, itens da checklist, totais de custos e valores de poupança) vai para a DeepSeek para rascunhar sugestões; nunca seu nome, e-mail ou outras viagens. Pagamentos: Stripe, que recebe seu e-mail e cuida do seu cartão; nunca vemos o número do cartão. Erros: Sentry, apenas com o erro e a pilha de execução. Medição: Plausible (sem cookies, contagens agregadas) e, só depois que você aceitar, PostHog (poucos eventos nomeados, sem gravação de sessão) e Meta Pixel. Alguns desses provedores ficam fora do Brasil, então seus dados podem ser tratados no exterior, sob os termos de proteção de dados deles."
+        "p": "A Railway hospeda o app, o banco de dados e o armazenamento de fotos (um Railway Bucket), nos Estados Unidos (US East), pelo tempo em que guardamos os dados. A Resend envia os e-mails da conta e da lista de interesse: recebe seu e-mail e o conteúdo da mensagem ([dono: região da Resend e por quanto tempo ela guarda os e-mails enviados]). A Geoapify, na busca de lugares, recebe o texto que você pesquisa e as coordenadas do mapa envolvidas. A DeepSeek, quando você pergunta ao Pip (opcional): o plano daquela viagem (título, datas, paradas, noites, lugares, itens da checklist, totais de custos e valores de poupança) vai para rascunhar sugestões; nunca seu nome, e-mail ou outras viagens ([dono: região e retenção da DeepSeek, pelos termos dela]). A Stripe, quando os pagamentos forem ligados, recebe seu e-mail e cuida do seu cartão; nunca vemos o número do cartão ([dono: região e retenção da Stripe, pelos termos dela]). O Sentry recebe relatórios técnicos de erro: o erro e a pilha de execução, sem guardar endereço IP, com o filtro padrão de dados sensíveis ligado e sem dados do usuário ([dono: região e retenção do Sentry]). Alguns desses provedores ficam fora do Brasil, então seus dados podem ser tratados no exterior, sob os termos de proteção de dados deles."
       },
       "s6": {
-        "h": "O que os outros veem",
-        "p": "As viagens são privadas. Posts da comunidade são vistos por todos ou só por seus seguidores, como você escolher; seu nome, @ e Pip aparecem com eles. Um roteiro compartilhado é uma cópia das paradas e noites naquele momento, sem valores, a menos que você escolha mostrá-los. Uma viagem que você compartilha por link pode ser aberta por qualquer pessoa com esse link: título, paradas, países, noites, o mês da partida e quanto da poupança já foi feito, e valores só se você escolher. Nunca seu nome nem as datas exatas. Parar de compartilhar encerra o link de vez."
+        "h": "Medição e cookies",
+        "p": "Cada ferramenta abaixo só funciona quando a configuramos. O PostHog conta como o Globetrot é usado: alguns passos nomeados (por exemplo, uma viagem criada ou um check-in de poupança) e as páginas que você abre, cada um só com o idioma da página, nunca seu nome, e-mail, conteúdo das viagens ou valores, e sem gravação de sessão. Depois que você aceita o aviso, ele guarda um cookie (e dados no navegador) que reconhece este navegador nas próximas visitas. Antes de você responder ou depois de recusar: [dono: decisão pendente (#207): o PostHog não envia nada, ou conta a visita sem nenhum cookie nem armazenamento]. O PostHog é usado nos servidores dele na União Europeia ([dono: confirmar região e retenção]). O Plausible dá contagens agregadas de páginas, sem cookies. O Meta Pixel só carrega depois que você aceita: a Meta passa a saber que este navegador visitou e chegou a alguns passos (começar a planejar, um plano salvo, o cadastro, a primeira viagem, uma viagem compartilhada), nunca seu nome ou e-mail por nós. Sua escolha fica num cookie por 180 dias e pode ser mudada em Preferências de cookies, no rodapé da página inicial."
       },
       "s7": {
-        "h": "Por quanto tempo",
-        "p": "Até você apagar, ou até apagar sua conta. Ao apagar a conta, somem suas viagens, fotos, posts, comentários, curtidas, seguidores, configurações e sessões. As linhas do registro de alterações ficam, sem valores pessoais. Backups e relatórios de erro são guardados por [dono: prazo de retenção]."
+        "h": "De onde veio a visita",
+        "p": "Na primeira página de uma visita, seu navegador guarda as etiquetas de campanha do endereço (utm_source, utm_medium, utm_campaign), o domínio do site que trouxe você (nunca o endereço completo) e o caminho dessa primeira página, no armazenamento da sessão da aba. Eles somem quando você fecha a aba. Se você entrar na lista de interesse ou criar uma conta nessa aba, eles são guardados com a inscrição ou com a conta, para sabermos quais canais trazem pessoas. Não guardamos endereço IP nem o endereço completo. A exportação da sua conta inclui esses dados, e apagar a conta os remove."
       },
       "s8": {
+        "h": "A lista de interesse",
+        "p": "Se você entrar na lista de interesse, guardamos seu e-mail, o idioma que você escolheu, a origem da sua visita (acima) e quando você deu o consentimento. Nenhum endereço IP. A base é o seu consentimento. Primeiro mandamos um e-mail para confirmar que é você: uma inscrição não confirmada em 7 dias é apagada. Uma inscrição confirmada fica guardada até você se descadastrar ou apagar sua conta. Todo e-mail tem um link para se descadastrar com um clique. Depois do descadastro, a inscrição é apagada e só fica um hash irreversível do e-mail, para que nada mais seja enviado a ele."
+      },
+      "s9": {
+        "h": "O que os outros veem",
+        "p": "As viagens são privadas. Quando a comunidade estiver disponível, os posts são vistos por todos ou só por seus seguidores, como você escolher; seu nome, @ e Pip aparecem com eles. Um roteiro compartilhado é uma cópia das paradas e noites naquele momento, sem valores, a menos que você escolha mostrá-los. Uma viagem que você compartilha por link pode ser aberta por qualquer pessoa com esse link: título, paradas, países, noites, o mês da partida e quanto da poupança já foi feito, e valores só se você escolher. Nunca seu nome nem as datas exatas. Parar de compartilhar encerra o link de vez."
+      },
+      "s10": {
+        "h": "Por quanto tempo",
+        "p": "Até você apagar, ou até apagar sua conta. Ao apagar a conta, somem suas viagens, fotos, posts, comentários, curtidas, seguidores, configurações, sessões e a origem da sua visita. As linhas do registro de alterações ficam, sem valores pessoais. As inscrições na lista de interesse seguem as regras acima. Backups e relatórios de erro são guardados por [dono: prazo de retenção]."
+      },
+      "s11": {
         "h": "Seus direitos",
         "p": "Você pode baixar tudo em Configurações → Seus dados (em JSON, nunca senhas ou tokens) e apagar sua conta por lá. Para qualquer outra coisa (correção, portabilidade, oposição, retirada de consentimento, dúvidas), escreva para [dono: e-mail de contato]. Você também pode reclamar à ANPD, a autoridade brasileira de proteção de dados."
       },
-      "s9": {
+      "s12": {
         "h": "Crianças",
         "p": "O Globetrot não é feito para crianças menores de [dono: idade mínima]."
       },
-      "s10": {
+      "s13": {
         "h": "Mudanças",
         "p": "Vamos avisar aqui, com data, quando esta política mudar. Última alteração: [dono: data]."
       }
@@ -295,15 +307,15 @@
     "terms": {
       "s1": {
         "h": "O serviço",
-        "p": "O Globetrot ajuda você a planejar viagens: um mapa, dias, um orçamento com resposta de poupança, listas, um passaporte de vistos comemorativos, um companheiro de IA opcional (Pip) e uma comunidade. É oferecido por [dono: razão social]. Usar o app significa aceitar estes termos."
+        "p": "O Globetrot ajuda você a planejar viagens: um mapa, dias, um orçamento com resposta de poupança, listas, um passaporte de vistos comemorativos, um companheiro de IA opcional (Pip) e, quando estiver disponível, uma comunidade. É oferecido por [dono: razão social]. Usar o app significa aceitar estes termos."
       },
       "s2": {
-        "h": "Planos e teste grátis",
-        "p": "Toda conta começa com um teste grátis de 7 dias, sem cartão. Depois dele, os planos pagos (Explorer e Voyager) são cobrados por mês ou por ano pelo nosso provedor de pagamento; você pode cancelar quando quiser e mantém o plano até o fim do período pago. Sem plano, a conta fica somente leitura: você ainda pode ver, exportar e excluir seus dados. Créditos extras do Pip nunca expiram. [owner: política de reembolso e termos do provedor de pagamento]"
+        "h": "Planos, passe por viagem e créditos do Pip",
+        "p": "Toda conta começa com uma semana grátis com tudo liberado e depois fica no plano grátis para sempre, com uma viagem ativa e menos créditos do Pip. Você também pode pagar pelo plano Explorer ou Voyager (por mês ou por ano), por um passe por viagem (um pagamento que libera tudo o que é pago numa viagem e soma créditos do Pip à sua conta) ou por um pacote de créditos do Pip. Os preços são os mostrados na página de planos e no pagamento, e cupons podem valer. Você pode cancelar um plano quando quiser e mantém o plano até o fim do período pago. Seus dados nunca são apagados por falta de plano: você sempre pode ver, exportar e excluir. Créditos do Pip comprados nunca expiram. Se um pagamento for reembolsado por inteiro, o passe por viagem comprado com ele termina e os créditos não usados daquela compra são removidos. Quando cabe reembolso: [dono: política de reembolso]. Os pagamentos são feitos pela Stripe, sob os termos dela."
       },
       "s3": {
         "h": "Estimativas, não reservas",
-        "p": "O Globetrot nunca reserva, vende ou guarda dinheiro. Custos são o que você digita; estimativas têm o ≈ e não são cotações. As sugestões do Pip são rascunhos que você revisa e podem estar erradas. Confira sempre preços, disponibilidade e regras de entrada ou visto em fontes oficiais. Vistos e carimbos do Globetrot são lembranças, não documentos."
+        "p": "O Globetrot nunca reserva, vende ou guarda dinheiro. Custos são o que você digita; estimativas têm o ≈ e não são cotações. O Pip é opcional e tudo funciona sem ele: ele só propõe mudanças, nada muda até você revisar e aplicar, e você pode desfazer. As sugestões dele podem estar erradas. Confira sempre preços, disponibilidade e regras de entrada ou visto em fontes oficiais. O passaporte, seus vistos e carimbos são lembranças decorativas, nunca documentos oficiais, e uma visita que você marca é autodeclarada."
       },
       "s4": {
         "h": "Sua conta",
@@ -311,7 +323,7 @@
       },
       "s5": {
         "h": "Seu conteúdo",
-        "p": "O que você publica continua seu. Ao publicar na comunidade, você nos autoriza a mostrar ao público que escolheu e a copiar um roteiro compartilhado para a viagem de quem pedir. Não publique o que não tem direito de compartilhar, dados privados ou localização ao vivo de outras pessoas, ódio, assédio, spam ou nada ilegal. Podemos ocultar ou remover esse conteúdo e encerrar contas que quebrem estas regras."
+        "p": "O que você publica continua seu. Ao publicar na comunidade, quando ela estiver disponível, você nos autoriza a mostrar ao público que escolheu e a copiar um roteiro compartilhado para a viagem de quem pedir. Não publique o que não tem direito de compartilhar, dados privados ou localização ao vivo de outras pessoas, ódio, assédio, spam ou nada ilegal. Podemos ocultar ou remover esse conteúdo e encerrar contas que quebrem estas regras."
       },
       "s6": {
         "h": "Disponibilidade",
@@ -1671,8 +1683,8 @@
     }
   },
   "consent": {
-    "title": "Nos ajuda a medir nossos anúncios?",
-    "body": "Com o seu ok, carregamos o Meta Pixel para saber quais anúncios trazem pessoas ao Globetrot. Ele usa cookies. Recusar não muda mais nada.",
+    "title": "{tools, select, pixel {Nos ajuda a medir nossos anúncios?} other {Nos ajuda a melhorar o Globetrot?}}",
+    "body": "{tools, select, pixel {Com o seu ok, carregamos o Meta Pixel para saber quais anúncios trazem pessoas ao Globetrot. Ele usa cookies. Recusar não muda mais nada.} posthog {Com o seu ok, o PostHog guarda um cookie para vermos como o Globetrot é usado de uma visita para outra. Nunca enviamos a ele seu nome, seu e-mail ou o que há nas suas viagens. Recusar não muda mais nada.} other {Com o seu ok, carregamos o Meta Pixel para saber quais anúncios trazem pessoas ao Globetrot, e o PostHog guarda um cookie para vermos como o Globetrot é usado de uma visita para outra. Os dois usam cookies. Nunca enviamos a eles seu nome, seu e-mail ou o que há nas suas viagens. Recusar não muda mais nada.}}",
     "privacy": "Política de privacidade",
     "accept": "Aceitar",
     "reject": "Recusar"
