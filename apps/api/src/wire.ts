@@ -1,8 +1,11 @@
+import { createHash, createHmac, hkdfSync, timingSafeEqual } from 'node:crypto';
 import {
   createApplication,
   createInboundEmail,
+  createInterestList,
   createPaymentEvents,
   createSharedTrips,
+  type InterestHasher,
   type EmailPort,
   type AiPort,
   type PaymentsPort,
@@ -24,6 +27,7 @@ import {
   createDayPlaceRepository,
   createVisaRepository,
   createExpenseRepository,
+  createInterestListStore,
   createSavingsRepository,
   createPreferencesRepository,
   createTripRepository,
@@ -31,7 +35,8 @@ import {
   schema,
   type Database,
 } from '@globetrot/db';
-import { uuidV7 } from '@globetrot/domain';
+import { isInternalAddress, uuidV7 } from '@globetrot/domain';
+import { getIP } from 'better-auth/api';
 import { eq, sql } from 'drizzle-orm';
 import { createApp, type AuthService } from './app';
 import { createAuth, type Auth } from './auth';
@@ -59,6 +64,23 @@ export function createUserReader(db: Database): UserReader {
         .where(eq(schema.user.id, userId))
         .limit(1);
       return row ?? null;
+    },
+  };
+}
+
+/**
+ * The interest list's keyed hashing (ADR-0037). The key is derived from the auth secret with its own label, so
+ * no new secret exists; rotating the auth secret voids old unsubscribe links and the suppression list.
+ */
+export function createInterestHasher(secret: string): InterestHasher {
+  const key = Buffer.from(hkdfSync('sha256', secret, '', 'globetrot/interest-list/v1', 32));
+  return {
+    mac: (value) => createHmac('sha256', key).update(value).digest('base64url'),
+    digest: (value) => createHash('sha256').update(value).digest('hex'),
+    equal(a, b) {
+      const left = Buffer.from(a);
+      const right = Buffer.from(b);
+      return left.length === right.length && timingSafeEqual(left, right);
     },
   };
 }
@@ -155,8 +177,37 @@ export function createServices(
     },
     metrics: createMetricsRepository(db),
   });
+  // The interest list (ADR-0037). Links point at the web origin, which proxies `/v1/*` to this API.
+  const web = config.auth.baseURL;
+  const query = (token: string) => `token=${encodeURIComponent(token)}`;
+  const interestList = createInterestList({
+    store: createInterestListStore(db),
+    email,
+    clock,
+    ids,
+    hasher: createInterestHasher(config.auth.secret),
+    links: {
+      confirmPage: (token, locale) => `${web}/list/confirm?${query(token)}&lang=${locale}`,
+      unsubscribePage: (token, locale) => `${web}/list/unsubscribe?${query(token)}&lang=${locale}`,
+      oneClick: (token) => `${web}/v1/leads/unsubscribe?${query(token)}`,
+    },
+    isInternal: (address) => isInternalAddress(address, config.adminEmails),
+    dailyEmailCap: config.interestList.dailyEmails,
+    log: (message) => console.info(message),
+  });
+  // Counted in memory only. The client address comes from Better Auth's own resolution with the same settings as
+  // the sign-in limits, so a change to how the address is read applies to both.
+  const leadLimiter = createMemoryRateLimiter();
   const app = createApp({
     auth: toAuthService(auth),
+    leads: {
+      list: interestList,
+      allow: (request, bucket, perMinute) =>
+        leadLimiter.consume(
+          `leads:${bucket}:${getIP(request, auth.options) ?? 'unknown'}`,
+          perMinute,
+        ),
+    },
     sharedTrips: createSharedTrips({ ...reads, clock }),
     application,
     trustedOrigins: config.auth.trustedOrigins,

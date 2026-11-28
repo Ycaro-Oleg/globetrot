@@ -1,3 +1,4 @@
+import { normalizeEmail } from '@globetrot/domain';
 import { and, asc, desc, eq, inArray } from 'drizzle-orm';
 import type { Database } from './client';
 import {
@@ -10,6 +11,7 @@ import {
   destination,
   expense,
   follow,
+  interestListEntry,
   mediaAsset,
   mute,
   post,
@@ -31,6 +33,13 @@ import {
  */
 
 type Executor = Pick<Database, 'select' | 'delete'>;
+
+/**
+ * The interest-list entry of an account (ADR-0037): matched by the account's email, and only when that email is
+ * verified, so nobody reaches another person's entry by signing up with their address.
+ */
+const interestAddress = (profile: { email: string; emailVerified: boolean }) =>
+  profile.emailVerified ? normalizeEmail(profile.email) : null;
 
 const stringify = (value: unknown): unknown =>
   typeof value === 'bigint'
@@ -57,6 +66,25 @@ export function createAccountRepository(executor: Executor) {
         .from(user)
         .where(eq(user.id, userId));
       if (!profile) return null;
+      const listAddress = interestAddress(profile);
+      const interest = listAddress
+        ? await executor
+            .select({
+              locale: interestListEntry.locale,
+              source: interestListEntry.source,
+              utmSource: interestListEntry.utmSource,
+              utmMedium: interestListEntry.utmMedium,
+              utmCampaign: interestListEntry.utmCampaign,
+              referrerDomain: interestListEntry.referrerDomain,
+              landingPath: interestListEntry.landingPath,
+              consentAt: interestListEntry.consentAt,
+              consentVersion: interestListEntry.consentVersion,
+              confirmedAt: interestListEntry.confirmedAt,
+              createdAt: interestListEntry.createdAt,
+            })
+            .from(interestListEntry)
+            .where(eq(interestListEntry.email, listAddress))
+        : [];
       const trips = await executor
         .select()
         .from(trip)
@@ -228,6 +256,7 @@ export function createAccountRepository(executor: Executor) {
         },
         media: media.map((row) => strip(row, 'ownerId')),
         pipProposals: proposals,
+        interestList: interest[0] ?? null,
         history,
       }) as Record<string, unknown>;
     },
@@ -247,6 +276,14 @@ export function createAccountRepository(executor: Executor) {
      * audit log keeps its rows; they name an id that no longer belongs to anyone and hold no personal data.
      */
     async deleteAccount(userId: string): Promise<void> {
+      const [profile] = await executor
+        .select({ email: user.email, emailVerified: user.emailVerified })
+        .from(user)
+        .where(eq(user.id, userId));
+      const listAddress = profile ? interestAddress(profile) : null;
+      if (listAddress) {
+        await executor.delete(interestListEntry).where(eq(interestListEntry.email, listAddress));
+      }
       await executor.delete(trip).where(eq(trip.ownerId, userId));
       await executor.delete(user).where(eq(user.id, userId));
     },

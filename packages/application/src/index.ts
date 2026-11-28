@@ -57,6 +57,22 @@ export {
 } from './inbound/inbound';
 export { milesSchema_ as milesViewSchema } from './miles/operations';
 export {
+  confirmInterestResultSchema,
+  createInterestList,
+  interestTokenFields,
+  joinInterestFields,
+  joinInterestResultSchema,
+  leaveInterestResultSchema,
+  type ConfirmInterestResult,
+  type InterestEntryPatch,
+  type InterestEntryRow,
+  type InterestHasher,
+  type InterestLinks,
+  type InterestList,
+  type InterestListStore,
+  type InterestListTransaction,
+} from './interest/interest-list';
+export {
   createWeeklyReminders,
   type WeeklyNoticeStore,
   type WeeklyReminders,

@@ -44,6 +44,66 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/leads": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Join the interest list (no session)
+         * @description Stores the address with its language, source, first-visit origin and consent, and sends a confirmation email in the background (ADR-0037). Always `202` for a valid request, whether the address is new, repeated, already confirmed, unsubscribed or capped: the answer never says which.
+         */
+        post: operations["joinInterestList"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/leads/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Confirm an interest-list entry (no session)
+         * @description With the token from the confirmation link. `internal` is true only for a team or test entry whose token matched.
+         */
+        post: operations["confirmInterest"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/leads/unsubscribe": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Leave the interest list (no session)
+         * @description Deletes the entry and keeps only a keyed hash of the address, so the list never emails it again. The token goes in the JSON body, or in the `token` query parameter with the RFC 8058 form body `List-Unsubscribe=One-Click` (what mail clients send). The same answer for a used, unknown or forged token.
+         */
+        post: operations["leaveInterestList"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/me": {
         parameters: {
             query?: never;
@@ -1542,6 +1602,272 @@ export interface operations {
             };
             /** @description No such link. */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    joinInterestList: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /**
+                     * Format: email
+                     * @description A valid address without surrounding spaces; stored in lower case.
+                     */
+                    email: string;
+                    /**
+                     * @description The language of the confirmation email.
+                     * @enum {string}
+                     */
+                    locale: "en" | "pt-BR";
+                    /**
+                     * @description The consent box was ticked. Anything but `true` is refused.
+                     * @enum {boolean}
+                     */
+                    consent: true;
+                    /**
+                     * @description Which form it came from.
+                     * @enum {string}
+                     */
+                    source: "landing" | "itinerary";
+                    /** @description Where the first visit came from. No IP address and no full URL. */
+                    origin?: {
+                        utm_source?: string;
+                        utm_medium?: string;
+                        utm_campaign?: string;
+                        /** @description The referring site’s host name only: no scheme, path or query. */
+                        referrer_domain?: string;
+                        /** @description The first page’s path, starting with `/`, with no query string. */
+                        landing_path?: string;
+                    };
+                    /** @description A team or test device (`?interno=1`): the entry never counts. */
+                    internal?: boolean;
+                };
+            };
+        };
+        responses: {
+            /** @description Accepted. */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {boolean} */
+                        accepted: true;
+                    };
+                };
+            };
+            /** @description A field is missing or invalid, `consent` included. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description Too many requests from this client address (`Retry-After`). */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    confirmInterest: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @description The token from the email’s link. */
+                    token: string;
+                };
+            };
+        };
+        responses: {
+            /** @description The result. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        result: "confirmed" | "already_confirmed" | "expired" | "not_found";
+                        internal: boolean;
+                    };
+                };
+            };
+            /** @description A malformed token. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description Too many requests from this client address (`Retry-After`). */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    leaveInterestList: {
+        parameters: {
+            query?: {
+                /** @description The token from the email’s link. */
+                token?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": {
+                    /** @description The token from the email’s link. */
+                    token: string;
+                };
+                "application/x-www-form-urlencoded": {
+                    /** @enum {string} */
+                    "List-Unsubscribe": "One-Click";
+                };
+            };
+        };
+        responses: {
+            /** @description Unsubscribed. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        result: "unsubscribed";
+                    };
+                };
+            };
+            /** @description No token, or a malformed one. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        /** @description A URN identifying the kind of problem. */
+                        type: string;
+                        title: string;
+                        status: number;
+                        /** @description Stable machine-readable code. Clients switch on this. */
+                        code: string;
+                        detail?: string;
+                        /** @description Per-field problems, present for VALIDATION_FAILED. */
+                        errors?: {
+                            field: string;
+                            code: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description Too many requests from this client address (`Retry-After`). */
+            429: {
                 headers: {
                     [name: string]: unknown;
                 };

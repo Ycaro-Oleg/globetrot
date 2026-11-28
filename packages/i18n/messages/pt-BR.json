@@ -111,8 +111,10 @@
   },
   "email": {
     "greeting": "Olá, {name},",
+    "greetingNoName": "Olá,",
     "linkHint": "Se o botão não funcionar, cole este link no seu navegador:",
     "footer": "Você recebeu este e-mail porque este endereço foi usado no Globetrot.",
+    "unsubscribe": "Para sair da lista agora, abra este link:",
     "verifyEmail": {
       "subject": "Confirme seu endereço de e-mail",
       "body": "Confirme seu endereço de e-mail para concluir a criação da sua conta no Globetrot.",
@@ -153,6 +155,13 @@
       "action": "Fazer check-in",
       "expiry": "Enviamos aos domingos quando a semana ainda não tem check-in.",
       "ignore": "Para parar estes e-mails, desligue o lembrete semanal em Configurações."
+    },
+    "interestConfirm": {
+      "subject": "Confirme seu e-mail para a lista do Globetrot",
+      "body": "Alguém, esperamos que você, pediu para entrar na lista do Globetrot com este endereço. Confirme para ficar na lista.",
+      "action": "Confirmar meu e-mail",
+      "expiry": "Este link expira em {hours, plural, one {# hora} other {# horas}}.",
+      "ignore": "Se não foi você, ignore este e-mail: o endereço é apagado em 7 dias."
     }
   },
   "auth": {

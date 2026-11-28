@@ -30,10 +30,25 @@ export function createSmtpEmail(config: EmailConfig): EmailPort {
   });
 
   return {
-    async send({ to, template, locale, data }) {
+    async send({ to, template, locale, data, listUnsubscribe }) {
       const { subject, text, html } = renderEmail(template, locale, data);
+      // List emails (ADR-0037): one-click unsubscribe from the mail client itself (RFC 2369, RFC 8058).
+      const headers = listUnsubscribe
+        ? {
+            // Re-serialised through URL, so the header cannot carry a line break.
+            'List-Unsubscribe': `<${new URL(listUnsubscribe).href}>`,
+            'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+          }
+        : undefined;
       try {
-        await transport.sendMail({ from: config.from, to, subject, text, html });
+        await transport.sendMail({
+          from: config.from,
+          to,
+          subject,
+          text,
+          html,
+          ...(headers ? { headers } : {}),
+        });
       } catch (error) {
         const code = (error as { code?: unknown }).code;
         throw new EmailDeliveryError(typeof code === 'string' ? code : 'UNKNOWN');

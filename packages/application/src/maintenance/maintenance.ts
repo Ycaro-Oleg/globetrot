@@ -1,4 +1,4 @@
-import { uuidV7Time } from '@globetrot/domain';
+import { INTEREST_LIST, uuidV7Time } from '@globetrot/domain';
 import { mediaKey } from '../media/operations';
 import type { Clock, StoragePort } from '../ports';
 
@@ -16,17 +16,20 @@ export interface MaintenanceStore {
   deleteMedia(ids: readonly string[]): Promise<void>;
   existingMedia(ids: readonly string[]): Promise<Set<string>>;
   deleteIdempotencyKeysBefore(before: Date): Promise<number>;
+  deleteUnconfirmedInterestBefore(before: Date): Promise<number>;
 }
 
 export interface MaintenanceReport {
   readonly unplacedMedia: number;
   readonly strayObjects: number;
   readonly idempotencyKeys: number;
+  readonly unconfirmedInterest: number;
 }
 
 /**
  * Housekeeping that no person triggers (ADR-0017): uploads never placed, stored images whose row is gone (a
- * deletion that failed halfway), and old idempotency records. Every step is safe to repeat and to interrupt.
+ * deletion that failed halfway), old idempotency records, and interest-list entries never confirmed within
+ * 7 days (ADR-0037). Every step is safe to repeat and to interrupt.
  */
 export function createMaintenance(deps: {
   readonly store: MaintenanceStore;
@@ -77,7 +80,10 @@ export function createMaintenance(deps: {
       const idempotencyKeys = await deps.store.deleteIdempotencyKeysBefore(
         new Date(now.getTime() - IDEMPOTENCY_KEEP_DAYS * 24 * HOUR),
       );
-      return { unplacedMedia, strayObjects, idempotencyKeys };
+      const unconfirmedInterest = await deps.store.deleteUnconfirmedInterestBefore(
+        new Date(now.getTime() - INTEREST_LIST.pendingDays * 24 * HOUR),
+      );
+      return { unplacedMedia, strayObjects, idempotencyKeys, unconfirmedInterest };
     },
   };
 }

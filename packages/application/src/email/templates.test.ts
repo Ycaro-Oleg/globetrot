@@ -3,7 +3,13 @@ import { catalogs, SUPPORTED_LOCALES } from '@globetrot/i18n';
 import { describe, expect, it } from 'vitest';
 import { renderEmail, type EmailData, type EmailTemplate } from './templates';
 
-const TEMPLATES: EmailTemplate[] = ['verifyEmail', 'resetPassword', 'trialEnding', 'trialEnded'];
+const TEMPLATES: EmailTemplate[] = [
+  'verifyEmail',
+  'resetPassword',
+  'trialEnding',
+  'trialEnded',
+  'interestConfirm',
+];
 const URL_ = 'https://app.example.test/api/auth/verify-email?token=abc.def&callbackURL=%2F';
 const DATA: EmailData = { url: URL_, name: 'Ana', expiresInHours: 24 };
 
@@ -148,6 +154,32 @@ describe('renderEmail content rules', () => {
       tripTitle: 'Rome\r\nBcc: someone@example.com',
     });
     expect(subject).not.toMatch(/[\r\n]/);
+  });
+
+  it('greets the interest list without a name and adds the unsubscribe link in both versions', () => {
+    const leave = 'https://app.example.test/list/unsubscribe?token=abc.def&lang=en';
+    for (const locale of SUPPORTED_LOCALES) {
+      const copy = catalogs[locale].email;
+      const { text, html } = renderEmail('interestConfirm', locale, {
+        ...DATA,
+        name: '',
+        unsubscribeUrl: leave,
+      });
+      expect(text.startsWith(copy.greetingNoName)).toBe(true);
+      expect(text).not.toContain('{name}');
+      expect(text).toContain(`${copy.unsubscribe} ${leave}`);
+      expect(words(html)).toContain(copy.unsubscribe);
+      const targets = new Set([...html.matchAll(/href="([^"]*)"/g)].map((match) => match[1]));
+      expect(targets).toEqual(
+        new Set([URL_.replaceAll('&', '&amp;'), leave.replaceAll('&', '&amp;')]),
+      );
+    }
+  });
+
+  it('refuses an unsubscribe link that is not http(s)', () => {
+    expect(() =>
+      renderEmail('interestConfirm', 'en', { ...DATA, unsubscribeUrl: 'javascript:alert(1)' }),
+    ).toThrow(TypeError);
   });
 
   it('never names a trip in account emails', () => {

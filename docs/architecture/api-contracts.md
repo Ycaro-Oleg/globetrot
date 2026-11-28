@@ -18,7 +18,7 @@ Browser ─► apps/web (proxy.ts: /api/auth/*, /v1/*) ─► apps/api ─► @g
 
 - `app.use('/v1/*')` in `apps/api/src/app.ts` resolves the **session cookie** through Better Auth and sets `actor = { kind: 'user', userId }`. It is the only place an actor is created.
 - **No request field can name the caller.** Not a header (`X-User-Id`, `Authorization`, …), not a query parameter, not a body field. Operations take no user id for "me". Tests try every one of these and check the answer does not change (`app.test.ts`, `v1.int.test.ts`).
-- No session: `401`, before any operation or port is touched. `/v1/openapi.json` and `/v1/auth/providers` are the only public paths under `/v1`. They are registered **before** the authentication middleware, and Hono applies middleware in registration order, so anything registered after it requires a session.
+- No session: `401`, before any operation or port is touched. `/v1/openapi.json`, `/v1/auth/providers`, `/v1/shared/{slug}`, the interest list (`/v1/leads`, `/v1/leads/confirm`, `/v1/leads/unsubscribe`) and the provider webhooks are the only public paths under `/v1`. They are registered **before** the authentication middleware, and Hono applies middleware in registration order, so anything registered after it requires a session.
 - State-changing requests (`POST`, `PUT`, `PATCH`, `DELETE`) from an untrusted `Origin` get `403 INVALID_ORIGIN`, as for auth ([`authentication.md`](authentication.md#request-protection)).
 - The browser calls the web origin, never the API: `proxy.ts` forwards `/v1/*` (see `apps/web/lib/api-proxy.ts`), so the cookie is first-party. Server-side web code (pages, `i18n/request.ts`, server actions) calls the API directly through `API_INTERNAL_URL` and must forward the session cookie itself: `createServerApiClient` in `apps/web/lib/stored-preferences.ts` does, with a timeout, and nothing else of the browser's cookies.
 
@@ -177,7 +177,7 @@ Public routes, registered before the session middleware, for visitors without an
 }
 ```
 
-- `email`: required, at most 254 characters, a valid address. Stored trimmed and in lower case; nothing else is changed (dots and `+` stay).
+- `email`: required, at most 254 characters, a valid address with no surrounding spaces (the form trims it). Stored in lower case; nothing else is changed (dots and `+` stay).
 - `locale`: required, `en` or `pt-BR`. The confirmation email is in this language.
 - `consent`: required and must be `true` (the unchecked box was ticked). Anything else is `422 VALIDATION_FAILED`, field `consent`.
 - `source`: required, `landing` or `itinerary`.

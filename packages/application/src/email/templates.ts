@@ -3,13 +3,20 @@ import { formatMessage, type SupportedLocale } from '@globetrot/i18n';
 
 /** The transactional emails the product sends. A new template needs its strings in every catalog. */
 export type EmailTemplate =
-  'verifyEmail' | 'resetPassword' | 'trialEnding' | 'trialEnded' | 'weeklyCheckin';
+  | 'verifyEmail'
+  | 'resetPassword'
+  | 'trialEnding'
+  | 'trialEnded'
+  | 'weeklyCheckin'
+  | 'interestConfirm';
 
 export interface EmailData {
   /** The single-use link the email exists for. Must be an http(s) URL. */
   readonly url: string;
-  /** What to call the person. */
+  /** What to call the person; empty when there is no name (the interest list), which greets without one. */
   readonly name: string;
+  /** A page to unsubscribe from the list (ADR-0037), shown under the main link. Must be an http(s) URL. */
+  readonly unsubscribeUrl?: string;
   /** How long the link works, shown as whole hours (at least 1). */
   readonly expiresInHours: number;
   /** The person's own trip, named in the trial emails when they have one. User text: always escaped. */
@@ -23,6 +30,11 @@ export interface EmailMessage {
   readonly template: EmailTemplate;
   readonly locale: SupportedLocale;
   readonly data: EmailData;
+  /**
+   * One-click unsubscribe (RFC 8058) for list emails: the adapter sends it as `List-Unsubscribe` with
+   * `List-Unsubscribe-Post: List-Unsubscribe=One-Click`. Must be an http(s) URL that accepts a `POST`.
+   */
+  readonly listUnsubscribe?: string;
 }
 
 export interface RenderedEmail {
@@ -83,11 +95,14 @@ export function renderEmail(
   data: EmailData,
 ): RenderedEmail {
   assertHttpUrl(data.url);
+  if (data.unsubscribeUrl !== undefined) assertHttpUrl(data.unsubscribeUrl);
   const hours = Math.max(1, Math.round(data.expiresInHours));
   const t = (key: string, values: Record<string, string | number> = {}) =>
     formatMessage(locale, key as never, values);
 
-  const greeting = t('email.greeting', { name: data.name });
+  const greeting = data.name.trim()
+    ? t('email.greeting', { name: data.name })
+    : t('email.greetingNoName');
   // The only price an email quotes comes from the pricing table, never from the catalog.
   const body = t(`email.${template}.body`, {
     price: formatMoney(
@@ -110,6 +125,7 @@ export function renderEmail(
   const ignore = t(`email.${template}.ignore`);
   const linkHint = t('email.linkHint');
   const footer = t('email.footer');
+  const unsubscribe = data.unsubscribeUrl ? t('email.unsubscribe') : null;
 
   const text = [
     greeting,
@@ -118,11 +134,16 @@ export function renderEmail(
     `${action}: ${data.url}`,
     expiry,
     ignore,
+    ...(unsubscribe ? [`${unsubscribe} ${data.unsubscribeUrl}`] : []),
     '--',
     footer,
   ].join('\n\n');
 
   const url = escapeHtml(data.url);
+  const unsubscribeHtml =
+    unsubscribe && data.unsubscribeUrl
+      ? `\n<p style="font-size:14px;color:#4f545a">${escapeHtml(unsubscribe)} <a href="${escapeHtml(data.unsubscribeUrl)}" style="color:#1c1c1e;word-break:break-all">${escapeHtml(data.unsubscribeUrl)}</a></p>`
+      : '';
   const html = `<!doctype html>
 <html lang="${locale}">
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>${escapeHtml(subject)}</title></head>
@@ -134,7 +155,7 @@ export function renderEmail(
 <p><a href="${url}" style="display:inline-block;padding:12px 22px;background:#d63f24;color:#ffffff;text-decoration:none;font-weight:bold;border-radius:999px">${escapeHtml(action)}</a></p>
 <p style="font-size:14px;color:#4f545a">${escapeHtml(linkHint)}<br><a href="${url}" style="color:#1c1c1e;word-break:break-all">${url}</a></p>
 <p>${escapeHtml(expiry)}</p>
-<p>${escapeHtml(ignore)}</p>
+<p>${escapeHtml(ignore)}</p>${unsubscribeHtml}
 <hr style="border:0;border-top:1px solid #e4e6e9">
 <p style="font-size:12px;color:#4f545a">${escapeHtml(footer)}</p>
 </div>

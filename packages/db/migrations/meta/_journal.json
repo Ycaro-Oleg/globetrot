@@ -225,6 +225,13 @@
       "when": 1795787764909,
       "tag": "0031_inbound_address",
       "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1795824320251,
+      "tag": "0032_interest_list",
+      "breakpoints": true
     }
   ]
 }

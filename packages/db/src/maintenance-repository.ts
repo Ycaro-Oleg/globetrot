@@ -1,6 +1,6 @@
-import { and, inArray, lt, sql } from 'drizzle-orm';
+import { and, inArray, isNull, lt, sql } from 'drizzle-orm';
 import type { Database } from './client';
-import { destination, idempotencyKey, mediaAsset, post } from './schema';
+import { destination, idempotencyKey, interestListEntry, mediaAsset, post } from './schema';
 
 /** Housekeeping queries for the worker (packages/application/src/maintenance). No user acts here. */
 
@@ -44,6 +44,14 @@ export function createMaintenanceRepository(executor: Executor) {
         .delete(idempotencyKey)
         .where(lt(idempotencyKey.createdAt, before))
         .returning({ key: idempotencyKey.key });
+      return rows.length;
+    },
+    /** Interest-list entries never confirmed and made before `before` (ADR-0037). Answers how many went. */
+    async deleteUnconfirmedInterestBefore(before: Date): Promise<number> {
+      const rows = await executor
+        .delete(interestListEntry)
+        .where(and(isNull(interestListEntry.confirmedAt), lt(interestListEntry.createdAt, before)))
+        .returning({ id: interestListEntry.id });
       return rows.length;
     },
   };
