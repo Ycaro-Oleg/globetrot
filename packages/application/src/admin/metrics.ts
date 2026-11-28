@@ -22,6 +22,11 @@ export const adminMetricsSchema = z.object({
   /** Accounts that signed up 8 to 16 weeks ago, and how many were active in weeks 1, 4 and 8. */
   retention: z.object({ cohort: count, week1: count, week4: count, week8: count }),
   money: z.object({ explorer: count, voyager: count, activePasses: count, referrals: count }),
+  /** Confirmation and password-reset emails that could not be sent, in the last 7 and 30 days (#204). */
+  emailFailures: z.object({
+    verifyEmail: z.object({ last7: count, last30: count }),
+    resetPassword: z.object({ last7: count, last30: count }),
+  }),
 });
 
 /**

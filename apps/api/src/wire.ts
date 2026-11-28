@@ -12,6 +12,7 @@ import {
 } from '@globetrot/application';
 import {
   createAccountRepository,
+  createAuditLog,
   createAssistantRepository,
   createBillingRepository,
   createShareRepository,
@@ -34,7 +35,7 @@ import {
 import { uuidV7 } from '@globetrot/domain';
 import { eq, sql } from 'drizzle-orm';
 import { createApp, type AuthService } from './app';
-import { createAuth, type Auth } from './auth';
+import { createAuth, type Auth, type EmailFailure } from './auth';
 import type { ApiConfig } from './config';
 import { createSmtpEmail } from '@globetrot/mailer';
 import { createCityIndex } from './cities';
@@ -63,6 +64,17 @@ export function createUserReader(db: Database): UserReader {
   };
 }
 
+/**
+ * What monitoring receives for a failed confirmation or reset email (#204): the email type and the error code,
+ * nothing else. No address, name, link or token can be in it.
+ */
+export class EmailDeliveryFailed extends Error {
+  constructor(template: string, code: string) {
+    super(`${template} email not sent (${code})`);
+    this.name = 'EmailDeliveryFailed';
+  }
+}
+
 /** Adapter: Better Auth as the HTTP layer's `AuthService`. */
 export function toAuthService(auth: Auth): AuthService {
   return {
@@ -89,6 +101,8 @@ export function createServices(
     readonly payments?: PaymentsPort;
     /** Stands in for Stripe's HTTP API in tests. */
     readonly stripeFetch?: typeof fetch;
+    /** Stands in for error monitoring (Sentry) in tests. */
+    readonly reportError?: (error: Error) => void;
   } = {},
 ) {
   const email = overrides.email ?? createSmtpEmail(config.email);
@@ -110,7 +124,23 @@ export function createServices(
     createPaymentEvents({ users, billing, trips, destinations, unitOfWork, clock, ids }),
     { fetch: overrides.stripeFetch },
   );
-  const auth = createAuth(db, config.auth, { email });
+  const report = overrides.reportError ?? reportError;
+  const audit = createAuditLog(db);
+  // A confirmation or reset email that failed (#204): reported to monitoring (when on) and counted for the
+  // dashboard, with only the type and the error code. The person's screen still says "Sent".
+  const onEmailFailure = async ({ template, code, userId }: EmailFailure) => {
+    report(new EmailDeliveryFailed(template, code));
+    await audit.record({
+      id: ids.newId(),
+      occurredAt: clock.now(),
+      actor: { kind: 'system', userId: 'email' },
+      action: 'email.failed',
+      entityType: 'user',
+      entityId: userId,
+      metadata: { template, code },
+    });
+  };
+  const auth = createAuth(db, config.auth, { email, onEmailFailure });
   const reads = {
     trips,
     destinations,

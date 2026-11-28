@@ -2086,6 +2086,11 @@
     "explorer": "Explorer",
     "voyager": "Voyager",
     "passes": "Passes da viagem válidos",
+    "emailFailures": "E-mails não enviados",
+    "failedVerify7": "E-mails de confirmação, últimos 7 dias",
+    "failedVerify30": "E-mails de confirmação, últimos 30 dias",
+    "failedReset7": "E-mails de nova senha, últimos 7 dias",
+    "failedReset30": "E-mails de nova senha, últimos 30 dias",
     "checkins": "Check-ins por semana",
     "none": "Nenhum check-in ainda."
   },
